@@ -52,7 +52,7 @@ func ProcessFolder(input string, output string) error {
 	for file := range files {
 		err := Minify(file)
 		if err != nil {
-			continue
+                  log.Println("Warn: " + err.Error())
 		}
 	}
 
