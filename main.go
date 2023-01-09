@@ -7,10 +7,11 @@ import (
 	"fmt"
 	"golang.org/x/text/transform"
         "golang.org/x/text/encoding/unicode"
-	"ioutil"
+	"io/ioutil"
         "log"
 	"os"
 	"path/filepath"
+        "strings"
 )
 
 // VERSION of openmedia-minify
@@ -41,6 +42,7 @@ func main() {
 
 }
 
+// ProcessFolder executes minify on each file in given folder outputs result to output folder
 func ProcessFolder(input string, output string) error {
 
 	files, err := ioutil.ReadDir(input)
@@ -49,8 +51,8 @@ func ProcessFolder(input string, output string) error {
 		return err
 	}
 
-	for file := range files {
-		err := Minify(file)
+	for _, file := range files {
+		err := Minify(input,output,file)
 		if err != nil {
                   log.Println("Warn: " + err.Error())
 		}
@@ -60,7 +62,8 @@ func ProcessFolder(input string, output string) error {
 
 }
 
-func Minify(inpath string, outpath string, file os.Fileinfo) error {
+// Minify reduces empty fields (whole lines) from XML file
+func Minify(inpath string, outpath string, file os.FileInfo) error {
 
 	fext := filepath.Ext(file.Name())
 
@@ -77,7 +80,7 @@ func Minify(inpath string, outpath string, file os.Fileinfo) error {
 	for scanner.Scan() {
 		line := fmt.Sprintln(scanner.Text())
 
-		if strings.Contains(`Is Empty="yes"`) {
+		if strings.Contains(line,`Is Empty="yes"`) {
 			continue
 		} else {
 			modded = append(modded, line)
