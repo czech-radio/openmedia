@@ -1,21 +1,24 @@
 package main
 
 import (
+	"archive/zip"
 	"bufio"
 	"bytes"
 	"encoding/xml"
 	"errors"
 	"flag"
 	"fmt"
-	"golang.org/x/text/encoding/unicode"
-	"golang.org/x/text/transform"
+	"io"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
-        "io"
-        "archive/zip"
+	"time"
+
+	"golang.org/x/text/encoding/unicode"
+	"golang.org/x/text/transform"
 )
 
 // VERSION of openmedia-minify
@@ -79,8 +82,8 @@ func Minify(inpath string, outpath string, file os.FileInfo) error {
 
 	fext := filepath.Ext(file.Name())
 
-	if file.IsDir() || fext != ".xml" {
-		return errors.New("Skipping folder or non-xml file")
+	if file.IsDir() || fext != ".xml" || !strings.Contains(file.Name(), "RD") {
+		return errors.New("Skipping folder, non-XML file or non-RD file")
 	}
 
 	fptr, _ := os.Open(filepath.Join(inpath, file.Name()))
@@ -103,53 +106,101 @@ func Minify(inpath string, outpath string, file os.FileInfo) error {
 		return errors.New("This would rewrite the original file. Input and output paths must differ.")
 	}
 
-        // TODO: check validity of resulting XML file
+	// TODO: check validity of resulting XML file
 
-	err := saveStringSliceToFile(filepath.Join(outpath, file.Name()), modded)
+	// TODO: get name from date
+	weekday, year, month, day, week := getDateFromFile(filepath.Join(inpath, file.Name()))
+	split := strings.Split(file.Name(), "-")
+	beginning := split[0] + "-" + split[1]
+
+	new_filename := beginning[0:len(beginning)-1] + "_" + fmt.Sprintf("%s_%04d_%02d_%02d_W%02d", weekday, year, month, day, week) + ".xml"
+
+	err := saveStringSliceToFile(filepath.Join(outpath, new_filename), modded)
 	if err != nil {
 		return errors.New("Failed to save file " + filepath.Join(outpath, file.Name()))
 	}
 
-
-        err = zipFile(filepath.Join(inpath, file.Name()))
-        if err != nil {
-              return errors.New("Failed to create zip archive: "+filepath.Join(outpath, file.Name()))
-        }
+	err = zipFile(filepath.Join(inpath, file.Name()), outpath)
+	if err != nil {
+		return errors.New("Failed to create zip archive: " + filepath.Join(outpath, file.Name()))
+	}
 
 	return nil
 }
 
+// openmedia-check function to get date
+func getDateFromFile(filepath string) (Weekday string, Year, Month, Day, Week int) {
 
-func zipFile(input_filename string) error {
-    dir, filename := filepath.Split(input_filename)
-    name := strings.TrimSuffix(filename, filepath.Ext(filename))
+	var weekday string
+	var year, month, day, week = 0, 0, 0, 0
+	var scanner bufio.Scanner
 
-    archive, err := os.Create(filepath.Join(dir, name +".zip") )
-    if err != nil {
-        panic(err)
-    }
-    defer archive.Close()
-    zipWriter := zip.NewWriter(archive)
+	handle, err := os.Open(filepath)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-    // reader
-    f, err := os.Open(input_filename)
-    if err != nil {
-        panic(err)
-    }
-    defer f.Close()
+	scanner = *bufio.NewScanner(transform.NewReader(handle, unicode.UTF16(unicode.LittleEndian, unicode.UseBOM).NewDecoder()))
 
-    // writer
-    w, err := zipWriter.Create(filename)
-    if err != nil {
-        panic(err)
-    }
-    if _, err := io.Copy(w, f); err != nil {
-        panic(err)
-    }
+	for scanner.Scan() {
+		var line = fmt.Sprintln(scanner.Text())
 
-    zipWriter.Close()
+		if strings.Contains(line, `FieldID = "1004"`) {
+			reg := regexp.MustCompile("([0-9][0-9][0-9][0-9]{1})([0-9]{2})([0-9]{2})(T)")
+			res := reg.FindStringSubmatch(line)
 
-    return nil
+			date, err := time.Parse("20060102", res[1]+res[2]+res[3])
+
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			year, month, day = date.Year(), int(date.Month()), date.Day()
+			year, week = date.ISOWeek()
+
+			t, err := time.Parse(time.RFC3339, fmt.Sprintf("%04d-%02d-%02dT00:00:00Z", date.Year(), int(date.Month()), date.Day()))
+			if err != nil {
+				log.Fatal(err)
+			}
+			weekday = t.Weekday().String()
+			break // Find first ocurrance!
+		}
+	}
+
+	return weekday, year, month, day, week
+}
+
+func zipFile(input_filename string, output_folder string) error {
+
+	_, filename := filepath.Split(input_filename)
+	name := strings.TrimSuffix(filename, filepath.Ext(filename))
+
+	archive, err := os.Create(filepath.Join(output_folder, name+".zip"))
+	if err != nil {
+		panic(err)
+	}
+	defer archive.Close()
+	zipWriter := zip.NewWriter(archive)
+
+	// reader
+	f, err := os.Open(input_filename)
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+
+	// writer
+	w, err := zipWriter.Create(filename)
+	if err != nil {
+		panic(err)
+	}
+	if _, err := io.Copy(w, f); err != nil {
+		panic(err)
+	}
+
+	zipWriter.Close()
+
+	return nil
 }
 
 func saveStringSliceToFile(filename string, input []string) error {
