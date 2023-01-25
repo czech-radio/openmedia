@@ -12,6 +12,8 @@ import (
 	"os"
 	"path/filepath"
         "strings"
+        "bytes"
+        "encoding/xml"
 )
 
 // VERSION of openmedia-minify
@@ -40,6 +42,9 @@ func main() {
 		fmt.Println("openmedia-minify -i input_folder -o output_folder")
 	}
 
+
+        ProcessFolder(*input,*output)
+
 }
 
 // ProcessFolder executes minify on each file in given folder outputs result to output folder
@@ -62,6 +67,12 @@ func ProcessFolder(input string, output string) error {
 
 }
 
+func ToXML(input_string string) string {
+    var b bytes.Buffer
+    xml.EscapeText(&b,[]byte(input_string))
+    return b.String()
+}
+
 // Minify reduces empty fields (whole lines) from XML file
 func Minify(inpath string, outpath string, file os.FileInfo) error {
 
@@ -80,15 +91,21 @@ func Minify(inpath string, outpath string, file os.FileInfo) error {
 	for scanner.Scan() {
 		line := fmt.Sprintln(scanner.Text())
 
-		if strings.Contains(line,`Is Empty="yes"`) {
+		if strings.Contains(line,`IsEmpty = "yes"`) || line == "" {
 			continue
 		} else {
-			modded = append(modded, line)
+                        modded = append(modded, line)
 		}
-
-
 	}
-	// TODO: modded to a file here
+	
+        // TODO: modded to a file here
+	fmt.Println(modded)
 
         return nil
+}
+
+// 
+func IsValidXML(input []string) bool {
+
+ return true
 }
