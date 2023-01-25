@@ -112,7 +112,7 @@ func Minify(inpath string, outpath string, file os.FileInfo) error {
 	weekday, year, month, day, week := getDateFromFile(filepath.Join(inpath, file.Name()))
 	split := strings.Split(file.Name(), "-")
 	beginning := split[0] + "-" + split[1]
-	new_filename := beginning + fmt.Sprintf("%s_%04d_%02d_%02d_W%02d", weekday, year, month, day, week)
+	new_filename := beginning + fmt.Sprintf("%s_W%02d_%04d_%02d_%02d",weekday, week, year, month, day )
 
 
 	err := saveStringSliceToFile(filepath.Join(outpath, new_filename+".xml"), modded)
