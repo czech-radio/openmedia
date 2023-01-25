@@ -111,10 +111,16 @@ func Minify(inpath string, outpath string, file os.FileInfo) error {
 	}
 
 
+        err = zipFile(filepath.Join(inpath, file.Name()))
+        if err != nil {
+              return errors.New("Failed to create zip archive: "+filepath.Join(outpath, file.Name()))
+        }
+
 	return nil
 }
 
-func zipFileAndDeleteIt(input_filename string) error {
+
+func zipFile(input_filename string) error {
     dir, filename := filepath.Split(input_filename)
     name := strings.TrimSuffix(filename, filepath.Ext(filename))
 
