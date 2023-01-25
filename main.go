@@ -108,21 +108,21 @@ func Minify(inpath string, outpath string, file os.FileInfo) error {
 
 	// TODO: check validity of resulting XML file
 
-	// TODO: get name from date
+        // new filename
 	weekday, year, month, day, week := getDateFromFile(filepath.Join(inpath, file.Name()))
 	split := strings.Split(file.Name(), "-")
 	beginning := split[0] + "-" + split[1]
+	new_filename := beginning + fmt.Sprintf("%s_%04d_%02d_%02d_W%02d", weekday, year, month, day, week)
 
-	new_filename := beginning[0:len(beginning)-1] + "_" + fmt.Sprintf("%s_%04d_%02d_%02d_W%02d", weekday, year, month, day, week) + ".xml"
 
-	err := saveStringSliceToFile(filepath.Join(outpath, new_filename), modded)
+	err := saveStringSliceToFile(filepath.Join(outpath, new_filename+".xml"), modded)
 	if err != nil {
-		return errors.New("Failed to save file " + filepath.Join(outpath, file.Name()))
+		return errors.New("Failed to save file " + filepath.Join(outpath, new_filename+".xml"))
 	}
 
-	err = zipFile(filepath.Join(inpath, file.Name()), outpath)
+	err = zipFile(filepath.Join(inpath, file.Name()), filepath.Join(outpath,new_filename+".zip"))
 	if err != nil {
-		return errors.New("Failed to create zip archive: " + filepath.Join(outpath, file.Name()))
+		return errors.New("Failed to create zip archive: " + filepath.Join(outpath, new_filename+".zip"))
 	}
 
 	return nil
@@ -170,12 +170,12 @@ func getDateFromFile(filepath string) (Weekday string, Year, Month, Day, Week in
 	return weekday, year, month, day, week
 }
 
-func zipFile(input_filename string, output_folder string) error {
+func zipFile(input_filename string, output_filename string) error {
 
 	_, filename := filepath.Split(input_filename)
-	name := strings.TrimSuffix(filename, filepath.Ext(filename))
+	//name := strings.TrimSuffix(filename, filepath.Ext(filename))
 
-	archive, err := os.Create(filepath.Join(output_folder, name+".zip"))
+	archive, err := os.Create(output_filename)
 	if err != nil {
 		panic(err)
 	}
@@ -189,6 +189,7 @@ func zipFile(input_filename string, output_folder string) error {
 	}
 	defer f.Close()
 
+        log.Println("Zipping: "+output_filename)
 	// writer
 	w, err := zipWriter.Create(filename)
 	if err != nil {
@@ -217,6 +218,7 @@ func saveStringSliceToFile(filename string, input []string) error {
 		_, _ = datawriter.WriteString(data)
 	}
 
+        log.Println("Minifying: "+filename)
 	datawriter.Flush()
 	file.Close()
 
