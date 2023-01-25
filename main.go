@@ -2,18 +2,20 @@ package main
 
 import (
 	"bufio"
+	"bytes"
+	"encoding/xml"
 	"errors"
 	"flag"
 	"fmt"
+	"golang.org/x/text/encoding/unicode"
 	"golang.org/x/text/transform"
-        "golang.org/x/text/encoding/unicode"
 	"io/ioutil"
-        "log"
+	"log"
 	"os"
 	"path/filepath"
-        "strings"
-        "bytes"
-        "encoding/xml"
+	"strings"
+        "io"
+        "archive/zip"
 )
 
 // VERSION of openmedia-minify
@@ -24,7 +26,7 @@ func main() {
 	log.Println(fmt.Sprintf("Openmedia-minify version: %s", VERSION))
 
 	input := flag.String("i", "", "The input directory")
-	output := flag.String("o", "", "Output directory")
+	output := flag.String("o", "", "The output directory")
 	flag.Parse()
 
 	if *input == "" {
@@ -42,8 +44,7 @@ func main() {
 		fmt.Println("openmedia-minify -i input_folder -o output_folder")
 	}
 
-
-        ProcessFolder(*input,*output)
+	ProcessFolder(*input, *output)
 
 }
 
@@ -57,9 +58,9 @@ func ProcessFolder(input string, output string) error {
 	}
 
 	for _, file := range files {
-		err := Minify(input,output,file)
+		err := Minify(input, output, file)
 		if err != nil {
-                  log.Println("Warn: " + err.Error())
+			log.Println("Warn: " + err.Error())
 		}
 	}
 
@@ -68,9 +69,9 @@ func ProcessFolder(input string, output string) error {
 }
 
 func ToXML(input_string string) string {
-    var b bytes.Buffer
-    xml.EscapeText(&b,[]byte(input_string))
-    return b.String()
+	var b bytes.Buffer
+	xml.EscapeText(&b, []byte(input_string))
+	return b.String()
 }
 
 // Minify reduces empty fields (whole lines) from XML file
@@ -91,31 +92,61 @@ func Minify(inpath string, outpath string, file os.FileInfo) error {
 	for scanner.Scan() {
 		line := fmt.Sprintln(scanner.Text())
 
-		if strings.Contains(line,`IsEmpty = "yes"`) || line == "" {
+		if strings.Contains(line, `IsEmpty = "yes"`) || line == "" {
 			continue
 		} else {
-                        modded = append(modded, line)
+			modded = append(modded, line)
 		}
 	}
-	
-        // TODO: modded to a file here
-	// fmt.Println(modded)
-        if inpath == outpath {
-          return errors.New("This would rewrite the original file. Input and output paths must differ.");
-          os.Exit(1)
-        }
 
-        err := saveStringSliceToFile(filepath.Join(outpath, file.Name()),modded)
-        if err != nil {
-          return errors.New("Failed to save file "+filepath.Join(outpath, file.Name()))
-        }
+	if inpath == outpath {
+		return errors.New("This would rewrite the original file. Input and output paths must differ.")
+	}
 
-        return nil
+        // TODO: check validity of resulting XML file
+
+	err := saveStringSliceToFile(filepath.Join(outpath, file.Name()), modded)
+	if err != nil {
+		return errors.New("Failed to save file " + filepath.Join(outpath, file.Name()))
+	}
+
+
+	return nil
 }
 
+func zipFileAndDeleteIt(input_filename string) error {
+    dir, filename := filepath.Split(input_filename)
+    name := strings.TrimSuffix(filename, filepath.Ext(filename))
+
+    archive, err := os.Create(filepath.Join(dir, name +".zip") )
+    if err != nil {
+        panic(err)
+    }
+    defer archive.Close()
+    zipWriter := zip.NewWriter(archive)
+
+    // reader
+    f, err := os.Open(input_filename)
+    if err != nil {
+        panic(err)
+    }
+    defer f.Close()
+
+    // writer
+    w, err := zipWriter.Create(filename)
+    if err != nil {
+        panic(err)
+    }
+    if _, err := io.Copy(w, f); err != nil {
+        panic(err)
+    }
+
+    zipWriter.Close()
+
+    return nil
+}
 
 func saveStringSliceToFile(filename string, input []string) error {
-
 
 	file, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 
@@ -132,11 +163,10 @@ func saveStringSliceToFile(filename string, input []string) error {
 	datawriter.Flush()
 	file.Close()
 
-        return err
+	return err
 }
 
-// 
+// function checks validity of XML
 func IsValidXML(input []string) bool {
-
- return true
+	return true
 }
