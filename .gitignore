@@ -1,4 +1,6 @@
 openmedia-minify
+data
+*.xml
 
 # Binaries for programs and plugins
 *.exe
