@@ -99,9 +99,40 @@ func Minify(inpath string, outpath string, file os.FileInfo) error {
 	}
 	
         // TODO: modded to a file here
-	fmt.Println(modded)
+	// fmt.Println(modded)
+        if inpath == outpath {
+          return errors.New("This would rewrite the original file. Input and output paths must differ.");
+          os.Exit(1)
+        }
+
+        err := saveStringSliceToFile(filepath.Join(outpath, file.Name()),modded)
+        if err != nil {
+          return errors.New("Failed to save file "+filepath.Join(outpath, file.Name()))
+        }
 
         return nil
+}
+
+
+func saveStringSliceToFile(filename string, input []string) error {
+
+
+	file, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+
+	if err != nil {
+		log.Fatalf("failed creating file: %s", err)
+	}
+
+	datawriter := bufio.NewWriter(file)
+
+	for _, data := range input {
+		_, _ = datawriter.WriteString(data)
+	}
+
+	datawriter.Flush()
+	file.Close()
+
+        return err
 }
 
 // 
