@@ -1,5 +1,6 @@
 openmedia-minify
 data
+tmp
 *.xml
 
 # Binaries for programs and plugins
