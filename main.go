@@ -19,6 +19,7 @@ import (
 
 	"golang.org/x/text/encoding/unicode"
 	"golang.org/x/text/transform"
+        "github.com/terminalstatic/go-xsd-validate"
 )
 
 // VERSION of openmedia-minify
@@ -96,9 +97,9 @@ func Minify(inpath string, outpath string, file os.FileInfo) error {
 		line := fmt.Sprintln(scanner.Text())
 
                 // FIX encoding line to UTF-8
-                if strings.Contains(line,`encoding="UTF-16"`) {
-                  line = strings.ReplaceAll(line,"UTF-16","UTF-8")
-                }
+                //if strings.Contains(line,`encoding="UTF-16"`) {
+                //  line = strings.ReplaceAll(line,"UTF-16","UTF-8")
+                //}
 
 		if (strings.Contains(line, `IsEmpty = "yes"`) && strings.Contains(line, "OM_FIELD")) || strings.Contains(line,"/OM_RECORD") {
                         //log.Println("skipping: "+line)
@@ -120,6 +121,13 @@ func Minify(inpath string, outpath string, file os.FileInfo) error {
 	if err != nil {
 		return errors.New("Failed to save file " + filepath.Join(outpath, new_filename+".xml"))
 	}
+
+
+        err = IsValidXML(filepath.Join(outpath, new_filename+".xml"))
+	if err != nil {
+          return errors.New("Resulting file is invalid: " + filepath.Join(outpath, new_filename+".xml") + " " + err.Error())
+	}
+
 
 	err = zipFile(filepath.Join(inpath, file.Name()), filepath.Join(outpath, new_filename+".zip"))
 	if err != nil {
@@ -227,6 +235,35 @@ func saveStringSliceToFile(filename string, input []string) error {
 }
 
 // function checks validity of XML
-func IsValidXML(input []string) bool {
-	return true
+func IsValidXML(inputFile string) error {
+        xsdvalidate.Init()
+	defer xsdvalidate.Cleanup()
+
+
+	xmlFile, err := os.Open(inputFile)
+	if err != nil {
+		panic(err)
+	}
+	defer xmlFile.Close()
+	inXml, err := ioutil.ReadAll(xmlFile)
+	if err != nil {
+		panic(err)
+	}
+        
+        _, err = xsdvalidate.NewXmlHandlerMem(inXml,xsdvalidate.ValidErrDefault)
+        if err != nil {
+		switch err.(type) {
+		case xsdvalidate.ValidationError:
+			//log.Println(err)
+			//log.Printf("Error in line: %d\n", err.(xsdvalidate.ValidationError).Errors[0].Line)
+			//log.Println(err.(xsdvalidate.ValidationError).Errors[0].Message)
+                        return err
+		default:
+			//log.Println(err)
+                        return err
+		}
+	}
+
+
+	return err
 }
