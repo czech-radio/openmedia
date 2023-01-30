@@ -141,7 +141,7 @@ func Minify(inpath string, outpath string, file os.FileInfo) error {
 	log.Println("Validating source file: " + filepath.Join(inpath, file.Name()))
 	err = IsValidXML(filepath.Join(inpath, file.Name()))
 	if err != nil {
-		return errors.New("Source file is no valid XML: " + filepath.Join(inpath, file.Name()) + " " + err.Error())
+		return errors.New("Source file is not valid XML: " + filepath.Join(inpath, file.Name()) + " " + err.Error())
 	}
 
 	log.Println("Validating destination file: " + filepath.Join(outpath, new_filename+".xml"))
