@@ -99,16 +99,22 @@ func Minify(inpath string, outpath string, file os.FileInfo) error {
         for scanner.Scan() {
 		line := fmt.Sprintln(scanner.Text())
 
-		if (strings.Contains(line, `IsEmpty = "yes"`) && strings.Contains(line, "OM_FIELD")) || strings.Contains(line, "/OM_RECORD") {
-			//log.Println("skipping: "+line)
+                // skip non-filled lines
+                // skip extra </OM_RECORD> lines
+                // skip duplicate document decalration
+		
+                if (strings.Contains(line, `IsEmpty = "yes"`) && strings.Contains(line, "OM_FIELD")) ||
+                strings.Contains(line, `</OM_RECORD>`) ||
+                (strings.Contains(line, `<?xml`) && counter != 0) {
 			skipped++
                         continue
 		} else {
 
 		  // FIX encoding line to UTF-8
-		  if counter == 0 {
-                    line = `<?xml version="1.0" encoding="UTF-8" standalone="no" ?>`
+		  if strings.Contains(line,"UTF-16") {
+                    line = strings.ReplaceAll(line,"UTF-16","UTF-8")
 		  }
+
                   counter++
 
                   modded = append(modded, line)
