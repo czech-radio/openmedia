@@ -22,7 +22,7 @@ import (
 )
 
 // VERSION of openmedia-minify
-const VERSION = "0.0.1"
+const VERSION = "0.0.2"
 
 func main() {
 
@@ -95,15 +95,12 @@ func Minify(inpath string, outpath string, file os.FileInfo) error {
 	for scanner.Scan() {
 		line := fmt.Sprintln(scanner.Text())
 
-		if strings.Contains(line, `IsEmpty = "yes"`) || line == "" {
-			continue
+		if (strings.Contains(line, `IsEmpty = "yes"`) && strings.Contains(line, "OM_FIELD")) || strings.Contains(line,"/OM_RECORD") {
+                        log.Println("skipping: "+line)
+                        continue
 		} else {
 			modded = append(modded, line)
 		}
-	}
-
-	if inpath == outpath {
-		return errors.New("This would rewrite the original file. Input and output paths must differ.")
 	}
 
 	// TODO: check validity of resulting XML file
