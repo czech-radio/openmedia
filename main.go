@@ -96,7 +96,7 @@ func Minify(inpath string, outpath string, file os.FileInfo) error {
 		line := fmt.Sprintln(scanner.Text())
 
 		if (strings.Contains(line, `IsEmpty = "yes"`) && strings.Contains(line, "OM_FIELD")) || strings.Contains(line,"/OM_RECORD") {
-                        log.Println("skipping: "+line)
+                        //log.Println("skipping: "+line)
                         continue
 		} else {
 			modded = append(modded, line)
