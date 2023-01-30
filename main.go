@@ -95,6 +95,11 @@ func Minify(inpath string, outpath string, file os.FileInfo) error {
 	for scanner.Scan() {
 		line := fmt.Sprintln(scanner.Text())
 
+                // FIX encoding line to UTF-8
+                if strings.Contains(line,`encoding="UTF-16"`) {
+                  line = strings.ReplaceAll(line,"UTF-16","UTF-8")
+                }
+
 		if (strings.Contains(line, `IsEmpty = "yes"`) && strings.Contains(line, "OM_FIELD")) || strings.Contains(line,"/OM_RECORD") {
                         //log.Println("skipping: "+line)
                         continue
