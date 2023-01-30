@@ -64,7 +64,7 @@ func ProcessFolder(input string, output string) error {
 	for _, file := range files {
 		err := Minify(input, output, file)
 		if err != nil {
-			log.Println(err.Error())
+			log.Println("Minifier error: " + err.Error())
 		}
 	}
 
@@ -94,36 +94,36 @@ func Minify(inpath string, outpath string, file os.FileInfo) error {
 	defer fptr.Close()
 
 	var modded []string
-        var counter int = 0
-        var skipped int = 0
-        for scanner.Scan() {
+	var counter int = 0
+	var skipped int = 0
+	for scanner.Scan() {
 		line := fmt.Sprintln(scanner.Text())
 
-                // skip non-filled lines
-                // skip extra </OM_RECORD> lines
-                // skip duplicate document decalration
-		
-                if (strings.Contains(line, `IsEmpty = "yes"`) && strings.Contains(line, "OM_FIELD")) ||
-                strings.Contains(line, `</OM_RECORD>`) ||
-                (strings.Contains(line, `<?xml`) && counter != 0) {
+		// skip non-filled lines
+		// skip extra </OM_RECORD> lines
+		// skip duplicate document decalration
+
+		if (strings.Contains(line, `IsEmpty = "yes"`) && strings.Contains(line, "OM_FIELD")) ||
+			strings.Contains(line, `</OM_RECORD>`) ||
+			(strings.Contains(line, `<?xml`) && counter != 0) {
 			skipped++
-                        continue
+			continue
 		} else {
 
-		  // FIX encoding line to UTF-8
-		  if strings.Contains(line,"UTF-16") {
-                    line = strings.ReplaceAll(line,"UTF-16","UTF-8")
-		  }
+			// FIX encoding line to UTF-8
+			if strings.Contains(line, "UTF-16") {
+				line = strings.ReplaceAll(line, "UTF-16", "UTF-8")
+			}
 
-                  counter++
+			counter++
 
-                  modded = append(modded, line)
+			modded = append(modded, line)
 		}
 
 	}
 
 	log.Println("Minifying: " + filepath.Join(inpath, file.Name()))
-        log.Printf("Document minified from %04d lines to %04d lines\n",skipped+counter,counter)
+	log.Printf("Document minified from %04d lines to %04d lines\n", skipped+counter, counter)
 
 	// TODO: check validity of resulting XML file
 
@@ -141,13 +141,13 @@ func Minify(inpath string, outpath string, file os.FileInfo) error {
 	log.Println("Validating source file: " + filepath.Join(inpath, file.Name()))
 	err = IsValidXML(filepath.Join(inpath, file.Name()))
 	if err != nil {
-		return errors.New("Source file is invalid: " + filepath.Join(inpath, file.Name()) + " " + err.Error())
+		return errors.New("Source file is no valid XML: " + filepath.Join(inpath, file.Name()) + " " + err.Error())
 	}
 
-	log.Println("Validating destination file: " + filepath.Join(outpath, new_filename))
+	log.Println("Validating destination file: " + filepath.Join(outpath, new_filename+".xml"))
 	err = IsValidXML(filepath.Join(outpath, new_filename+".xml"))
 	if err != nil {
-		return errors.New("Resulting file is invalid: " + filepath.Join(outpath, new_filename+".xml") + " " + err.Error())
+		return errors.New("Resulting file is not valid XML: " + filepath.Join(outpath, new_filename+".xml") + " " + err.Error())
 	}
 
 	err = zipFile(filepath.Join(inpath, file.Name()), filepath.Join(outpath, new_filename+".zip"))
@@ -203,6 +203,11 @@ func getDateFromFile(filepath string) (Weekday string, Year, Month, Day, Week in
 // zipFile zips incoming file to a new zipfile
 func zipFile(input_filename string, output_filename string) error {
 
+	// check if file exist, if yes remove it
+	if _, err := os.Stat(input_filename); err == nil {
+		os.Remove(input_filename)
+	}
+
 	_, filename := filepath.Split(input_filename)
 	//name := strings.TrimSuffix(filename, filepath.Ext(filename))
 
@@ -237,6 +242,11 @@ func zipFile(input_filename string, output_filename string) error {
 
 // saveStringSliceToFile saves given string slice to a file
 func saveStringSliceToFile(filename string, input []string) error {
+
+	// check if file exist, if yes remove it
+	if _, err := os.Stat(filename); err == nil {
+		os.Remove(filename)
+	}
 
 	file, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 
