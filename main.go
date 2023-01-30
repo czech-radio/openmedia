@@ -64,7 +64,7 @@ func ProcessFolder(input string, output string) error {
 	for _, file := range files {
 		err := Minify(input, output, file)
 		if err != nil {
-			log.Println("Warn: " + err.Error())
+			log.Println(err.Error())
 		}
 	}
 
@@ -94,21 +94,30 @@ func Minify(inpath string, outpath string, file os.FileInfo) error {
 	defer fptr.Close()
 
 	var modded []string
-	for scanner.Scan() {
+        var counter int = 0
+        var skipped int = 0
+        for scanner.Scan() {
 		line := fmt.Sprintln(scanner.Text())
-
-		// FIX encoding line to UTF-8
-		//if strings.Contains(line,`encoding="UTF-16"`) {
-		//  line = strings.ReplaceAll(line,"UTF-16","UTF-8")
-		//}
 
 		if (strings.Contains(line, `IsEmpty = "yes"`) && strings.Contains(line, "OM_FIELD")) || strings.Contains(line, "/OM_RECORD") {
 			//log.Println("skipping: "+line)
-			continue
+			skipped++
+                        continue
 		} else {
-			modded = append(modded, line)
+
+		  // FIX encoding line to UTF-8
+		  if counter == 0 {
+                    line = `<?xml version="1.0" encoding="UTF-8" standalone="no" ?>`
+		  }
+                  counter++
+
+                  modded = append(modded, line)
 		}
+
 	}
+
+	log.Println("Minifying: " + filepath.Join(inpath, file.Name()))
+        log.Printf("Document minified from %04d lines to %04d lines\n",skipped+counter,counter)
 
 	// TODO: check validity of resulting XML file
 
@@ -123,11 +132,13 @@ func Minify(inpath string, outpath string, file os.FileInfo) error {
 		return errors.New("Failed to save file " + filepath.Join(outpath, new_filename+".xml"))
 	}
 
+	log.Println("Validating source file: " + filepath.Join(inpath, file.Name()))
 	err = IsValidXML(filepath.Join(inpath, file.Name()))
 	if err != nil {
 		return errors.New("Source file is invalid: " + filepath.Join(inpath, file.Name()) + " " + err.Error())
 	}
 
+	log.Println("Validating destination file: " + filepath.Join(outpath, new_filename))
 	err = IsValidXML(filepath.Join(outpath, new_filename+".xml"))
 	if err != nil {
 		return errors.New("Resulting file is invalid: " + filepath.Join(outpath, new_filename+".xml") + " " + err.Error())
@@ -233,7 +244,6 @@ func saveStringSliceToFile(filename string, input []string) error {
 		_, _ = datawriter.WriteString(data)
 	}
 
-	log.Println("Minifying: " + filename)
 	datawriter.Flush()
 	file.Close()
 
