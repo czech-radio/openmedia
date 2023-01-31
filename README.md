@@ -29,4 +29,4 @@ go build
 
 ## Errors
 
-There is a validation process of both input and output files. It can occasionally produces error. The file will be marked `_MALFORMED` in filename.
+There is a validation process of both input and output files. It can occasionally produce an error. Is such case resulting file will be marked as `_MALFORMED` in filename.
