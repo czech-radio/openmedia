@@ -1,6 +1,10 @@
 # openmedia-minify
 
-Remove unnecessary or empty field from openmedia files.
+
+_Remove unnecessary or empty field from openmedia files._
+
+[![build](https://github.com/czech-radio/openmedia-minify/actions/workflows/main.yml/badge.svg)](https://github.com/czech-radio/openmedia-minify/actions/workflows/main.yml)
+
 
 ## How it works?
 
