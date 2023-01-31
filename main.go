@@ -61,12 +61,19 @@ func ProcessFolder(input string, output string) error {
 		return err
 	}
 
-	for _, file := range files {
-		err := Minify(input, output, file)
+	total := len(files)
+	failed, passed := 0, 0
+	for index, file := range files {
+		err := Minify(input, output, file, index+1, total)
 		if err != nil {
 			log.Println("Minifier error: " + err.Error())
+			failed++
+		} else {
+			passed++
 		}
 	}
+
+	log.Printf("Minifier finished, PASS/FAIL/TOTAL: %d/%d/%d", passed, failed, total)
 
 	return err
 
@@ -80,7 +87,7 @@ func ToXML(input_string string) string {
 }
 
 // Minify reduces empty fields (whole lines) from XML file
-func Minify(inpath string, outpath string, file os.FileInfo) error {
+func Minify(inpath string, outpath string, file os.FileInfo, index int, total int) error {
 
 	fext := filepath.Ext(file.Name())
 
@@ -139,20 +146,20 @@ func Minify(inpath string, outpath string, file os.FileInfo) error {
 
 	err := saveStringSliceToFile(filepath.Join(outpath, new_filename+".xml"), modded)
 	if err != nil {
-		log.Println("Minifying FAILED!")
+		log.Printf("Minifying FAILED! %d/%d\n", index, total)
 		return errors.New("Failed to save file " + filepath.Join(outpath, new_filename+".xml"))
 	}
 
 	err = zipFile(filepath.Join(inpath, file.Name()), filepath.Join(outpath, new_filename+".zip"))
 	if err != nil {
-		log.Println("Minifying FAILED!")
+		log.Printf("Minifying FAILED! %d/%d\n", index, total)
 		return errors.New("Failed to create zip archive: " + filepath.Join(outpath, new_filename+".zip"))
 	}
 
 	log.Println("Validating source file: " + filepath.Join(inpath, file.Name()))
 	err = IsValidXML(filepath.Join(inpath, file.Name()))
 	if err != nil {
-		log.Println("Minifying FAILED!")
+		log.Printf("Minifying FAILED! %d/%d\n", index, total)
 		return errors.New("Source file is not valid XML: " + filepath.Join(inpath, file.Name()) + " " + err.Error())
 	}
 
@@ -167,7 +174,7 @@ func Minify(inpath string, outpath string, file os.FileInfo) error {
 		return errors.New("Resulting file is not valid XML: " + filepath.Join(outpath, new_filename+".xml") + " " + err.Error())
 	}
 
-	log.Println("Minifying PASSED!")
+	log.Printf("Minifying PASSED! %d/%d\n", index, total)
 
 	return nil
 }
