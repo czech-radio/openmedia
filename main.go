@@ -313,6 +313,8 @@ func IsValidXML(inputFile string) error {
 		panic(err)
 	}
 	defer xmlFile.Close()
+	
+	// this line is quite memory hungry, can cause crashes
 	inXml, err := ioutil.ReadAll(xmlFile)
 	if err != nil {
 		panic(err)
