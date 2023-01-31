@@ -103,9 +103,8 @@ func Minify(inpath string, outpath string, file os.FileInfo) error {
 		// skip extra </OM_RECORD> lines
 		// skip duplicate document decalration
 
-		if (strings.Contains(line, `IsEmpty = "yes"`) && strings.Contains(line, "OM_FIELD")) ||
-			strings.Contains(line, `</OM_RECORD>`) ||
-			(strings.Contains(line, `<?xml`) && counter != 0) {
+		if (strings.Contains(line, `IsEmpty = "yes"`) && strings.Contains(line, "OM_FIELD") && !strings.Contains(line,"OM_HEADER") && !strings.Contains(line,"OM_OBJECT") && !strings.Contains(line,"OM_RECORD")) ||
+			(strings.Contains(line, `<?xml`) && counter != 0) { 
 			skipped++
 			continue
 		} else {
