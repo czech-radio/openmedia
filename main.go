@@ -185,7 +185,7 @@ func markFileCorrupt(input string) error {
 	dir, corruptFn := filepath.Split(input)
 	corruptFn = strings.TrimSuffix(corruptFn, filepath.Ext(corruptFn))
 	corruptFn = corruptFn + "_MALFORMED.xml"
-	// check if file exist, if yes remove it
+	// check if file exist, if yes go on renaming it
 	_, err := os.Stat(input)
 	if err == nil {
 		os.Rename(input, filepath.Join(dir, corruptFn))
