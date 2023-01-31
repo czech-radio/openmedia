@@ -13,7 +13,7 @@ openmedia-minifiy -i /path/to/source/folder -o /path/to/destination
 
 When program runs it creates two files for each `RD_*.xml` file in output folder. Two files are:
 - 1. minified version of an original XML in `UTF-8` format named: `RD_00-05_Plus_Friday_W02_2023_01_13.xml`
-- 2. zipped original in `UTF-16` named same as 1. (inside of zip archive is an original file with original name): `RD_00-05_Plus_W02_Friday_2023_01_13.zip`
+- 2. zipped original in `UTF-16` named same as 1. (inside of zip archive is an original file with original name): `RD_00-05_Plus_Friday_W02_2023_01_13.zip`
 
 The date and name-day is derived from XML timetag and it is the same as given folder on `ANNOVA` disk. Input folder remains unchanged.
 
