@@ -1,7 +1,7 @@
 # openmedia-minify
 
 
-_Remove unnecessary or empty field from openmedia files._
+_Remove unnecessary or empty fields from openmedia files._
 
 [![build](https://github.com/czech-radio/openmedia-minify/actions/workflows/main.yml/badge.svg)](https://github.com/czech-radio/openmedia-minify/actions/workflows/main.yml)
 
@@ -53,3 +53,5 @@ go build
 ## Errors
 
 There is a validation process of both input and output files. It can occasionally produce an error. Is such case resulting file will be marked as `_MALFORMED` in filename.
+
+Process can be quite memory hungry. It can make use of lot of ram in host computer, occassioanlly even crash it.
