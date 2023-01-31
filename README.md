@@ -29,4 +29,4 @@ go build
 
 ## Errors
 
-There is a validation process of both input and output files. It can occasionally produces error. The file will mark CORRUPT in filname (TODO).
+There is a validation process of both input and output files. It can occasionally produces error. The file will be marked `_MALFORMED` in filename.
