@@ -102,8 +102,8 @@ func Minify(inpath string, outpath string, file os.FileInfo) error {
 		// skip non-filled lines, while holding structure ie. OM_FIELD, OM_OBJECT etc tags
 		// skip duplicate document declaration in file (occasional) `<?xml...`
 
-		if (strings.Contains(line, `IsEmpty = "yes"`) && strings.Contains(line, "OM_FIELD") && !strings.Contains(line,"OM_HEADER") && !strings.Contains(line,"OM_OBJECT") && !strings.Contains(line,"OM_RECORD")) ||
-			(strings.Contains(line, `<?xml`) && counter != 0) { 
+		if (strings.Contains(line, `IsEmpty = "yes"`) && strings.Contains(line, "OM_FIELD") && !strings.Contains(line, "OM_HEADER") && !strings.Contains(line, "OM_OBJECT") && !strings.Contains(line, "OM_RECORD")) ||
+			(strings.Contains(line, `<?xml`) && counter != 0) {
 			skipped++
 			continue
 		} else {
@@ -121,7 +121,7 @@ func Minify(inpath string, outpath string, file os.FileInfo) error {
 	}
 
 	log.Println("Minifying: " + filepath.Join(inpath, file.Name()))
-	log.Printf("Document minified from %04d lines to %04d lines\n", skipped+counter, counter)
+	log.Printf("Document minified from %d lines to %d lines, ratio: %f%%\n", skipped+counter, counter, ((float32)(counter)/((float32)(skipped)+(float32)(counter)))*100.0)
 
 	// TODO: check validity of resulting XML file
 
@@ -133,30 +133,35 @@ func Minify(inpath string, outpath string, file os.FileInfo) error {
 
 	err := saveStringSliceToFile(filepath.Join(outpath, new_filename+".xml"), modded)
 	if err != nil {
+		log.Println("Minifying FAILED!")
 		return errors.New("Failed to save file " + filepath.Join(outpath, new_filename+".xml"))
 	}
 
 	err = zipFile(filepath.Join(inpath, file.Name()), filepath.Join(outpath, new_filename+".zip"))
 	if err != nil {
+		log.Println("Minifying FAILED!")
 		return errors.New("Failed to create zip archive: " + filepath.Join(outpath, new_filename+".zip"))
 	}
 
 	log.Println("Validating source file: " + filepath.Join(inpath, file.Name()))
 	err = IsValidXML(filepath.Join(inpath, file.Name()))
 	if err != nil {
+		log.Println("Minifying FAILED!")
 		return errors.New("Source file is not valid XML: " + filepath.Join(inpath, file.Name()) + " " + err.Error())
 	}
 
 	log.Println("Validating destination file: " + filepath.Join(outpath, new_filename+".xml"))
 	err = IsValidXML(filepath.Join(outpath, new_filename+".xml"))
 	if err != nil {
-                err2 := markFileCorrupt(filepath.Join(outpath, new_filename+".xml"))
-                if err2 != nil{
-                  log.Println("Error renaming file: "+filepath.Join(outpath, new_filename+".xml"))
-                }
-                return errors.New("Resulting file is not valid XML: " + filepath.Join(outpath, new_filename+".xml") + " " + err.Error())
+		err2 := markFileCorrupt(filepath.Join(outpath, new_filename+".xml"))
+		if err2 != nil {
+			log.Println("Error renaming file: " + filepath.Join(outpath, new_filename+".xml"))
+		}
+		log.Println("Minifying FAILED!")
+		return errors.New("Resulting file is not valid XML: " + filepath.Join(outpath, new_filename+".xml") + " " + err.Error())
 	}
 
+	log.Println("Minifying PASSED!")
 
 	return nil
 }
@@ -164,16 +169,16 @@ func Minify(inpath string, outpath string, file os.FileInfo) error {
 // markFileCorrupt renames badly fromat file to *_MALFORMED filename
 func markFileCorrupt(input string) error {
 
-        dir, corruptFn := filepath.Split(input)
-        corruptFn = strings.TrimSuffix(corruptFn,filepath.Ext(corruptFn))
-        corruptFn = corruptFn + "_MALFORMED.xml"
+	dir, corruptFn := filepath.Split(input)
+	corruptFn = strings.TrimSuffix(corruptFn, filepath.Ext(corruptFn))
+	corruptFn = corruptFn + "_MALFORMED.xml"
 	// check if file exist, if yes remove it
-	_, err := os.Stat(input);
-        if err == nil {
-		os.Rename(input,filepath.Join(dir,corruptFn))
+	_, err := os.Stat(input)
+	if err == nil {
+		os.Rename(input, filepath.Join(dir, corruptFn))
 	}
 
-        return err
+	return err
 
 }
 
