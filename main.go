@@ -204,8 +204,8 @@ func getDateFromFile(filepath string) (Weekday string, Year, Month, Day, Week in
 func zipFile(input_filename string, output_filename string) error {
 
 	// check if file exist, if yes remove it
-	if _, err := os.Stat(input_filename); err == nil {
-		os.Remove(input_filename)
+	if _, err := os.Stat(output_filename); err == nil {
+		os.Remove(output_filename)
 	}
 
 	_, filename := filepath.Split(input_filename)
