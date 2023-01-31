@@ -99,9 +99,8 @@ func Minify(inpath string, outpath string, file os.FileInfo) error {
 	for scanner.Scan() {
 		line := fmt.Sprintln(scanner.Text())
 
-		// skip non-filled lines
-		// skip extra </OM_RECORD> lines
-		// skip duplicate document decalration
+		// skip non-filled lines, while holding structure ie. OM_FIELD, OM_OBJECT etc tags
+		// skip duplicate document declaration in file (occasional) `<?xml...`
 
 		if (strings.Contains(line, `IsEmpty = "yes"`) && strings.Contains(line, "OM_FIELD") && !strings.Contains(line,"OM_HEADER") && !strings.Contains(line,"OM_OBJECT") && !strings.Contains(line,"OM_RECORD")) ||
 			(strings.Contains(line, `<?xml`) && counter != 0) { 
@@ -137,6 +136,11 @@ func Minify(inpath string, outpath string, file os.FileInfo) error {
 		return errors.New("Failed to save file " + filepath.Join(outpath, new_filename+".xml"))
 	}
 
+	err = zipFile(filepath.Join(inpath, file.Name()), filepath.Join(outpath, new_filename+".zip"))
+	if err != nil {
+		return errors.New("Failed to create zip archive: " + filepath.Join(outpath, new_filename+".zip"))
+	}
+
 	log.Println("Validating source file: " + filepath.Join(inpath, file.Name()))
 	err = IsValidXML(filepath.Join(inpath, file.Name()))
 	if err != nil {
@@ -146,15 +150,31 @@ func Minify(inpath string, outpath string, file os.FileInfo) error {
 	log.Println("Validating destination file: " + filepath.Join(outpath, new_filename+".xml"))
 	err = IsValidXML(filepath.Join(outpath, new_filename+".xml"))
 	if err != nil {
-		return errors.New("Resulting file is not valid XML: " + filepath.Join(outpath, new_filename+".xml") + " " + err.Error())
+                err2 := markFileCorrupt(filepath.Join(outpath, new_filename+".xml"))
+                if err2 != nil{
+                  log.Println("Error renaming file: "+filepath.Join(outpath, new_filename+".xml"))
+                }
+                return errors.New("Resulting file is not valid XML: " + filepath.Join(outpath, new_filename+".xml") + " " + err.Error())
 	}
 
-	err = zipFile(filepath.Join(inpath, file.Name()), filepath.Join(outpath, new_filename+".zip"))
-	if err != nil {
-		return errors.New("Failed to create zip archive: " + filepath.Join(outpath, new_filename+".zip"))
-	}
 
 	return nil
+}
+
+// markFileCorrupt renames badly fromat file to *_MALFORMED filename
+func markFileCorrupt(input string) error {
+
+        dir, corruptFn := filepath.Split(input)
+        corruptFn = strings.TrimSuffix(corruptFn,filepath.Ext(corruptFn))
+        corruptFn = corruptFn + "_MALFORMED.xml"
+	// check if file exist, if yes remove it
+	_, err := os.Stat(input);
+        if err == nil {
+		os.Rename(input,filepath.Join(dir,corruptFn))
+	}
+
+        return err
+
 }
 
 // openmedia-check function to get date from xml file
