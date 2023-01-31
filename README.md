@@ -17,6 +17,13 @@ When program runs it creates two files for each `RD_*.xml` file in output folder
 
 The date and name-day is derived from XML timetag and it is the same as given folder on `ANNOVA` disk. Input folder remains unchanged.
 
+## Dependencies
+
+Program requres libxml2-dev package to compile. Debian install:
+
+```
+apt-get install libxml2-dev
+```
 
 ## Errors
 
