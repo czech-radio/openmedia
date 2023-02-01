@@ -54,18 +54,8 @@ go build
 
 There is a validation process of both input and output files. It can occasionally produce an error. Is such case resulting file will be marked as `_MALFORMED` in filename.
 
-Process can be quite memory hungry. It can make use of lot of ram in host computer, occassioanlly even crash it.
 
-In such case you will see in last line of log:
-```
-Killed
-```
 
-and `dmesg` will tell you:
-```
-[1231878.090263] Out of memory: Kill process 23210 (openmedia-minif) score 879 or sacrifice child
-[1231878.095193] Killed process 23210 (openmedia-minif) total-vm:4074528kB, anon-rss:3547108kB, file-rss:0kB, shmem-rss:0kB
-[1231878.370667] oom_reaper: reaped process 23210 (openmedia-minif), now anon-rss:0kB, file-rss:0kB, shmem-rss:0kB
-```
 
-TODO: better memory handling / freeing inbetween file validation (memory-hungry `ioutil.readAll`)
+
+TODO: better memory handling, fixed by (b20445b)[https://github.com/czech-radio/openmedia-minify/commit/b20445b429d019a6392fb6738ea79c188a8878a7]
