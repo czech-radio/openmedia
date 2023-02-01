@@ -58,4 +58,4 @@ There is a validation process of both input and output files. It can occasionall
 
 
 
-TODO: better memory handling, fixed by (b20445b)[https://github.com/czech-radio/openmedia-minify/commit/b20445b429d019a6392fb6738ea79c188a8878a7]
+TODO: better memory handling, fixed by [b20445b](https://github.com/czech-radio/openmedia-minify/commit/b20445b429d019a6392fb6738ea79c188a8878a7)
