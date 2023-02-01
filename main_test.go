@@ -14,7 +14,7 @@ func TestProcessFolder(t *testing.T) {
 
 	err := ProcessFolder(input_path, output_path)
 	if err != nil {
-		t.Error("run ProcessFloder FAILED!")
+		t.Error("run ProcessFolder FAILED!")
 	}
 
 }
