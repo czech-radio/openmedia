@@ -15,9 +15,9 @@ There are two flags needed to run the program `-i` for input folder and `-o` for
 openmedia-minifiy -i /path/to/source/folder -o /path/to/destination
 ```
 
-When program runs it creates two files in output folder for each `RD_*.xml` file in input folder. Two files are:
-- minified (stripped down) XML version of original in `UTF-8` format. It is named: `RD_00-05_Plus_Friday_W02_2023_01_13.xml`
-- zipped XML original in `UTF-16` named similarly (inside of zip archive is the original file with its original name): `RD_00-05_Plus_Friday_W02_2023_01_13.zip`
+When program runs it creates two files in output folder. Two files are:
+- zipped all minified (stripped down) version of original XML in `UTF-8` format. It is named: `2023_W02_MINIFIED.zip`
+- zipped all XML originals in `UTF-16` named similarly (inside of zip archive there are all of the original files with its original file-names): `2023_W02_ORIGINAL.zip`
 
 The date and name-day is derived from XML timetag and it is the same as given folder on `ANNOVA` disk. Input folder remains unchanged.
 
