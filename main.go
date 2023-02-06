@@ -65,14 +65,14 @@ func ProcessFolder(input string, output string) error {
 	}
 
 	// minifying loop //////////////////////////////////////////////////////////////////////////
-	var year, weekday int
+	var year, week int
 	total := len(files)
 	failed, passed := 0, 0
 	var passedFiles []string
 	var minifiedFilename string
 
 	for index, file := range files {
-		year, weekday, minifiedFilename, err = Minify(input, output, file, index+1, total)
+		year, week, minifiedFilename, err = Minify(input, output, file, index+1, total)
 		if err != nil {
 			log.Println("Minifier error: " + err.Error())
 			failed++
@@ -87,8 +87,8 @@ func ProcessFolder(input string, output string) error {
 	// zipping minified versions here /////////////////////////////////////////////////////////
 	log.Printf("Zipping minified, no. of files: %d", passed)
 
-	tmp_folder := filepath.Join("/tmp", fmt.Sprintf("%d_W%02d", year, weekday))
-	newFilename := fmt.Sprintf("%d_W%02d_MINIFIED", year, weekday) + ".zip"
+	tmp_folder := filepath.Join("/tmp", fmt.Sprintf("%d_W%02d", year, week))
+	newFilename := fmt.Sprintf("%d_W%02d_MINIFIED", year, week) + ".zip"
 
 	// check if file exist, if yes remove it
 	if _, err := os.Stat(tmp_folder); err == nil {
@@ -222,7 +222,7 @@ func Minify(inpath string, outpath string, file os.FileInfo, index int, total in
 
 	log.Printf("Minifying PASSED! %d/%d\n", index, total)
 
-	return year, month, fmt.Sprintf(new_filename + ".xml"), nil
+	return year, week, fmt.Sprintf(new_filename + ".xml"), nil
 }
 
 // markFileCorrupt renames badly fromat file to *_MALFORMED filename
