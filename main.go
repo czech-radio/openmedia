@@ -119,7 +119,7 @@ func ProcessFolder(input string, output string) error {
 
 	// zipping originals here /////////////////////////////////////////////////////////////////
 	log.Printf("Zipping originals, no. of files: %d", total)
-	newFilename = fmt.Sprintf("%d_W%02d_ORIGINAL", year, weekday) + ".zip"
+	newFilename = fmt.Sprintf("%d_W%02d_ORIGINAL", year, week) + ".zip"
 	err = zipFolder(input, filepath.Join(output, newFilename))
 
 	if err != nil {
