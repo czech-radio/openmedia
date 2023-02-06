@@ -61,21 +61,72 @@ func ProcessFolder(input string, output string) error {
 		return err
 	}
 
+	// minifying loop //////////////////////////////////////////////////////////////////////////
+	var year, weekday int
 	total := len(files)
 	failed, passed := 0, 0
-	for index, file := range files {
-		err := Minify(input, output, file, index+1, total)
+	var passedFiles []string
+        var minifiedFilename string
+	
+        for index, file := range files {
+                year, weekday, minifiedFilename, err = Minify(input, output, file, index+1, total)
 		if err != nil {
 			log.Println("Minifier error: " + err.Error())
 			failed++
 		} else {
+			passedFiles = append(passedFiles, minifiedFilename)
 			passed++
 		}
 	}
 
 	log.Printf("Minifier finished, PASS/FAIL/TOTAL: %d/%d/%d", passed, failed, total)
 
-	return err
+
+
+	// zipping minified versions here /////////////////////////////////////////////////////////
+	log.Printf("Zipping minified, no of files: %d", passed)
+
+        tmp_folder := filepath.Join("/tmp", fmt.Sprintf("%d_W%02d",year,weekday))
+	newFilename := fmt.Sprintf("%d_W%02d_MINIFIED", year, weekday)+".zip"
+
+	// check if file exist, if yes remove it
+	if _, err := os.Stat(tmp_folder); err == nil {
+		os.Remove(tmp_folder)
+	}
+        
+        // create folder in temp folder
+        err = os.Mkdir(tmp_folder, 0777)
+        if err != nil {
+                return err
+        }
+
+        //move passed files to tmp folder
+        for _, file := range passedFiles {
+            err = Move(filepath.Join(output,file),filepath.Join(tmp_folder,file))
+             if err != nil {
+               log.Printf("Moving file from %s to %s FAILED!: %s\n",filepath.Join(output,file),filepath.Join(tmp_folder,file),err.Error())
+                return err
+              }
+        }
+
+	err = zipFolder(tmp_folder, filepath.Join(output,newFilename))
+
+	if err != nil {
+		log.Printf("Zipping minified results FAILED!\n")
+		return errors.New("Failed to create zip archive: " + newFilename)
+	}
+
+	// zipping originals here /////////////////////////////////////////////////////////////////
+	log.Printf("Zipping originals, no of files: %d", total)
+	newFilename = filepath.Join(output, fmt.Sprintf("%d_W%02d_ORIGINAL", year, weekday)+".zip")
+	err = zipFolder(input, filepath.Join(output,newFilename))
+
+	if err != nil {
+          log.Printf("Zipping originals FAILED!: %s\n", err)
+		return errors.New("Failed to create zip archive: " + newFilename)
+	}
+
+	return nil
 
 }
 
@@ -87,12 +138,12 @@ func ToXML(input_string string) string {
 }
 
 // Minify reduces empty fields (whole lines) from XML file
-func Minify(inpath string, outpath string, file os.FileInfo, index int, total int) error {
+func Minify(inpath string, outpath string, file os.FileInfo, index int, total int) (Year, Month int, MinifiedFilename string, Error error) {
 
 	fext := filepath.Ext(file.Name())
 
 	if file.IsDir() || fext != ".xml" || !strings.Contains(file.Name(), "RD") {
-		return errors.New("Skipping folder, non-XML file or non-RD file")
+		return 0, 0, "n/a", errors.New("Skipping folder, non-XML file or non-RD file")
 	}
 
 	fptr, _ := os.Open(filepath.Join(inpath, file.Name()))
@@ -147,20 +198,14 @@ func Minify(inpath string, outpath string, file os.FileInfo, index int, total in
 	err := saveStringSliceToFile(filepath.Join(outpath, new_filename+".xml"), modded)
 	if err != nil {
 		log.Printf("Minifying FAILED! %d/%d\n", index, total)
-		return errors.New("Failed to save file " + filepath.Join(outpath, new_filename+".xml"))
-	}
-
-	err = zipFile(filepath.Join(inpath, file.Name()), filepath.Join(outpath, new_filename+".zip"))
-	if err != nil {
-		log.Printf("Minifying FAILED! %d/%d\n", index, total)
-		return errors.New("Failed to create zip archive: " + filepath.Join(outpath, new_filename+".zip"))
+		return 0, 0, "n/a",  errors.New("Failed to save file " + filepath.Join(outpath, new_filename+".xml"))
 	}
 
 	log.Println("Validating source file: " + filepath.Join(inpath, file.Name()))
 	err = IsValidXML(filepath.Join(inpath, file.Name()))
 	if err != nil {
 		log.Printf("Minifying FAILED! %d/%d\n", index, total)
-		return errors.New("Source file is not valid XML: " + filepath.Join(inpath, file.Name()) + " " + err.Error())
+		return 0, 0, "n/a", errors.New("Source file is not valid XML: " + filepath.Join(inpath, file.Name()) + " " + err.Error())
 	}
 
 	log.Println("Validating destination file: " + filepath.Join(outpath, new_filename+".xml"))
@@ -171,12 +216,12 @@ func Minify(inpath string, outpath string, file os.FileInfo, index int, total in
 			log.Println("Error renaming file: " + filepath.Join(outpath, new_filename+".xml"))
 		}
 		log.Println("Minifying FAILED!")
-		return errors.New("Resulting file is not valid XML: " + filepath.Join(outpath, new_filename+".xml") + " " + err.Error())
+		return 0, 0, "n/a",errors.New("Resulting file is not valid XML: " + filepath.Join(outpath, new_filename+".xml") + " " + err.Error())
 	}
 
 	log.Printf("Minifying PASSED! %d/%d\n", index, total)
 
-	return nil
+	return year, month, fmt.Sprintf(new_filename+".xml") , nil
 }
 
 // markFileCorrupt renames badly fromat file to *_MALFORMED filename
@@ -193,6 +238,46 @@ func markFileCorrupt(input string) error {
 
 	return err
 
+}
+
+// helper Move function
+func Move(source, destination string) error {
+	err := os.Rename(source, destination)
+	if err != nil && strings.Contains(err.Error(), "invalid cross-device link") {
+		return moveCrossDevice(source, destination)
+	}
+	return err
+}
+
+// helper weird error fix
+func moveCrossDevice(source, destination string) error {
+	src, err := os.Open(source)
+	if err != nil {
+		return err
+	}
+	dst, err := os.Create(destination)
+	if err != nil {
+		src.Close()
+		return err
+	}
+	_, err = io.Copy(dst, src)
+	src.Close()
+	dst.Close()
+	if err != nil {
+		return err
+	}
+	fi, err := os.Stat(source)
+	if err != nil {
+		os.Remove(destination)
+		return err
+	}
+	err = os.Chmod(destination, fi.Mode())
+	if err != nil {
+		os.Remove(destination)
+		return err
+	}
+	os.Remove(source)
+	return nil
 }
 
 // openmedia-check function to get date from xml file
@@ -238,38 +323,46 @@ func getDateFromFile(filepath string) (Weekday string, Year, Month, Day, Week in
 }
 
 // zipFile zips incoming file to a new zipfile
-func zipFile(input_filename string, output_filename string) error {
+func zipFolder(input_folder string, output_filename string) error {
 
 	// check if file exist, if yes remove it
 	if _, err := os.Stat(output_filename); err == nil {
 		os.Remove(output_filename)
 	}
 
-	_, filename := filepath.Split(input_filename)
+	//_, filename := filepath.Split(input_folder)
 	//name := strings.TrimSuffix(filename, filepath.Ext(filename))
 
 	archive, err := os.Create(output_filename)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	defer archive.Close()
 	zipWriter := zip.NewWriter(archive)
 
-	// reader
-	f, err := os.Open(input_filename)
+	files, err := ioutil.ReadDir(input_folder)
 	if err != nil {
-		panic(err)
+		return err
 	}
-	defer f.Close()
 
-	log.Println("Zipping: " + output_filename)
-	// writer
-	w, err := zipWriter.Create(filename)
-	if err != nil {
-		panic(err)
-	}
-	if _, err := io.Copy(w, f); err != nil {
-		panic(err)
+	for _, file := range files {
+
+		// reader
+		f, err := os.Open(filepath.Join(input_folder, file.Name()))
+		if err != nil {
+			return err
+		}
+		defer f.Close()
+
+		log.Println("Zipping: " + file.Name())
+		// writer
+		w, err := zipWriter.Create(file.Name())
+		if err != nil {
+			return err
+		}
+		if _, err := io.Copy(w, f); err != nil {
+			return err
+		}
 	}
 
 	zipWriter.Close()
