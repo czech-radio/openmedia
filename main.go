@@ -23,7 +23,7 @@ import (
 )
 
 // VERSION of openmedia-minify
-const VERSION = "0.0.4"
+const VERSION = "0.0.5"
 
 func main() {
 
