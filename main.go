@@ -64,6 +64,19 @@ func ProcessFolder(input string, output string) error {
 		return err
 	}
 
+	// create tmp folder ///////////////////////////////////////////////////////////////////////////////////////////
+        t := time.Now();
+        tmp_folder := filepath.Join("/tmp", fmt.Sprintf("openmedia-minify-tmp_%s", t.Format("20060102") ))
+	// check if file exist, if yes remove it
+	if _, err := os.Stat(tmp_folder); err == nil {
+		os.RemoveAll(tmp_folder)
+	}
+
+	err = os.Mkdir(tmp_folder, 0777)
+	if err != nil {
+		log.Printf("Creating tmp directory failed: %s\n", err.Error())
+	}
+
 	// minifying loop //////////////////////////////////////////////////////////////////////////
 	var year, week int
 	total := len(files)
@@ -72,7 +85,7 @@ func ProcessFolder(input string, output string) error {
 	var minifiedFilename string
 
 	for index, file := range files {
-		year, week, minifiedFilename, err = Minify(input, output, file, index+1, total)
+		year, week, minifiedFilename, err = Minify(input, tmp_folder, file, index+1, total)
 		if err != nil {
 			log.Println("Minifier error: " + err.Error())
 			failed++
@@ -110,7 +123,6 @@ func ProcessFolder(input string, output string) error {
 	}
 	*/
 
-	tmp_folder := filepath.Join("/tmp", fmt.Sprintf("%d_W%02d", year, week))
 	newFilename := fmt.Sprintf("%d_W%02d_MINIFIED", year, week) + ".zip"
 	err = zipFolder(tmp_folder, filepath.Join(output, newFilename))
 	if err != nil {
@@ -204,21 +216,10 @@ func Minify(inpath string, outpath string, file os.FileInfo, index int, total in
 
 	new_filename := beginning + fmt.Sprintf("%s_W%02d_%04d_%02d_%02d", weekday, week, year, month, day)
 
-	// create tmp folder ///////////////////////////////////////////////////////////////////////////////////////////
-	tmp_folder := filepath.Join("/tmp", fmt.Sprintf("%d_W%02d", year, week))
-	// check if file exist, if yes remove it
-	if _, err := os.Stat(tmp_folder); err == nil {
-		os.RemoveAll(tmp_folder)
-	}
-
-	err := os.Mkdir(tmp_folder, 0777)
-	if err != nil {
-		log.Printf("Creating tmp directory failed: %s\n", err.Error())
-	}
-	err = saveStringSliceToFile(filepath.Join(tmp_folder, new_filename+".xml"), modded)
+        err := saveStringSliceToFile(filepath.Join(outpath, new_filename+".xml"), modded)
 	if err != nil {
 		log.Printf("Minifying FAILED! %d/%d\n", index, total)
-		return 0, 0, "n/a", errors.New("Failed to save file " + filepath.Join(tmp_folder, new_filename+".xml"))
+		return 0, 0, "n/a", errors.New("Failed to save file " + filepath.Join(outpath, new_filename+".xml"))
 	}
 
 	log.Println("Validating source file: " + filepath.Join(inpath, file.Name()))
@@ -228,15 +229,15 @@ func Minify(inpath string, outpath string, file os.FileInfo, index int, total in
 		return 0, 0, "n/a", errors.New("Source file is not valid XML: " + filepath.Join(inpath, file.Name()) + " " + err.Error())
 	}
 
-	log.Println("Validating destination file: " + filepath.Join(tmp_folder, new_filename+".xml"))
-	err = IsValidXML(filepath.Join(tmp_folder, new_filename+".xml"))
+	log.Println("Validating destination file: " + filepath.Join(outpath, new_filename+".xml"))
+	err = IsValidXML(filepath.Join(outpath, new_filename+".xml"))
 	if err != nil {
-		err2 := markFileCorrupt(filepath.Join(tmp_folder, new_filename+".xml"))
+		err2 := markFileCorrupt(filepath.Join(outpath, new_filename+".xml"))
 		if err2 != nil {
-			log.Println("Error renaming file: " + filepath.Join(tmp_folder, new_filename+".xml"))
+			log.Println("Error renaming file: " + filepath.Join(outpath, new_filename+".xml"))
 		}
 		log.Println("Minifying FAILED!")
-		return 0, 0, "n/a", errors.New("Resulting file is not valid XML: " + filepath.Join(tmp_folder, new_filename+".xml") + " " + err.Error())
+		return 0, 0, "n/a", errors.New("Resulting file is not valid XML: " + filepath.Join(outpath, new_filename+".xml") + " " + err.Error())
 	}
 
 	log.Printf("Minifying PASSED! %d/%d\n", index, total)
