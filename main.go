@@ -127,6 +127,13 @@ func ProcessFolder(input string, output string) error {
 		return errors.New("Failed to create zip archive: " + newFilename)
 	}
 
+	// cleanup temporary files /////////////////////////////////////////////////////////////////
+
+	// check if file exist, if yes remove it
+	if _, err := os.Stat(tmp_folder); err == nil {
+		os.RemoveAll(tmp_folder)
+	}
+
 	return nil
 
 }
