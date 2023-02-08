@@ -66,7 +66,7 @@ func ProcessFolder(input string, output string) error {
 
 	// create tmp folder ///////////////////////////////////////////////////////////////////////////////////////////
 	t := time.Now()
-	tmp_folder := filepath.Join("/tmp", fmt.Sprintf("openmedia-minify-tmp_%s", t.Format("20060102")))
+	tmp_folder := filepath.Join("/tmp", fmt.Sprintf("openmedia-minify-tmp_%s_%d", t.Format("20060102"),os.Getpid()))
 	// check if file exist, if yes remove it
 	if _, err := os.Stat(tmp_folder); err == nil {
 		os.RemoveAll(tmp_folder)
