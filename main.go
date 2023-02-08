@@ -65,8 +65,8 @@ func ProcessFolder(input string, output string) error {
 	}
 
 	// create tmp folder ///////////////////////////////////////////////////////////////////////////////////////////
-        t := time.Now();
-        tmp_folder := filepath.Join("/tmp", fmt.Sprintf("openmedia-minify-tmp_%s", t.Format("20060102") ))
+	t := time.Now()
+	tmp_folder := filepath.Join("/tmp", fmt.Sprintf("openmedia-minify-tmp_%s", t.Format("20060102")))
 	// check if file exist, if yes remove it
 	if _, err := os.Stat(tmp_folder); err == nil {
 		os.RemoveAll(tmp_folder)
@@ -95,7 +95,6 @@ func ProcessFolder(input string, output string) error {
 		}
 	}
 
-
 	// zipping minified versions here /////////////////////////////////////////////////////////
 	log.Printf("Zipping minified, no. of files: %d", passed)
 
@@ -122,11 +121,10 @@ func ProcessFolder(input string, output string) error {
 	if _, err := os.Stat(tmp_folder); err == nil {
 		os.RemoveAll(tmp_folder)
 	}
-	
 
-        // final log
+	// final log
 
-        log.Printf("Minifier finished, PASS/FAIL/TOTAL: %d/%d/%d", passed, failed, total)
+	log.Printf("Minifier finished, PASS/FAIL/TOTAL: %d/%d/%d", passed, failed, total)
 
 	return nil
 
@@ -197,7 +195,7 @@ func Minify(inpath string, outpath string, file os.FileInfo, index int, total in
 
 	new_filename := beginning + fmt.Sprintf("%s_W%02d_%04d_%02d_%02d", weekday, week, year, month, day)
 
-        err := saveStringSliceToFile(filepath.Join(outpath, new_filename+".xml"), modded)
+	err := saveStringSliceToFile(filepath.Join(outpath, new_filename+".xml"), modded)
 	if err != nil {
 		log.Printf("Minifying FAILED! %d/%d\n", index, total)
 		return 0, 0, "n/a", errors.New("Failed to save file " + filepath.Join(outpath, new_filename+".xml"))
@@ -347,7 +345,7 @@ func zipFolder(inputFolder string, outputFilename string) error {
 		return err
 	}
 
-        log.Println("Zipping: " + inputFolder + " to archive: "+outputFilename)
+	log.Println("Zipping: " + inputFolder + " to archive: " + outputFilename)
 
 	for _, file := range files {
 
