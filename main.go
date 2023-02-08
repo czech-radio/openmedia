@@ -45,7 +45,7 @@ func main() {
 
 	flag.Usage = func() {
 		fmt.Println("Usage:")
-		fmt.Println("openmedia-minify -i input_folder -o output_folder")
+		fmt.Println("openmedia-minify -i inputFolder -o output_folder")
 	}
 
 	err := ProcessFolder(*input, *output)
@@ -95,33 +95,9 @@ func ProcessFolder(input string, output string) error {
 		}
 	}
 
-	log.Printf("Minifier finished, PASS/FAIL/TOTAL: %d/%d/%d", passed, failed, total)
 
 	// zipping minified versions here /////////////////////////////////////////////////////////
 	log.Printf("Zipping minified, no. of files: %d", passed)
-
-	/* // not necessary anymore
-	// check if file exist, if yes remove it
-	if _, err := os.Stat(tmp_folder); err == nil {
-		os.RemoveAll(tmp_folder)
-	}
-
-	// create folder in temp folder
-	err = os.Mkdir(tmp_folder, 0777)
-	if err != nil {
-		log.Printf("Creating tmp directory failed: %s\n", err.Error())
-		return err
-	}
-
-	//move passed files to tmp folder
-	for _, file := range passedFiles {
-		err = Move(filepath.Join(output, file), filepath.Join(tmp_folder, file))
-		if err != nil {
-			log.Printf("Moving file from %s to %s FAILED!: %s\n", filepath.Join(output, file), filepath.Join(tmp_folder, file), err.Error())
-			return err
-		}
-	}
-	*/
 
 	newFilename := fmt.Sprintf("%d_W%02d_MINIFIED", year, week) + ".zip"
 	err = zipFolder(tmp_folder, filepath.Join(output, newFilename))
@@ -146,6 +122,11 @@ func ProcessFolder(input string, output string) error {
 	if _, err := os.Stat(tmp_folder); err == nil {
 		os.RemoveAll(tmp_folder)
 	}
+	
+
+        // final log
+
+        log.Printf("Minifier finished, PASS/FAIL/TOTAL: %d/%d/%d", passed, failed, total)
 
 	return nil
 
@@ -344,38 +325,39 @@ func getDateFromFile(filepath string) (Weekday string, Year, Month, Day, Week in
 }
 
 // zipFile zips incoming file to a new zipfile
-func zipFolder(input_folder string, output_filename string) error {
+func zipFolder(inputFolder string, outputFilename string) error {
 
 	// check if file exist, if yes remove it
-	if _, err := os.Stat(output_filename); err == nil {
-		os.Remove(output_filename)
+	if _, err := os.Stat(outputFilename); err == nil {
+		os.Remove(outputFilename)
 	}
 
-	//_, filename := filepath.Split(input_folder)
+	//_, filename := filepath.Split(inputFolder)
 	//name := strings.TrimSuffix(filename, filepath.Ext(filename))
 
-	archive, err := os.Create(output_filename)
+	archive, err := os.Create(outputFilename)
 	if err != nil {
 		return err
 	}
 	defer archive.Close()
 	zipWriter := zip.NewWriter(archive)
 
-	files, err := ioutil.ReadDir(input_folder)
+	files, err := ioutil.ReadDir(inputFolder)
 	if err != nil {
 		return err
 	}
 
+        log.Println("Zipping: " + inputFolder + " to archive: "+outputFilename)
+
 	for _, file := range files {
 
 		// reader
-		f, err := os.Open(filepath.Join(input_folder, file.Name()))
+		f, err := os.Open(filepath.Join(inputFolder, file.Name()))
 		if err != nil {
 			return err
 		}
 		defer f.Close()
 
-		log.Println("Zipping: " + file.Name())
 		// writer
 		w, err := zipWriter.Create(file.Name())
 		if err != nil {
