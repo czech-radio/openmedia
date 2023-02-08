@@ -99,7 +99,7 @@ func ProcessFolder(input string, output string) error {
 	log.Printf("Zipping minified, no. of files: %d", passed)
 
 	newFilename := fmt.Sprintf("%d_W%02d_MINIFIED", year, week) + ".zip"
-	err = zipFolder(tmp_folder, filepath.Join(output, newFilename))
+	err = zipit(tmp_folder, filepath.Join(output, newFilename),false)
 	if err != nil {
 		log.Printf("Zipping minified results FAILED!: %s\n", err.Error())
 		return errors.New("Failed to create zip archive: " + newFilename)
@@ -108,7 +108,7 @@ func ProcessFolder(input string, output string) error {
 	// zipping originals here /////////////////////////////////////////////////////////////////
 	log.Printf("Zipping originals, no. of files: %d", total)
 	newFilename = fmt.Sprintf("%d_W%02d_ORIGINAL", year, week) + ".zip"
-	err = zipFolder(input, filepath.Join(output, newFilename))
+	err = zipit(input, filepath.Join(output, newFilename),false)
 
 	if err != nil {
 		log.Printf("Zipping originals FAILED!: %s\n", err)
@@ -322,53 +322,81 @@ func getDateFromFile(filepath string) (Weekday string, Year, Month, Day, Week in
 	return weekday, year, month, day, week
 }
 
-// zipFile zips incoming file to a new zipfile
-func zipFolder(inputFolder string, outputFilename string) error {
 
-	// check if file exist, if yes remove it
-	if _, err := os.Stat(outputFilename); err == nil {
-		os.Remove(outputFilename)
-	}
 
-	//_, filename := filepath.Split(inputFolder)
-	//name := strings.TrimSuffix(filename, filepath.Ext(filename))
-
-	archive, err := os.Create(outputFilename)
+// zipit is more compelete zipping function
+func zipit(source, target string, needBaseDir bool) error {
+	log.Println("Zipping: " + source + " to archive: " + target)
+	
+        zipfile, err := os.Create(target)
 	if err != nil {
 		return err
 	}
+	defer zipfile.Close()
+
+	archive := zip.NewWriter(zipfile)
 	defer archive.Close()
-	zipWriter := zip.NewWriter(archive)
 
-	files, err := ioutil.ReadDir(inputFolder)
+	info, err := os.Stat(source)
 	if err != nil {
 		return err
 	}
 
-	log.Println("Zipping: " + inputFolder + " to archive: " + outputFilename)
-
-	for _, file := range files {
-
-		// reader
-		f, err := os.Open(filepath.Join(inputFolder, file.Name()))
-		if err != nil {
-			return err
-		}
-		defer f.Close()
-
-		// writer
-		w, err := zipWriter.Create(file.Name())
-		if err != nil {
-			return err
-		}
-		if _, err := io.Copy(w, f); err != nil {
-			return err
-		}
+	var baseDir string
+	if info.IsDir() {
+		baseDir = filepath.Base(source)
 	}
 
-	zipWriter.Close()
+	filepath.Walk(source, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
 
-	return nil
+		header, err := zip.FileInfoHeader(info)
+		if err != nil {
+			return err
+		}
+
+		if baseDir != "" {
+			if needBaseDir {
+				header.Name = filepath.Join(baseDir, strings.TrimPrefix(path, source))
+			} else {
+				path := strings.TrimPrefix(path, source)
+				if len(path) > 0 && (path[0] == '/' || path[0] == '\\') {
+					path = path[1:]
+				}
+				if len(path) == 0 {
+					return nil
+				}
+				header.Name = path
+			}
+		}
+
+		if info.IsDir() {
+			header.Name += "/"
+		} else {
+			header.Method = zip.Deflate
+		}
+
+		writer, err := archive.CreateHeader(header)
+		if err != nil {
+			return err
+		}
+
+		if info.IsDir() {
+			return nil
+		}
+
+		file, err := os.Open(path)
+		if err != nil {
+			return err
+		}
+		defer file.Close()
+		_, err = io.Copy(writer, file)
+		return err
+	})
+
+	return err
 }
 
 // saveStringSliceToFile saves given string slice to a file
