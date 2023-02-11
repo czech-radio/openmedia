@@ -240,45 +240,6 @@ func markFileCorrupt(input string) error {
 
 }
 
-// helper Move function
-func Move(source, destination string) error {
-	err := os.Rename(source, destination)
-	if err != nil && strings.Contains(err.Error(), "invalid cross-device link") {
-		return moveCrossDevice(source, destination)
-	}
-	return err
-}
-
-// helper weird error fix
-func moveCrossDevice(source, destination string) error {
-	src, err := os.Open(source)
-	if err != nil {
-		return err
-	}
-	dst, err := os.Create(destination)
-	if err != nil {
-		src.Close()
-		return err
-	}
-	_, err = io.Copy(dst, src)
-	src.Close()
-	dst.Close()
-	if err != nil {
-		return err
-	}
-	fi, err := os.Stat(source)
-	if err != nil {
-		os.Remove(destination)
-		return err
-	}
-	err = os.Chmod(destination, fi.Mode())
-	if err != nil {
-		os.Remove(destination)
-		return err
-	}
-	os.Remove(source)
-	return nil
-}
 
 // openmedia-check function to get date from xml file
 func getDateFromFile(filepath string) (Weekday string, Year, Month, Day, Week int) {
