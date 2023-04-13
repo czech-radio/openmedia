@@ -22,9 +22,9 @@ jobs:
           cache-dependency-path: go.sum
 
       - name: Build
-        run: 
-          - apt-get install libxml2-dev pkg-config
-          - go build -v ./...
+        run: |
+          apt-get install libxml2-dev pkg-config
+          go build -v ./...
 
       - name: Lint
         run: go vet -v ./...
