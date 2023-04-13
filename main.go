@@ -51,7 +51,7 @@ func main() {
 
 	flag.Usage = func() {
 		fmt.Println("Usage:")
-		fmt.Println("openmedia-minify -i inputFolder -o output_folder")
+		fmt.Println("openmedia-compress -i <input_folder> -o <output_folder>")
 	}
 
 	err := ProcessFolder(*input, *output)
