@@ -1,4 +1,4 @@
-module openmedia-minify
+module openmedia-compress
 
 go 1.19
 
