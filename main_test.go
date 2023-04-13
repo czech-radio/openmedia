@@ -1,7 +1,6 @@
 package main
 
 import (
-	// "fmt"
 	"path/filepath"
 	"testing"
 )
@@ -14,7 +13,7 @@ func TestProcessFolder(t *testing.T) {
 
 	err := ProcessFolder(input_path, output_path)
 	if err != nil {
-		t.Error("run ProcessFolder FAILED!")
+		t.Error(err.Error())
 	}
 
 }
