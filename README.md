@@ -1,12 +1,10 @@
-# openmedia-minify
-
+# openmedia-compress
 
 _Remove unnecessary or empty fields from openmedia files._
 
 [![build](https://github.com/czech-radio/openmedia-minify/actions/workflows/main.yml/badge.svg)](https://github.com/czech-radio/openmedia-minify/actions/workflows/main.yml)
 
-
-## How it works?
+## Description
 
 Openmedia minify operates on Rundown files. It strips down unnecessary or empty fields and produces light version of an original file.
 There are two flags needed to run the program `-i` for input folder and `-o` for output folder. Whole command would look like this:
@@ -54,8 +52,4 @@ go build
 
 There is a validation process of both input and output files. It can occasionally produce an error. Is such case resulting file will be marked as `_MALFORMED` in filename.
 
-
-
-
-
-TODO: better memory handling, fixed by [b20445b](https://github.com/czech-radio/openmedia-minify/commit/b20445b429d019a6392fb6738ea79c188a8878a7)
+TODO: better memory handling, fixed by [b20445b](https://github.com/czech-radio/openmedia-compress/commit/b20445b429d019a6392fb6738ea79c188a8878a7)
