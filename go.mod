@@ -1,4 +1,4 @@
-module openmedia-compress
+module openmedia-reduce
 
 go 1.19
 
