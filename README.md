@@ -2,7 +2,7 @@
 
 _Remove unnecessary or empty fields from openmedia files._
 
-[![build](https://github.com/czech-radio/openmedia-minify/actions/workflows/main.yml/badge.svg)](https://github.com/czech-radio/openmedia-minify/actions/workflows/main.yml)
+[![build](https://github.com/czech-radio/openmedia-compress/actions/workflows/main.yml/badge.svg)](https://github.com/czech-radio/openmedia-compress/actions/workflows/main.yml)
 
 ## Description
 
