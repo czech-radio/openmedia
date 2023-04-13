@@ -23,7 +23,7 @@ jobs:
 
       - name: Build
         run: |
-          apt-get install libxml2-dev pkg-config
+          sudo apt-get install -y libxml2-dev pkg-config
           go build -v ./...
 
       - name: Lint
