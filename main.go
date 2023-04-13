@@ -17,17 +17,23 @@ import (
 	"strings"
 	"time"
 
-	"github.com/terminalstatic/go-xsd-validate"
+	xsdvalidate "github.com/terminalstatic/go-xsd-validate"
 	"golang.org/x/text/encoding/unicode"
 	"golang.org/x/text/transform"
 )
 
-// VERSION of openmedia-minify
-const VERSION = "0.0.5"
+var (
+	versionFlag      bool
+	settingsFlag     bool
+	productionFlag   bool
+	inputFolderPaths string
+	outputFolderPath string
+	buildTime        string
+	sha1GitRevision  string
+	versionGitTag    string
+)
 
 func main() {
-
-	log.Println(fmt.Sprintf("Openmedia-minify version: %s", VERSION))
 
 	input := flag.String("i", "", "The input directory")
 	output := flag.String("o", "", "The output directory")
@@ -64,9 +70,9 @@ func ProcessFolder(input string, output string) error {
 		return err
 	}
 
-	// create tmp folder ///////////////////////////////////////////////////////////////////////////////////////////
+	// Create temporary folder.
 	t := time.Now()
-	tmp_folder := filepath.Join("/tmp", fmt.Sprintf("openmedia-minify-tmp_%s_%d", t.Format("20060102"),os.Getpid()))
+	tmp_folder := filepath.Join("/tmp", fmt.Sprintf("openmedia-minify-tmp_%s_%d", t.Format("20060102"), os.Getpid()))
 	// check if file exist, if yes remove it
 	if _, err := os.Stat(tmp_folder); err == nil {
 		os.RemoveAll(tmp_folder)
@@ -77,7 +83,7 @@ func ProcessFolder(input string, output string) error {
 		log.Printf("Creating tmp directory failed: %s\n", err.Error())
 	}
 
-	// minifying loop //////////////////////////////////////////////////////////////////////////
+	// Minify files.
 	var year, week int
 	total := len(files)
 	failed, passed := 0, 0
@@ -95,34 +101,31 @@ func ProcessFolder(input string, output string) error {
 		}
 	}
 
-	// zipping minified versions here /////////////////////////////////////////////////////////
+	// Compress minified files.
 	log.Printf("Zipping minified, no. of files: %d", passed)
 
 	newFilename := fmt.Sprintf("%d_W%02d_MINIFIED", year, week) + ".zip"
-	err = zipit(tmp_folder, filepath.Join(output, newFilename),false)
+	err = zipit(tmp_folder, filepath.Join(output, newFilename), false)
 	if err != nil {
 		log.Printf("Zipping minified results FAILED!: %s\n", err.Error())
 		return errors.New("Failed to create zip archive: " + newFilename)
 	}
 
-	// zipping originals here /////////////////////////////////////////////////////////////////
+	// Compress original files.
 	log.Printf("Zipping originals, no. of files: %d", total)
 	newFilename = fmt.Sprintf("%d_W%02d_ORIGINAL", year, week) + ".zip"
-	err = zipit(input, filepath.Join(output, newFilename),false)
+	err = zipit(input, filepath.Join(output, newFilename), false)
 
 	if err != nil {
 		log.Printf("Zipping originals FAILED!: %s\n", err)
 		return errors.New("Failed to create zip archive: " + newFilename)
 	}
 
-	// cleanup temporary files /////////////////////////////////////////////////////////////////
-
-	// check if file exist, if yes remove it
+	// Cleanup temporary files.
+	// Check if file exist, if so remove it.
 	if _, err := os.Stat(tmp_folder); err == nil {
 		os.RemoveAll(tmp_folder)
 	}
-
-	// final log
 
 	log.Printf("Minifier finished, PASS/FAIL/TOTAL: %d/%d/%d", passed, failed, total)
 
@@ -130,14 +133,14 @@ func ProcessFolder(input string, output string) error {
 
 }
 
-// ToXML helper function converts string to XML escaped string
+// ToXML converts string to XML escaped string.
 func ToXML(input_string string) string {
 	var b bytes.Buffer
 	xml.EscapeText(&b, []byte(input_string))
 	return b.String()
 }
 
-// Minify reduces empty fields (whole lines) from XML file
+// Minify reduces empty fields (whole lines) from XML file.
 func Minify(inpath string, outpath string, file os.FileInfo, index int, total int) (Year, Month int, MinifiedFilename string, Error error) {
 
 	fext := filepath.Ext(file.Name())
@@ -224,7 +227,7 @@ func Minify(inpath string, outpath string, file os.FileInfo, index int, total in
 	return year, week, fmt.Sprintf(new_filename + ".xml"), nil
 }
 
-// markFileCorrupt renames badly fromat file to *_MALFORMED filename
+// markFileCorrupt appends  "MALFORMED" string to incorectly named file.
 func markFileCorrupt(input string) error {
 
 	dir, corruptFn := filepath.Split(input)
@@ -240,8 +243,7 @@ func markFileCorrupt(input string) error {
 
 }
 
-
-// openmedia-check function to get date from xml file
+// getDateFromFile function to get date from xml file (copied from openmedia-arrange).
 func getDateFromFile(filepath string) (Weekday string, Year, Month, Day, Week int) {
 
 	var weekday string
@@ -283,13 +285,11 @@ func getDateFromFile(filepath string) (Weekday string, Year, Month, Day, Week in
 	return weekday, year, month, day, week
 }
 
-
-
-// zipit is more compelete zipping function
+// zipit is more compelete zipping function.
 func zipit(source, target string, needBaseDir bool) error {
 	log.Println("Zipping: " + source + " to archive: " + target)
-	
-        zipfile, err := os.Create(target)
+
+	zipfile, err := os.Create(target)
 	if err != nil {
 		return err
 	}
@@ -360,7 +360,7 @@ func zipit(source, target string, needBaseDir bool) error {
 	return err
 }
 
-// saveStringSliceToFile saves given string slice to a file
+// saveStringSliceToFile saves given string slice to a file.
 func saveStringSliceToFile(filename string, input []string) error {
 
 	// check if file exist, if yes remove it
@@ -386,7 +386,7 @@ func saveStringSliceToFile(filename string, input []string) error {
 	return err
 }
 
-// IsValidXML checks validity of an XML
+// IsValidXML validdates XML file.
 func IsValidXML(inputFile string) error {
 	xsdvalidate.Init()
 	defer xsdvalidate.Cleanup()
