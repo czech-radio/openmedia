@@ -1,0 +1,37 @@
+FROM alpine:3.18 as base
+
+### UPDATE AND INSTALL ENV
+RUN apk update && \
+    apk upgrade
+
+### BASE GOLANG ENV
+RUN apk add --no-cache gcc linux-headers go git bash
+
+### BASE PYTHON ENV
+RUN apk add --no-cache python3-dev py3-psutil
+RUN python -m ensurepip --upgrade
+
+### CREATE NON-ROOT USER
+ARG MY_USER
+ARG MY_GROUP
+ARG MY_UID
+ARG MY_GID
+RUN addgroup -g $MY_GID $MY_GROUP && \
+	  adduser -u $MY_UID $MY_USER -G $MY_GROUP -D
+
+FROM base as builder
+### GOLANG TOOLS
+WORKDIR /home/${MY_USER}/
+COPY --chown=${MY_USER} ../scripts/golang_tools.sh ./
+USER  $MY_USER
+RUN ./golang_tools.sh
+RUN mkdir ./.config/
+
+FROM builder as devel
+USER  root
+### DEVEL TOOLS
+RUN apk add --no-cache vifm gvim jq lsof less nodejs bash ncurses exa tmux ripgrep grep
+
+### FINISH
+USER  $MY_USER
+WORKDIR /home/$MY_USER/app

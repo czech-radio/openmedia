@@ -1,0 +1,24 @@
+version: '3.9'
+services:
+  openmedia_reduce_devel:
+    image: 'localhost/openmedia_reduce_devel'
+    container_name: 'openmedia_reduce_devel'
+    command: bash
+    build:
+      dockerfile: Dockerfile_devel
+    volumes:
+      ### USER CONFIG
+      - ${HOME}/.vim/:${HOME}/.vim/:rw
+      - ${HOME}/.config/bash/:${HOME}/.config/bash/:ro
+      - ${HOME}/.config/tmux/:${HOME}/.config/tmux/:ro
+      - ${HOME}/.config/coc/:${HOME}/.config/coc/:rw
+      - ${HOME}/.bashrc:${HOME}/.bashrc:ro
+      - ${HOME}/.inputrc:${HOME}/.inputrc:ro
+      ### REPODIR
+      - ../.:${HOME}/app/:rw
+        
+    # build:
+      # dockerfile: Dockerfile
+      # context: .
+      # args:
+        # MY_USER: "$USER"
