@@ -6,6 +6,17 @@ import (
 	"os"
 )
 
+func SetLogLevel(level int) {
+	hopts := slog.HandlerOptions{
+		AddSource: true,
+		Level:     slog.Level(level),
+		// ReplaceAttr: func([]string, slog.Attr) slog.Attr { panic("not implemented") },
+	}
+	thandle := slog.NewTextHandler(os.Stderr, &hopts)
+	logt := slog.New(thandle)
+	slog.SetDefault(logt)
+}
+
 func LogDefaults() {
 	hopts := slog.HandlerOptions{
 		AddSource: true,

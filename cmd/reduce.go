@@ -4,7 +4,7 @@ Copyright © 2023 Czech Radio
 package cmd
 
 import (
-	"fmt"
+	"log/slog"
 
 	"github.com/spf13/cobra"
 )
@@ -15,7 +15,7 @@ var reduceCmd = &cobra.Command{
 	Short: "Delete empty fields in xml files",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("reduce called")
+		slog.Info("reduce called")
 	},
 }
 

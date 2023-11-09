@@ -22,6 +22,8 @@ THE SOFTWARE.
 package cmd
 
 import (
+	"github/czech-radio/openmedia-reduce/internal"
+	"log/slog"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -33,9 +35,15 @@ var rootCmd = &cobra.Command{
 	Version: "v0.0.1",
 	Short:   "Archivates Rundown xml files",
 	Long:    `Program operates on Rundown files. It strips down unnecessary or empty fields and produces light version of an original file. Then it can create packed archive to furher reduce size of files`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		verboseFlag, _ := cmd.Flags().GetInt("verbose")
+		internal.SetLogLevel(verboseFlag)
+		slog.Debug("verbose level set", "verbose", verboseFlag)
+	},
+	// Bare application action:
+	Run: func(cmd *cobra.Command, args []string) {
+		slog.Info("root called")
+	},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -50,7 +58,7 @@ func Execute() {
 func init() {
 	// Persistent flags (global for whole app/commands)
 	rootCmd.PersistentFlags().BoolP("dry-run", "n", false, "perform a trial run with no changes")
-	rootCmd.PersistentFlags().IntP("verbose-level", "v", 0, "Set verbosity level.")
+	rootCmd.PersistentFlags().IntP("verbose", "v", 0, "Set verbosity level.")
 	// rootCmd.PersistentFlags().IntVar
 
 	// Config flags
