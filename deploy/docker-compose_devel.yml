@@ -16,9 +16,3 @@ services:
       - ${HOME}/.inputrc:${HOME}/.inputrc:ro
       ### REPODIR
       - ../.:${HOME}/app/:rw
-        
-    # build:
-      # dockerfile: Dockerfile
-      # context: .
-      # args:
-        # MY_USER: "$USER"

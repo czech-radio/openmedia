@@ -1,4 +1,6 @@
 #!/bin/bash -euC
+# [[https://github.com/golang/tools][GitHub - golang/tools: [mirror] Go Tools]]
+
 declare -a golang_tools=(
   ### 'asmfmt': This will format your assembler code in a similar way that gofmt formats your Go code.
   #'github.com/klauspost/asmfmt/cmd/asmfmt@latest'
@@ -53,12 +55,17 @@ declare -a golang_tools=(
   #
   ### 'iferr': Generate "if err != nil {" block, https://github.com/koron/iferr 
   'github.com/koron/iferr@master'
+  #
+  ### 'cobra': Cobra is a library for creating powerful modern CLI applications, https://github.com/spf13/cobra
+  "github.com/spf13/cobra-cli@latest"
+  #
+  ### 'viper': Viper is a complete configuration solution for Go applications including 12-Factor apps. It is designed to work within an application, and can handle all types of configuration needs and formats., https://github.com/spf13/viper 
+  "github.com/spf13/viper"
 )
 
 for package in "${golang_tools[@]}"; do
   export GOPATH="${HOME}/go"
   export GO111MODULE=on
   export PATH="${GOPATH}/bin:$PATH"
-  # go install -v -mod=mod $package
   go install -v -mod=mod $package
 done

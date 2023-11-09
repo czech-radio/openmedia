@@ -7,5 +7,5 @@
 ## LOGGING
 https://betterstack.com/community/guides/logging/best-golang-logging-libraries/
 -   slog: new bulit-in logging in Go 1.21
--   zerolog: fastest
+-   zerolog: fastest (chosen one)
 -   zap: fast yet flexible
