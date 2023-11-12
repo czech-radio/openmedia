@@ -61,6 +61,12 @@ declare -a golang_tools=(
   #
   ### 'viper': Viper is a complete configuration solution for Go applications including 12-Factor apps. It is designed to work within an application, and can handle all types of configuration needs and formats., https://github.com/spf13/viper 
   "github.com/spf13/viper"
+  # 'slog': Package slog provides structured logging, in which log records include a message, a severity level, and various other attributes expressed as key-value pairs., https://pkg.go.dev/golang.org/x/exp/slog
+)
+
+declare -a golang_packages=(
+  ### 'memory'
+  "github.com/pbnjay/memory"
 )
 
 for package in "${golang_tools[@]}"; do

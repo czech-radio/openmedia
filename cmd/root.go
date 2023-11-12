@@ -33,10 +33,10 @@ import (
 var rootCmd = &cobra.Command{
 	Use:     "openmedia-reduce",
 	Version: "v0.0.1",
-	Short:   "Archivates Rundown xml files",
+	Short:   "Archivates rundown xml files",
 	Long:    `Program operates on Rundown files. It strips down unnecessary or empty fields and produces light version of an original file. Then it can create packed archive to furher reduce size of files`,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		verboseFlag, _ := cmd.Flags().GetInt("verbose")
+		verboseFlag, _ := cmd.Flags().GetString("verbose")
 		internal.SetLogLevel(verboseFlag)
 		slog.Debug("verbose level set", "verbose", verboseFlag)
 	},
