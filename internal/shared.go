@@ -2,6 +2,7 @@
 package internal
 
 import (
+	"encoding/xml"
 	"fmt"
 	"io"
 	"log/slog"
@@ -9,7 +10,11 @@ import (
 	"path/filepath"
 	"runtime"
 	"strconv"
+	"strings"
 	"time"
+
+	"golang.org/x/text/encoding/charmap"
+	"golang.org/x/text/encoding/unicode"
 )
 
 func TraceFunctionLevel(lv int) string {
@@ -85,7 +90,7 @@ func DirectoryCreateInRam() string {
 	return filepath
 }
 
-func DirectoryDelete(directory string) {
+func DirectoryDeleteOrPanic(directory string) {
 	err := os.RemoveAll(directory)
 	if err == nil {
 		msg := fmt.Sprintf("removed directory: %s", directory)
@@ -95,14 +100,15 @@ func DirectoryDelete(directory string) {
 	}
 }
 
-func DirectoryFileList(file_path string) {
+func DirectoryFileList(file_path string) error {
 	dirs, err := os.ReadDir(file_path)
 	if err != nil {
-		slog.Error(err.Error())
+		return err
 	}
 	for _, dir := range dirs {
 		fmt.Println(dir.Name(), dir.Type(), dir.Type().IsRegular())
 	}
+	return nil
 }
 
 func CopyFile(src_file_path, dst_file_path string) error {
@@ -155,4 +161,64 @@ func DirectoryCopyNoRecurse(src_dir, dst_dir string) (int, error) {
 		}
 	}
 	return files_count, nil
+}
+
+func FileIsValidXmlToMinify(src_file_path string) (bool, error) {
+	file_extension := filepath.Ext(src_file_path)
+	if file_extension != ".xml" {
+		return false,
+			fmt.Errorf("file does not have xml extension: %s", src_file_path)
+	}
+	if !strings.Contains(src_file_path, "RD") {
+		return false,
+			fmt.Errorf("filename does not contaion 'RD' string")
+	}
+	srcFile, err := os.Open(src_file_path)
+	if err != nil {
+		return false, err
+	}
+	_, err = srcFile.Stat()
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+func BypassReader(label string, input io.Reader) (io.Reader, error) {
+	return input, nil
+}
+
+func XmlDecoderValidate(decoder *xml.Decoder) (bool, error) {
+	fmt.Println("kek")
+	for {
+		err := decoder.Decode(new(interface{}))
+		if err != nil {
+			return err == io.EOF, err
+		}
+	}
+}
+
+func XmlFileLinesValidate2(src_file_path string) (bool, error) {
+	//##NOTE: DT:2023/11/12_20:13:10, Provide XML schema?
+	file, err := os.Open(src_file_path)
+	if err != nil {
+		return false, err
+	}
+	defer file.Close()
+	utf8Reader := charmap.Windows1252.NewDecoder().Reader(file)
+	decoder := xml.NewDecoder(utf8Reader)
+	return XmlDecoderValidate(decoder)
+}
+
+func XmlFileLinesValidate(src_file_path string) (bool, error) {
+	// ##NOTE: DT:2023/11/12_20:13:10, Provide XML schema?
+	file, err := os.Open(src_file_path)
+	if err != nil {
+		return false, err
+	}
+	defer file.Close()
+	utf16leReader := unicode.UTF16(unicode.LittleEndian, unicode.IgnoreBOM).NewDecoder().Reader(file)
+	decoder := xml.NewDecoder(utf16leReader)
+	decoder.CharsetReader = BypassReader
+	return XmlDecoderValidate(decoder)
 }

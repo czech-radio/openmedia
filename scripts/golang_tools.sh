@@ -66,12 +66,25 @@ declare -a golang_tools=(
 
 declare -a golang_packages=(
   ### 'memory'
-  "github.com/pbnjay/memory"
+  # "github.com/pbnjay/memory"
+  #
+  ### 'unicode': Package unicode provides Unicode encodings such as UTF-16., https://pkg.go.dev/golang.org/x/text/encoding/unicode 
+	"golang.org/x/text/encoding/unicode"
+  #
+  ### 'charset': charset provides common text encodings for HTML documents
+  "golang.org/x/net/html/charset"
+  #
+  ### 'charmap': https://pkg.go.dev/golang.org/x/text/encoding/charmap"
+  "golang.org/x/text/encoding/charmap"
 )
 
-for package in "${golang_tools[@]}"; do
-  export GOPATH="${HOME}/go"
-  export GO111MODULE=on
-  export PATH="${GOPATH}/bin:$PATH"
-  go install -v -mod=mod $package
+export GOPATH="${HOME}/go"
+export GO111MODULE=on
+export PATH="${GOPATH}/bin:$PATH"
+for tool in "${golang_tools[@]}"; do
+  go install -v -mod=mod "$tool"
+done
+
+for package in "${golang_packages[@]}"; do
+  go install -v -mod=mod "$package"
 done
