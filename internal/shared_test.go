@@ -29,17 +29,19 @@ func TestMain(m *testing.M) {
 	TEMP_DIR = DirectoryCreateInRam()
 	TEMP_DIR_TEST_SRC = filepath.Join(TEMP_DIR, "SRC")
 	TEMP_DIR_TEST_DST = filepath.Join(TEMP_DIR, "DST")
-	_, err = DirectoryCopyNoRecurse(
+
+	//// copy testing data to temporary directory
+	_, err_copy := DirectoryCopyNoRecurse(
 		TEST_DATA_DIR_SRC,
 		TEMP_DIR_TEST_SRC,
 	)
 
 	// RUN TESTS
-	if err == nil {
+	if err_copy == nil {
 		code := m.Run()
 		defer os.Exit(code)
 	}
-	if err != nil {
+	if err_copy != nil {
 		defer os.Exit(-1)
 	}
 
@@ -110,10 +112,9 @@ func TestXmlFileLinesValidate(t *testing.T) {
 		valid, err := XmlFileLinesValidate(filepath.Join(TEMP_DIR_TEST_SRC, tests[tcase].input))
 		if valid != tests[tcase].result {
 			if err != nil {
-				fmt.Println("kek", err.Error())
+				fmt.Println("error: ", err.Error())
 			}
 			t.Fatalf("expectd: %v, got %v", tests[tcase], valid)
 		}
 	}
-
 }

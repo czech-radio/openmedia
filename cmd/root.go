@@ -42,7 +42,7 @@ var rootCmd = &cobra.Command{
 	},
 	// Bare application action:
 	Run: func(cmd *cobra.Command, args []string) {
-		slog.Info("root called")
+		slog.Info("root called, no action taken")
 	},
 }
 
@@ -57,13 +57,16 @@ func Execute() {
 
 func init() {
 	// Persistent flags (global for whole app/commands)
-	rootCmd.PersistentFlags().BoolP("dry-run", "n", false, "perform a trial run with no changes")
-	rootCmd.PersistentFlags().IntP("verbose", "v", 0, "Set verbosity level.")
-	// rootCmd.PersistentFlags().IntVar
+	pf := rootCmd.PersistentFlags()
+	pf.IntP("verbose", "v", 0, "Set verbosity level.")
+	pf.BoolP("debug-command", "", false, "Print actual command the user has executed.")
+	pf.BoolP("dry-run", "n", false, "Perform a trial run with no persistent system changes")
+	pf.BoolP("ask", "", true, "Ask for confirmation of a user command")
 
 	// Config flags
-	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.openmedia-reduce.yaml)")
+	// cf := rootCmd.PersistentFlags()
+	// cf.StringVar(&cfgFile, "config", "", "config file (default is $HOME/.openmedia-reduce.yaml)")
 
 	// Local flags
-	// rootCmd.Flags().BoolP("version", "V", false, "print version of program")
+	// lf := rootCmd.Flags()
 }

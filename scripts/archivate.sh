@@ -2,6 +2,7 @@
 SCRIPT_PATH="${BASH_SOURCE[0]:-$0}"
 SCRIPT_DIR="${SCRIPT_PATH%/*}"
 TEST_FILE_GOOD="${SCRIPT_DIR}/../test/testdata/RD_00-12_Pohoda_-_Fri_06_01_2023_2_14293760_20230107001431.xml"
+TEST_FILE_AMMEND="${SCRIPT_DIR}/../test/testdata/RD_00-12_Pohoda_-_Fri_06_01_2023_2_14293760_20230107001431_ammend_utf.xml"
 TEST_FILE_BAD="${SCRIPT_DIR}/../test/testdata/RD_00-12_Pohoda_-_Fri_06_01_2023_2_14293760_20230107001431_bad.xml"
 
 get_encoding(){
@@ -40,6 +41,15 @@ xml_filter_out_empty_fields(){
   local xmlfile="$1"
   # xml_validate <(convert_to_utf8 "$xmlfile")
   convert_to_utf8 "$xmlfile" | grep -v "IsEmpty = \"yes\""
+}
+
+test_xml_filter2(){
+  local xmlfile="$TEST_FILE_GOOD"
+
+  convert_to_utf8 "$xmlfile" | grep -v "IsEmpty = \"yes\"" | wc -l
+  convert_to_utf8 "$xmlfile" | awk '!/IsEmpty = "yes"/' | wc -l
+  convert_to_utf8 "$xmlfile" | awk '!/IsEmpty = "yes"/'
+# 10298
 }
 
 test_xml_filter_out_empty_fields(){
@@ -81,6 +91,11 @@ test_archivate_stdin(){
   archivate_stdin "$srcfile" "$dstfile" <<< "$(xml_filter_out_empty_fields "$srcfile")"
   7z x "$dstfile" "-o${dstdir}"
 
+}
+
+test_conv(){
+  local srcfile="$TEST_FILE_AMMEND"
+  iconv -f "$(get_encoding "$srcfile")" -t UTF-8 "$srcfile" | xmllint --format - | xmllint --valid -
 }
 
 "$@"

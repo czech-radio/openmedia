@@ -19,15 +19,23 @@ and usage of using your command. For example:
 Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("test called")
-	},
+	Run: Test,
+}
+
+var OUT string
+
+func Test(cmd *cobra.Command, args []string) {
+	fmt.Println(args)
+	fmt.Println(cmd.Flags().GetBool("toggle"))
+	fmt.Println("value", OUT)
+	fmt.Println(cmd.Flags().GetBool("dry-run"))
+	fmt.Println("kek", cmd.Flags().Args())
 }
 
 func init() {
 	rootCmd.AddCommand(testCmd)
 
-	// Here you will define your flags and configuration settings.
+	// flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
@@ -35,5 +43,8 @@ func init() {
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// testCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	testCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// setting global var
+	testCmd.Flags().StringVarP(&OUT, "test-out", "u", "", "test output")
+	// testCmd.Flag
 }

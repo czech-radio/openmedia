@@ -86,7 +86,7 @@ func DirectoryCreateInRam() string {
 	if err != nil {
 		panic(err)
 	}
-	slog.Debug("Created directory in RAM: " + filepath)
+	slog.Debug("created directory in RAM: " + filepath)
 	return filepath
 }
 
@@ -189,7 +189,6 @@ func BypassReader(label string, input io.Reader) (io.Reader, error) {
 }
 
 func XmlDecoderValidate(decoder *xml.Decoder) (bool, error) {
-	fmt.Println("kek")
 	for {
 		err := decoder.Decode(new(interface{}))
 		if err != nil {
@@ -205,8 +204,8 @@ func XmlFileLinesValidate2(src_file_path string) (bool, error) {
 		return false, err
 	}
 	defer file.Close()
-	utf8Reader := charmap.Windows1252.NewDecoder().Reader(file)
-	decoder := xml.NewDecoder(utf8Reader)
+	reader := charmap.Windows1252.NewDecoder().Reader(file)
+	decoder := xml.NewDecoder(reader)
 	return XmlDecoderValidate(decoder)
 }
 
@@ -217,8 +216,8 @@ func XmlFileLinesValidate(src_file_path string) (bool, error) {
 		return false, err
 	}
 	defer file.Close()
-	utf16leReader := unicode.UTF16(unicode.LittleEndian, unicode.IgnoreBOM).NewDecoder().Reader(file)
-	decoder := xml.NewDecoder(utf16leReader)
+	reader := unicode.UTF16(unicode.LittleEndian, unicode.IgnoreBOM).NewDecoder().Reader(file)
+	decoder := xml.NewDecoder(reader)
 	decoder.CharsetReader = BypassReader
 	return XmlDecoderValidate(decoder)
 }
