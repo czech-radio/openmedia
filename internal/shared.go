@@ -2,20 +2,29 @@
 package internal
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"io/fs"
 	"log/slog"
 	"os"
 	"path/filepath"
+	"regexp"
 	"runtime"
 )
+
+var ErrFilePathExists = errors.New("file path exists")
 
 func DetectLinuxSytemOrPanic() {
 	if runtime.GOOS != "linux" {
 		msg := fmt.Sprintf("unsuported OS: %s, %s", runtime.GOOS, runtime.GOARCH)
 		panic(msg)
 	}
+}
+
+func PathExists(fs_path string) bool {
+	_, err := os.Stat(fs_path)
+	return !os.IsNotExist(err)
 }
 
 func DirectoryIsReadableOrPanic(file_path string) {
@@ -102,7 +111,7 @@ func DirectoryWalk(directory string) {
 	}
 }
 
-func ListFsPath(fs_path string, d fs.DirEntry, err error) error {
+func FileSystemPathList(fs_path string, d fs.DirEntry, err error) error {
 	if err != nil {
 		slog.Error(err.Error())
 		return nil
@@ -112,31 +121,77 @@ func ListFsPath(fs_path string, d fs.DirEntry, err error) error {
 }
 
 func DirectoryTraverse(
-	fs_path string,
-	fn func(path string, d fs.DirEntry, err error) error,
+	directory string,
+	fn func(
+		directory string, d fs.DirEntry, err error,
+	) error,
 	recurse bool,
 ) error {
-	dirs, err := os.ReadDir(fs_path)
+	dirs, err := os.ReadDir(directory)
 	if err != nil {
-		slog.Error(err.Error())
-		return nil
+		// Cannot traverse directory at all
+		return err
 	}
-	for _, dir := range dirs {
-		err := fn(fs_path, dir, nil)
+	for _, fsPath := range dirs {
+		// slog.Info(dir.Name())
+		err := fn(directory, fsPath, nil)
 		if err != nil {
 			return err
 		}
-		if dir.IsDir() {
-			path_joined := filepath.Join(fs_path, dir.Name())
+		if fsPath.IsDir() {
+			path_joined := filepath.Join(directory, fsPath.Name())
 			if recurse {
 				err := DirectoryTraverse(path_joined, fn, recurse)
 				if err != nil {
+					// Cannot traverse nested directory
+					// slog.Error(err.Error())
 					return err
 				}
 			}
 		}
 	}
 	return nil
+}
+
+func DirectoryCopy(
+	src_dir string,
+	dst_dir string,
+	recurse bool,
+	overwrite bool,
+	path_regex string,
+) error {
+	var regex_patt *regexp.Regexp
+	if path_regex != "" {
+		regex_patt = regexp.MustCompile(path_regex)
+	}
+
+	walk_func := func(fs_path string, d fs.DirEntry, err error) error {
+		if d.Type().IsRegular() {
+			// Get current relative from src_dir
+			relDir, err := filepath.Rel(src_dir, fs_path)
+			if err != nil {
+				return err
+			}
+			dstPath := filepath.Join(dst_dir, relDir)
+			srcFile := filepath.Join(fs_path, d.Name())
+			dstFile := filepath.Join(dstPath, d.Name())
+			if regex_patt != nil && !regex_patt.MatchString(srcFile) {
+				return nil
+			}
+
+			if err := os.MkdirAll(dstPath, 0700); err != nil {
+				return err
+			}
+			slog.Debug("created", "path", dstPath)
+			err = CopyFile(srcFile, dstFile, overwrite)
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	err := DirectoryTraverse(src_dir, walk_func, recurse)
+	return err
 }
 
 func DirectoryFileList(file_path string) error {
@@ -150,7 +205,10 @@ func DirectoryFileList(file_path string) error {
 	return nil
 }
 
-func CopyFile(src_file_path, dst_file_path string) error {
+func CopyFile(
+	src_file_path, dst_file_path string,
+	overwrite bool,
+) error {
 	slog.Debug(
 		"copying file",
 		"source_file", src_file_path,
@@ -163,10 +221,12 @@ func CopyFile(src_file_path, dst_file_path string) error {
 	defer srcFile.Close()
 
 	// Create the destination file in the destination directory for writing
-	dstFile, err := os.Create(dst_file_path)
-	if err != nil {
-		return err
+	if !overwrite && PathExists(dst_file_path) {
+		// return fmt.Errorf("destion path exists: %s", dst_file_path)
+		return fmt.Errorf(
+			"err: %w, filepath: %s", ErrFilePathExists, dst_file_path)
 	}
+	dstFile, err := os.Create(dst_file_path)
 	defer dstFile.Close()
 	// Copy the contents of the source file to the destination file
 	_, err = io.Copy(dstFile, srcFile)
@@ -177,7 +237,8 @@ func CopyFile(src_file_path, dst_file_path string) error {
 	return nil
 }
 
-func DirectoryCopyNoRecurse(src_dir, dst_dir string) (int, error) {
+func DirectoryCopyNoRecurse(
+	src_dir, dst_dir string, overwrite bool) (int, error) {
 	files_count := 0 // number of files copied
 	// Create the destination directory if it doesn't exist
 	if err := os.MkdirAll(dst_dir, 0700); err != nil {
@@ -192,7 +253,7 @@ func DirectoryCopyNoRecurse(src_dir, dst_dir string) (int, error) {
 		if entry.Type().IsRegular() {
 			srcFilePath := filepath.Join(src_dir, entry.Name())
 			dstFilePath := filepath.Join(dst_dir, entry.Name())
-			err = CopyFile(srcFilePath, dstFilePath)
+			err = CopyFile(srcFilePath, dstFilePath, overwrite)
 			if err != nil {
 				return files_count, err
 			}

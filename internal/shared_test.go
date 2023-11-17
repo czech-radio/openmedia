@@ -1,15 +1,16 @@
 package internal
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"testing"
 )
 
+var TEST_DATA_DIR_SRC string // Test data which will be copied to TEMP_DIR
 var TEMP_DIR string          // Temporary directory inside /dev/shm created for test source files and output files
 var TEMP_DIR_TEST_SRC string // Temporary direcotory which serves as source data for tests
 var TEMP_DIR_TEST_DST string // Temporary direcotory which serves as destination for tests outputs
-var TEST_DATA_DIR_SRC string // Test data which will be copied to TEMP_DIR
 
 // TestMain setup, run tests, and teadrdown (cleanup after tests)
 func TestMain(m *testing.M) {
@@ -29,9 +30,10 @@ func TestMain(m *testing.M) {
 	TEMP_DIR_TEST_DST = filepath.Join(TEMP_DIR, "DST")
 
 	//// copy testing data to temporary directory
-	_, err_copy := DirectoryCopyNoRecurse(
+	err_copy := DirectoryCopy(
 		TEST_DATA_DIR_SRC,
 		TEMP_DIR_TEST_SRC,
+		true, false, "",
 	)
 
 	// RUN TESTS
@@ -75,10 +77,11 @@ func Test_DirectoryFileList(t *testing.T) {
 	DirectoryFileList("/tmp/")
 }
 
-func Test_DirectoryCopy(t *testing.T) {
+func Test_DirectoryCopyNoRecurse(t *testing.T) {
 	_, err := DirectoryCopyNoRecurse(
 		TEST_DATA_DIR_SRC,
 		TEMP_DIR+"/test_copy",
+		false,
 	)
 	if err != nil {
 		t.Error(err)
@@ -90,8 +93,26 @@ func Test_DirectoryWalk(t *testing.T) {
 }
 
 func Test_DirectoryTraverse(t *testing.T) {
-	err := DirectoryTraverse("/home/jk/tmp/", ListFsPath, true)
+	err := DirectoryTraverse(
+		"/home/jk/tmp/", FileSystemPathList, true)
 	if err != nil {
+		t.Error(err)
+	}
+}
+
+func Test_DirectoryCopy(t *testing.T) {
+	dstDir := filepath.Join(TEMP_DIR_TEST_DST, "DirectoryCopy")
+	// Test copy matching files
+	err := DirectoryCopy(
+		TEST_DATA_DIR_SRC, dstDir, true, false, "hello")
+	if err != nil {
+		t.Error(err)
+	}
+	Sleeper(20, "s")
+	// Test copy recursive and overwrite destination files
+	err = DirectoryCopy(
+		TEST_DATA_DIR_SRC, dstDir, true, true, "")
+	if err != nil && errors.Unwrap(err) != ErrFilePathExists {
 		t.Error(err)
 	}
 }
