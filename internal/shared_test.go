@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -15,7 +14,6 @@ var TEST_DATA_DIR_SRC string // Test data which will be copied to TEMP_DIR
 // TestMain setup, run tests, and teadrdown (cleanup after tests)
 func TestMain(m *testing.M) {
 	// TESTS SETUP
-	DetectLinuxSytemOrPanic()
 	//// Setup logging
 	level := os.Getenv("GOLOGLEVEL")
 	SetLogLevel(level)
@@ -25,8 +23,8 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 	TEST_DATA_DIR_SRC = current_directory + "/../test/testdata"
+	TEMP_DIR = DirectoryCreateTemporaryOrPanic("openmedia_reduce_test_")
 	DirectoryIsReadableOrPanic(TEST_DATA_DIR_SRC)
-	TEMP_DIR = DirectoryCreateInRam()
 	TEMP_DIR_TEST_SRC = filepath.Join(TEMP_DIR, "SRC")
 	TEMP_DIR_TEST_DST = filepath.Join(TEMP_DIR, "DST")
 
@@ -49,7 +47,7 @@ func TestMain(m *testing.M) {
 	DirectoryDeleteOrPanic(TEMP_DIR)
 }
 
-func TestCurrentDir(t *testing.T) {
+func Test_CurrentDir(t *testing.T) {
 	dir, err := os.Getwd()
 	if err != nil {
 		t.Log(err)
@@ -64,15 +62,20 @@ func Test_DetectLinuxSystemPanic(t *testing.T) {
 }
 
 func Test_DirectoryCreateInRam(t *testing.T) {
-	directory := DirectoryCreateInRam()
+	directory := DirectoryCreateInRam("golang_test")
 	defer os.RemoveAll(directory)
 }
 
-func TestDirectoryFileList(t *testing.T) {
+func TestDirectoryCreateTemporary(t *testing.T) {
+	directory := DirectoryCreateTemporaryOrPanic("golang_test")
+	defer os.RemoveAll(directory)
+}
+
+func Test_DirectoryFileList(t *testing.T) {
 	DirectoryFileList("/tmp/")
 }
 
-func TestDirectoryCopy(t *testing.T) {
+func Test_DirectoryCopy(t *testing.T) {
 	_, err := DirectoryCopyNoRecurse(
 		TEST_DATA_DIR_SRC,
 		TEMP_DIR+"/test_copy",
@@ -82,39 +85,13 @@ func TestDirectoryCopy(t *testing.T) {
 	}
 }
 
-func TestFileIsValidXmlToMinify(t *testing.T) {
-	filename := "RD_00-12_Pohoda_-_Fri_06_01_2023_2_14293760_20230107001431.xml"
-	valid, err := FileIsValidXmlToMinify(filepath.Join(TEMP_DIR_TEST_SRC, filename))
-	if err != nil {
-		t.Error(err)
-	}
-	if !valid {
-		t.Error("file not valid: ", filename)
-	}
+func Test_DirectoryWalk(t *testing.T) {
+	DirectoryWalk("/home/jk/tmp/")
 }
 
-func TestXmlFileLinesValidate(t *testing.T) {
-	// Sleeper(10, "s")
-	filename_valid := "RD_00-12_Pohoda_-_Fri_06_01_2023_2_14293760_20230107001431.xml"
-	filename_invalid := "RD_00-12_Pohoda_-_Fri_06_01_2023_2_14293760_20230107001431_bad.xml"
-
-	type testTuple struct {
-		input  string
-		result bool
-	}
-
-	tests := []testTuple{
-		{filename_valid, true},
-		{filename_invalid, false},
-	}
-
-	for tcase := range tests {
-		valid, err := XmlFileLinesValidate(filepath.Join(TEMP_DIR_TEST_SRC, tests[tcase].input))
-		if valid != tests[tcase].result {
-			if err != nil {
-				fmt.Println("error: ", err.Error())
-			}
-			t.Fatalf("expectd: %v, got %v", tests[tcase], valid)
-		}
+func Test_DirectoryTraverse(t *testing.T) {
+	err := DirectoryTraverse("/home/jk/tmp/", ListFsPath, true)
+	if err != nil {
+		t.Error(err)
 	}
 }

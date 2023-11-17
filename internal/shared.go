@@ -2,68 +2,14 @@
 package internal
 
 import (
-	"encoding/xml"
 	"fmt"
 	"io"
+	"io/fs"
 	"log/slog"
 	"os"
 	"path/filepath"
 	"runtime"
-	"strconv"
-	"strings"
-	"time"
-
-	"golang.org/x/text/encoding/charmap"
-	"golang.org/x/text/encoding/unicode"
 )
-
-func TraceFunctionLevel(lv int) string {
-	pc := make([]uintptr, 10) // at least 1 entry needed
-	runtime.Callers(lv, pc)
-	f := runtime.FuncForPC(pc[lv-1])
-	return f.Name()
-	// file, line := f.FileLine(pc[0])
-}
-
-// TracePrint print file, function name, line in code where this function is called (skip=0: file where this function is defined, skip=1 where the function is called)
-func TracePrint(skip int) {
-	pc, fn, line, ok := runtime.Caller(skip)
-	if !ok {
-		fmt.Printf("Cannot trace function")
-		return
-	}
-	fmt.Printf("\nFile: %s\nFunc: %s:%d\n", fn, runtime.FuncForPC(pc).Name(), line)
-}
-
-// SetLogLevel: sets log level, default=0
-func SetLogLevel(level string) {
-	intlevel, err := strconv.Atoi(level)
-	if err != nil {
-		intlevel = 0
-	}
-	hopts := slog.HandlerOptions{
-		AddSource: true,
-		Level:     slog.Level(intlevel),
-		// ReplaceAttr: func([]string, slog.Attr) slog.Attr { panic("not implemented") },
-	}
-	thandle := slog.NewTextHandler(os.Stderr, &hopts)
-	logt := slog.New(thandle)
-	slog.SetDefault(logt)
-}
-
-// Sleeper sleeps for specified durration
-func Sleeper(duration int, time_unit string) {
-	switch time_unit {
-	case "ms":
-		time.Sleep(time.Duration(duration) * time.Millisecond)
-	case "s":
-		time.Sleep(time.Duration(duration) * time.Second)
-	case "m":
-		time.Sleep(time.Duration(duration) * time.Minute)
-	default:
-		panic("Wrong time time_unit")
-	}
-}
 
 func DetectLinuxSytemOrPanic() {
 	if runtime.GOOS != "linux" {
@@ -72,22 +18,63 @@ func DetectLinuxSytemOrPanic() {
 	}
 }
 
-func DirectoryIsReadableOrPanic(filepath string) {
-	// fileInfo, err := os.Stat(filepath)
-	_, err := os.Stat(filepath)
-	//handle error
+func DirectoryIsReadableOrPanic(file_path string) {
+	// Get file info
+	fileInfo, err := os.Stat(file_path)
 	if err != nil {
 		panic(err)
 	}
+	// Check if file_path is directory
+	if !fileInfo.IsDir() {
+		panic(err)
+	}
+
+	// Check file_path file mode or file permission
+	errmsg := "directory not readable: %s, filemode: %s"
+	switch runtime.GOOS {
+	case "linux":
+		// Check linux permission. Readable for current user has value > 0400
+		if fileInfo.Mode().Perm()&0400 == 0 {
+			// bitwise &:
+			// 0700 & 0400 -> 100000000 -> 1
+			// 0600 & 0400 -> 100000000
+			// 0500 & 0400 -> 100000000
+			// 0100 & 0400 -> 000000000
+			// 0000 & 0400 -> 000000000 -> 0
+			panic(fmt.Sprintf(errmsg, file_path, fileInfo.Mode()))
+		}
+	case "windows":
+		if fileInfo.Mode()&os.ModePerm == 0 {
+			panic(fmt.Sprintf(errmsg, file_path, fileInfo.Mode()))
+		}
+	}
+	// NOTE: Not accounting for ACL or xattrs
 }
 
-func DirectoryCreateInRam() string {
-	filepath, err := os.MkdirTemp("/dev/shm", "golang_test")
+func DirectoryCreateInRam(base_name string) string {
+	filepath, err := os.MkdirTemp("/dev/shm", base_name)
 	if err != nil {
 		panic(err)
 	}
-	slog.Debug("created directory in RAM: " + filepath)
 	return filepath
+}
+
+func DirectoryCreateTemporaryOrPanic(base_name string) string {
+	var err error
+	var file_path string
+	switch runtime.GOOS {
+	case "linux":
+		// Create temp directory in RAM
+		file_path, err = os.MkdirTemp("/dev/shm", base_name)
+	default:
+		// Create temp directory in system default temp directory
+		file_path, err = os.MkdirTemp("", base_name)
+	}
+	if err != nil {
+		panic(err)
+	}
+	slog.Debug("Temp directory created: " + file_path)
+	return file_path
 }
 
 func DirectoryDeleteOrPanic(directory string) {
@@ -98,6 +85,58 @@ func DirectoryDeleteOrPanic(directory string) {
 	} else {
 		panic(err)
 	}
+}
+
+func DirectoryWalk(directory string) {
+	walk_func := func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			fmt.Println(err)
+			return err
+		}
+		// fmt.Printf("dir: %t: name: %s\n", d.IsDir(), path)
+		return nil
+	}
+	err := filepath.WalkDir(directory, walk_func)
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+
+func ListFsPath(fs_path string, d fs.DirEntry, err error) error {
+	if err != nil {
+		slog.Error(err.Error())
+		return nil
+	}
+	fmt.Printf("list_func: %s, %s, %t\n", fs_path, d.Name(), d.IsDir())
+	return nil
+}
+
+func DirectoryTraverse(
+	fs_path string,
+	fn func(path string, d fs.DirEntry, err error) error,
+	recurse bool,
+) error {
+	dirs, err := os.ReadDir(fs_path)
+	if err != nil {
+		slog.Error(err.Error())
+		return nil
+	}
+	for _, dir := range dirs {
+		err := fn(fs_path, dir, nil)
+		if err != nil {
+			return err
+		}
+		if dir.IsDir() {
+			path_joined := filepath.Join(fs_path, dir.Name())
+			if recurse {
+				err := DirectoryTraverse(path_joined, fn, recurse)
+				if err != nil {
+					return err
+				}
+			}
+		}
+	}
+	return nil
 }
 
 func DirectoryFileList(file_path string) error {
@@ -161,63 +200,4 @@ func DirectoryCopyNoRecurse(src_dir, dst_dir string) (int, error) {
 		}
 	}
 	return files_count, nil
-}
-
-func FileIsValidXmlToMinify(src_file_path string) (bool, error) {
-	file_extension := filepath.Ext(src_file_path)
-	if file_extension != ".xml" {
-		return false,
-			fmt.Errorf("file does not have xml extension: %s", src_file_path)
-	}
-	if !strings.Contains(src_file_path, "RD") {
-		return false,
-			fmt.Errorf("filename does not contaion 'RD' string")
-	}
-	srcFile, err := os.Open(src_file_path)
-	if err != nil {
-		return false, err
-	}
-	_, err = srcFile.Stat()
-	if err != nil {
-		return false, err
-	}
-	return true, nil
-}
-
-func BypassReader(label string, input io.Reader) (io.Reader, error) {
-	return input, nil
-}
-
-func XmlDecoderValidate(decoder *xml.Decoder) (bool, error) {
-	for {
-		err := decoder.Decode(new(interface{}))
-		if err != nil {
-			return err == io.EOF, err
-		}
-	}
-}
-
-func XmlFileLinesValidate2(src_file_path string) (bool, error) {
-	//##NOTE: DT:2023/11/12_20:13:10, Provide XML schema?
-	file, err := os.Open(src_file_path)
-	if err != nil {
-		return false, err
-	}
-	defer file.Close()
-	reader := charmap.Windows1252.NewDecoder().Reader(file)
-	decoder := xml.NewDecoder(reader)
-	return XmlDecoderValidate(decoder)
-}
-
-func XmlFileLinesValidate(src_file_path string) (bool, error) {
-	// ##NOTE: DT:2023/11/12_20:13:10, Provide XML schema?
-	file, err := os.Open(src_file_path)
-	if err != nil {
-		return false, err
-	}
-	defer file.Close()
-	reader := unicode.UTF16(unicode.LittleEndian, unicode.IgnoreBOM).NewDecoder().Reader(file)
-	decoder := xml.NewDecoder(reader)
-	decoder.CharsetReader = BypassReader
-	return XmlDecoderValidate(decoder)
 }

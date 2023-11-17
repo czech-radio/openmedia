@@ -28,14 +28,22 @@ func init() {
 	lf.BoolP("load-env", "", false,
 		`Set commandline options from environment.
 Useful for example when running as systemd service or as docker container`)
-	lf.StringP("input", "i", "", "input filename pattern")
-	lf.StringP("output", "o", "", "output filename pattern")
-	lf.StringP("output-encoding", "E", "utf-8", "Convert file to specified encoding")
-	lf.BoolP("xml-validate-lines-pre", "", true, "Validate xml on line by line basis before processing.")
-	lf.BoolP("xml-validate-file-pre", "", true, "Validate xml as whole file before processing.")
-	lf.BoolP("xml-validate-lines-post", "", true, "Validate xml on line by line basis after processing.")
-	lf.BoolP("xml-validate-file-post", "", true, "Validate xml as whole file after processing.")
-	lf.StringP("archive-compression", "", "default", `Specify the algorithm which will be used for compression`)
+	lf.StringP("input", "i", "",
+		"input filename pattern")
+	lf.StringP("output", "o", "",
+		"output filename pattern")
+	lf.StringP("output-encoding", "E", "utf-8",
+		"Convert file to specified encoding")
+	lf.BoolP("xml-validate-lines-pre", "", true,
+		"Validate xml on line by line basis before processing.")
+	lf.BoolP("xml-validate-file-pre", "", true,
+		"Validate xml as whole file before processing.")
+	lf.BoolP("xml-validate-lines-post", "", true,
+		"Validate xml on line by line basis after processing.")
+	lf.BoolP("xml-validate-file-post", "", true,
+		"Validate xml as whole file after processing.")
+	lf.StringP("archive-compression", "", "default",
+		`Specify the algorithm which will be used for archive compression`)
 	lf.StringP("rename-invalid-files-pattern", "R", "",
 		`rename invalid files:
 		files which do not pass any xml-validate tests`)

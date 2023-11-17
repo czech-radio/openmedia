@@ -1,0 +1,72 @@
+package internal
+
+import (
+	"encoding/xml"
+	"fmt"
+	"io"
+	"os"
+	"path/filepath"
+	"strings"
+
+	"golang.org/x/text/encoding/charmap"
+	"golang.org/x/text/encoding/unicode"
+)
+
+func FileIsValidXmlToMinify(src_file_path string) (bool, error) {
+	file_extension := filepath.Ext(src_file_path)
+	if file_extension != ".xml" {
+		return false,
+			fmt.Errorf("file does not have xml extension: %s", src_file_path)
+	}
+	if !strings.Contains(src_file_path, "RD") {
+		return false,
+			fmt.Errorf("filename does not contaion 'RD' string")
+	}
+	srcFile, err := os.Open(src_file_path)
+	if err != nil {
+		return false, err
+	}
+	_, err = srcFile.Stat()
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+func BypassReader(label string, input io.Reader) (io.Reader, error) {
+	return input, nil
+}
+
+func XmlDecoderValidate(decoder *xml.Decoder) (bool, error) {
+	for {
+		err := decoder.Decode(new(interface{}))
+		if err != nil {
+			return err == io.EOF, err
+		}
+	}
+}
+
+func XmlFileLinesValidate2(src_file_path string) (bool, error) {
+	//##NOTE: DT:2023/11/12_20:13:10, Provide XML schema?
+	file, err := os.Open(src_file_path)
+	if err != nil {
+		return false, err
+	}
+	defer file.Close()
+	reader := charmap.Windows1252.NewDecoder().Reader(file)
+	decoder := xml.NewDecoder(reader)
+	return XmlDecoderValidate(decoder)
+}
+
+func XmlFileLinesValidate(src_file_path string) (bool, error) {
+	// ##NOTE: DT:2023/11/12_20:13:10, Provide XML schema?
+	file, err := os.Open(src_file_path)
+	if err != nil {
+		return false, err
+	}
+	defer file.Close()
+	reader := unicode.UTF16(unicode.LittleEndian, unicode.IgnoreBOM).NewDecoder().Reader(file)
+	decoder := xml.NewDecoder(reader)
+	decoder.CharsetReader = BypassReader
+	return XmlDecoderValidate(decoder)
+}
