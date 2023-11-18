@@ -30,11 +30,14 @@ func TestMain(m *testing.M) {
 	TEMP_DIR_TEST_DST = filepath.Join(TEMP_DIR, "DST")
 
 	//// copy testing data to temporary directory
+
+	SetLogLevel("0")
 	err_copy := DirectoryCopy(
 		TEST_DATA_DIR_SRC,
 		TEMP_DIR_TEST_SRC,
 		true, false, "",
 	)
+	SetLogLevel(level)
 
 	// RUN TESTS
 	if err_copy == nil {
@@ -74,7 +77,7 @@ func TestDirectoryCreateTemporary(t *testing.T) {
 }
 
 func Test_DirectoryFileList(t *testing.T) {
-	DirectoryFileList("/tmp/")
+	DirectoryFileList(TEMP_DIR_TEST_SRC)
 }
 
 func Test_DirectoryCopyNoRecurse(t *testing.T) {
@@ -89,12 +92,12 @@ func Test_DirectoryCopyNoRecurse(t *testing.T) {
 }
 
 func Test_DirectoryWalk(t *testing.T) {
-	DirectoryWalk("/home/jk/tmp/")
+	DirectoryWalk(TEMP_DIR_TEST_SRC)
 }
 
 func Test_DirectoryTraverse(t *testing.T) {
 	err := DirectoryTraverse(
-		"/home/jk/tmp/", FileSystemPathList, true)
+		TEMP_DIR_TEST_SRC, FileSystemPathList, true)
 	if err != nil {
 		t.Error(err)
 	}
@@ -108,11 +111,19 @@ func Test_DirectoryCopy(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	Sleeper(20, "s")
 	// Test copy recursive and overwrite destination files
 	err = DirectoryCopy(
 		TEST_DATA_DIR_SRC, dstDir, true, true, "")
 	if err != nil && errors.Unwrap(err) != ErrFilePathExists {
+		t.Error(err)
+	}
+}
+
+func Test_ReadFile(t *testing.T) {
+	srcFileName := "rundown/RD_00-12_Pohoda_-_Fri_06_01_2023_2_14293760_20230107001431.xml"
+	srcFilePath := filepath.Join(TEST_DATA_DIR_SRC, srcFileName)
+	err := ReadFile(srcFilePath)
+	if err != nil {
 		t.Error(err)
 	}
 }

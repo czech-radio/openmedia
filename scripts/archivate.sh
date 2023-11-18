@@ -5,6 +5,55 @@ TEST_FILE_GOOD="${SCRIPT_DIR}/../test/testdata/RD_00-12_Pohoda_-_Fri_06_01_2023_
 TEST_FILE_AMMEND="${SCRIPT_DIR}/../test/testdata/RD_00-12_Pohoda_-_Fri_06_01_2023_2_14293760_20230107001431_ammend_utf.xml"
 TEST_FILE_BAD="${SCRIPT_DIR}/../test/testdata/RD_00-12_Pohoda_-_Fri_06_01_2023_2_14293760_20230107001431_bad.xml"
 
+xml_validate_xml_xsd_dir(){
+  ### BIND VARIABLES
+  local TEST_DIR="${SCRIPT_DIR}/../test/testdata/"
+  local SCHEMA="${TEST_DIR}/rundowns_schemas/OM_LV2_schema.xsd"
+  local XML_DIR_VALID="${TEST_DIR}/rundowns_additional/"
+  # local XML_DIR_VALID="${TEST_DIR}/rundowns_valid/"
+  local XML_DIR_INVALID="${TEST_DIR}/rundowns_invalid/"
+  local xmllint_opts
+  ### XMLLINT OPTS
+  declare -a xmllint_opts=(
+  '--quiet'
+  --schema "$SCHEMA"
+  )
+  ### TEST VALID FILES 
+  #### find files in directory
+  file=""
+  declare -a xml_files_valid=(
+    $( find "$XML_DIR_VALID" -type f -exec realpath {} \; | rg ".xml")
+  )
+  echo "Testing valid files: ${#xml_files_valid[@]}" >/dev/stderr
+  for file in "${xml_files_valid[@]}"; do
+    # echo "VALIDATING: $file"
+    xmllint "${xmllint_opts[@]}" "$file" >/dev/null
+    result="$?"
+    if [[ $result != 0 ]] ; then
+      echo Invalid file: "$file" >/dev/stderr
+      return 1
+    fi
+    break
+  done
+
+  ### TEST INVALID FILES
+  #### find files in directory
+  file=""
+  declare -a xml_files_invalid=(
+    $( find "$XML_DIR_INVALID" -type f -exec realpath {} \; | rg ".xml")
+  )
+  echo "Testing invalid files: ${#xml_files_invalid[@]}" >/dev/stderr
+  for file in "${xml_files_invalid[@]}"; do
+    # echo "$file"
+    xmllint "${xmllint_opts[@]}" "$file" &>/dev/null
+    result="$?"
+    if [[ $result == 0 ]] ; then
+      echo "File should not be validated: "$file"" > /dev/stderr
+      # return 2
+    fi
+  done
+}
+
 get_encoding(){
   local filename="$1"
   file --mime-encoding --brief "$filename"

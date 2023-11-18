@@ -19,3 +19,6 @@
 
 # Go workspace file
 go.work
+
+# Test data to large for git
+test/testdata/rundowns_additional/

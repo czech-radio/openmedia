@@ -2,6 +2,7 @@
 package internal
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
 	"io"
@@ -86,6 +87,32 @@ func DirectoryCreateTemporaryOrPanic(base_name string) string {
 	return file_path
 }
 
+func DirectoryCopyNoRecurse(
+	src_dir, dst_dir string, overwrite bool) (int, error) {
+	files_count := 0 // number of files copied
+	// Create the destination directory if it doesn't exist
+	if err := os.MkdirAll(dst_dir, 0700); err != nil {
+		return files_count, err
+	}
+	entries, err := os.ReadDir(src_dir)
+	if err != nil {
+		return files_count, err
+	}
+
+	for _, entry := range entries {
+		if entry.Type().IsRegular() {
+			srcFilePath := filepath.Join(src_dir, entry.Name())
+			dstFilePath := filepath.Join(dst_dir, entry.Name())
+			err = CopyFile(srcFilePath, dstFilePath, overwrite)
+			if err != nil {
+				return files_count, err
+			}
+			files_count++
+		}
+	}
+	return files_count, nil
+}
+
 func DirectoryDeleteOrPanic(directory string) {
 	err := os.RemoveAll(directory)
 	if err == nil {
@@ -102,7 +129,6 @@ func DirectoryWalk(directory string) {
 			fmt.Println(err)
 			return err
 		}
-		// fmt.Printf("dir: %t: name: %s\n", d.IsDir(), path)
 		return nil
 	}
 	err := filepath.WalkDir(directory, walk_func)
@@ -172,17 +198,17 @@ func DirectoryCopy(
 			if err != nil {
 				return err
 			}
-			dstPath := filepath.Join(dst_dir, relDir)
 			srcFile := filepath.Join(fs_path, d.Name())
-			dstFile := filepath.Join(dstPath, d.Name())
+			dstDir := filepath.Join(dst_dir, relDir)
+			dstFile := filepath.Join(dstDir, d.Name())
 			if regex_patt != nil && !regex_patt.MatchString(srcFile) {
 				return nil
 			}
 
-			if err := os.MkdirAll(dstPath, 0700); err != nil {
+			if err := os.MkdirAll(dstDir, 0700); err != nil {
 				return err
 			}
-			slog.Debug("created", "path", dstPath)
+			slog.Debug("created", "path", dstDir)
 			err = CopyFile(srcFile, dstFile, overwrite)
 			if err != nil {
 				return err
@@ -237,28 +263,25 @@ func CopyFile(
 	return nil
 }
 
-func DirectoryCopyNoRecurse(
-	src_dir, dst_dir string, overwrite bool) (int, error) {
-	files_count := 0 // number of files copied
-	// Create the destination directory if it doesn't exist
-	if err := os.MkdirAll(dst_dir, 0700); err != nil {
-		return files_count, err
-	}
-	entries, err := os.ReadDir(src_dir)
+func ReadFile(file_path string) error {
+	srcFile, err := os.Open(file_path)
 	if err != nil {
-		return files_count, err
+		return err
 	}
-
-	for _, entry := range entries {
-		if entry.Type().IsRegular() {
-			srcFilePath := filepath.Join(src_dir, entry.Name())
-			dstFilePath := filepath.Join(dst_dir, entry.Name())
-			err = CopyFile(srcFilePath, dstFilePath, overwrite)
-			if err != nil {
-				return files_count, err
-			}
-			files_count++
+	defer srcFile.Close()
+	bufferedReader := bufio.NewReaderSize(srcFile, 4096)
+	nlines := 10
+	n := 0
+	for {
+		n++
+		if n > nlines {
+			break
 		}
+		data, err := bufferedReader.ReadBytes('\n')
+		if err != nil {
+			return err
+		}
+		fmt.Printf("%s\n", data)
 	}
-	return files_count, nil
+	return nil
 }

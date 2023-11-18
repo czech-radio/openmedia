@@ -71,3 +71,7 @@ https://betterstack.com/community/guides/logging/best-golang-logging-libraries/
 - using cobra package without viper
 
 
+### Additional testing files
+':/GŘ/Strategický rozvoj/Analytická sekce/_Archiv/Projekty/OpenMedia/04_03_2020'
+
+
