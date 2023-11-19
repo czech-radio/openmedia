@@ -4,36 +4,45 @@ SCRIPT_DIR="${SCRIPT_PATH%/*}"
 TEST_FILE_GOOD="${SCRIPT_DIR}/../test/testdata/RD_00-12_Pohoda_-_Fri_06_01_2023_2_14293760_20230107001431.xml"
 TEST_FILE_AMMEND="${SCRIPT_DIR}/../test/testdata/RD_00-12_Pohoda_-_Fri_06_01_2023_2_14293760_20230107001431_ammend_utf.xml"
 TEST_FILE_BAD="${SCRIPT_DIR}/../test/testdata/RD_00-12_Pohoda_-_Fri_06_01_2023_2_14293760_20230107001431_bad.xml"
+CURRENT_DIR="$PWD"
 
 xml_validate_xml_xsd_dir(){
+  # SIGHUP SIGQUIT SIGTERM EXIT ERR
   ### BIND VARIABLES
   local TEST_DIR="${SCRIPT_DIR}/../test/testdata/"
-  local SCHEMA="${TEST_DIR}/rundowns_schemas/OM_LV2_schema.xsd"
+  local SCHEMA_DIR="${TEST_DIR}/rundowns_schemas/"
+  local SCHEMA_FILE="OM_LV7_schema.xsd"
   local XML_DIR_VALID="${TEST_DIR}/rundowns_additional/"
-  # local XML_DIR_VALID="${TEST_DIR}/rundowns_valid/"
   local XML_DIR_INVALID="${TEST_DIR}/rundowns_invalid/"
   local xmllint_opts
   ### XMLLINT OPTS
+  cd "$SCHEMA_DIR" || exit 1
   declare -a xmllint_opts=(
   '--quiet'
-  --schema "$SCHEMA"
+  '--nonet'
+  --schema "$SCHEMA_FILE"
   )
   ### TEST VALID FILES 
+  local valid_count=0
+  local invalid_count=0
   #### find files in directory
   file=""
   declare -a xml_files_valid=(
-    $( find "$XML_DIR_VALID" -type f -exec realpath {} \; | rg ".xml")
+    $( find "$XML_DIR_VALID" -type f -exec realpath {} \; | rg ".xml" | sort)
   )
-  echo "Testing valid files: ${#xml_files_valid[@]}" >/dev/stderr
+  echo "Testing valid files: ${#xml_files_valid[@]}"
   for file in "${xml_files_valid[@]}"; do
     # echo "VALIDATING: $file"
     xmllint "${xmllint_opts[@]}" "$file" >/dev/null
     result="$?"
     if [[ $result != 0 ]] ; then
       echo Invalid file: "$file" >/dev/stderr
-      return 1
+      ((invalid_count++))
+      # return 1
+    else
+      ((valid_count++))
     fi
-    break
+    echo "val: $valid_count, inval: $invalid_count"
   done
 
   ### TEST INVALID FILES

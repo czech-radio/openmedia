@@ -1,29 +1,41 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- XML Schema Definition (XSD) for openmedia  -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
-	<!-- Define the elements -->
   <xs:element name="OPENMEDIA">
-    <!-- <xs:element name="OM_SERVER"> -->
-      <!-- <xs:complexType> -->
-    <!-- </xs:element> -->
-    <!-- <xs:sequence> -->
-    <!-- <xs:element name="book" maxOccurs="unbounded"> -->
-    <!-- <xs:complexType> -->
-    <!-- <xs:sequence> -->
-    <!-- <xs:element name="title" type="xs:string"/> -->
-    <!-- <xs:element name="author" type="xs:string"/> -->
-    <!-- <xs:element name="price" type="xs:decimal"/> -->
-    <!-- </xs:sequence> -->
-    <!-- </xs:complexType> -->
-    <!-- </xs:element> -->
-    <!-- </xs:sequence> -->
-    <!-- </xs:complexType> -->
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="OM_SERVER">
+				</xs:element>
+        <xs:element name="OM_OBJECT">
+				</xs:element>
+      </xs:sequence>
+    </xs:complexType>
   </xs:element>
+  <!-- <xs:all> -->
+  <!-- <xs:element name="OPENMEDIA"> -->
+  <!-- <xs:element name="OM_SERVER"> -->
+  <!-- <xs:complexType> -->
   <!-- </xs:element> -->
-  <xs:element name="OM_SERVER">
-  </xs:element>
-  <xs:element name="OM_OBJECT">
-	</xs:element>
-<!-- </xs:element> -->
+  <!-- <xs:sequence> -->
+  <!-- <xs:element name="book" maxOccurs="unbounded"> -->
+  <!-- <xs:complexType> -->
+  <!-- <xs:sequence> -->
+  <!-- <xs:element name="title" type="xs:string"/> -->
+  <!-- <xs:element name="author" type="xs:string"/> -->
+  <!-- <xs:element name="price" type="xs:decimal"/> -->
+  <!-- </xs:sequence> -->
+  <!-- </xs:complexType> -->
+  <!-- </xs:element> -->
+  <!-- </xs:sequence> -->
+  <!-- </xs:complexType> -->
+  <!-- </xs:element> -->
+  <!-- </xs:element> -->
+  <!-- <xs:element name="OM_SERVER"> -->
+  <!-- </xs:element> -->
+  <!-- <xs:element name="OM_OBJECT" minOccurs="1"> -->
+  <!-- </xs:element> -->
+  <!-- </xs:element> -->
+  <!-- </xs:sequence> -->
+  <!-- </xs:complexType> -->
+  <!-- </xs:element> -->
 </xs:schema>
-
