@@ -1,4 +1,3 @@
-// Package
 package internal
 
 import (
@@ -137,20 +136,15 @@ func DirectoryWalk(directory string) {
 	}
 }
 
-func FileSystemPathList(fs_path string, d fs.DirEntry, err error) error {
-	if err != nil {
-		slog.Error(err.Error())
-		return nil
-	}
-	fmt.Printf("list_func: %s, %s, %t\n", fs_path, d.Name(), d.IsDir())
+func FileSystemPathList(fs_path string, d fs.DirEntry) error {
+	fmt.Printf("list_func: %s, %s, %t\n",
+		fs_path, d.Name(), d.IsDir())
 	return nil
 }
 
 func DirectoryTraverse(
 	directory string,
-	fn func(
-		directory string, d fs.DirEntry, err error,
-	) error,
+	fn func(directory string, d fs.DirEntry) error,
 	recurse bool,
 ) error {
 	dirs, err := os.ReadDir(directory)
@@ -160,7 +154,7 @@ func DirectoryTraverse(
 	}
 	for _, fsPath := range dirs {
 		// slog.Info(dir.Name())
-		err := fn(directory, fsPath, nil)
+		err := fn(directory, fsPath)
 		if err != nil {
 			return err
 		}
@@ -191,7 +185,7 @@ func DirectoryCopy(
 		regex_patt = regexp.MustCompile(path_regex)
 	}
 
-	walk_func := func(fs_path string, d fs.DirEntry, err error) error {
+	walk_func := func(fs_path string, d fs.DirEntry) error {
 		if d.Type().IsRegular() {
 			// Get current relative from src_dir
 			relDir, err := filepath.Rel(src_dir, fs_path)
@@ -253,6 +247,9 @@ func CopyFile(
 			"err: %w, filepath: %s", ErrFilePathExists, dst_file_path)
 	}
 	dstFile, err := os.Create(dst_file_path)
+	if err != nil {
+		return err
+	}
 	defer dstFile.Close()
 	// Copy the contents of the source file to the destination file
 	_, err = io.Copy(dstFile, srcFile)

@@ -30,7 +30,6 @@ func TestMain(m *testing.M) {
 	TEMP_DIR_TEST_DST = filepath.Join(TEMP_DIR, "DST")
 
 	//// copy testing data to temporary directory
-
 	SetLogLevel("0")
 	err_copy := DirectoryCopy(
 		TEST_DATA_DIR_SRC,

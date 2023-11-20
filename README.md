@@ -56,23 +56,28 @@ There is a validation process of both input and output files. It can occasionall
 TODO: better memory handling, fixed by [b20445b](https://github.com/czech-radio/openmedia-reduce/commit/b20445b429d019a6392fb6738ea79c188a8878a7)
 
 ## Developement guide and discussion
+
 ### Which golang version to lock?
 *2023-11-05*
+
 -   arch_actual: go version go1.21.3 linux/amd64
 -   alpine_3.18 (./deploy/dockerfile_devel.yml): go version go1.20.10 linux/amd64
 
 ### Logging
-https://betterstack.com/community/guides/logging/best-golang-logging-libraries/
+[https://betterstack.com/community/guides/logging/best-golang-logging-libraries/]
+
 -   slog: new bulit-in logging in Go 1.21 (chosen one)
 -   zerolog: fastest
 -   zap: fast yet flexible
 
 ### Commandline interface
-- using cobra package without viper
 
+-   using cobra package without viper
 
 ### Rundown files
+
 #### Element object structure
+
 OPENMEDIA
  OM_SERVER
  OM_OBJECT "Radio Rundown"
@@ -86,11 +91,13 @@ OM_OBJECT "Hourly Rundown"
  OM_HEADER
   OM_FIELD [1-548]
  OM_UPLINK
- OM_RECORD 
+ OM_RECORD
   OM_FILED [1-5012,-11,-12]
   OM_OBJECT "Sub Rundown"
 
+
 #### Object structure
+
 OM_OBJECT "Radio Rundown"
  OM_OBJECT "Hourly Rundown"
   OM_OBJECT "Sub Rundown"

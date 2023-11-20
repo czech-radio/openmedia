@@ -70,3 +70,17 @@ func XmlFileLinesValidate(src_file_path string) (bool, error) {
 	decoder.CharsetReader = BypassReader
 	return XmlDecoderValidate(decoder)
 }
+func RundownUnmarshall(file_path string) (*OPENMEDIA, error) {
+	xmlFile, err := os.Open(file_path)
+	if err != nil {
+		return nil, err
+	}
+	defer xmlFile.Close()
+	byteData, err := io.ReadAll(xmlFile)
+	var OM OPENMEDIA
+	err = xml.Unmarshal(byteData, &OM)
+	if err != nil {
+		return nil, err
+	}
+	return &OM, nil
+}

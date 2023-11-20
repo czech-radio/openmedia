@@ -2,43 +2,78 @@ package internal
 
 import (
 	"fmt"
+	"io/fs"
+	"log/slog"
 	"path/filepath"
 	"testing"
 )
 
 func Test_FileIsValidXmlToMinify(t *testing.T) {
-	filename := "RD_00-12_Pohoda_-_Fri_06_01_2023_2_14293760_20230107001431.xml"
-	valid, err := FileIsValidXmlToMinify(filepath.Join(TEMP_DIR_TEST_SRC, filename))
+	var mustBeValid bool = true // wheter the results of subsequent tests should result true or false. I.e. if mustBeValid == true all files should result as valid.
+
+	//Test valid files
+	validFilesDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_valid")
+	walkFunc := func(directory string, de fs.DirEntry) error {
+		filePath := filepath.Join(directory, de.Name())
+		slog.Debug("validating", "file", filePath)
+		validity, err := FileIsValidXmlToMinify(filePath)
+		if mustBeValid != validity {
+			t.Errorf("file: %s, err: %s", filePath, err)
+		}
+		return nil
+	}
+	err := DirectoryTraverse(validFilesDir, walkFunc, false)
 	if err != nil {
 		t.Error(err)
 	}
-	if !valid {
-		t.Error("file not valid: ", filename)
+
+	//Test invalid files
+	invalidFile := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_invalid", "bad_tags.xml")
+	validity, err := FileIsValidXmlToMinify(invalidFile)
+	if validity == true {
+		t.Errorf("file should be invalid: %s, invalidity cause: %s", invalidFile, err)
 	}
 }
 
 func Test_XmlFileLinesValidate(t *testing.T) {
-	// Sleeper(10, "s")
-	filename_valid := "RD_00-12_Pohoda_-_Fri_06_01_2023_2_14293760_20230107001431.xml"
-	filename_invalid := "RD_00-12_Pohoda_-_Fri_06_01_2023_2_14293760_20230107001431_bad.xml"
+	var mustBeValid bool = true // wheter the results of subsequent tests should result true or false. I.e. if mustBeValid == true all files should result as valid.
 
-	type testTuple struct {
-		input  string
-		result bool
+	//Test valid files
+	validFilesDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_valid")
+	walkFunc := func(directory string, de fs.DirEntry) error {
+		filePath := filepath.Join(directory, de.Name())
+		slog.Debug("validating", "file", filePath)
+		validity, err := XmlFileLinesValidate(filePath)
+		if mustBeValid != validity {
+			t.Errorf("file: %s, err: %s", filePath, err)
+		}
+		return nil
+	}
+	err := DirectoryTraverse(validFilesDir, walkFunc, false)
+	if err != nil {
+		t.Error(err)
 	}
 
-	tests := []testTuple{
-		{filename_valid, true},
-		{filename_invalid, false},
+	//Test invalid files
+	invalidFile := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_invalid", "bad_tags.xml")
+	validity, err := XmlFileLinesValidate(invalidFile)
+	if validity == true {
+		t.Errorf("file should be invalid: %s, invalidity cause: %s", invalidFile, err)
 	}
+}
 
-	for tcase := range tests {
-		valid, err := XmlFileLinesValidate(filepath.Join(TEMP_DIR_TEST_SRC, tests[tcase].input))
-		if valid != tests[tcase].result {
-			if err != nil {
-				fmt.Println("error: ", err.Error())
-			}
-			t.Fatalf("expectd: %v, got %v", tests[tcase], valid)
+func Test_XmlUnmarshal(t *testing.T) {
+	valid_files := []string{
+		"RD_00-12_Pohoda_-_Fri_06_01_2023_utf8_formated.xml",
+	}
+	for _, vf := range valid_files {
+		file := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_valid", vf)
+		om, err := RundownUnmarshall(file)
+		if err != nil {
+			t.Error(err)
+		}
+		for _, i := range om.OM_OBJECTS[0].OM_HEADER.Fields {
+			fmt.Printf("%+v\n", i)
 		}
 	}
 }
