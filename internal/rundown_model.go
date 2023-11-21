@@ -3,6 +3,7 @@ package internal
 import (
 	"encoding/xml"
 	"fmt"
+	"strings"
 )
 
 type OPENMEDIA struct {
@@ -37,43 +38,49 @@ type OM_RECORD struct {
 
 // OM_FIELD contais various nested tag name as field value. Must be parsed differently
 type Om_field_value struct {
-	string
+	Value string
 }
 
-func (c *Om_field_value) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
-	// var token_value string
-	// var parts []string
-
+func (omf *Om_field_value) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+	var tagValue strings.Builder
+	var start_count int = 0
+	var end_count int = 0
+	var errUnexpectedTagStructure = fmt.Errorf("unexpected xml tag structure")
 	for {
 		token, err := d.Token()
+		if err != nil {
+			break
+		}
 		if err == nil {
 			switch t := token.(type) {
 			case xml.CharData:
-				// fmt.Println(string(t))
-				c.string = string(t)
-				fmt.Println(c)
+				content := strings.TrimSpace(string(t))
+				if content != "" {
+					if tagValue.Len() == 0 {
+						tagValue.WriteString(content)
+					} else {
+						tagValue.WriteString("\n" + content)
+					}
+				}
+			case xml.StartElement:
+				if start_count > 1 {
+					return errUnexpectedTagStructure
+				}
+				start_count++
+				continue
+			case xml.EndElement:
+				if end_count > 1 {
+					return errUnexpectedTagStructure
+				}
+				end_count++
+				continue
+			default:
+				return fmt.Errorf("unknown token type: %T", t)
 			}
 		}
-		if err != nil {
-			return nil
-		}
 	}
-	// switch t := token.(type) {
-	// case xml.CharData:
-	// parts = append(parts, string(t))
-	// case xml.EndElement:
-	// if t == start.End() {
-	// End of the custom element, break the loop
-	// break
-	// }
-	// default:
-	// break
-	// }
-	// }
-
-	// Combine the parts into a single value
-	// c.Value = strings.Join(parts, "")
-	// return nil
+	omf.Value = tagValue.String()
+	return nil
 }
 
 // type OM_DATETIME struct {
@@ -96,5 +103,5 @@ func (c *Om_field_value) UnmarshalXML(d *xml.Decoder, start xml.StartElement) er
 // 	return nil
 // }
 
-type OM_UPLINK struct {
-}
+// type OM_UPLINK struct {
+// }

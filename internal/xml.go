@@ -70,6 +70,7 @@ func XmlFileLinesValidate(src_file_path string) (bool, error) {
 	decoder.CharsetReader = BypassReader
 	return XmlDecoderValidate(decoder)
 }
+
 func RundownUnmarshall(file_path string) (*OPENMEDIA, error) {
 	xmlFile, err := os.Open(file_path)
 	if err != nil {
