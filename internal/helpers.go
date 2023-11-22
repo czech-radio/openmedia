@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"reflect"
 	"runtime"
 	"strconv"
 	"time"
@@ -55,4 +56,25 @@ func Sleeper(duration int, time_unit string) {
 	default:
 		panic("Wrong time time_unit")
 	}
+}
+
+func StructFieldsList(v any) {
+	refVal := reflect.ValueOf(v)
+	refValType := refVal.Type()
+	fieldCount := refVal.NumField()
+	for i := 0; i < fieldCount; i++ {
+		field := refValType.Field(i)
+		fmt.Printf("Field: %+v\n", field)
+	}
+}
+
+func StructFieldsMap(v any) map[string]string {
+	refVal := reflect.ValueOf(v)
+	refValType := refVal.Type()
+	fieldCount := refVal.NumField()
+	res := make(map[string]string, fieldCount)
+	for i := 0; i < fieldCount; i++ {
+		res[refValType.Field(i).Name] = ""
+	}
+	return res
 }

@@ -13,43 +13,55 @@ type OPENMEDIA struct {
 
 type OM_OBJECT struct {
 	OM_HEADER OM_HEADER `xml:"OM_HEADER"`
-}
-
-type OM_HEADER struct {
-	// Fields []OM_FIELD `xml:"OM_FIELD"`
-	Fields []Om_field_value `xml:"OM_FIELD"`
+	OM_RECORD OM_RECORD `xml:"OM_RECORD"`
 }
 
 type OM_RECORD struct {
-	// Fields []OM_FIELD `xml:"OM_FIELD"`
-	Fields []Om_field_value `xml:"OM_FIELD"`
+	Fields []OM_FIELD `xml:"OM_FIELD"`
+}
+
+type OM_HEADER struct {
+	Type      string     `xml:"FieldID,attr"`
+	FieldType string     `xml:"FieldType,attr"`
+	FieldName string     `xml:"FieldName,attr"`
+	IsEmpty   string     `xml:"IsEmpty,attr"`
+	Fields    []OM_FIELD `xml:"OM_FIELD"`
 }
 
 // type OM_FIELD struct {
-// Type      string         `xml:"FieldID,attr"`
+// Value     Om_field_value `xml:"any"`
+// FieldID   string         `xml:"FieldID,attr"`
 // FieldType string         `xml:"FieldType,attr"`
 // FieldName string         `xml:"FieldName,attr"`
 // IsEmpty   string         `xml:"IsEmpty,attr"`
-// Value     Om_field_value `xml:""`
-// Value     string `xml:"OM_DATETIME,omitempty"`
-// Value string `xml:"OM_DATETIME,OM_STRING,omitempty"`
-// Date      OM_DATETIME `xml:"OM_DATETIME"`
 // }
 
-// OM_FIELD contais various nested tag name as field value. Must be parsed differently
-type Om_field_value struct {
+// OM_FIELD contais various nested tag names.
+// Custom unmarshalXML method must be used. Then it is faster to using map for attributes then usign struct fields. (When iterating over struct fields reflect must be used.)
+type OM_FIELD struct {
 	Value string
+	Attrs map[string]string
 }
 
-func (omf *Om_field_value) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+// Much faster to use map then iterate over struct fields.
+var OM_FIELD_ATTRS_NAMES = map[string]string{
+	"FieldID":   "",
+	"FieldType": "",
+	"FieldName": "",
+	"IsEmpty":   "",
+}
+
+func (omf *OM_FIELD) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 	var tagValue strings.Builder
 	var start_count int = 0
 	var end_count int = 0
 	var errUnexpectedTagStructure = fmt.Errorf("unexpected xml tag structure")
+	omf.Attrs = XmlTagAttributesMap(start, OM_FIELD_ATTRS_NAMES)
+loop1:
 	for {
 		token, err := d.Token()
 		if err != nil {
-			break
+			break loop1
 		}
 		if err == nil {
 			switch t := token.(type) {
@@ -62,6 +74,7 @@ func (omf *Om_field_value) UnmarshalXML(d *xml.Decoder, start xml.StartElement) 
 						tagValue.WriteString("\n" + content)
 					}
 				}
+				// Following lines validates xml so that it does not contain unexpected strucute of OM_FIELD
 			case xml.StartElement:
 				if start_count > 1 {
 					return errUnexpectedTagStructure

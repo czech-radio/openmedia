@@ -12,6 +12,16 @@ import (
 	"golang.org/x/text/encoding/unicode"
 )
 
+func XmlTagAttributesMap(
+	xs xml.StartElement,
+	attrs_names map[string]string) map[string]string {
+	result := make(map[string]string, len(attrs_names))
+	for _, attr := range xs.Attr {
+		result[attr.Name.Local] = attr.Value
+	}
+	return result
+}
+
 func FileIsValidXmlToMinify(src_file_path string) (bool, error) {
 	file_extension := filepath.Ext(src_file_path)
 	if file_extension != ".xml" {

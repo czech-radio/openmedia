@@ -72,8 +72,12 @@ func Test_XmlUnmarshal(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
+		// fmt.Printf("%+v\n", om.OM_OBJECTS[0].OM_HEADER)
 		for _, i := range om.OM_OBJECTS[0].OM_HEADER.Fields {
 			fmt.Printf("%+v\n", i)
 		}
+		// for _, i := range om.OM_OBJECTS[0].OM_RECORD.Fields {
+		// fmt.Printf("%+v\n", i)
+		// }
 	}
 }

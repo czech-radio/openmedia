@@ -244,7 +244,8 @@ func CopyFile(
 	if !overwrite && PathExists(dst_file_path) {
 		// return fmt.Errorf("destion path exists: %s", dst_file_path)
 		return fmt.Errorf(
-			"err: %w, filepath: %s", ErrFilePathExists, dst_file_path)
+			"err: %w, filepath: %s", ErrFilePathExists, dst_file_path,
+		)
 	}
 	dstFile, err := os.Create(dst_file_path)
 	if err != nil {
@@ -267,6 +268,7 @@ func ReadFile(file_path string) error {
 	}
 	defer srcFile.Close()
 	bufferedReader := bufio.NewReaderSize(srcFile, 4096)
+	// read first 10 lines
 	nlines := 10
 	n := 0
 	for {
