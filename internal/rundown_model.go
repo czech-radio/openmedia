@@ -8,24 +8,35 @@ import (
 
 type OPENMEDIA struct {
 	XMLName    xml.Name    `xml:"OPENMEDIA"`
+	OM_SERVER  OM_SERVER   `xml:"OM_SERVER"`
 	OM_OBJECTS []OM_OBJECT `xml:"OM_OBJECT"`
 }
 
 type OM_OBJECT struct {
-	OM_HEADER OM_HEADER `xml:"OM_HEADER"`
-	OM_RECORD OM_RECORD `xml:"OM_RECORD"`
+	Attrs      []xml.Attr  `xml:",any,attr"`
+	OM_HEADER  OM_HEADER   `xml:"OM_HEADER"`
+	OM_UPLINK  OM_UPLINK   `xml:"OM_UPLINK"`
+	OM_RECORDS []OM_RECORD `xml:"OM_RECORD"`
+}
+
+type OM_SERVER struct {
+	Attrs []xml.Attr `xml:",any,attr"`
 }
 
 type OM_RECORD struct {
-	Fields []OM_FIELD `xml:"OM_FIELD"`
+	Attrs      []xml.Attr  `xml:",any,attr"`
+	Fields     []OM_FIELD  `xml:"OM_FIELD"`
+	OM_RECORDS []OM_RECORD `xml:"OM_RECORD"`
+	OM_OBJECTS OM_OBJECT   `xml:"OM_OBJECT"`
 }
 
 type OM_HEADER struct {
-	Type      string     `xml:"FieldID,attr"`
-	FieldType string     `xml:"FieldType,attr"`
-	FieldName string     `xml:"FieldName,attr"`
-	IsEmpty   string     `xml:"IsEmpty,attr"`
-	Fields    []OM_FIELD `xml:"OM_FIELD"`
+	Attrs []xml.Attr `xml:",any,attr"`
+	// Type      string     `xml:"FieldID,attr"`
+	// FieldType string     `xml:"FieldType,attr"`
+	// FieldName string     `xml:"FieldName,attr"`
+	// IsEmpty   string     `xml:"IsEmpty,attr"`
+	Fields []OM_FIELD `xml:"OM_FIELD"`
 }
 
 // type OM_FIELD struct {
@@ -37,8 +48,9 @@ type OM_HEADER struct {
 // }
 
 // OM_FIELD contais various nested tag names.
-// Custom unmarshalXML method must be used. Then it is faster to using map for attributes then usign struct fields. (When iterating over struct fields reflect must be used.)
+// Custom unmarshalXML method must be used. It is faster to use map for attributes then usign struct fields then. (Reflect must be used, when iterating over struct fields)
 type OM_FIELD struct {
+	// Attrs []xml.Attr `xml:",any,attr"`
 	Value string
 	Attrs map[string]string
 }
@@ -74,7 +86,7 @@ loop1:
 						tagValue.WriteString("\n" + content)
 					}
 				}
-				// Following lines validates xml so that it does not contain unexpected strucute of OM_FIELD
+				// Following lines validates xml so that it does not contain unexpected strucute of OM_FIELD, xsd will be used for that
 			case xml.StartElement:
 				if start_count > 1 {
 					return errUnexpectedTagStructure
@@ -116,5 +128,6 @@ loop1:
 // 	return nil
 // }
 
-// type OM_UPLINK struct {
-// }
+type OM_UPLINK struct {
+	Attrs []xml.Attr `xml:",any,attr"`
+}

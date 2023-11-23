@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/fs"
 	"log/slog"
@@ -72,12 +73,39 @@ func Test_XmlUnmarshal(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
+		// fmt.Printf("%+v", om)
 		// fmt.Printf("%+v\n", om.OM_OBJECTS[0].OM_HEADER)
-		for _, i := range om.OM_OBJECTS[0].OM_HEADER.Fields {
-			fmt.Printf("%+v\n", i)
-		}
-		// for _, i := range om.OM_OBJECTS[0].OM_RECORD.Fields {
+		// for _, i := range om.OM_OBJECTS[0].OM_HEADER.Fields {
 		// fmt.Printf("%+v\n", i)
 		// }
+		// for _, i := range om.OM_OBJECTS[0].OM_RECORD.Fields {
+		// for n, i := range om.OM_OBJECTS[0].OM_RECORDS {
+		// fmt.Printf("RECORD NUMBER: %d\n", n)
+		// fmt.Printf("%+v\n", i)
+		// }
+		// for _, i := range om.OM_OBJECTS {
+		// fmt.Printf("%v\n", (i))
+		// }
+		// json.MarshallIndent(om)
+		js, err := json.MarshalIndent(om, "", "  ")
+		fmt.Println(string(js))
 	}
+}
+
+// var result *OPENMEDIA
+
+func BenchmarkXmlUnmarshall(b *testing.B) {
+	valid_files := []string{
+		"RD_00-12_Pohoda_-_Fri_06_01_2023_utf8_formated.xml",
+	}
+	file := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_valid", valid_files[0])
+	// var res *OPENMEDIA
+	for i := 0; i < b.N; i++ {
+		_, _ = RundownUnmarshall(file)
+		// if err != nil {
+		// 	b.Error(err)
+		// }
+	}
+	// result = res
+
 }

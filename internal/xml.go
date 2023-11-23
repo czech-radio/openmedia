@@ -22,6 +22,9 @@ func XmlTagAttributesMap(
 	return result
 }
 
+func XmlTagAttributesStruct(xs xml.StartElement, v any) {
+}
+
 func FileIsValidXmlToMinify(src_file_path string) (bool, error) {
 	file_extension := filepath.Ext(src_file_path)
 	if file_extension != ".xml" {
@@ -80,6 +83,13 @@ func XmlFileLinesValidate(src_file_path string) (bool, error) {
 	decoder.CharsetReader = BypassReader
 	return XmlDecoderValidate(decoder)
 }
+
+// func XMLunmarshallDynamicElement(d *xml.Decoder, start xml.StartElement, attrs_map map[string]string) {
+// var tagValue strings.Builder
+// var start_count int = 0
+// var end_count int = 0
+// var errUnexpectedTagStructure = fmt.Errorf("unexpected xml tag structure")
+// }
 
 func RundownUnmarshall(file_path string) (*OPENMEDIA, error) {
 	xmlFile, err := os.Open(file_path)

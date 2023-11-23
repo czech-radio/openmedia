@@ -6,11 +6,32 @@ SCRIPT_DIR="${SCRIPT_PATH%/*}"
 
 Go_test_debug(){
   local path
-  path="$1"
-  path="${SCRIPT_DIR}/../${path}/..."
+  local path="$1"
+  local path="${SCRIPT_DIR}/../${path}/..."
   local test_pattern
   test_pattern="${2:-''}"
   GOLOGLEVEL=-4 go test -v "$path" -run "$test_pattern"
+}
+
+Go_bench(){
+  local path
+  local path="$1"
+  local path="${SCRIPT_DIR}/../${path}/..."
+  local test_pattern
+  test_pattern="${2:-''}"
+
+	local test_opts=(
+		"$path"
+		-bench .
+		-run=^$
+		-benchmem
+    -cpu 1,2,4
+		# -benchtime 5s
+    "$test_pattern"
+	)
+	# go test "$path" -bench . -run=^$ -benchmem -benchtime 5s
+	echo go test "${test_opts[@]}"
+	go test "${test_opts[@]}"
 }
 
 Go_test_normal(){
