@@ -50,9 +50,9 @@ type OM_HEADER struct {
 // OM_FIELD contais various nested tag names.
 // Custom unmarshalXML method must be used. It is faster to use map for attributes then usign struct fields then. (Reflect must be used, when iterating over struct fields)
 type OM_FIELD struct {
-	// Attrs []xml.Attr `xml:",any,attr"`
-	Value string
-	Attrs map[string]string
+	Attrs []xml.Attr `xml:",any,attr"`
+	Value string     `xml:",omitempty"`
+	// Attrs map[string]string `xml:"-"`
 }
 
 // Much faster to use map then iterate over struct fields.
@@ -68,7 +68,9 @@ func (omf *OM_FIELD) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error 
 	var start_count int = 0
 	var end_count int = 0
 	var errUnexpectedTagStructure = fmt.Errorf("unexpected xml tag structure")
-	omf.Attrs = XmlTagAttributesMap(start, OM_FIELD_ATTRS_NAMES)
+	// omf.Attrs = XmlTagAttributesMap(start, OM_FIELD_ATTRS_NAMES)
+	// start.
+	omf.Attrs = start.Attr
 loop1:
 	for {
 		token, err := d.Token()

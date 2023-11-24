@@ -47,8 +47,21 @@ Useful for example when running as systemd service or as docker container`)
 	lf.StringP("rename-invalid-files-pattern", "R", "",
 		`rename invalid files:
 		files which do not pass any xml-validate tests`)
-	reduceCmd.MarkFlagRequired("input")
+	err := reduceCmd.MarkFlagRequired("input")
+	if err != nil {
+		slog.Error(err.Error())
+	}
 }
+
+// 1. list files in directory
+// 2. Filter by name
+// 3. Validate file with xsd --> move wrong files
+// 4. pack files in one week to directory (backup)
+// 4. Convert files from utf16le to utf8
+// 5. Unmarshall xml
+// 6. Filter out empty fields (possible using omit empty)
+// 7. Marshall xml
+// 8. Pack and save file
 
 func Reduce(cmd *cobra.Command, args []string) {
 	load_env, err := cmd.Flags().GetBool("load-env")

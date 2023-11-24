@@ -91,7 +91,7 @@ func XmlFileLinesValidate(src_file_path string) (bool, error) {
 // var errUnexpectedTagStructure = fmt.Errorf("unexpected xml tag structure")
 // }
 
-func RundownUnmarshall(file_path string) (*OPENMEDIA, error) {
+func RundownUnmarshal(file_path string) (*OPENMEDIA, error) {
 	xmlFile, err := os.Open(file_path)
 	if err != nil {
 		return nil, err

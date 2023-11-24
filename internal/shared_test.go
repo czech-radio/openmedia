@@ -76,7 +76,7 @@ func TestDirectoryCreateTemporary(t *testing.T) {
 }
 
 func Test_DirectoryFileList(t *testing.T) {
-	DirectoryFileList(TEMP_DIR_TEST_SRC)
+	DirectoryWalkFileList(TEMP_DIR_TEST_SRC)
 }
 
 func Test_DirectoryCopyNoRecurse(t *testing.T) {

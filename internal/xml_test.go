@@ -2,6 +2,7 @@ package internal
 
 import (
 	"encoding/json"
+	"encoding/xml"
 	"fmt"
 	"io/fs"
 	"log/slog"
@@ -69,7 +70,7 @@ func Test_XmlUnmarshal(t *testing.T) {
 	}
 	for _, vf := range valid_files {
 		file := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_valid", vf)
-		om, err := RundownUnmarshall(file)
+		om, err := RundownUnmarshal(file)
 		if err != nil {
 			t.Error(err)
 		}
@@ -94,17 +95,22 @@ func Test_XmlUnmarshal(t *testing.T) {
 
 // var result *OPENMEDIA
 
-func BenchmarkXmlUnmarshall(b *testing.B) {
+func BenchmarkXmlUnmarshal(b *testing.B) {
 	valid_files := []string{
 		"RD_00-12_Pohoda_-_Fri_06_01_2023_utf8_formated.xml",
 	}
 	file := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_valid", valid_files[0])
 	// var res *OPENMEDIA
 	for i := 0; i < b.N; i++ {
-		_, _ = RundownUnmarshall(file)
-		// if err != nil {
-		// 	b.Error(err)
-		// }
+		omu, err := RundownUnmarshal(file)
+		// _, err := RundownUnmarshal(file)
+		if err != nil {
+			b.Error(err)
+		}
+		_, err = xml.MarshalIndent(omu, "", "  ")
+		if err != nil {
+			b.Error(err)
+		}
 	}
 	// result = res
 

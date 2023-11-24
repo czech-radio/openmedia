@@ -214,7 +214,7 @@ func DirectoryCopy(
 	return err
 }
 
-func DirectoryFileList(file_path string) error {
+func DirectoryWalkFileList(file_path string) error {
 	dirs, err := os.ReadDir(file_path)
 	if err != nil {
 		return err
@@ -283,4 +283,15 @@ func ReadFile(file_path string) error {
 		fmt.Printf("%s\n", data)
 	}
 	return nil
+}
+
+func DirectoryFileListChan(directory_path string, ch chan<- string) {
+	dirs, err := os.ReadDir(directory_path)
+	if err != nil {
+		panic(err)
+	}
+	for _, dir := range dirs {
+		ch <- filepath.Join(directory_path, dir.Name())
+	}
+	close(ch)
 }
