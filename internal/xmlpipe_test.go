@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"fmt"
 	"log/slog"
 	"os"
 	"path/filepath"
@@ -23,10 +22,11 @@ func TestTransformXML(t *testing.T) {
 		slog.Error(err.Error())
 		t.Error(err)
 	}
-	fmt.Printf("%+v\n", om)
+	err = RundownMarshal(om, "kek")
+	// fmt.Printf("%+v\n", om)
 	// res, err := om.FileDate()
-	// if err != nil {
-	// t.Error(err)
-	// }
+	if err != nil {
+		t.Error(err)
+	}
 	// fmt.Println(res.ISOWeek())
 }

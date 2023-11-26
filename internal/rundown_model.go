@@ -6,18 +6,17 @@ import (
 	"strings"
 	"time"
 
-	strftime "github.com/ncruces/go-strftime"
+	"github.com/ncruces/go-strftime"
 )
 
 type OPENMEDIA struct {
 	XMLName   xml.Name  `xml:"OPENMEDIA"`
 	OM_SERVER OM_SERVER `xml:"OM_SERVER"`
-	// OM_OBJECTS []OM_OBJECT `xml:"OM_OBJECT"`
 	OM_OBJECT OM_OBJECT `xml:"OM_OBJECT"`
 }
 
+// FileDate: get date from xml rundown
 func (om OPENMEDIA) FileDate() (time.Time, error) {
-	// fields := om.OM_OBJECTS[0].OM_HEADER.Fields
 	fields := om.OM_OBJECT.OM_HEADER.Fields
 	var fieldValue string
 loopfields:
@@ -47,20 +46,21 @@ type OM_SERVER struct {
 type OM_RECORD struct {
 	Attrs      []xml.Attr  `xml:",any,attr"`
 	Fields     []OM_FIELD  `xml:"OM_FIELD,omitempty"`
-	OM_RECORDS []OM_RECORD `xml:"OM_RECORD"`
+	OM_RECORDS []OM_RECORD `xml:"OM_RECORD,omitempty"`
 	OM_OBJECTS OM_OBJECT   `xml:"OM_OBJECT"`
 }
 
 type OM_HEADER struct {
 	Attrs  []xml.Attr `xml:",any,attr"`
-	Fields []OM_FIELD `xml:"OM_FIELD"`
+	Fields []OM_FIELD `xml:"OM_FIELD,omitempty"`
 }
 
 // OM_FIELD contais various nested tag names.
 // Custom unmarshalXML method must be used. It is faster to use map for attributes then usign struct fields then. (Reflect must be used, when iterating over struct fields)
 type OM_FIELD struct {
 	Attrs []xml.Attr `xml:",any,attr,omitempty"`
-	Value string     `xml:",omitempty"`
+	// Value string     `xml:",any,omitempty"`
+	Value string `xml:",any,omitempty"`
 	// Attrs map[string]string `xml:"-"`
 }
 
@@ -71,6 +71,8 @@ type OM_FIELD struct {
 // FieldType string         `xml:"FieldType,attr"`
 // FieldName string         `xml:"FieldName,attr"`
 // IsEmpty   string         `xml:"IsEmpty,attr"`
+// }
+// type OM_FIELD_ATTRS struct {
 // }
 
 // Much faster to use map then iterate over struct fields.
@@ -122,15 +124,72 @@ loop1:
 			return fmt.Errorf("unknown token type: %T", t)
 		}
 	}
-	// omf.Value = tagValue.String()
-	// Omit empty fields
 	value := tagValue.String()
 	if value != "" {
 		omf.Value = tagValue.String()
 		omf.Attrs = start.Attr
+	} else {
+		// omf = &OM_FIELD{}
+		omf = nil
 	}
 	return nil
 }
+
+// func (omf *OM_FIELD) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+// 	var tagValue strings.Builder
+// 	var start_count int = 0
+// 	var end_count int = 0
+// 	var errUnexpectedTagStructure = fmt.Errorf("unexpected xml tag structure")
+// 	// omf.Attrs = XmlTagAttributesMap(start, OM_FIELD_ATTRS_NAMES)
+// 	// start.
+// loop1:
+// 	for {
+// 		token, err := d.Token()
+// 		if err != nil {
+// 			break loop1
+// 		}
+// 		switch t := token.(type) {
+// 		case xml.CharData:
+// 			content := strings.TrimSpace(string(t))
+// 			if content == "" {
+// 				continue
+// 			}
+// 			if tagValue.Len() == 0 {
+// 				tagValue.WriteString(content)
+// 			} else {
+// 				tagValue.WriteString("\n" + content)
+// 			}
+// 			// Following lines validates xml so that it does not contain unexpected strucute of OM_FIELD, xsd will be used for that
+// 		case xml.StartElement:
+// 			if start_count > 1 {
+// 				return errUnexpectedTagStructure
+// 			}
+// 			start_count++
+// 			continue
+// 		case xml.EndElement:
+// 			if end_count > 1 {
+// 				return errUnexpectedTagStructure
+// 			}
+// 			end_count++
+// 			continue
+// 		default:
+// 			return fmt.Errorf("unknown token type: %T", t)
+// 		}
+// 	}
+// 	value := tagValue.String()
+// 	if value == "" {
+// 		// fmt.Println("is empty")
+// 		return nil
+// 	}
+// 	// omf.Value = tagValue.String()
+// 	// omf.Attrs = start.Attr
+// 	// var omv OM_VALUE
+// 	// omv:=
+// 	// (tagValue.String())
+// 	// omv = tagValue.String()
+// 	// omf.OM_VALUE = OM_VALUE{tagValue.String()}
+// 	return nil
+// }
 
 type OM_UPLINK struct {
 	Attrs []xml.Attr `xml:",any,attr"`

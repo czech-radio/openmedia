@@ -93,10 +93,6 @@ func Test_CurrentDir(t *testing.T) {
 	}
 }
 
-func Test_DetectLinuxSystemPanic(t *testing.T) {
-	DetectLinuxSytemOrPanic()
-}
-
 func Test_DirectoryCreateInRam(t *testing.T) {
 	directory := DirectoryCreateInRam("golang_test")
 	defer os.RemoveAll(directory)
@@ -107,28 +103,12 @@ func TestDirectoryCreateTemporary(t *testing.T) {
 	defer os.RemoveAll(directory)
 }
 
-func Test_DirectoryFileList(t *testing.T) {
-	DirectoryWalkFileList(TEMP_DIR_TEST_SRC)
-}
-
 func Test_DirectoryCopyNoRecurse(t *testing.T) {
 	_, err := DirectoryCopyNoRecurse(
 		TEST_DATA_DIR_SRC,
 		TEMP_DIR+"/test_copy",
 		false,
 	)
-	if err != nil {
-		t.Error(err)
-	}
-}
-
-func Test_DirectoryWalk(t *testing.T) {
-	DirectoryWalk(TEMP_DIR_TEST_SRC)
-}
-
-func Test_DirectoryTraverse(t *testing.T) {
-	err := DirectoryTraverse(
-		TEMP_DIR_TEST_SRC, FileSystemPathList, true)
 	if err != nil {
 		t.Error(err)
 	}
@@ -146,15 +126,6 @@ func Test_DirectoryCopy(t *testing.T) {
 	err = DirectoryCopy(
 		TEST_DATA_DIR_SRC, dstDir, true, true, "")
 	if err != nil && errors.Unwrap(err) != ErrFilePathExists {
-		t.Error(err)
-	}
-}
-
-func Test_ReadFile(t *testing.T) {
-	srcFileName := "rundown/RD_00-12_Pohoda_-_Fri_06_01_2023_2_14293760_20230107001431.xml"
-	srcFilePath := filepath.Join(TEST_DATA_DIR_SRC, srcFileName)
-	err := ReadFile(srcFilePath)
-	if err != nil {
 		t.Error(err)
 	}
 }

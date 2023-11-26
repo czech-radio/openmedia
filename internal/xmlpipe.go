@@ -56,18 +56,30 @@ func PipeRundownheaderAmmend(input_reader io.Reader) *io.PipeReader {
 
 func PipeRundownMinfiy(input_reader *io.PipeReader) (*OPENMEDIA, error) {
 	var OM OPENMEDIA
-	byteData, err := io.ReadAll(input_reader)
-	if err != nil {
-		return nil, err
-	}
-	// err := xml.NewDecoder(input_reader).Decode(&OM)
+	bufio.NewReader(input_reader)
+	// byteData, err := io.ReadAll(input_reader)
 	// if err != nil {
 	// return nil, err
 	// }
-	// fmt.Println("ke", byteData)
-	err = xml.Unmarshal(byteData, &OM)
+	err := xml.NewDecoder(input_reader).Decode(&OM)
 	if err != nil {
 		return nil, err
 	}
+	// fmt.Println("ke", byteData)
+	// err = xml.Unmarshal(byteData, &OM)
+	// io.ReadFull
+	// err = xml.Unmarshal(byteData, &OM)
+	// if err != nil {
+	// return nil, err
+	// }
 	return &OM, nil
+}
+
+func RundownMarshal(om *OPENMEDIA, dst_file string) error {
+	res, err := xml.MarshalIndent(om, "", "\t")
+	if err != nil {
+		return err
+	}
+	fmt.Println(string(res))
+	return nil
 }

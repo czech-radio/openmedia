@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"bufio"
 	"errors"
 	"fmt"
 	"io"
@@ -14,13 +13,6 @@ import (
 )
 
 var ErrFilePathExists = errors.New("file path exists")
-
-func DetectLinuxSytemOrPanic() {
-	if runtime.GOOS != "linux" {
-		msg := fmt.Sprintf("unsuported OS: %s, %s", runtime.GOOS, runtime.GOARCH)
-		panic(msg)
-	}
-}
 
 func PathExists(fs_path string) bool {
 	_, err := os.Stat(fs_path)
@@ -122,26 +114,6 @@ func DirectoryDeleteOrPanic(directory string) {
 	}
 }
 
-func DirectoryWalk(directory string) {
-	walk_func := func(path string, d fs.DirEntry, err error) error {
-		if err != nil {
-			fmt.Println(err)
-			return err
-		}
-		return nil
-	}
-	err := filepath.WalkDir(directory, walk_func)
-	if err != nil {
-		fmt.Println(err)
-	}
-}
-
-func FileSystemPathList(fs_path string, d fs.DirEntry) error {
-	fmt.Printf("list_func: %s, %s, %t\n",
-		fs_path, d.Name(), d.IsDir())
-	return nil
-}
-
 func DirectoryTraverse(
 	directory string,
 	fn func(directory string, d fs.DirEntry) error,
@@ -214,17 +186,6 @@ func DirectoryCopy(
 	return err
 }
 
-func DirectoryWalkFileList(file_path string) error {
-	dirs, err := os.ReadDir(file_path)
-	if err != nil {
-		return err
-	}
-	for _, dir := range dirs {
-		fmt.Println(dir.Name(), dir.Type(), dir.Type().IsRegular())
-	}
-	return nil
-}
-
 func CopyFile(
 	src_file_path, dst_file_path string,
 	overwrite bool,
@@ -259,39 +220,4 @@ func CopyFile(
 	}
 
 	return nil
-}
-
-func ReadFile(file_path string) error {
-	srcFile, err := os.Open(file_path)
-	if err != nil {
-		return err
-	}
-	defer srcFile.Close()
-	bufferedReader := bufio.NewReaderSize(srcFile, 4096)
-	// read first 10 lines
-	nlines := 10
-	n := 0
-	for {
-		n++
-		if n > nlines {
-			break
-		}
-		data, err := bufferedReader.ReadBytes('\n')
-		if err != nil {
-			return err
-		}
-		fmt.Printf("%s\n", data)
-	}
-	return nil
-}
-
-func DirectoryFileListChan(directory_path string, ch chan<- string) {
-	dirs, err := os.ReadDir(directory_path)
-	if err != nil {
-		panic(err)
-	}
-	for _, dir := range dirs {
-		ch <- filepath.Join(directory_path, dir.Name())
-	}
-	close(ch)
 }
