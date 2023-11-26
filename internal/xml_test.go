@@ -10,6 +10,16 @@ import (
 	"testing"
 )
 
+func Test_FileUTF16leToUTF8(t *testing.T) {
+	src_file := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_valid", "RD_00-12_Pohoda_-_Fri_06_01_2023_orig.xml")
+	dst_file := filepath.Join(TEMP_DIR_TEST_DST, "convert.xml")
+	err := FileUTF16leToUTF8(src_file, dst_file)
+	if err != nil {
+		t.Error(err)
+	}
+	Sleeper(1000, "s")
+}
+
 func Test_FileIsValidXmlToMinify(t *testing.T) {
 	var mustBeValid bool = true // wheter the results of subsequent tests should result true or false. I.e. if mustBeValid == true all files should result as valid.
 
@@ -98,6 +108,7 @@ func Test_XmlUnmarshal(t *testing.T) {
 func BenchmarkXmlUnmarshal(b *testing.B) {
 	valid_files := []string{
 		"RD_00-12_Pohoda_-_Fri_06_01_2023_utf8_formated.xml",
+		// "RD_00-12_Pohoda_-_Fri_06_01_2023_utf8.xml",
 	}
 	file := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_valid", valid_files[0])
 	// var res *OPENMEDIA

@@ -3,6 +3,7 @@ module github/czech-radio/openmedia-reduce
 go 1.20
 
 require (
+	github.com/ncruces/go-strftime v0.1.9
 	github.com/spf13/cobra v1.8.0
 	golang.org/x/text v0.13.0
 )

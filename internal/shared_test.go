@@ -2,22 +2,50 @@ package internal
 
 import (
 	"errors"
+	"log/slog"
 	"os"
+	"os/signal"
 	"path/filepath"
+	"sync"
+	"syscall"
 	"testing"
 )
 
+var TESTS_RESULT_CODE int
 var TEST_DATA_DIR_SRC string // Test data which will be copied to TEMP_DIR
 var TEMP_DIR string          // Temporary directory inside /dev/shm created for test source files and output files
 var TEMP_DIR_TEST_SRC string // Temporary direcotory which serves as source data for tests
 var TEMP_DIR_TEST_DST string // Temporary direcotory which serves as destination for tests outputs
 
+// CleanUp cleanup testing environment afer sigint
+func CleanUp() (chan os.Signal, *sync.WaitGroup) {
+	wg := new(sync.WaitGroup)
+	com := make(chan os.Signal, 1)
+	wg.Add(1)
+	go func() {
+		signal.Notify(com, os.Interrupt, syscall.SIGHUP)
+		signal := <-com
+		slog.Info("clean up started")
+		DirectoryDeleteOrPanic(TEMP_DIR)
+		slog.Info("clean up finished")
+		switch signal {
+		case os.Interrupt:
+			os.Exit(-1)
+		case syscall.SIGHUP:
+			os.Exit(TESTS_RESULT_CODE)
+		}
+	}()
+	return com, wg
+}
+
 // TestMain setup, run tests, and teadrdown (cleanup after tests)
 func TestMain(m *testing.M) {
 	// TESTS SETUP
+
 	//// Setup logging
 	level := os.Getenv("GOLOGLEVEL")
 	SetLogLevel(level)
+
 	//// Setup testing data
 	current_directory, err := os.Getwd()
 	if err != nil {
@@ -28,6 +56,10 @@ func TestMain(m *testing.M) {
 	DirectoryIsReadableOrPanic(TEST_DATA_DIR_SRC)
 	TEMP_DIR_TEST_SRC = filepath.Join(TEMP_DIR, "SRC")
 	TEMP_DIR_TEST_DST = filepath.Join(TEMP_DIR, "DST")
+	err = os.MkdirAll(TEMP_DIR_TEST_DST, 0700)
+	if err != nil {
+		slog.Error(err.Error())
+	}
 
 	//// copy testing data to temporary directory
 	SetLogLevel("0")
@@ -36,19 +68,19 @@ func TestMain(m *testing.M) {
 		TEMP_DIR_TEST_SRC,
 		true, false, "",
 	)
+	if err_copy != nil {
+		os.Exit(-1)
+	}
 	SetLogLevel(level)
 
-	// RUN TESTS
-	if err_copy == nil {
-		code := m.Run()
-		defer os.Exit(code)
-	}
-	if err_copy != nil {
-		defer os.Exit(-1)
-	}
+	// Clean up (teardown)
+	cleanupChan, waitGroup := CleanUp()
 
-	// TEARDOWN
-	DirectoryDeleteOrPanic(TEMP_DIR)
+	// Run tests
+	TESTS_RESULT_CODE = m.Run()
+	// os.Exit(TESTS_RESULT_CODE)
+	cleanupChan <- syscall.SIGHUP
+	waitGroup.Wait()
 }
 
 func Test_CurrentDir(t *testing.T) {
