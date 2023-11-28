@@ -1,3 +1,5 @@
+#!/bin/bash
+#
 ### Go test
 Go_test_all(){
   # go vet -v ./...

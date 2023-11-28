@@ -64,7 +64,7 @@ TODO: better memory handling, fixed by [b20445b](https://github.com/czech-radio/
 -   alpine_3.18 (./deploy/dockerfile_devel.yml): go version go1.20.10 linux/amd64
 
 ### Logging
-[https://betterstack.com/community/guides/logging/best-golang-logging-libraries/]
+[](https://betterstack.com/community/guides/logging/best-golang-logging-libraries/)
 
 -   slog: new bulit-in logging in Go 1.21 (chosen one)
 -   zerolog: fastest
@@ -78,6 +78,7 @@ TODO: better memory handling, fixed by [b20445b](https://github.com/czech-radio/
 
 #### Element object structure
 
+```
 OPENMEDIA
  OM_SERVER
  OM_OBJECT "Radio Rundown"
@@ -94,23 +95,26 @@ OM_OBJECT "Hourly Rundown"
  OM_RECORD
   OM_FILED [1-5012,-11,-12]
   OM_OBJECT "Sub Rundown"
-
+```
 
 #### Object structure
 
+```
 OM_OBJECT "Radio Rundown"
  OM_OBJECT "Hourly Rundown"
   OM_OBJECT "Sub Rundown"
    OM_OBJECT "Radio Story"
     OM_OBJECT "Contact item" [Optional]
     OM_OBJECT "Audio clip"   [Optional]
+```
 
 ### Testing
+
 #### Additional testing files
+
 ':/GŘ/Strategický rozvoj/Analytická sekce/_Archiv/Projekty/OpenMedia/04_03_2020'
 
 #### XML rundown validation
+
 xmllint --schema schema.xsd`
 The xml does not validate when schema.xsd imports another xsd for common ojects.
-
-

@@ -4,7 +4,7 @@ SCRIPT_DIR="${SCRIPT_PATH%/*}"
 TEST_FILE_GOOD="${SCRIPT_DIR}/../test/testdata/RD_00-12_Pohoda_-_Fri_06_01_2023_2_14293760_20230107001431.xml"
 TEST_FILE_AMMEND="${SCRIPT_DIR}/../test/testdata/RD_00-12_Pohoda_-_Fri_06_01_2023_2_14293760_20230107001431_ammend_utf.xml"
 TEST_FILE_BAD="${SCRIPT_DIR}/../test/testdata/RD_00-12_Pohoda_-_Fri_06_01_2023_2_14293760_20230107001431_bad.xml"
-CURRENT_DIR="$PWD"
+# CURRENT_DIR="$PWD"
 
 xml_validate_xml_xsd_dir(){
   # SIGHUP SIGQUIT SIGTERM EXIT ERR
@@ -57,7 +57,7 @@ xml_validate_xml_xsd_dir(){
     xmllint "${xmllint_opts[@]}" "$file" &>/dev/null
     result="$?"
     if [[ $result == 0 ]] ; then
-      echo "File should not be validated: "$file"" > /dev/stderr
+      echo "File should not be validated: $file" > /dev/stderr
       # return 2
     fi
   done
@@ -104,7 +104,7 @@ xml_filter_out_empty_fields(){
 test_xml_filter2(){
   local xmlfile="$TEST_FILE_GOOD"
 
-  convert_to_utf8 "$xmlfile" | grep -v "IsEmpty = \"yes\"" | wc -l
+  convert_to_utf8 "$xmlfile" | grep --count -v "IsEmpty = \"yes\""
   convert_to_utf8 "$xmlfile" | awk '!/IsEmpty = "yes"/' | wc -l
   convert_to_utf8 "$xmlfile" | awk '!/IsEmpty = "yes"/'
 # 10298
