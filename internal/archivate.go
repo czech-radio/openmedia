@@ -174,11 +174,11 @@ func TarGzArchive(sourceDir, tarGzFile string) (error, *ArchiveResult) {
 	if errorsCount > 0 {
 		return fmt.Errorf("there were %d errors, check results", errorsCount), &result
 	}
+
 	return nil, &result
 }
 
 func TarGzArchiveAdd(tw *tar.Writer, source_dir, source_filename string) error {
-
 	file, err := os.Open(source_filename)
 	if err != nil {
 		return err
@@ -202,6 +202,7 @@ func TarGzArchiveAdd(tw *tar.Writer, source_dir, source_filename string) error {
 		return err
 	}
 	header.Name = relPath
+
 	// Write file header to the tar archive
 	err = tw.WriteHeader(header)
 	if err != nil {

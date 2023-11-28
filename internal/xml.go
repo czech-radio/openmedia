@@ -1,12 +1,50 @@
 package internal
 
 import (
+	"embed"
 	"encoding/xml"
+	"fmt"
 	"io"
 	"os"
+	"path/filepath"
+
+	// "encoding/xml/schema"
 
 	"golang.org/x/text/encoding/unicode"
+	// "gorm.io/gorm/schema"
 )
+
+var content embed.FS
+
+func EmbededOpenMediaXSD() ([]byte, error) {
+	fmt.Println(os.Getwd())
+	filePath := filepath.Join("../", "test", "testdata", "rundowns_schemas", "OM_LV7_schema.xsd")
+	file, err := os.Open(filePath)
+	if err != nil {
+		return nil, err
+	}
+	bytes, err := io.ReadAll(file)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println(bytes)
+
+	// data, err := content.ReadFile(filePath)
+	return bytes, err
+}
+
+func XmlValidateWithXSD(filePath string) (bool, error) {
+	xsdData, err := EmbededOpenMediaXSD()
+	if err != nil {
+		return false, err
+	}
+	fmt.Println(xsdData)
+	// schema := &schema.Schema{}
+	// if err := schema.Unmarshal(xsdData); err != nil {
+	// return false, fmt.Errorf("error unmarshaling XSD: %v", err)
+	// }
+	return true, nil
+}
 
 func XmlTagAttributesMap(
 	xs xml.StartElement,

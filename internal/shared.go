@@ -221,3 +221,11 @@ func CopyFile(
 
 	return nil
 }
+
+func SaveBytesToFile(data []byte, filePath string) error {
+	err := os.WriteFile(filePath, data, 0600)
+	if err != nil {
+		return fmt.Errorf("error writing to file: %v", err)
+	}
+	return nil
+}

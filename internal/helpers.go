@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"encoding/json"
 	"fmt"
 	"log/slog"
 	"os"
@@ -77,4 +78,17 @@ func StructFieldsMap(v any) map[string]string {
 		res[refValType.Field(i).Name] = ""
 	}
 	return res
+}
+
+func StructFieldsEmpty(in interface{}) {
+	var inInterface map[string]interface{}
+	inrec, _ := json.Marshal(in)
+	json.Unmarshal(inrec, &inInterface)
+	// iterate through inrecs
+	for _, val := range inInterface {
+		if val == "" {
+			fmt.Println("empty")
+		}
+		// fmt.Println("KV Pair: ", field, val)
+	}
 }
