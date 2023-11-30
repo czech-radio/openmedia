@@ -6,6 +6,7 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io"
+	"os"
 	"strings"
 
 	"golang.org/x/text/encoding/unicode"
@@ -103,7 +104,6 @@ type ProcessFolderOptions struct {
 	DestinationDirectory   string
 	InputEncoding          string
 	OutputEncoding         string
-	ValidateFilenames      bool
 	ValidateWithDefaultXSD bool   // validate with bundled file
 	ValidateWithXSD        string // path to XSD file
 	ValidatePre            bool
@@ -123,23 +123,81 @@ type ProcessResults struct {
 }
 
 func (pr *ProcessResults) AddError(err ...error) {
-	pr.Errors = append(pr.Errors, err...)
+	if err != nil && len(err) > 0 {
+		pr.Errors = append(pr.Errors, err...)
+	}
 }
 
-func ProcesFolder(opts ProcessFolderOptions) (*ProcessResults, error) {
+func ProcessFolder(opts ProcessFolderOptions) (*ProcessResults, error) {
 	var results = &ProcessResults{}
-	if opts.ValidateFilenames {
-		result, err := ValidateFilenamesInDirectory(opts.SourceDirectory)
-		if err != nil && !opts.InvalidFileContinue {
-			results.AddError(err)
-			results.AddError(result.Errors...)
-			return results, err
-		}
+	validateResults, err := ValidateFilenamesInDirectory(opts.SourceDirectory)
+	results.AddError(validateResults.Errors...)
+	results.AddError(err)
+	if !opts.InvalidFileContinue && err != nil {
+		return results, err
+	}
+	fileListResults, err := ProcessFileList(opts, validateResults.FilesValid)
+	results.AddError(fileListResults.Errors...)
+	results.AddError(err)
+	if !opts.InvalidFileContinue && err != nil {
+		return results, err
 	}
 	return results, nil
 }
 
-// func ProcessWeek() {
+func ProcessFileList(opts ProcessFolderOptions, files []string) (*ProcessResults, error) {
+	var results = &ProcessResults{}
+	workerChannels := make(map[string]chan ProcessFileOpts)
+	for _, file := range files {
+		// fmt.Println("processing", i)
+		fileHandle, err := os.Open(file)
+		results.AddError(err)
+		if !opts.InvalidFileContinue && err != nil {
+			return results, err
+		}
+		defer fileHandle.Close()
+		fileInfo, err := fileHandle.Stat()
+		results.AddError(err)
+		if !opts.InvalidFileContinue && err != nil {
+			return results, err
+		}
+		pr := PipeUTF16leToUTF8(fileHandle)
+		pr = PipeRundownHeaderAmmend(pr)
+		om, err := PipeRundownUnmarshal(pr) // treat EOF error
+		results.AddError(err)
+		if !opts.InvalidFileContinue && err != nil {
+			return results, err
+		}
+		date, err := om.RundownDate()
+		results.AddError(err)
+		if !opts.InvalidFileContinue && err != nil {
+			return results, err
+		}
+		year, week := date.ISOWeek()
+		chanName := fmt.Sprintf("%d_%d", year, week)
+		archiveChannel := "archive" + chanName
+		// minifyChannel := "minify" + chanName
+		worker, ok := workerChannels[archiveChannel]
+		if !ok {
+			worker = make(chan ProcessFileOpts)
+			workerChannels[archiveChannel] = worker
+		}
+
+		// weekday := date.Weekday()
+		// fmt.Println(i, file, year, week)
+	}
+	return results, nil
+}
+
+type ProcessFileOpts struct {
+	*io.PipeReader
+	FileInfo os.FileInfo
+	Year     int
+	Week     int
+	WeekDay  int
+}
+
+// func BackupFile(date) {
 // }
 
 // new_filename := beginning + fmt.Sprintf("%s_W%02d_%04d_%02d_%02d", weekday, week, year, month, day)

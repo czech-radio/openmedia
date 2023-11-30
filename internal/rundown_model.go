@@ -20,6 +20,7 @@ type OPENMEDIA struct {
 }
 
 // RundownDate: get date from xml rundown
+// TODO: optimize without loops
 func (om OPENMEDIA) RundownDate() (time.Time, error) {
 	fields := om.OM_OBJECT.OM_HEADER.Fields
 	var fieldValue string

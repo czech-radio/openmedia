@@ -43,21 +43,16 @@ func Test_ProcessFolder(t *testing.T) {
 		DestinationDirectory:   dstDir,
 		InputEncoding:          "",
 		OutputEncoding:         "",
-		ValidateFilenames:      true,
 		ValidateWithDefaultXSD: false,
 		ValidateWithXSD:        "",
 		ValidatePre:            false,
 		ValidatePost:           false,
 		ArchiveType:            "",
 		InvalidFileRename:      false,
-		InvalidFileContinue:    false,
+		// InvalidFileContinue:    false,
+		InvalidFileContinue: true,
 	}
-	// res, err := ProcesFolder(opts)
-	// res, err := ProcesFolder(opts)
-	_, err := ProcesFolder(opts)
-	// _, _ = ProcesFolder(opts)
-	// fmt.Println(err)
-	// fmt.Println(opts)
+	_, err := ProcessFolder(opts)
 	// Sleeper(100, "s")
 	if err != nil {
 		t.Error(err)

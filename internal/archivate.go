@@ -66,7 +66,9 @@ func ValidateFilenamesInDirectory(sourceDir string) (*ArchiveResult, error) {
 }
 
 func (ar *ArchiveResult) AddError(err ...error) {
-	ar.Errors = append(ar.Errors, err...)
+	if err != nil && len(err) > 0 {
+		ar.Errors = append(ar.Errors, err...)
+	}
 }
 
 func ZipArchive(sourceDir, zipFile string) (error, *ArchiveResult) {
