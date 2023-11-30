@@ -26,7 +26,7 @@ Go_bench(){
 		-run=^$
 		-benchmem
     -cpu 1,2,4
-		# -benchtime 5s
+		# -benchtime 20s
     "$test_pattern"
 	)
 	# go test "$path" -bench . -run=^$ -benchmem -benchtime 5s

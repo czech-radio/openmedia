@@ -81,7 +81,7 @@ func ZipArchive(sourceDir, zipFile string) (error, *ArchiveResult) {
 		result.FilesSuccess++
 		return nil
 	}
-	err = filepath.Walk(sourceDir, walk_func)
+	filepath.Walk(sourceDir, walk_func)
 	errorsCount := len(result.Errors)
 	if errorsCount > 0 {
 		return fmt.Errorf("there were %d errors, check results", errorsCount), &result

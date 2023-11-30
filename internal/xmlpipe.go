@@ -28,7 +28,15 @@ func PipeUTF16leToUTF8(r io.Reader) *io.PipeReader {
 	return pr
 }
 
-func PipeRundownheaderAmmend(input_reader io.Reader) *io.PipeReader {
+// func PipeAddRundownHeader(input_reader io.Reader) *io.PipeReader {
+// xmlHeader := `<?xml version="1.0" encoding="UTF-16" standalone="no" ?>
+// <!DOCTYPE OPENMEDIA SYSTEM "ann_objects.dtd">`
+// pr, pw := io.Pipe()
+// writer := bufio.NewWriter(pw)
+// scanner := bufio.NewScanner(input_reader)
+// }
+
+func PipeRundownHeaderAmmend(input_reader io.Reader) *io.PipeReader {
 	pr, pw := io.Pipe()
 	writer := bufio.NewWriter(pw)
 	scanner := bufio.NewScanner(input_reader)

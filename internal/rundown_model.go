@@ -14,8 +14,8 @@ type OPENMEDIA struct {
 	OM_OBJECT OM_OBJECT `xml:"OM_OBJECT"`
 }
 
-// FileDate: get date from xml rundown
-func (om OPENMEDIA) FileDate() (time.Time, error) {
+// RundownDate: get date from xml rundown
+func (om OPENMEDIA) RundownDate() (time.Time, error) {
 	fields := om.OM_OBJECT.OM_HEADER.Fields
 	var fieldValue string
 loopfields:
@@ -61,16 +61,18 @@ type OM_UPLINK struct {
 // OM_FIELD contais various nested tag names.
 // Custom unmarshalXML method must be used. It is faster to use map for attributes then usign struct fields then. (Reflect must be used, when iterating over struct fields)
 type OM_FIELD struct {
-	Attrs []xml.Attr `xml:",any,attr"`
+	Attrs       []xml.Attr `xml:",any,attr"`
+	OM_STRING   string     `xml:"OM_STRING,omitempty"`
+	OM_DATETIME string     `xml:"OM_DATETIME,omitempty"`
+	OM_TIMESPAN string     `xml:"OM_TIMESPAN,omitempty"`
+	OM_INT32    string     `xml:"OM_INT32,omitempty"`
 	// Attrs map[string]string `xml:"-"`
-	// Value       string `xml:",any"` // This will parse all remaining tags (it can parse all tags)
-	OM_STRING   string `xml:"OM_STRING,omitempty"`
-	OM_DATETIME string `xml:"OM_DATETIME,omitempty"`
-	OM_TIMESPAN string `xml:"OM_TIMESPAN,omitempty"`
-	OM_INT32    string `xml:"OM_INT32,omitempty"`
+	// Value string `xml:",any"` // This will parse all remaining tags (it can parse all tags)
+	// Value map[string]string
+	// `xml:",any"`
 }
 
-// OM_FIELD filter empty, when it contains empty tags
+// V1: OM_FIELD filter empty, when it contains empty tags
 func (omf *OM_FIELD) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 	var inInterface map[string]interface{}
 	inrec, _ := json.Marshal(omf)
@@ -88,7 +90,7 @@ func (omf *OM_FIELD) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 	return e.EncodeElement(*omf, start)
 }
 
-// OM_FIELD alternative filter out empty. When parsing all nested tags as OM_FIELD.Value
+// V2: OM_FIELD alternative filter out empty. When parsing all nested tags as OM_FIELD.Value. 2 times faster than V1
 // func (omf *OM_FIELD) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 // res := OM_FIELD{}
 // if omf.Value != "" {

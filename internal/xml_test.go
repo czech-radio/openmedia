@@ -105,6 +105,18 @@ func Test_XmlMarshalSaveToFile(t *testing.T) {
 	Sleeper(1000, "s")
 }
 
+func TestXmlUnmarshal(t *testing.T) {
+	valid_files := []string{
+		"RD_00-12_Pohoda_-_Fri_06_01_2023_utf8_formated.xml",
+	}
+	file := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_valid", valid_files[0])
+	omu, err := RundownUnmarshal(file)
+	if err != nil {
+		t.Error(err)
+	}
+	fmt.Println(omu)
+}
+
 func BenchmarkXmlUnmarshal(b *testing.B) {
 	valid_files := []string{
 		"RD_00-12_Pohoda_-_Fri_06_01_2023_utf8_formated.xml",
@@ -123,4 +135,5 @@ func BenchmarkXmlUnmarshal(b *testing.B) {
 			b.Error(err)
 		}
 	}
+	// fmt.Println(om)
 }
