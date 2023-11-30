@@ -4,6 +4,7 @@ import (
 	"archive/tar"
 	"archive/zip"
 	"compress/gzip"
+	"errors"
 	"fmt"
 	"io"
 	"log/slog"
@@ -15,7 +16,8 @@ import (
 type ArchiveResult struct {
 	FilesProcessed int
 	FilesSuccess   int
-	Errors         []string
+	Errors         []error
+	FilesValid     []string
 }
 
 func ValidateFileName(src_path string) (bool, error) {
@@ -35,8 +37,36 @@ func ValidateFileName(src_path string) (bool, error) {
 	return true, nil
 }
 
-func (b *ArchiveResult) AddError(err error) {
-	b.Errors = append(b.Errors, err.Error())
+func ValidateFilenamesInDirectory(sourceDir string) (*ArchiveResult, error) {
+	var result *ArchiveResult = &ArchiveResult{}
+	// var result ArchiveResult = ArchiveResult{}
+	walk_func := func(filePath string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		result.FilesProcessed++
+		// Skip directories
+		if info.IsDir() {
+			return nil
+		}
+		_, err = ValidateFileName(filePath)
+		if err != nil {
+			result.AddError(err)
+			return nil
+		}
+		result.FilesValid = append(result.FilesValid, filePath)
+		result.FilesSuccess++
+		return nil
+	}
+	filepath.Walk(sourceDir, walk_func)
+	if len(result.Errors) > 0 {
+		return result, errors.New("Some files are not valid")
+	}
+	return result, nil
+}
+
+func (ar *ArchiveResult) AddError(err ...error) {
+	ar.Errors = append(ar.Errors, err...)
 }
 
 func ZipArchive(sourceDir, zipFile string) (error, *ArchiveResult) {

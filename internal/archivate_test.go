@@ -6,6 +6,19 @@ import (
 	"testing"
 )
 
+func Test_ValidateFilesInDirectory(t *testing.T) {
+	srcDir := filepath.Join(TEMP_DIR_TEST_SRC)
+	_, err := ValidateFilenamesInDirectory(srcDir)
+	if err == nil {
+		t.Error(err)
+	}
+	srcDir2 := filepath.Join(TEMP_DIR_TEST_SRC, "testdata", "rundowns_valid")
+	_, err = ValidateFilenamesInDirectory(srcDir2)
+	if err != nil {
+		t.Error(err)
+	}
+}
+
 func Test_ZipArchive(t *testing.T) {
 	// srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_additional")
 	srcDir := filepath.Join(TEMP_DIR_TEST_SRC)

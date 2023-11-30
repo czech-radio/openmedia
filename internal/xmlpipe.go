@@ -15,7 +15,7 @@ func PipePrint(input_reader *io.PipeReader) {
 	var resultBuffer bytes.Buffer
 	_, err := io.Copy(&resultBuffer, input_reader)
 	ErrorExitWithCode(err)
-	fmt.Println("Contents of PipeReader:", resultBuffer.String())
+	fmt.Println(resultBuffer.String())
 }
 
 func PipeUTF16leToUTF8(r io.Reader) *io.PipeReader {
@@ -97,3 +97,49 @@ func PipeRundownMarshal(om *OPENMEDIA) *io.PipeReader {
 	}()
 	return pr
 }
+
+type ProcessFolderOptions struct {
+	SourceDirectory        string
+	DestinationDirectory   string
+	InputEncoding          string
+	OutputEncoding         string
+	ValidateFilenames      bool
+	ValidateWithDefaultXSD bool   // validate with bundled file
+	ValidateWithXSD        string // path to XSD file
+	ValidatePre            bool
+	ValidatePost           bool
+	ArchiveType            string
+	InvalidFileRename      bool
+	InvalidFileContinue    bool
+}
+
+type ProcessResults struct {
+	Weeks        int
+	Files        int
+	SizeOriginal int
+	SizeBackup   int
+	SizeMinified int
+	Errors       []error
+}
+
+func (pr *ProcessResults) AddError(err ...error) {
+	pr.Errors = append(pr.Errors, err...)
+}
+
+func ProcesFolder(opts ProcessFolderOptions) (*ProcessResults, error) {
+	var results = &ProcessResults{}
+	if opts.ValidateFilenames {
+		result, err := ValidateFilenamesInDirectory(opts.SourceDirectory)
+		if err != nil && opts.InvalidFileContinue {
+			results.AddError(err)
+			results.AddError(result.Errors...)
+			return results, err
+		}
+	}
+	return results, nil
+}
+
+func ProcessWeek() {
+}
+
+// new_filename := beginning + fmt.Sprintf("%s_W%02d_%04d_%02d_%02d", weekday, week, year, month, day)
