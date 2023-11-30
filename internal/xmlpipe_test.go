@@ -33,3 +33,33 @@ func TestTransformXML(t *testing.T) {
 	// Sleeper(100, "s")
 	// fmt.Println(res.ISOWeek())
 }
+
+func Test_ProcessFolder(t *testing.T) {
+	// srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_additional")
+	srcDir := filepath.Join(TEMP_DIR_TEST_SRC)
+	dstDir := filepath.Join(TEMP_DIR_TEST_DST)
+	opts := ProcessFolderOptions{
+		SourceDirectory:        srcDir,
+		DestinationDirectory:   dstDir,
+		InputEncoding:          "",
+		OutputEncoding:         "",
+		ValidateFilenames:      true,
+		ValidateWithDefaultXSD: false,
+		ValidateWithXSD:        "",
+		ValidatePre:            false,
+		ValidatePost:           false,
+		ArchiveType:            "",
+		InvalidFileRename:      false,
+		InvalidFileContinue:    false,
+	}
+	// res, err := ProcesFolder(opts)
+	// res, err := ProcesFolder(opts)
+	_, err := ProcesFolder(opts)
+	// _, _ = ProcesFolder(opts)
+	// fmt.Println(err)
+	// fmt.Println(opts)
+	// Sleeper(100, "s")
+	if err != nil {
+		t.Error(err)
+	}
+}

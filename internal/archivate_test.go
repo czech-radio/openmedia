@@ -9,6 +9,8 @@ import (
 func Test_ValidateFilesInDirectory(t *testing.T) {
 	srcDir := filepath.Join(TEMP_DIR_TEST_SRC)
 	_, err := ValidateFilenamesInDirectory(srcDir)
+	// res, err := ValidateFilenamesInDirectory(srcDir)
+	// fmt.Println(res)
 	if err == nil {
 		t.Error(err)
 	}

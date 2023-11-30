@@ -130,7 +130,7 @@ func ProcesFolder(opts ProcessFolderOptions) (*ProcessResults, error) {
 	var results = &ProcessResults{}
 	if opts.ValidateFilenames {
 		result, err := ValidateFilenamesInDirectory(opts.SourceDirectory)
-		if err != nil && opts.InvalidFileContinue {
+		if err != nil && !opts.InvalidFileContinue {
 			results.AddError(err)
 			results.AddError(result.Errors...)
 			return results, err
@@ -139,7 +139,7 @@ func ProcesFolder(opts ProcessFolderOptions) (*ProcessResults, error) {
 	return results, nil
 }
 
-func ProcessWeek() {
-}
+// func ProcessWeek() {
+// }
 
 // new_filename := beginning + fmt.Sprintf("%s_W%02d_%04d_%02d_%02d", weekday, week, year, month, day)

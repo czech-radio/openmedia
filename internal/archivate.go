@@ -60,7 +60,7 @@ func ValidateFilenamesInDirectory(sourceDir string) (*ArchiveResult, error) {
 	}
 	filepath.Walk(sourceDir, walk_func)
 	if len(result.Errors) > 0 {
-		return result, errors.New("Some files are not valid")
+		return result, errors.New("some files are not valid")
 	}
 	return result, nil
 }
