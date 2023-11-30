@@ -6,7 +6,6 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io"
-	"log/slog"
 	"strings"
 
 	"golang.org/x/text/encoding/unicode"
@@ -14,7 +13,8 @@ import (
 
 func PipePrint(input_reader *io.PipeReader) {
 	var resultBuffer bytes.Buffer
-	_, _ = io.Copy(&resultBuffer, input_reader)
+	_, err := io.Copy(&resultBuffer, input_reader)
+	ErrorExitWithCode(err)
 	fmt.Println("Contents of PipeReader:", resultBuffer.String())
 }
 
@@ -23,20 +23,14 @@ func PipeUTF16leToUTF8(r io.Reader) *io.PipeReader {
 	pr, pw := io.Pipe()
 	go func() {
 		defer pw.Close()
-		_, _ = io.Copy(pw, utf8reader)
+		_, err := io.Copy(pw, utf8reader)
+		ErrorExitWithCode(err)
 	}()
 	return pr
 }
 
-// func PipeAddRundownHeader(input_reader io.Reader) *io.PipeReader {
-// xmlHeader := `<?xml version="1.0" encoding="UTF-16" standalone="no" ?>
-// <!DOCTYPE OPENMEDIA SYSTEM "ann_objects.dtd">`
-// pr, pw := io.Pipe()
-// writer := bufio.NewWriter(pw)
-// scanner := bufio.NewScanner(input_reader)
-// }
-
 func PipeRundownHeaderAmmend(input_reader io.Reader) *io.PipeReader {
+	var err error
 	pr, pw := io.Pipe()
 	writer := bufio.NewWriter(pw)
 	scanner := bufio.NewScanner(input_reader)
@@ -47,47 +41,59 @@ func PipeRundownHeaderAmmend(input_reader io.Reader) *io.PipeReader {
 			line := scanner.Text()
 			if strings.Contains(line, replace) {
 				line = strings.Replace(line, replace, "encoding=\"UTF-8\"", 1)
-				_, _ = writer.WriteString(line + "\n")
+				_, err = writer.WriteString(line + "\n")
 			} else {
-				_, _ = writer.WriteString(line + "\n")
+				_, err = writer.WriteString(line + "\n")
 			}
 		}
-		// Write remainig bytes wihtout scanning
+		ErrorExitWithCode(err)
+		// Write remainig bytes wihtout scanning?
 		// _, _ = io.Copy(writer, input_reader)
-		err := writer.Flush()
-		if err != nil {
-			slog.Error(err.Error())
-		}
+		err = writer.Flush()
+		ErrorExitWithCode(err)
+
 	}()
 	return pr
 }
 
-func PipeRundownMinfiy(input_reader *io.PipeReader) (*OPENMEDIA, error) {
+func PipeRundownHeaderAdd(input_reader io.Reader) *io.PipeReader {
+	pr, pw := io.Pipe()
+	buffReader := bufio.NewReader(input_reader)
+	writer := bufio.NewWriter(pw)
+	go func() {
+		defer pw.Close()
+		defer writer.Flush()
+		_, err := writer.Write(openMediaXmlHeader)
+		ErrorExitWithCode(err)
+		_, err = io.Copy(writer, buffReader)
+		ErrorExitWithCode(err)
+	}()
+	return pr
+}
+
+func PipeRundownUnmarshal(input_reader *io.PipeReader) (*OPENMEDIA, error) {
 	var OM OPENMEDIA
-	bufio.NewReader(input_reader)
+	buffReader := bufio.NewReader(input_reader)
+	// io.ReadFull
 	// byteData, err := io.ReadAll(input_reader)
-	// if err != nil {
-	// return nil, err
-	// }
-	err := xml.NewDecoder(input_reader).Decode(&OM)
+	// err = xml.Unmarshal(byteData, &OM)
+	err := xml.NewDecoder(buffReader).Decode(&OM)
 	if err != nil {
 		return nil, err
 	}
-	// fmt.Println("ke", byteData)
-	// err = xml.Unmarshal(byteData, &OM)
-	// io.ReadFull
-	// err = xml.Unmarshal(byteData, &OM)
-	// if err != nil {
-	// return nil, err
-	// }
 	return &OM, nil
 }
 
-func RundownMarshal(om *OPENMEDIA, dst_file string) error {
-	res, err := xml.MarshalIndent(om, "", "\t")
-	if err != nil {
-		return err
-	}
-	fmt.Println(string(res))
-	return nil
+func PipeRundownMarshal(om *OPENMEDIA) *io.PipeReader {
+	pr, pw := io.Pipe()
+	writer := bufio.NewWriter(pw)
+	go func() {
+		defer pw.Close()
+		xmlBytes, err := xml.MarshalIndent(om, "", "\t")
+		ErrorExitWithCode(err)
+		_, err = writer.Write(xmlBytes)
+		ErrorExitWithCode(err)
+		writer.Flush()
+	}()
+	return pr
 }

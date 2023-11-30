@@ -8,6 +8,11 @@ import (
 	"github.com/ncruces/go-strftime"
 )
 
+var openMediaXmlHeader []byte = []byte(
+	`<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<!DOCTYPE OPENMEDIA SYSTEM "ann_objects.dtd">`,
+)
+
 type OPENMEDIA struct {
 	XMLName   xml.Name  `xml:"OPENMEDIA"`
 	OM_SERVER OM_SERVER `xml:"OM_SERVER"`

@@ -22,15 +22,15 @@ const (
 	ErrCodeUnknown
 )
 
-// ErrorCodeMap map ErrorCode and bas error message
+// ErrorCodeMap map ErrorCode and base error message
 var ErrorCodeMap map[ErrorCode]string = map[ErrorCode]string{
 	ErrCodeSuccess:    "",
 	ErrCodePermission: "permission denied",
 	ErrCodeExist:      "file already exists",
 	ErrCodeNotExist:   "file does not exist",
 	ErrCodeClosed:     "file already closed",
-	// ErrCodeDataFormat: "file has incompatible f",
-	// ErrCodeUnknown:  errors.New("uknown error"),
+	ErrCodeUnknown:    "uknown error",
+	// ErrCodeDataFormat: "file has incompatible format",
 }
 
 // var (
@@ -82,8 +82,8 @@ func ErrorExitWithCode(err error) {
 	code := ErrorGetCode(err)
 	if err != nil {
 		slog.Error(err.Error())
+		os.Exit(int(code))
 	}
-	os.Exit(int(code))
 }
 
 // Alt method using errors.Is:

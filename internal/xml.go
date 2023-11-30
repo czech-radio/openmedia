@@ -87,3 +87,12 @@ func RundownUnmarshal(file_path string) (*OPENMEDIA, error) {
 	}
 	return &OM, nil
 }
+
+func RundownMarshal(om *OPENMEDIA, dst_file string) error {
+	res, err := xml.MarshalIndent(om, "", "\t")
+	if err != nil {
+		return err
+	}
+	fmt.Println(string(res))
+	return nil
+}
