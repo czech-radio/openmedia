@@ -92,3 +92,13 @@ func StructFieldsEmpty(in interface{}) {
 		// fmt.Println("KV Pair: ", field, val)
 	}
 }
+
+func AllTrue(values ...bool) bool {
+	result := true
+
+	for _, v := range values {
+		result = result && v
+	}
+
+	return result
+}

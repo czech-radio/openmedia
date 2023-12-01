@@ -4,7 +4,6 @@ import (
 	"archive/tar"
 	"archive/zip"
 	"compress/gzip"
-	"errors"
 	"fmt"
 	"io"
 	"log/slog"
@@ -60,7 +59,9 @@ func ValidateFilenamesInDirectory(sourceDir string) (*ArchiveResult, error) {
 	}
 	filepath.Walk(sourceDir, walk_func)
 	if len(result.Errors) > 0 {
-		return result, errors.New("some files are not valid")
+		err := fmt.Errorf("%s, count %d", ErrorCodeMap[ErrCodeInvalid], len(result.Errors))
+		return result, err
+		// errors.New("invalid files count: %d", len(result.Errors))
 	}
 	return result, nil
 }

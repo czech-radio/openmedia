@@ -8,7 +8,7 @@ import (
 
 type ErrorCode int8
 
-// Error codes
+// Error codes for os.Exit
 const (
 	ErrCodeSuccess        ErrorCode = 0
 	ErrCodeInvalidCommand ErrorCode = 1
@@ -17,10 +17,13 @@ const (
 	ErrCodeNotExist
 	ErrCodeClosed
 	ErrCodeDataFormat
+	ErrCodeInvalid
 	// ErrCodeInternal
 	// ErrCodeSystem
 	ErrCodeUnknown
 )
+
+// TODO: method for getting base error instead of error message
 
 // ErrorCodeMap map ErrorCode and base error message
 var ErrorCodeMap map[ErrorCode]string = map[ErrorCode]string{
@@ -28,6 +31,7 @@ var ErrorCodeMap map[ErrorCode]string = map[ErrorCode]string{
 	ErrCodePermission: "permission denied",
 	ErrCodeExist:      "file already exists",
 	ErrCodeNotExist:   "file does not exist",
+	ErrCodeInvalid:    "invalid file",
 	ErrCodeClosed:     "file already closed",
 	ErrCodeUnknown:    "uknown error",
 	// ErrCodeDataFormat: "file has incompatible format",
