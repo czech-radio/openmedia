@@ -11,6 +11,12 @@ import (
 	"golang.org/x/text/encoding/unicode"
 )
 
+func PipeConsume(input_reader *io.PipeReader) {
+	var resultBuffer bytes.Buffer
+	_, err := io.Copy(&resultBuffer, input_reader)
+	ErrorExitWithCode(err)
+}
+
 func PipePrint(input_reader *io.PipeReader) {
 	var resultBuffer bytes.Buffer
 	_, err := io.Copy(&resultBuffer, input_reader)
@@ -63,6 +69,7 @@ func PipeRundownHeaderAdd(input_reader io.Reader) *io.PipeReader {
 	go func() {
 		defer pw.Close()
 		defer writer.Flush()
+		// _, err := writer.Write(openMediaXmlHeader)
 		_, err := writer.Write(openMediaXmlHeader)
 		ErrorExitWithCode(err)
 		_, err = io.Copy(writer, buffReader)

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
 )
 
@@ -35,18 +36,30 @@ type ProcessOptions struct {
 }
 
 type ProcessResults struct {
-	Weeks        int
-	Files        int
-	SizeOriginal int
-	SizeBackup   int
-	SizeMinified int
-	Errors       []error
+	Weeks          int
+	FilesProcessed int
+	FilesSuccess   int
+	FilesFailure   int
+	FilesCount     int
+	SizeOriginal   int
+	SizeBackup     int
+	SizeMinified   int
+	Errors         []error
+}
+
+func (p *Process) InfoLog() {
+	ds := p.Results
+	msg := fmt.Sprintf("%d/%d, %d:%d",
+		ds.FilesProcessed, ds.FilesCount,
+		ds.FilesSuccess, ds.FilesFailure)
+	slog.Debug(msg)
 }
 
 func (p *Process) ErrorHandle(errMain error, errorsPartial ...error) ControlFlowAction {
 	if errMain == nil {
 		return Continue
 	}
+	// p.Results.FilesFailure++
 	p.Results.Errors = append(p.Results.Errors, errMain)
 	p.Results.Errors = append(p.Results.Errors, errorsPartial...)
 
@@ -62,11 +75,13 @@ func (p *Process) Folder() error {
 	if p.ErrorHandle(err, validateResult.Errors...) == Break {
 		return err
 	}
+	p.Results.FilesCount = validateResult.FilesCount
+	p.Results.FilesFailure = validateResult.FilesFailure
 processFolder:
-	for i, file := range validateResult.FilesValid {
-		fmt.Printf("%d: %+v\n", i, file)
-
+	for _, file := range validateResult.FilesValid {
 		// Open file
+		p.Results.FilesProcessed++
+		p.InfoLog()
 		fileHandle, err := os.Open(file)
 		switch p.ErrorHandle(err, validateResult.Errors...) {
 		case Break:
@@ -100,7 +115,8 @@ processFolder:
 		}
 
 		// Infer rundown date from OM_HEADER field
-		date, err := om.RundownDate()
+		// _, err := om.RundownDate()
+		_, err = om.RundownDate()
 		switch p.ErrorHandle(err) {
 		case Break:
 			break processFolder
@@ -113,7 +129,8 @@ processFolder:
 		// Transform output data
 		pr = PipeRundownMarshal(om)
 		pr = PipeRundownHeaderAdd(pr)
-		PipePrint(pr)
+		// PipePrint(pr)
+		PipeConsume(pr)
 
 		// Send output data to minify archive
 	}

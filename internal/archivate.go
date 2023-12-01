@@ -13,8 +13,10 @@ import (
 )
 
 type ArchiveResult struct {
+	FilesCount     int
 	FilesProcessed int
 	FilesSuccess   int
+	FilesFailure   int
 	Errors         []error
 	FilesValid     []string
 }
@@ -50,14 +52,16 @@ func ValidateFilenamesInDirectory(sourceDir string) (*ArchiveResult, error) {
 		}
 		_, err = ValidateFileName(filePath)
 		if err != nil {
+			result.FilesFailure++
 			result.AddError(err)
 			return nil
 		}
 		result.FilesValid = append(result.FilesValid, filePath)
-		result.FilesSuccess++
+		result.FilesCount = result.FilesProcessed
 		return nil
 	}
 	filepath.Walk(sourceDir, walk_func)
+	result.FilesProcessed++
 	if len(result.Errors) > 0 {
 		err := fmt.Errorf("%s, count %d", ErrorCodeMap[ErrCodeInvalid], len(result.Errors))
 		return result, err
