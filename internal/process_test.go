@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"fmt"
 	"path/filepath"
 	"testing"
 )
@@ -20,11 +21,12 @@ func Test_ProcessFolder(t *testing.T) {
 		ValidatePost:           false,
 		ArchiveType:            "",
 		InvalidFileRename:      false,
-		InvalidFileContinue:    false,
-		// InvalidFileContinue: true,
+		// InvalidFileContinue:    false,
+		InvalidFileContinue: true,
 	}
 	process := Process{Options: opts}
 	err := process.Folder()
+	fmt.Printf("%+v\n", process.Results)
 	// Sleeper(100, "s")
 	if err != nil {
 		t.Error(err)

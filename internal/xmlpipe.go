@@ -72,19 +72,20 @@ func PipeRundownHeaderAdd(input_reader io.Reader) *io.PipeReader {
 }
 
 func PipeRundownUnmarshal(input_reader *io.PipeReader) (*OPENMEDIA, error) {
-	var OM *OPENMEDIA
+	// var OM *OPENMEDIA = new(OPENMEDIA)
+	var OM OPENMEDIA
 	buffReader := bufio.NewReader(input_reader)
 	// io.ReadFull
 	// byteData, err := io.ReadAll(input_reader)
 	// err = xml.Unmarshal(byteData, &OM)
-	err := xml.NewDecoder(buffReader).Decode(OM)
+	err := xml.NewDecoder(buffReader).Decode(&OM)
 	if err != nil {
 		return nil, err
 	}
-	if OM == nil {
-		return nil, fmt.Errorf("xml cannot be unmarshaled")
-	}
-	return OM, nil
+	// if OM == nil {
+	// return nil, fmt.Errorf("xml cannot be unmarshaled")
+	// }
+	return &OM, nil
 }
 
 func PipeRundownMarshal(om *OPENMEDIA) *io.PipeReader {
@@ -92,7 +93,7 @@ func PipeRundownMarshal(om *OPENMEDIA) *io.PipeReader {
 	writer := bufio.NewWriter(pw)
 	go func() {
 		defer pw.Close()
-		xmlBytes, err := xml.MarshalIndent(om, "", "\t")
+		xmlBytes, err := xml.MarshalIndent(om, "", "  ")
 		ErrorExitWithCode(err)
 		_, err = writer.Write(xmlBytes)
 		ErrorExitWithCode(err)

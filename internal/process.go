@@ -1,10 +1,17 @@
 package internal
 
+import (
+	"bytes"
+	"fmt"
+	"io"
+	"os"
+)
+
 type ControlFlowAction int
 
 const (
 	Continue ControlFlowAction = iota
-	Skip     ControlFlowAction = iota
+	Skip
 	Break
 )
 
@@ -37,16 +44,17 @@ type ProcessResults struct {
 }
 
 func (p *Process) ErrorHandle(errMain error, errorsPartial ...error) ControlFlowAction {
-	if errMain != nil {
-		p.Results.Errors = append(p.Results.Errors, errMain)
-		p.Results.Errors = append(p.Results.Errors, errorsPartial...)
-		if p.Options.InvalidFileContinue {
-			return Skip
-		} else {
-			return Break
-		}
+	if errMain == nil {
+		return Continue
 	}
-	return Continue
+	p.Results.Errors = append(p.Results.Errors, errMain)
+	p.Results.Errors = append(p.Results.Errors, errorsPartial...)
+
+	if p.Options.InvalidFileContinue {
+		return Skip
+	} else {
+		return Break
+	}
 }
 
 func (p *Process) Folder() error {
@@ -54,5 +62,63 @@ func (p *Process) Folder() error {
 	if p.ErrorHandle(err, validateResult.Errors...) == Break {
 		return err
 	}
+processFolder:
+	for i, file := range validateResult.FilesValid {
+		fmt.Printf("%d: %+v\n", i, file)
+
+		// Open file
+		fileHandle, err := os.Open(file)
+		switch p.ErrorHandle(err, validateResult.Errors...) {
+		case Break:
+			break processFolder
+		case Skip:
+			continue processFolder
+		}
+		defer fileHandle.Close()
+
+		// Read file data
+		data, err := io.ReadAll(fileHandle)
+		switch p.ErrorHandle(err, validateResult.Errors...) {
+		case Break:
+			break processFolder
+		case Skip:
+			continue processFolder
+		}
+
+		// Transform input data
+		dataReader := bytes.NewReader(data)
+		pr := PipeUTF16leToUTF8(dataReader)
+		pr = PipeRundownHeaderAmmend(pr)
+
+		// Unmarshal (Parse and validate)
+		om, err := PipeRundownUnmarshal(pr) // treat EOF error
+		switch p.ErrorHandle(err) {
+		case Break:
+			break processFolder
+		case Skip:
+			continue processFolder
+		}
+
+		// Infer rundown date from OM_HEADER field
+		date, err := om.RundownDate()
+		switch p.ErrorHandle(err) {
+		case Break:
+			break processFolder
+		case Skip:
+			continue processFolder
+		}
+
+		// Send input data to backup archive
+
+		// Transform output data
+		pr = PipeRundownMarshal(om)
+		pr = PipeRundownHeaderAdd(pr)
+		PipePrint(pr)
+
+		// Send output data to minify archive
+	}
 	return nil
+}
+
+func (p *Process) File() {
 }
