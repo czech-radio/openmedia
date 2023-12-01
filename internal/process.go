@@ -6,6 +6,7 @@ import (
 	"io"
 	"log/slog"
 	"os"
+	"time"
 )
 
 type ControlFlowAction int
@@ -45,6 +46,32 @@ type ProcessResults struct {
 	SizeBackup     int
 	SizeMinified   int
 	Errors         []error
+}
+
+type FileMeta struct {
+	Year            int
+	Month           int
+	Day             int
+	Week            int
+	Weekday         time.Weekday
+	FileInfo        os.FileInfo
+	FileReader      io.Reader
+	ArchiveNameMini string
+	ArchiveNameOrig string
+	RundownNameNew  string
+}
+
+func (f *FileMeta) Parse(date time.Time, fileInfo os.FileInfo, archiveType string) {
+	year, week := date.ISOWeek()
+	f.Year = year
+	f.Month = int(date.Month())
+	f.Day = date.Day()
+	f.Week = week
+	f.Weekday = date.Weekday()
+	f.ArchiveNameMini = fmt.Sprintf("%d_W%02d_MINIFIED.%s", f.Year, f.Week, archiveType)
+	f.ArchiveNameOrig = fmt.Sprintf("%d_W%02d_ORIGINAL.%s", f.Year, f.Week, archiveType)
+	f.RundownNameNew = fmt.Sprintf("RD_%s_W%02d_%04d_%02d_%02d", f.Weekday, f.Week, f.Year, f.Month, f.Day)
+	f.FileInfo = fileInfo
 }
 
 func (p *Process) InfoLog() {
@@ -116,7 +143,7 @@ processFolder:
 
 		// Infer rundown date from OM_HEADER field
 		// _, err := om.RundownDate()
-		_, err = om.RundownDate()
+		date, err := om.RundownDate()
 		switch p.ErrorHandle(err) {
 		case Break:
 			break processFolder
@@ -125,6 +152,18 @@ processFolder:
 		}
 
 		// Send input data to backup archive
+		// Get file info
+		fileInfo, err := fileHandle.Stat()
+		switch p.ErrorHandle(err, validateResult.Errors...) {
+		case Break:
+			break processFolder
+		case Skip:
+			continue processFolder
+		}
+
+		fm := new(FileMeta)
+		fm.Parse(date, fileInfo, p.Options.ArchiveType)
+		fmt.Printf("%+v\n", fm)
 
 		// Transform output data
 		pr = PipeRundownMarshal(om)
@@ -137,5 +176,14 @@ processFolder:
 	return nil
 }
 
-func (p *Process) File() {
+func (p *Process) GetMinifyChannel(fm *FileMeta) {
 }
+
+// func (p *Process) File() {
+// }
+
+// fileInfo, err := fileHandle.Stat()
+// data []byte
+// OM *OPENMEDIA
+// date time.Time
+// io.Reader

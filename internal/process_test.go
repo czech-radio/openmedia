@@ -19,7 +19,7 @@ func Test_ProcessFolder(t *testing.T) {
 		ValidateWithXSD:        "",
 		ValidatePre:            false,
 		ValidatePost:           false,
-		ArchiveType:            "",
+		ArchiveType:            "zip",
 		InvalidFileRename:      false,
 		// InvalidFileContinue:    false,
 		InvalidFileContinue: true,
