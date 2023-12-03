@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"fmt"
 	"path/filepath"
 	"testing"
 )
@@ -28,8 +27,8 @@ func Test_ProcessFolder(t *testing.T) {
 	}
 	process := Process{Options: opts}
 	err := process.Folder()
-	fmt.Printf("%+v\n", process.Results)
-	Sleeper(100, "s")
+	// fmt.Printf("%+v\n", process.Results)
+	// Sleeper(100, "s")
 	if err != nil {
 		t.Error(err)
 	}

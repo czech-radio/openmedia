@@ -25,11 +25,20 @@ func TestTransformXML(t *testing.T) {
 	pr = PipeRundownMarshal(om)
 	pr = PipeRundownHeaderAdd(pr)
 	PipePrint(pr)
-	// fmt.Printf("%+v\n", om)
-	// res, err := om.FileDate()
 	if err != nil {
 		t.Error(err)
 	}
-	// Sleeper(100, "s")
-	// fmt.Println(res.ISOWeek())
+}
+
+func Test_ValidateFilesInDirectory(t *testing.T) {
+	srcDir := filepath.Join(TEMP_DIR_TEST_SRC)
+	_, err := ValidateFilenamesInDirectory(srcDir)
+	if err == nil {
+		t.Error(err)
+	}
+	srcDir2 := filepath.Join(TEMP_DIR_TEST_SRC, "testdata", "rundowns_valid")
+	_, err = ValidateFilenamesInDirectory(srcDir2)
+	if err != nil {
+		t.Error(err)
+	}
 }

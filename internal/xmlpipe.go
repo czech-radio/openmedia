@@ -6,6 +6,8 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"golang.org/x/text/encoding/unicode"
@@ -54,7 +56,6 @@ func PipeRundownHeaderAmmend(input_reader io.Reader) *io.PipeReader {
 		}
 		ErrorExitWithCode(err)
 		// Write remainig bytes wihtout scanning?
-		// _, _ = io.Copy(writer, input_reader)
 		err = writer.Flush()
 		ErrorExitWithCode(err)
 
@@ -69,7 +70,6 @@ func PipeRundownHeaderAdd(input_reader io.Reader) *io.PipeReader {
 	go func() {
 		defer pw.Close()
 		defer writer.Flush()
-		// _, err := writer.Write(openMediaXmlHeader)
 		_, err := writer.Write(openMediaXmlHeader)
 		ErrorExitWithCode(err)
 		_, err = io.Copy(writer, buffReader)
@@ -79,7 +79,6 @@ func PipeRundownHeaderAdd(input_reader io.Reader) *io.PipeReader {
 }
 
 func PipeRundownUnmarshal(input_reader *io.PipeReader) (*OPENMEDIA, error) {
-	// var OM *OPENMEDIA = new(OPENMEDIA)
 	var OM OPENMEDIA
 	buffReader := bufio.NewReader(input_reader)
 	// io.ReadFull
@@ -107,4 +106,68 @@ func PipeRundownMarshal(om *OPENMEDIA) *io.PipeReader {
 		writer.Flush()
 	}()
 	return pr
+}
+
+type ArchiveResult struct {
+	FilesCount     int
+	FilesProcessed int
+	FilesSuccess   int
+	FilesFailure   int
+	Errors         []error
+	FilesValid     []string
+}
+
+func ValidateFileName(src_path string) (bool, error) {
+	file_extension := filepath.Ext(src_path)
+	if file_extension != ".xml" {
+		return false,
+			fmt.Errorf("file does not have xml extension: %s", src_path)
+	}
+	if !strings.Contains(src_path, "RD") {
+		return false,
+			fmt.Errorf("filename does not contaion 'RD' string: %s", src_path)
+	}
+	_, err := os.Stat(src_path)
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+func ValidateFilenamesInDirectory(sourceDir string) (*ArchiveResult, error) {
+	var result *ArchiveResult = &ArchiveResult{}
+	// var result ArchiveResult = ArchiveResult{}
+	walk_func := func(filePath string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		result.FilesProcessed++
+		// Skip directories
+		if info.IsDir() {
+			return nil
+		}
+		_, err = ValidateFileName(filePath)
+		if err != nil {
+			result.FilesFailure++
+			result.AddError(err)
+			return nil
+		}
+		result.FilesValid = append(result.FilesValid, filePath)
+		result.FilesCount = result.FilesProcessed
+		return nil
+	}
+	filepath.Walk(sourceDir, walk_func)
+	result.FilesProcessed++
+	if len(result.Errors) > 0 {
+		err := fmt.Errorf("%s, count %d", ErrorCodeMap[ErrCodeInvalid], len(result.Errors))
+		return result, err
+		// errors.New("invalid files count: %d", len(result.Errors))
+	}
+	return result, nil
+}
+
+func (ar *ArchiveResult) AddError(err ...error) {
+	if err != nil && len(err) > 0 {
+		ar.Errors = append(ar.Errors, err...)
+	}
 }
