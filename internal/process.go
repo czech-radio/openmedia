@@ -6,8 +6,10 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
+	"math/rand"
 	"os"
 	"path/filepath"
+	"sync"
 	"time"
 )
 
@@ -23,6 +25,7 @@ type Process struct {
 	Options ProcessOptions
 	Results ProcessResults
 	Workers map[string]*ArchiveWorker
+	WG      *sync.WaitGroup
 }
 
 type ProcessOptions struct {
@@ -87,6 +90,15 @@ func (w *ArchiveWorker) Init(dstdir, archieName string) error {
 	return nil
 }
 
+func (p *Process) DestroyWorkers() {
+	if p.Workers == nil {
+		return
+	}
+	for _, worker := range p.Workers {
+		worker.ArchiveWriter.Close()
+	}
+}
+
 func (f *FileMeta) Parse(
 	date time.Time, fileInfo os.FileInfo, archiveType, sourceDir, targetDir string, sourceFilePath string, reader io.Reader) error {
 	year, week := date.ISOWeek()
@@ -96,12 +108,19 @@ func (f *FileMeta) Parse(
 	f.Week = week
 	f.Weekday = date.Weekday()
 	f.Archives = make(map[string]string)
+
 	// archive names
+	s1 := rand.NewSource(time.Now().UnixNano())
+	r1 := rand.New(s1)
+	randint := r1.Intn(100000)
+	// name := fmt.Sprintf("MINIFIED_%03d", randint)
 	name := "MINIFIED"
+
 	f.Archives[name] = fmt.Sprintf("%d_W%02d_%s.%s", f.Year, f.Week, name, archiveType)
 	name = "ORIGINAL"
 	f.Archives[name] = fmt.Sprintf("%d_W%02d_%s.%s", f.Year, f.Week, name, archiveType)
-	f.RundownNameNew = fmt.Sprintf("RD_%s_W%02d_%04d_%02d_%02d", f.Weekday, f.Week, f.Year, f.Month, f.Day)
+	// f.RundownNameNew = fmt.Sprintf("RD_%s_W%02d_%04d_%02d_%02d", f.Weekday, f.Week, f.Year, f.Month, f.Day)
+	f.RundownNameNew = fmt.Sprintf("RD_%s_W%02d_%04d_%02d_%02d_%03d", f.Weekday, f.Week, f.Year, f.Month, f.Day, randint)
 	f.FileInfo = fileInfo
 	f.DirectorySource = sourceDir
 	f.DirectoryDestination = targetDir
@@ -147,6 +166,7 @@ func (p *Process) Folder() error {
 	p.Results.FilesCount = validateResult.FilesCount
 	p.Results.FilesFailure = validateResult.FilesFailure
 	p.Workers = make(map[string]*ArchiveWorker)
+	p.WG = new(sync.WaitGroup)
 processFolder:
 	for _, file := range validateResult.FilesValid {
 		err := p.File(file)
@@ -158,6 +178,9 @@ processFolder:
 			break processFolder
 		}
 	}
+	p.WG.Wait()
+	slog.Debug("waiting not")
+	p.DestroyWorkers()
 	return nil
 }
 
@@ -199,34 +222,33 @@ func (p *Process) File(filePath string) error {
 	if err != nil {
 		return err
 	}
-	// fileMeta := new(FileMeta)
-	fileMeta := FileMeta{}
+	fileMetaOriginal := FileMeta{}
 	reader := bytes.NewReader(data)
 	opts := p.Options
-	err = fileMeta.Parse(date, fileInfo, opts.ArchiveType, opts.SourceDirectory, opts.DestinationDirectory, filePath, reader)
+	err = fileMetaOriginal.Parse(date, fileInfo, opts.ArchiveType, opts.SourceDirectory, opts.DestinationDirectory, filePath, reader)
 	if err != nil {
 		return err
 	}
 
-	// Minify
-	err = p.CallArchivWorker(&fileMeta, "MINIFIED")
+	// Archivate original
+	err = p.CallArchivWorker(&fileMetaOriginal, "ORIGINAL")
 	if err != nil {
 		return err
 	}
+	p.WG.Add(1)
 
 	// Transform output data
 	pr = PipeRundownMarshal(om)
 	pr = PipeRundownHeaderAdd(pr)
-	// PipePrint(pr)
-	// PipeConsume(pr)
 
-	// Archivate
-	fileMeta2 := fileMeta
-	fileMeta2.FileReader = pr
-	err = p.CallArchivWorker(&fileMeta2, "ORIGINAL")
+	// Archivate original
+	fileMetaMinify := fileMetaOriginal
+	fileMetaMinify.FileReader = pr
+	err = p.CallArchivWorker(&fileMetaMinify, "MINIFIED")
 	if err != nil {
 		return err
 	}
+	p.WG.Add(1)
 	return nil
 }
 
@@ -247,6 +269,7 @@ func (p *Process) CallArchivWorker(fm *FileMeta, workerType string) error {
 				if err != nil {
 					slog.Error(err.Error())
 				}
+				p.WG.Done()
 			}
 		}()
 	}

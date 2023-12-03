@@ -30,6 +30,7 @@ loopfields:
 		for _, attr := range field.Attrs {
 			// field.FieldID == 1004
 			if attr.Value == "Čas začátku" {
+				// if attr.Value == "Čas vytvoření" {
 				fieldValue = field.OM_DATETIME
 				break loopfields
 			}

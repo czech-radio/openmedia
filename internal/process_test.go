@@ -7,8 +7,9 @@ import (
 )
 
 func Test_ProcessFolder(t *testing.T) {
-	// srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_additional")
-	srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_valid")
+	srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_additional")
+	// srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_mock")
+	// srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_valid")
 	// srcDir := filepath.Join(TEMP_DIR_TEST_SRC)
 	dstDir := filepath.Join(TEMP_DIR_TEST_DST)
 	opts := ProcessOptions{
