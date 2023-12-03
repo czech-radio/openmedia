@@ -181,7 +181,6 @@ processFolder:
 
 func (p *Process) File(filePath string) error {
 	// Open file
-	p.Results.FilesProcessed++
 	fileHandle, err := os.Open(filePath)
 	if err != nil {
 		return err
@@ -281,6 +280,7 @@ func (p *Process) CallArchivWorker(fm *FileMeta, workerType string) error {
 				case "MINIFIED":
 					p.Results.SizePackedMinified += compressedSize
 					p.Results.SizeMinified += bytesWritten
+					p.Results.FilesProcessed++
 				case "ORIGINAL":
 					p.Results.SizePackedBackup += compressedSize
 					p.Results.SizeOriginal += origSize
