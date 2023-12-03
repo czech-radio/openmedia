@@ -1,11 +1,13 @@
 package internal
 
 import (
+	"archive/zip"
 	"bytes"
 	"fmt"
 	"io"
 	"log/slog"
 	"os"
+	"path/filepath"
 	"time"
 )
 
@@ -17,12 +19,10 @@ const (
 	Break
 )
 
-type Worker chan *FileMeta
-
 type Process struct {
 	Options ProcessOptions
 	Results ProcessResults
-	Workers map[string]Worker
+	Workers map[string]*ArchiveWorker
 }
 
 type ProcessOptions struct {
@@ -52,18 +52,43 @@ type ProcessResults struct {
 }
 
 type FileMeta struct {
-	Year           int
-	Month          int
-	Day            int
-	Week           int
-	Weekday        time.Weekday
-	Archives       map[string]string
-	RundownNameNew string
-	FileInfo       os.FileInfo
-	FileReader     io.Reader
+	Year                 int
+	Month                int
+	Day                  int
+	Week                 int
+	Weekday              time.Weekday
+	Archives             map[string]string
+	RundownNameNew       string
+	FilePathSource       string
+	FilePathInArchive    string
+	FileInfo             os.FileInfo
+	FileReader           io.Reader
+	DirectoryDestination string
+	DirectorySource      string
 }
 
-func (f *FileMeta) Parse(date time.Time, fileInfo os.FileInfo, archiveType string) {
+type ArchiveWorker struct {
+	Call          chan *FileMeta
+	ArchivePath   string
+	ArchiveFile   *os.File
+	ArchiveWriter *zip.Writer
+}
+
+func (w *ArchiveWorker) Init(dstdir, archieName string) error {
+	w.Call = make(chan *FileMeta)
+	path := filepath.Join(dstdir, archieName)
+	w.ArchivePath = path
+	archive, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	w.ArchiveFile = archive
+	w.ArchiveWriter = zip.NewWriter(archive)
+	return nil
+}
+
+func (f *FileMeta) Parse(
+	date time.Time, fileInfo os.FileInfo, archiveType, sourceDir, targetDir string, sourceFilePath string, reader io.Reader) error {
 	year, week := date.ISOWeek()
 	f.Year = year
 	f.Month = int(date.Month())
@@ -78,6 +103,17 @@ func (f *FileMeta) Parse(date time.Time, fileInfo os.FileInfo, archiveType strin
 	f.Archives[name] = fmt.Sprintf("%d_W%02d_%s.%s", f.Year, f.Week, name, archiveType)
 	f.RundownNameNew = fmt.Sprintf("RD_%s_W%02d_%04d_%02d_%02d", f.Weekday, f.Week, f.Year, f.Month, f.Day)
 	f.FileInfo = fileInfo
+	f.DirectorySource = sourceDir
+	f.DirectoryDestination = targetDir
+	f.FilePathSource = sourceFilePath
+	fmt.Println(f.FilePathSource)
+	pathInArchive, err := filepath.Rel(sourceDir, sourceFilePath)
+	if err != nil {
+		return err
+	}
+	f.FilePathInArchive = filepath.Join(filepath.Dir(pathInArchive), f.RundownNameNew+filepath.Ext(sourceFilePath))
+	f.FileReader = reader
+	return nil
 }
 
 func (p *Process) InfoLog() {
@@ -110,7 +146,7 @@ func (p *Process) Folder() error {
 	}
 	p.Results.FilesCount = validateResult.FilesCount
 	p.Results.FilesFailure = validateResult.FilesFailure
-	p.Workers = make(map[string]Worker)
+	p.Workers = make(map[string]*ArchiveWorker)
 processFolder:
 	for _, file := range validateResult.FilesValid {
 		err := p.File(file)
@@ -125,15 +161,15 @@ processFolder:
 	return nil
 }
 
-func (p *Process) File(file string) error {
+func (p *Process) File(filePath string) error {
 	// Open file
 	p.Results.FilesProcessed++
 	// p.InfoLog()
-	fileHandle, err := os.Open(file)
+	fileHandle, err := os.Open(filePath)
 	if err != nil {
 		return err
 	}
-	defer fileHandle.Close()
+	// defer fileHandle.Close()
 
 	// Read file data
 	data, err := io.ReadAll(fileHandle)
@@ -163,35 +199,86 @@ func (p *Process) File(file string) error {
 	if err != nil {
 		return err
 	}
-	fm := new(FileMeta)
-	fm.Parse(date, fileInfo, p.Options.ArchiveType)
-	fmt.Printf("%+v\n", fm)
-	p.CallWorker(fm, "MINIFIED")
+	// fileMeta := new(FileMeta)
+	fileMeta := FileMeta{}
+	reader := bytes.NewReader(data)
+	opts := p.Options
+	err = fileMeta.Parse(date, fileInfo, opts.ArchiveType, opts.SourceDirectory, opts.DestinationDirectory, filePath, reader)
+	if err != nil {
+		return err
+	}
+
+	// Minify
+	err = p.CallArchivWorker(&fileMeta, "MINIFIED")
+	if err != nil {
+		return err
+	}
 
 	// Transform output data
 	pr = PipeRundownMarshal(om)
 	pr = PipeRundownHeaderAdd(pr)
 	// PipePrint(pr)
-	PipeConsume(pr)
-	p.CallWorker(fm, "ORIGINAL")
+	// PipeConsume(pr)
+
+	// Archivate
+	fileMeta2 := fileMeta
+	fileMeta2.FileReader = pr
+	err = p.CallArchivWorker(&fileMeta2, "ORIGINAL")
+	if err != nil {
+		return err
+	}
 	return nil
-	// Send output data to minify archive
 }
 
-func (p *Process) CallWorker(fm *FileMeta, workerType string) {
-	// var workerMini Worker
+func (p *Process) CallArchivWorker(fm *FileMeta, workerType string) error {
 	workerName := fm.Archives[workerType]
 	worker, ok := p.Workers[workerName]
-	fmt.Printf("%+v,%v\n", worker, ok)
 	if !ok {
-		worker = make(Worker)
+		worker = new(ArchiveWorker)
+		err := worker.Init(fm.DirectoryDestination, workerName)
+		if err != nil {
+			return err
+		}
 		p.Workers[workerName] = worker
 		go func() {
 			for {
-				f := <-worker
-				fmt.Println(f)
+				f := <-worker.Call
+				err := p.Archivate(worker, f)
+				if err != nil {
+					slog.Error(err.Error())
+				}
 			}
 		}()
 	}
-	worker <- fm
+	worker.Call <- fm
+	return nil
+}
+
+func (p *Process) Archivate(worker *ArchiveWorker, f *FileMeta) error {
+	// Create a new zip file header
+	header, err := zip.FileInfoHeader(f.FileInfo)
+	if err != nil {
+		return err
+	}
+	header.Method = zip.Deflate
+	// Set the name of the file within the zip archive
+	header.Name = f.FilePathInArchive
+	// Create a new entry in the zip archive
+	entry, err := worker.ArchiveWriter.CreateHeader(header)
+	if err != nil {
+		return err
+	}
+	fmt.Println(header)
+	// Copy the file content to the zip entry
+	n, err := io.Copy(entry, f.FileReader)
+	if err != nil {
+		return err
+	}
+	slog.Debug("written", "bytes", n)
+	_, err = entry.Write([]byte("\n"))
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
