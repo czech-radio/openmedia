@@ -172,7 +172,9 @@ processFolder:
 		}
 	}
 	p.WG.Wait()
-	slog.Info("result", "stats", p.Results)
+	res := p.Results
+	p.WorkerLogInfo("GLOBAL_ORIGINAL", res.SizeOriginal, res.SizePackedBackup, res.SizeOriginal, p.Options.SourceDirectory)
+	p.WorkerLogInfo("GLOBAL_MINIFY", res.SizeOriginal, res.SizePackedMinified, res.SizeMinified, p.Options.SourceDirectory)
 	p.DestroyWorkers()
 	return nil
 }
@@ -191,7 +193,6 @@ func (p *Process) File(filePath string) error {
 	if err != nil {
 		return err
 	}
-	p.Results.SizeOriginal += uint64(len(data))
 
 	// Transform input data
 	dataReader := bytes.NewReader(data)
@@ -245,16 +246,16 @@ func (p *Process) File(filePath string) error {
 	return nil
 }
 
-func (p *Process) WorkerLogInfo(workerType string, sizeOrig, sizePacked, bytesCount uint64, filePath string) {
+func (p *Process) WorkerLogInfo(workerType string, sizeOrig, sizePacked, sizeMinified uint64, filePath string) {
 	archiveRatio := float64(sizePacked) / float64(sizeOrig)
 	archiveRatioString := fmt.Sprintf("%.3f", archiveRatio)
-	minifyRatio := float64(bytesCount) / float64(sizeOrig)
+	minifyRatio := float64(sizeMinified) / float64(sizeOrig)
 	minifyRatioString := fmt.Sprintf("%.3f", minifyRatio)
 	slog.Info(
 		workerType, "ArhiveRatio", archiveRatioString,
 		"MinifyRatio", minifyRatioString,
 		"original", sizeOrig, "compressed", sizePacked,
-		"bytesCount", bytesCount, "file", filePath)
+		"minified", sizeMinified, "file", filePath)
 }
 
 func (p *Process) CallArchivWorker(fm *FileMeta, workerType string) error {
@@ -279,10 +280,10 @@ func (p *Process) CallArchivWorker(fm *FileMeta, workerType string) error {
 				switch workerType {
 				case "MINIFIED":
 					p.Results.SizePackedMinified += compressedSize
-					// p.Results.SizeMinified += origSize
+					p.Results.SizeMinified += bytesWritten
 				case "ORIGINAL":
 					p.Results.SizePackedBackup += compressedSize
-					p.Results.SizeOriginal += compressedSize
+					p.Results.SizeOriginal += origSize
 				}
 				p.WG.Done()
 			}
@@ -293,15 +294,15 @@ func (p *Process) CallArchivWorker(fm *FileMeta, workerType string) error {
 }
 
 func (p *Process) Archivate(worker *ArchiveWorker, f *FileMeta) (uint64, uint64, uint64, error) {
-	var fileSize, compressedSize, bytesWritten uint64
+	var fileSize, compressedSize, minifiedSize uint64
 	// Create a new zip file header
 	header, err := zip.FileInfoHeader(f.FileInfo)
 	if err != nil {
-		return fileSize, compressedSize, bytesWritten, nil
+		return fileSize, compressedSize, minifiedSize, nil
 	}
 	finfo, err := worker.ArchiveFile.Stat()
 	if err != nil {
-		return fileSize, compressedSize, bytesWritten, nil
+		return fileSize, compressedSize, minifiedSize, nil
 	}
 	before := finfo.Size()
 	// fileSize := header.UncompressedSize64 // Not working -> 0
@@ -312,24 +313,24 @@ func (p *Process) Archivate(worker *ArchiveWorker, f *FileMeta) (uint64, uint64,
 	// Create a new entry in the zip archive
 	entry, err := worker.ArchiveWriter.CreateHeader(header)
 	if err != nil {
-		return fileSize, compressedSize, bytesWritten, nil
+		return fileSize, compressedSize, minifiedSize, nil
 	}
 	// Copy the file content to the zip entry
 	bytesCount, err := io.Copy(entry, f.FileReader)
-	bytesWritten = uint64(bytesCount)
+	minifiedSize = uint64(bytesCount)
 	if err != nil {
-		return fileSize, compressedSize, bytesWritten, nil
+		return fileSize, compressedSize, minifiedSize, nil
 	}
 	// compressedSize := header.CompressedSize64 // Not working ->0
 	finfo, err = worker.ArchiveFile.Stat()
 	if err != nil {
-		return fileSize, compressedSize, bytesWritten, nil
+		return fileSize, compressedSize, minifiedSize, nil
 	}
 	after := finfo.Size()
 	compressedSize = uint64(after - before)
 	_, err = entry.Write([]byte("\n"))
 	if err != nil {
-		return fileSize, 0, bytesWritten, err
+		return fileSize, 0, minifiedSize, err
 	}
-	return fileSize, compressedSize, bytesWritten, nil
+	return fileSize, compressedSize, minifiedSize, nil
 }
