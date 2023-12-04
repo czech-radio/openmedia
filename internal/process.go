@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
-	"math/rand"
 	"os"
 	"path/filepath"
 	"sync"
@@ -101,8 +100,12 @@ func (p *Process) DestroyWorkers() {
 	}
 }
 
+func RundownFileNameNormalize(fileName string) {
+}
+
 func (f *FileMeta) Parse(
-	date time.Time, fileInfo os.FileInfo, archiveType, sourceDir, targetDir string, sourceFilePath string, reader io.Reader) error {
+	metaInfo RundownMetaInfo, fileInfo os.FileInfo, archiveType, sourceDir, targetDir string, sourceFilePath string, reader io.Reader) error {
+	date := metaInfo.Date
 	year, week := date.ISOWeek()
 	f.Year = year
 	f.Month = int(date.Month())
@@ -111,18 +114,12 @@ func (f *FileMeta) Parse(
 	f.Weekday = date.Weekday()
 	f.Archives = make(map[string]string)
 
-	// archive names
-	s1 := rand.NewSource(time.Now().UnixNano())
-	r1 := rand.New(s1)
-	randint := r1.Intn(100000)
-	// name := fmt.Sprintf("MINIFIED_%03d", randint)
 	name := "MINIFIED"
-
 	f.Archives[name] = fmt.Sprintf("%d_W%02d_%s.%s", f.Year, f.Week, name, archiveType)
 	name = "ORIGINAL"
 	f.Archives[name] = fmt.Sprintf("%d_W%02d_%s.%s", f.Year, f.Week, name, archiveType)
-	// f.RundownNameNew = fmt.Sprintf("RD_%s_W%02d_%04d_%02d_%02d", f.Weekday, f.Week, f.Year, f.Month, f.Day)
-	f.RundownNameNew = fmt.Sprintf("RD_%s_W%02d_%04d_%02d_%02d_%03d", f.Weekday, f.Week, f.Year, f.Month, f.Day, randint)
+	f.RundownNameNew = fmt.Sprintf("RD_%s_%s_W%02d_%04d_%02d_%02d", metaInfo.RadioName, f.Weekday, f.Week, f.Year, f.Month, f.Day)
+
 	f.FileInfo = fileInfo
 	f.DirectorySource = sourceDir
 	f.DirectoryDestination = targetDir
@@ -204,8 +201,8 @@ func (p *Process) File(filePath string) error {
 		return err
 	}
 
-	// Infer rundown date from OM_HEADER field
-	date, err := om.RundownDate()
+	// Infer rundown meta info from OM_HEADER fields
+	metaInfo, err := om.RundownMetaInfoParse()
 	if err != nil {
 		return err
 	}
@@ -218,7 +215,7 @@ func (p *Process) File(filePath string) error {
 	fileMetaOriginal := FileMeta{}
 	reader := bytes.NewReader(data)
 	opts := p.Options
-	err = fileMetaOriginal.Parse(date, fileInfo, opts.ArchiveType, opts.SourceDirectory, opts.DestinationDirectory, filePath, reader)
+	err = fileMetaOriginal.Parse(metaInfo, fileInfo, opts.ArchiveType, opts.SourceDirectory, opts.DestinationDirectory, filePath, reader)
 	if err != nil {
 		return err
 	}
@@ -275,7 +272,8 @@ func (p *Process) CallArchivWorker(fm *FileMeta, workerType string) error {
 					slog.Error(err.Error())
 					break
 				}
-				p.WorkerLogInfo(wt, origSize, compressedSize, bytesWritten, workerParams.FilePathSource)
+				p.WorkerLogInfo(wt, origSize, compressedSize,
+					bytesWritten, workerParams.FilePathSource)
 				switch workerType {
 				case "MINIFIED":
 					p.Results.SizePackedMinified += compressedSize
@@ -293,7 +291,8 @@ func (p *Process) CallArchivWorker(fm *FileMeta, workerType string) error {
 	return nil
 }
 
-func (p *Process) Archivate(worker *ArchiveWorker, f *FileMeta) (uint64, uint64, uint64, error) {
+func (p *Process) Archivate(worker *ArchiveWorker, f *FileMeta) (
+	uint64, uint64, uint64, error) {
 	var fileSize, compressedSize, minifiedSize uint64
 	// Create a new zip file header
 	header, err := zip.FileInfoHeader(f.FileInfo)

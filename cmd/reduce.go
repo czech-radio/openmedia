@@ -34,6 +34,10 @@ func init() {
 		"input filename pattern")
 	lf.StringP("output", "o", "",
 		"output filename pattern")
+	lf.BoolP("remove-orginals", "r", false,
+		"Delete original files after processing if process finishes without any errors")
+	lf.BoolP("output-csv", "", false,
+		"convert xml rundown files also to csv")
 	// lf.StringP("output-encoding", "E", "utf-8",
 	// "Convert file to specified encoding")
 	// lf.BoolP("xml-validate-lines-pre", "", true,

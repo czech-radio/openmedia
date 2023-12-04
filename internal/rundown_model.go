@@ -20,23 +20,32 @@ type OPENMEDIA struct {
 	OM_OBJECT OM_OBJECT `xml:"OM_OBJECT"`
 }
 
+type RundownMetaInfo struct {
+	Date      time.Time
+	RadioName string
+}
+
 // RundownDate: get date from xml rundown
 // TODO: optimize without loops
-func (om OPENMEDIA) RundownDate() (time.Time, error) {
+func (om OPENMEDIA) RundownMetaInfoParse() (RundownMetaInfo, error) {
 	fields := om.OM_OBJECT.OM_HEADER.Fields
-	var fieldValue string
-loopfields:
+	var metaInfo RundownMetaInfo
+	var err error
 	for _, field := range fields {
 		for _, attr := range field.Attrs {
-			// field.FieldID == 1004
-			if attr.Value == "Čas začátku" {
-				// if attr.Value == "Čas vytvoření" {
-				fieldValue = field.OM_DATETIME
-				break loopfields
+			switch attr.Value {
+			case "Čas vytvoření":
+				// field.FieldID == 1004
+				metaInfo.Date, err = strftime.Parse("%Y%m%dT%H%M%S", field.OM_DATETIME)
+			case "Název":
+				metaInfo.RadioName = field.OM_STRING
+			}
+			if err != nil {
+				return metaInfo, err
 			}
 		}
 	}
-	return strftime.Parse("%Y%m%dT%H%M%S", fieldValue)
+	return metaInfo, err
 }
 
 type OM_OBJECT struct {
