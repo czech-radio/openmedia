@@ -1,4 +1,4 @@
-#/usr/bin/env bash
+#!/usr/bin/env bash
 MY_SERVICE=openmedia_reduce
 INIT_DIR="../init"
 

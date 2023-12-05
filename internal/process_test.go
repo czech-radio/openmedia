@@ -1,9 +1,9 @@
 package internal
 
 import (
-	"fmt"
 	"path/filepath"
 	"regexp"
+	"strings"
 	"testing"
 )
 
@@ -13,33 +13,24 @@ func Test_RundownNameParse(t *testing.T) {
 		result string
 		error  error
 	}
-	// regexPattern := `(\p{L}+\s?\p{L}*\s?\p{L}*)`
-	// regexPattern := `([[^alpha]-\d])*`
-	regexPattern := `([\d[:ascii:]]*)`
+	regexPattern := `([\d[:ascii:]]*)([\p{L}\ ]*)`
+	// \p{L} unicode letter
 	regexpObject := regexp.MustCompile(regexPattern)
 	Cases := []Case{
-		Case{
-			input:  "05-09 ČRo Region SC - Středa 04.03.2020",
+		{input: "05-09 ČRo Region SC - Středa 04.03.2020",
 			result: "ČRo Region SC",
-			error:  nil,
-		},
-		Case{
-			input:  "05-09 ČRo Sever - Wed, 04.03.2020",
+			error:  nil},
+		{input: "05-09 ČRo Sever - Wed, 04.03.2020",
 			result: "ČRo Sever",
-			error:  nil,
-		},
+			error:  nil},
 	}
 	for _, c := range Cases {
 		matches := regexpObject.FindStringSubmatch(c.input)
-		if len(matches) > 0 {
-			fmt.Printf("%q\n", c.input)
-			fmt.Printf("%q\n", matches[1])
-			fmt.Printf("%q\n", matches)
-			if matches[1] != c.result {
-				t.Error("does not match")
-			}
-
-		} else {
+		var name string = ""
+		if len(matches) == 3 {
+			name = strings.TrimSpace(matches[2])
+		}
+		if name != c.result {
 			t.Error("does not match", c.input)
 		}
 	}

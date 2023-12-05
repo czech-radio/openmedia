@@ -3,6 +3,7 @@ package internal
 import (
 	"archive/zip"
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log/slog"
@@ -52,6 +53,8 @@ type ProcessResults struct {
 	SizePackedBackup   uint64
 	SizeMinified       uint64
 	SizePackedMinified uint64
+	Duplicates         map[string][]string // dstFile vs srcFile
+	DuplicatesFound    bool
 	// Errors         []error
 }
 
@@ -100,9 +103,6 @@ func (p *Process) DestroyWorkers() {
 	}
 }
 
-func RundownFileNameNormalize(fileName string) {
-}
-
 func (f *FileMeta) Parse(
 	metaInfo RundownMetaInfo, fileInfo os.FileInfo, archiveType, sourceDir, targetDir string, sourceFilePath string, reader io.Reader) error {
 	date := metaInfo.Date
@@ -119,7 +119,7 @@ func (f *FileMeta) Parse(
 	name = "ORIGINAL"
 	f.Archives[name] = fmt.Sprintf("%d_W%02d_%s.%s", f.Year, f.Week, name, archiveType)
 	f.RundownNameNew = fmt.Sprintf("RD_%s_%s_W%02d_%04d_%02d_%02d", metaInfo.RadioName, f.Weekday, f.Week, f.Year, f.Month, f.Day)
-
+	// fmt.Println("fuck", f.RundownNameNew)
 	f.FileInfo = fileInfo
 	f.DirectorySource = sourceDir
 	f.DirectoryDestination = targetDir
@@ -148,6 +148,19 @@ func (p *Process) ErrorHandle(errMain error, errorsPartial ...error) ControlFlow
 	}
 }
 
+func (p *Process) CheckDuplicatesInArchive(fi *FileMeta) error {
+	if p.Results.Duplicates == nil {
+		p.Results.Duplicates = make(map[string][]string)
+	}
+	dupes, _ := p.Results.Duplicates[fi.FilePathInArchive]
+	p.Results.Duplicates[fi.FilePathInArchive] = append(dupes, fi.FilePathSource)
+	if len(dupes) > 0 {
+		p.Results.DuplicatesFound = true
+		return fmt.Errorf("file %s will result in duplicate %s file in archive", fi.FilePathSource, fi.FilePathInArchive)
+	}
+	return nil
+}
+
 func (p *Process) Folder() error {
 	validateResult, err := ValidateFilenamesInDirectory(p.Options.SourceDirectory)
 	if p.ErrorHandle(err, validateResult.Errors...) == Break {
@@ -172,6 +185,14 @@ processFolder:
 	res := p.Results
 	p.WorkerLogInfo("GLOBAL_ORIGINAL", res.SizeOriginal, res.SizePackedBackup, res.SizeOriginal, p.Options.SourceDirectory)
 	p.WorkerLogInfo("GLOBAL_MINIFY", res.SizeOriginal, res.SizePackedMinified, res.SizeMinified, p.Options.SourceDirectory)
+	if p.Results.DuplicatesFound {
+		slog.Error("duplicates found")
+		ms, err := json.MarshalIndent(p.Results.Duplicates, "", "  ")
+		if err != nil {
+			slog.Error("cannot marshal dupes")
+		}
+		fmt.Printf("%s\n", ms)
+	}
 	p.DestroyWorkers()
 	return nil
 }
@@ -218,6 +239,13 @@ func (p *Process) File(filePath string) error {
 	err = fileMetaOriginal.Parse(metaInfo, fileInfo, opts.ArchiveType, opts.SourceDirectory, opts.DestinationDirectory, filePath, reader)
 	if err != nil {
 		return err
+	}
+
+	// Check resulting dupes
+	err = p.CheckDuplicatesInArchive(&fileMetaOriginal)
+	if err != nil {
+		slog.Error(err.Error())
+		// return err
 	}
 
 	// Archivate original
@@ -327,9 +355,5 @@ func (p *Process) Archivate(worker *ArchiveWorker, f *FileMeta) (
 	}
 	after := finfo.Size()
 	compressedSize = uint64(after - before)
-	_, err = entry.Write([]byte("\n"))
-	if err != nil {
-		return fileSize, 0, minifiedSize, err
-	}
 	return fileSize, compressedSize, minifiedSize, nil
 }

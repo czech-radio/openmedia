@@ -3,6 +3,9 @@ package internal
 import (
 	"encoding/json"
 	"encoding/xml"
+	"fmt"
+	"regexp"
+	"strings"
 	"time"
 
 	"github.com/ncruces/go-strftime"
@@ -18,34 +21,6 @@ type OPENMEDIA struct {
 	XMLName   xml.Name  `xml:"OPENMEDIA"`
 	OM_SERVER OM_SERVER `xml:"OM_SERVER"`
 	OM_OBJECT OM_OBJECT `xml:"OM_OBJECT"`
-}
-
-type RundownMetaInfo struct {
-	Date      time.Time
-	RadioName string
-}
-
-// RundownDate: get date from xml rundown
-// TODO: optimize without loops
-func (om OPENMEDIA) RundownMetaInfoParse() (RundownMetaInfo, error) {
-	fields := om.OM_OBJECT.OM_HEADER.Fields
-	var metaInfo RundownMetaInfo
-	var err error
-	for _, field := range fields {
-		for _, attr := range field.Attrs {
-			switch attr.Value {
-			case "Čas vytvoření":
-				// field.FieldID == 1004
-				metaInfo.Date, err = strftime.Parse("%Y%m%dT%H%M%S", field.OM_DATETIME)
-			case "Název":
-				metaInfo.RadioName = field.OM_STRING
-			}
-			if err != nil {
-				return metaInfo, err
-			}
-		}
-	}
-	return metaInfo, err
 }
 
 type OM_OBJECT struct {
@@ -101,4 +76,51 @@ func (omf *OM_FIELD) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 		return e.EncodeElement(nil, start)
 	}
 	return e.EncodeElement(*omf, start)
+}
+
+type RundownMetaInfo struct {
+	Date      time.Time
+	RadioName string
+}
+
+var RadioNameRegex = regexp.MustCompile(`([\d[:ascii:]]*)([\p{L}\ ]*)`)
+
+func (r *RundownMetaInfo) ParseRadioName(rundownName string) (string, error) {
+	matches := RadioNameRegex.FindStringSubmatch(rundownName)
+	if len(matches) == 3 {
+		name := strings.TrimSpace(matches[2])
+		return name, nil
+	}
+	//NOTE: match result against map of code vs radio name
+	return "", fmt.Errorf("cannot parse radio name from: %s", rundownName)
+}
+
+// RundownMetaInfoParse
+// TODO: optimize without loops
+func (om OPENMEDIA) RundownMetaInfoParse() (RundownMetaInfo, error) {
+	fields := om.OM_OBJECT.OM_HEADER.Fields
+	var noName = fmt.Errorf("cannot parse radio name")
+	var metaInfo RundownMetaInfo
+	var err error
+	var rundownName, radioName string
+	for _, field := range fields {
+		for _, attr := range field.Attrs {
+			switch attr.Value {
+			case "Čas vytvoření":
+				// field.FieldID == 1004
+				metaInfo.Date, err = strftime.Parse("%Y%m%dT%H%M%S", field.OM_DATETIME)
+			case "Název":
+				rundownName = field.OM_STRING
+				radioName, err = metaInfo.ParseRadioName(rundownName)
+				if radioName == "" {
+					return metaInfo, noName
+				}
+				metaInfo.RadioName = radioName
+			}
+			if err != nil {
+				return metaInfo, err
+			}
+		}
+	}
+	return metaInfo, err
 }
