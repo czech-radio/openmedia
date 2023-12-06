@@ -1,0 +1,9 @@
+[Unit]
+Description="Archive xml files"
+
+[Service]
+Type=simple
+StandardOutput=journal
+ExecStart="/home/some_user/app"
+
+[Install]
