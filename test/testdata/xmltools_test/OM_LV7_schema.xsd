@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- XML Schema Definition (XSD) for openmedia  -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <!-- # BASE STRUCTURE -->
+  <xs:element name="OPENMEDIA">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="OM_SERVER" maxOccurs="1" minOccurs="1"/>
+        <xs:element name="OM_OBJECT" type="type_OM_OBJECT_Radio_Rundown"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <!-- # TYPES DEFINITIONS -->
+  <!-- ## type_OM_OBJECT_Radio_Rundown -->
+  <xs:complexType name="type_OM_OBJECT_Radio_Rundown">
+    <xs:sequence>
+      <!-- <xs:any processContents="skip" minOccurs="0" maxOccurs="unbounded"/> -->
+      <xs:element name="OM_HEADER" type="type_OM_HEADER"/>
+      <!-- <xs:element name="OM_HEADER"/> -->
+      <xs:element name="OM_UPLINK" type="type_OM_UPLINK" minOccurs="0" maxOccurs="1"/>
+      <!-- <xs:element name="OM_RECORD" minOccurs="4" maxOccurs="4"/> -->
+      <xs:element name="OM_RECORD" type="type_OM_RECORD" minOccurs="4" maxOccurs="4"/>
+    </xs:sequence>
+    <xs:attribute name="SystemID" type="xs:string"/>
+    <xs:attribute name="ObjectID" type="xs:string"/>
+    <xs:attribute name="DocumentURN" type="xs:string"/>
+    <xs:attribute name="DirectoryID" type="xs:string"/>
+    <xs:attribute name="InternalType" type="xs:int"/>
+    <xs:attribute name="TemplateID" type="xs:string"/>
+    <xs:attribute name="TemplateType" type="xs:int"/>
+    <xs:attribute name="TemplateName" type="xs:string"/>
+  </xs:complexType>
+  <!-- ## type_OM_HEADER -->
+  <xs:complexType name="type_OM_HEADER">
+    <xs:sequence>
+      <xs:element name="OM_FIELD" type="type_OM_FIELD" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+  <!-- ## type_OM_UPLINK -->
+  <xs:complexType name="type_OM_UPLINK">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute name="ObjectID" type="xs:string"/>
+        <xs:attribute name="TemplateID" type="xs:string"/>
+        <xs:attribute name="RecordID" type="xs:string"/>
+        <xs:attribute name="TemplateType" type="xs:string"/>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+  <!-- ## type_OM_FIELD -->
+  <xs:complexType name="type_OM_FIELD">
+    <xs:sequence>
+      <xs:any processContents="skip" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="FieldID" type="xs:string"/>
+    <xs:attribute name="FieldType" type="xs:string"/>
+    <xs:attribute name="FieldName" type="xs:string"/>
+    <xs:attribute name="IsEmpty" type="xs:string"/>
+  </xs:complexType>
+  <!-- ## type_OM_RECORD -->
+  <xs:complexType name="type_OM_RECORD">
+    <xs:sequence>
+      <xs:element name="OM_FIELD" type="type_OM_FIELD" maxOccurs="unbounded"/>
+      <xs:element name="OM_OBJECT" type="type_OM_OBJECT_Hourly_Rundown"/>
+      <!-- <xs:any processContents="skip" minOccurs="0" maxOccurs="unbounded"/> -->
+    </xs:sequence>
+    <xs:attribute name="RecordID" type="xs:string"/>
+  </xs:complexType>
+  <!-- ## type_OM_OBJECT_Hourly_Rundown -->
+  <xs:complexType name="type_OM_OBJECT_Hourly_Rundown">
+    <xs:sequence>
+      <xs:any processContents="skip" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="SystemID" type="xs:string"/>
+    <xs:attribute name="ObjectID" type="xs:string"/>
+    <xs:attribute name="DocumentURN" type="xs:string"/>
+    <xs:attribute name="DirectoryID" type="xs:string"/>
+    <xs:attribute name="InternalType" type="xs:int"/>
+    <xs:attribute name="TemplateID" type="xs:string"/>
+    <xs:attribute name="TemplateType" type="xs:int"/>
+    <xs:attribute name="TemplateName" type="xs:string"/>
+  </xs:complexType>
+</xs:schema>
