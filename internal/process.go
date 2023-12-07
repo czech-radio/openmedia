@@ -21,11 +21,25 @@ const (
 	Break
 )
 
+type WorkerTypeCode int
+
+const (
+	WorkerTypeOriginal WorkerTypeCode = iota
+	WorkerTypeMinified
+	WorkerTypeCSV
+)
+
+var WorkerTypeMap map[WorkerTypeCode]string = map[WorkerTypeCode]string{
+	WorkerTypeOriginal: "ORIGINAL",
+	WorkerTypeMinified: "MINIFIED",
+	WorkerTypeCSV:      "CSV",
+}
+
 type Process struct {
 	Options ProcessOptions
 	Results ProcessResults
 	Errors  []error
-	Workers map[string]*ArchiveWorker
+	Workers map[string]*ArchiveWorker // WorkerName->
 	WG      *sync.WaitGroup
 }
 
@@ -38,7 +52,7 @@ type ProcessOptions struct {
 	ValidateWithXSD        string // path to XSD file
 	ValidatePre            bool
 	ValidatePost           bool
-	ArchiveType            string
+	CompressionType        string
 	InvalidFileRename      bool
 	InvalidFileContinue    bool
 }
@@ -55,7 +69,6 @@ type ProcessResults struct {
 	SizePackedMinified uint64
 	Duplicates         map[string][]string // dstFile vs srcFile
 	DuplicatesFound    bool
-	// Errors         []error
 }
 
 type FileMeta struct {
@@ -64,7 +77,8 @@ type FileMeta struct {
 	Day                  int
 	Week                 int
 	Weekday              time.Weekday
-	Archives             map[string]string
+	WorkerName           string
+	CompressionType      string
 	RundownNameNew       string
 	FilePathSource       string
 	FilePathInArchive    string
@@ -75,15 +89,18 @@ type FileMeta struct {
 }
 
 type ArchiveWorker struct {
-	Call          chan *FileMeta
-	ArchivePath   string
-	ArchiveFile   *os.File
-	ArchiveWriter *zip.Writer
+	Call           chan *FileMeta
+	WorkrerName    string
+	WorkerTypeName string
+	WorkerTypeCode WorkerTypeCode
+	ArchivePath    string
+	ArchiveFile    *os.File
+	ArchiveWriter  *zip.Writer
 }
 
-func (w *ArchiveWorker) Init(dstdir, archieName string) error {
+func (w *ArchiveWorker) Init(dstdir, archiveName string) error {
 	w.Call = make(chan *FileMeta)
-	path := filepath.Join(dstdir, archieName)
+	path := filepath.Join(dstdir, archiveName)
 	w.ArchivePath = path
 	archive, err := os.Create(path)
 	if err != nil {
@@ -104,7 +121,7 @@ func (p *Process) DestroyWorkers() {
 }
 
 func (f *FileMeta) Parse(
-	metaInfo RundownMetaInfo, fileInfo os.FileInfo, archiveType, sourceDir, targetDir string, sourceFilePath string, reader io.Reader) error {
+	metaInfo RundownMetaInfo, fileInfo os.FileInfo, compressionType, sourceDir, targetDir string, sourceFilePath string, reader io.Reader) error {
 	date := metaInfo.Date
 	year, week := date.ISOWeek()
 	f.Year = year
@@ -112,14 +129,7 @@ func (f *FileMeta) Parse(
 	f.Day = date.Day()
 	f.Week = week
 	f.Weekday = date.Weekday()
-	f.Archives = make(map[string]string)
-
-	name := "MINIFIED"
-	f.Archives[name] = fmt.Sprintf("%d_W%02d_%s.%s", f.Year, f.Week, name, archiveType)
-	name = "ORIGINAL"
-	f.Archives[name] = fmt.Sprintf("%d_W%02d_%s.%s", f.Year, f.Week, name, archiveType)
 	f.RundownNameNew = fmt.Sprintf("RD_%s_%s_W%02d_%04d_%02d_%02d", metaInfo.RadioName, f.Weekday, f.Week, f.Year, f.Month, f.Day)
-	// fmt.Println("fuck", f.RundownNameNew)
 	f.FileInfo = fileInfo
 	f.DirectorySource = sourceDir
 	f.DirectoryDestination = targetDir
@@ -130,7 +140,14 @@ func (f *FileMeta) Parse(
 	}
 	f.FilePathInArchive = filepath.Join(filepath.Dir(pathInArchive), f.RundownNameNew+filepath.Ext(sourceFilePath))
 	f.FileReader = reader
+	f.CompressionType = compressionType
 	return nil
+}
+
+func (f *FileMeta) SetWeekWorkerName(wtc WorkerTypeCode) string {
+	workerName, _ := WorkerTypeMap[wtc]
+	f.WorkerName = fmt.Sprintf("%d_W%02d_%s.%s", f.Year, f.Week, workerName, f.CompressionType)
+	return f.WorkerName
 }
 
 func (p *Process) ErrorHandle(errMain error, errorsPartial ...error) ControlFlowAction {
@@ -154,6 +171,7 @@ func (p *Process) CheckDuplicatesInArchive(fi *FileMeta) error {
 	}
 	dupes, _ := p.Results.Duplicates[fi.FilePathInArchive]
 	p.Results.Duplicates[fi.FilePathInArchive] = append(dupes, fi.FilePathSource)
+
 	if len(dupes) > 0 {
 		p.Results.DuplicatesFound = true
 		return fmt.Errorf("file %s will result in duplicate %s file in archive", fi.FilePathSource, fi.FilePathInArchive)
@@ -236,7 +254,7 @@ func (p *Process) File(filePath string) error {
 	fileMetaOriginal := FileMeta{}
 	reader := bytes.NewReader(data)
 	opts := p.Options
-	err = fileMetaOriginal.Parse(metaInfo, fileInfo, opts.ArchiveType, opts.SourceDirectory, opts.DestinationDirectory, filePath, reader)
+	err = fileMetaOriginal.Parse(metaInfo, fileInfo, opts.CompressionType, opts.SourceDirectory, opts.DestinationDirectory, filePath, reader)
 	if err != nil {
 		return err
 	}
@@ -245,11 +263,11 @@ func (p *Process) File(filePath string) error {
 	err = p.CheckDuplicatesInArchive(&fileMetaOriginal)
 	if err != nil {
 		slog.Error(err.Error())
-		// return err
 	}
 
 	// Archivate original
-	err = p.CallArchivWorker(&fileMetaOriginal, "ORIGINAL")
+	fileMetaOriginal.SetWeekWorkerName(WorkerTypeOriginal)
+	err = p.CallArchivWorker(&fileMetaOriginal, WorkerTypeOriginal)
 	if err != nil {
 		return err
 	}
@@ -262,7 +280,8 @@ func (p *Process) File(filePath string) error {
 	// Archivate original
 	fileMetaMinify := fileMetaOriginal
 	fileMetaMinify.FileReader = pr
-	err = p.CallArchivWorker(&fileMetaMinify, "MINIFIED")
+	fileMetaMinify.SetWeekWorkerName(WorkerTypeMinified)
+	err = p.CallArchivWorker(&fileMetaMinify, WorkerTypeMinified)
 	if err != nil {
 		return err
 	}
@@ -282,17 +301,16 @@ func (p *Process) WorkerLogInfo(workerType string, sizeOrig, sizePacked, sizeMin
 		"minified", sizeMinified, "file", filePath)
 }
 
-func (p *Process) CallArchivWorker(fm *FileMeta, workerType string) error {
-	workerName := fm.Archives[workerType]
-	worker, ok := p.Workers[workerName]
+func (p *Process) CallArchivWorker(fm *FileMeta, workerTypeCode WorkerTypeCode) error {
+	worker, ok := p.Workers[fm.WorkerName]
 	if !ok {
 		worker = new(ArchiveWorker)
-		err := worker.Init(fm.DirectoryDestination, workerName)
+		err := worker.Init(fm.DirectoryDestination, fm.WorkerName)
 		if err != nil {
 			return err
 		}
-		p.Workers[workerName] = worker
-		go func(w *ArchiveWorker, wt string) {
+		p.Workers[fm.WorkerName] = worker
+		go func(w *ArchiveWorker, workerTypeCode WorkerTypeCode) {
 			for {
 				workerParams := <-w.Call
 				origSize, compressedSize, bytesWritten, err := p.Archivate(worker, workerParams)
@@ -300,20 +318,21 @@ func (p *Process) CallArchivWorker(fm *FileMeta, workerType string) error {
 					slog.Error(err.Error())
 					break
 				}
-				p.WorkerLogInfo(wt, origSize, compressedSize,
+				p.WorkerLogInfo(fm.WorkerName, origSize, compressedSize,
 					bytesWritten, workerParams.FilePathSource)
-				switch workerType {
-				case "MINIFIED":
+				// Update results stats
+				switch workerTypeCode {
+				case WorkerTypeMinified:
 					p.Results.SizePackedMinified += compressedSize
 					p.Results.SizeMinified += bytesWritten
 					p.Results.FilesProcessed++
-				case "ORIGINAL":
+				case WorkerTypeOriginal:
 					p.Results.SizePackedBackup += compressedSize
 					p.Results.SizeOriginal += origSize
 				}
 				p.WG.Done()
 			}
-		}(worker, workerType)
+		}(worker, workerTypeCode)
 	}
 	worker.Call <- fm
 	return nil
