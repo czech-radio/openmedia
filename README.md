@@ -18,7 +18,7 @@ When program runs it creates two files in output folder. Two files are:
 - zipped all minified (stripped down) version of original XML in `UTF-8` format. It is named: `2023_W02_MINIFIED.zip`
 - zipped all XML originals in `UTF-16` named similarly (inside of zip archive there are all of the original files with its original file-names): `2023_W02_ORIGINAL.zip`
 
-The date and name-day is derived from XML timetag and it is the same as given folder on `ANNOVA` disk. Input folder remains unchanged.
+The date and name-day is derived from XML time tag and it is the same as given folder on `ANNOVA` disk. Input folder remains unchanged.
 
 ## Logging
 

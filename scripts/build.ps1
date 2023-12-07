@@ -1,4 +1,4 @@
-# Build the Go binary with linked varibles.
+# Build the Go binary with linked variables.
 # Be sure that linked variable names matches!
 
 $buildTime = Get-Date -UFormat "%Y-%m-%dT%T"

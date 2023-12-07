@@ -85,7 +85,7 @@ func Reduce(cmd *cobra.Command, args []string) {
 		ValidateWithXSD:        "",
 		ValidatePre:            false,
 		ValidatePost:           false,
-		ArchiveType:            "zip",
+		CompressionType:        "zip",
 		InvalidFileRename:      false,
 		// InvalidFileContinue:    false,
 		InvalidFileContinue: true,

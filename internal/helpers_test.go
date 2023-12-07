@@ -14,10 +14,10 @@ import (
 var TESTS_RESULT_CODE int
 var TEST_DATA_DIR_SRC string // Test data which will be copied to TEMP_DIR
 var TEMP_DIR string          // Temporary directory inside /dev/shm created for test source files and output files
-var TEMP_DIR_TEST_SRC string // Temporary direcotory which serves as source data for tests
-var TEMP_DIR_TEST_DST string // Temporary direcotory which serves as destination for tests outputs
+var TEMP_DIR_TEST_SRC string // Temporary directory which serves as source data for tests
+var TEMP_DIR_TEST_DST string // Temporary directory which serves as destination for tests outputs
 
-// CleanUp cleanup testing environment afer sigint
+// CleanUp cleanup testing environment after sigint
 func CleanUp() (chan os.Signal, *sync.WaitGroup) {
 	wg := new(sync.WaitGroup)
 	com := make(chan os.Signal, 1)
@@ -38,7 +38,7 @@ func CleanUp() (chan os.Signal, *sync.WaitGroup) {
 	return com, wg
 }
 
-// TestMain setup, run tests, and teadrdown (cleanup after tests)
+// TestMain setup, run tests, and tear down (cleanup after tests)
 func TestMain(m *testing.M) {
 	// TESTS SETUP
 
