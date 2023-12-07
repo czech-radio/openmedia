@@ -106,8 +106,8 @@ func (om OPENMEDIA) RundownMetaInfoParse() (RundownMetaInfo, error) {
 	for _, field := range fields {
 		for _, attr := range field.Attrs {
 			switch attr.Value {
-			case "Čas vytvoření":
-				// field.FieldID == 1004
+			// case "Čas vytvoření": // FiledID: 1
+			case "Čas začátku": // FieldID: 1004
 				metaInfo.Date, err = strftime.Parse("%Y%m%dT%H%M%S", field.OM_DATETIME)
 			case "Název":
 				rundownName = field.OM_STRING

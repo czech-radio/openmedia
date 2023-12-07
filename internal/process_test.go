@@ -37,8 +37,8 @@ func Test_RundownNameParse(t *testing.T) {
 }
 
 func Test_ProcessFolder(t *testing.T) {
-	srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_additional")
-	// srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_mock")
+	// srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_additional")
+	srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_mock")
 	// srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_valid")
 	// srcDir := filepath.Join(TEMP_DIR_TEST_SRC)
 	dstDir := filepath.Join(TEMP_DIR_TEST_DST)
@@ -51,7 +51,7 @@ func Test_ProcessFolder(t *testing.T) {
 		ValidateWithXSD:        "",
 		ValidatePre:            false,
 		ValidatePost:           false,
-		ArchiveType:            "zip",
+		CompressionType:        "zip",
 		InvalidFileRename:      false,
 		// InvalidFileContinue:    false,
 		InvalidFileContinue: true,
@@ -64,8 +64,3 @@ func Test_ProcessFolder(t *testing.T) {
 		t.Error(err)
 	}
 }
-
-// func Test_RundownFileNameNormalize(t *testing.T) {
-// srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_additional")
-// ValidateFilenamesInDirectory(srcDir)
-// }
