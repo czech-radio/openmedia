@@ -78,7 +78,7 @@ TODO: better memory handling, fixed by [b20445b](https://github.com/czech-radio/
 
 #### Element object structure
 
-```
+```plain
 OPENMEDIA
  OM_SERVER
  OM_OBJECT "Radio Rundown"
@@ -99,7 +99,7 @@ OM_OBJECT "Hourly Rundown"
 
 #### Object structure
 
-```
+```plain
 OM_OBJECT "Radio Rundown"
  OM_OBJECT "Hourly Rundown"
   OM_OBJECT "Sub Rundown"
@@ -112,9 +112,13 @@ OM_OBJECT "Radio Rundown"
 
 #### Additional testing files
 
-':/GŘ/Strategický rozvoj/Analytická sekce/_Archiv/Projekty/OpenMedia/04_03_2020'
+```
+:/GŘ/Strategický rozvoj/Analytická sekce/_Archiv/Projekty/OpenMedia/04_03_2020
+```
 
 #### XML rundown validation
 
-xmllint --schema schema.xsd`
-The xml does not validate when schema.xsd imports another xsd for common ojects.
+```
+xmllint --schema schema.xsd
+```
+The XML does not validate when schema.xsd imports another XSD for common objects.
