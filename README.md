@@ -1,6 +1,6 @@
 # openmedia-reduce
 
-**The console application to reduce size of OpenMedia XML exports.**
+**The console application archive OpenMedia XML files.**
 
 [![build](https://github.com/czech-radio/openmedia-reduce/actions/workflows/main.yml/badge.svg)](https://github.com/czech-radio/openmedia-reduce/actions/workflows/main.yml)
 
