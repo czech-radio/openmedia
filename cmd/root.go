@@ -71,3 +71,11 @@ func init() {
 	// Local flags
 	// lf := rootCmd.Flags()
 }
+
+type Config struct {
+	Verbose       bool
+	Debug_command bool
+}
+
+func (c *Config) GetValue(val any) {
+}
