@@ -3,7 +3,6 @@ package internal
 import (
 	"encoding/json"
 	"encoding/xml"
-	"fmt"
 	"regexp"
 	"strings"
 	"time"
@@ -19,13 +18,13 @@ var openMediaXmlHeader []byte = append([]byte(
 
 type OPENMEDIA struct {
 	XMLName   xml.Name  `xml:"OPENMEDIA"`
-	OM_SERVER OM_SERVER `xml:"OM_SERVER"`
-	OM_OBJECT OM_OBJECT `xml:"OM_OBJECT"`
+	OM_SERVER OM_SERVER `xml:"OM_SERVER,omitempty"`
+	OM_OBJECT OM_OBJECT `xml:"OM_OBJECT,omitempty"`
 }
 
 type OM_OBJECT struct {
 	Attrs      []xml.Attr  `xml:",any,attr"`
-	OM_HEADER  OM_HEADER   `xml:"OM_HEADER"`
+	OM_HEADER  OM_HEADER   `xml:"OM_HEADER,omitempty"`
 	OM_UPLINK  OM_UPLINK   `xml:"OM_UPLINK,omitempty"`
 	OM_RECORDS []OM_RECORD `xml:"OM_RECORD,omitempty"`
 }
@@ -79,48 +78,71 @@ func (omf *OM_FIELD) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 }
 
 type RundownMetaInfo struct {
-	Date      time.Time
-	RadioName string
+	Date        time.Time
+	RadioName   string
+	HoursRange  string
+	RundownType string
 }
 
 var RadioNameRegex = regexp.MustCompile(`([\d[:ascii:]]*)([\p{L}\ ]*)`)
 
-func (r *RundownMetaInfo) ParseRadioName(rundownName string) (string, error) {
+func (r *RundownMetaInfo) ParseRundownName(rundownName string) error {
+	// e.g.: "05-09 ČRo Karlovy Vary - Wed, 04.03.2020"
+	//TODO: match result against map of code vs radio name
+	var unparsedFields []string
+	var radioName string
+	var hoursRange string
 	matches := RadioNameRegex.FindStringSubmatch(rundownName)
-	if len(matches) == 3 {
-		name := strings.TrimSpace(matches[2])
-		return name, nil
+	switch len(matches) {
+	case 3:
+		hoursRange = strings.TrimSpace(matches[1])
+		radioName = strings.TrimSpace(matches[2])
 	}
-	//NOTE: match result against map of code vs radio name
-	return "", fmt.Errorf("cannot parse radio name from: %s", rundownName)
+	if hoursRange == "" {
+		// errs = append(errs, fmt.Errorf("cannot parse hours range from: %s", rundownName))
+	}
+	r.RadioName = radioName
+	r.HoursRange = hoursRange
+	// if radioName == "" {
+	// errs = append(errs, fmt.Errorf("cannot parse radio name from: %s", rundownName))
+	// }
+	return nil
 }
 
 // RundownMetaInfoParse
 // TODO: optimize without loops
 func (om OPENMEDIA) RundownMetaInfoParse() (RundownMetaInfo, error) {
 	fields := om.OM_OBJECT.OM_HEADER.Fields
-	var noName = fmt.Errorf("cannot parse radio name")
+	// var noName = fmt.Errorf("cannot parse radio name")
 	var metaInfo RundownMetaInfo
 	var err error
-	var rundownName, radioName string
+	var errs []error
+	// var rundownName string
+
+	// Get values of main object attrs
+	for _, attr := range om.OM_OBJECT.Attrs {
+		switch attr.Name.Local {
+		case "TemplateName":
+			metaInfo.RundownType = attr.Value
+		}
+	}
+
+	// Get values of main header fields
 	for _, field := range fields {
 		for _, attr := range field.Attrs {
 			switch attr.Value {
 			// case "Čas vytvoření": // FiledID: 1
 			case "Čas začátku": // FieldID: 1004
 				metaInfo.Date, err = strftime.Parse("%Y%m%dT%H%M%S", field.OM_DATETIME)
+				// errs = ErrorAppend(errs, err)
+				// errs = append(errs, fmt.Errorf("cannot parse date from: %s", field.OM_DATETIME))
 			case "Název":
 				rundownName = field.OM_STRING
-				radioName, err = metaInfo.ParseRadioName(rundownName)
-				if radioName == "" {
-					return metaInfo, noName
-				}
-				metaInfo.RadioName = radioName
-			}
-			if err != nil {
-				return metaInfo, err
+				// errs = ErrorAppend()
+				// errs = append(errs, metaInfo.ParseRundownName(rundownName)...)
 			}
 		}
 	}
+	// if len(errs)
 	return metaInfo, err
 }

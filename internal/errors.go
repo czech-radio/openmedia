@@ -6,9 +6,9 @@ import (
 	"os"
 )
 
+// Error codes for os.Exit
 type ErrorCode int8
 
-// Error codes for os.Exit
 const (
 	ErrCodeSuccess        ErrorCode = 0
 	ErrCodeInvalidCommand ErrorCode = 1
@@ -18,41 +18,39 @@ const (
 	ErrCodeClosed
 	ErrCodeDataFormat
 	ErrCodeInvalid
+	ErrCodeParsingField
+	ErrCodeParsingXML
 	// ErrCodeInternal
 	// ErrCodeSystem
 	ErrCodeUnknown
 )
 
-// TODO: method for getting base error instead of error message
+type ErrorsCodeMap map[ErrorCode]string
 
-// ErrorCodeMap map ErrorCode and base error message
-var ErrorCodeMap map[ErrorCode]string = map[ErrorCode]string{
-	ErrCodeSuccess:    "",
-	ErrCodePermission: "permission denied",
-	ErrCodeExist:      "file already exists",
-	ErrCodeNotExist:   "file does not exist",
-	ErrCodeInvalid:    "invalid file",
-	ErrCodeClosed:     "file already closed",
-	ErrCodeUnknown:    "uknown error",
+var Errors ErrorsCodeMap = ErrorsCodeMap{
+	ErrCodeSuccess: "",
+	// os.ErrPermission = errors.New("permission denied")
+	ErrCodePermission:   "permission denied",   // os.ErrPermission
+	ErrCodeExist:        "file already exists", // os.ErrExist
+	ErrCodeNotExist:     "file does not exist", // os.ErrNotExist
+	ErrCodeInvalid:      "invalid file",        // os.ErrInvalid
+	ErrCodeClosed:       "file already closed", // os.ErrClosed
+	ErrCodeUnknown:      "uknown error",
+	ErrCodeParsingXML:   "cannot parse xml",
+	ErrCodeParsingField: "cannot parse field",
 	// ErrCodeDataFormat: "file has incompatible format",
 }
 
-// var (
-// os
-// ErrInvalid    = errors.New("invalid argument")
-// ErrPermission = errors.New("permission denied")
-// ErrExist      = errors.New("file already exists")
-// ErrNotExist   = errors.New("file does not exist")
-// ErrClosed     = errors.New("file already closed")
-// )
+func (ecm ErrorsCodeMap) CodeMsg(code ErrorCode) string {
+	return ecm[code]
+}
 
-func ErrorGetBaseMessage(err error) string {
+func (ecm ErrorsCodeMap) ErrorBaseMessage(err error) string {
 	var baseErr error = err
 	var unwrapErr error
 	if err == nil {
 		return ""
 	}
-
 	// Unwrap error as much as possible
 	for {
 		unwrapErr = errors.Unwrap(baseErr)
@@ -65,11 +63,11 @@ func ErrorGetBaseMessage(err error) string {
 	return baseErr.Error()
 }
 
-func ErrorGetCode(err error) ErrorCode {
+func (ecm ErrorsCodeMap) ErrorCode(err error) ErrorCode {
 	var resultCode ErrorCode
 	var resultCodeFound bool
-	baseMsg := ErrorGetBaseMessage(err)
-	for errCode, errMsg := range ErrorCodeMap {
+	baseMsg := ecm.ErrorBaseMessage(err)
+	for errCode, errMsg := range Errors {
 		if baseMsg == errMsg {
 			resultCode = errCode
 			resultCodeFound = true
@@ -82,12 +80,22 @@ func ErrorGetCode(err error) ErrorCode {
 	return resultCode
 }
 
-func ErrorExitWithCode(err error) {
-	code := ErrorGetCode(err)
+func (ecm ErrorsCodeMap) ErrorExitWithCode(err error) {
+	code := ecm.ErrorCode(err)
 	if err != nil {
 		slog.Error(err.Error())
 		os.Exit(int(code))
 	}
+}
+
+func ErrorAppend(errs []error, err error) []error {
+	var resErrs []error
+	for _, e := range errs {
+		if e != nil {
+			resErrs = append(resErrs, e)
+		}
+	}
+	return resErrs
 }
 
 // Alt method using errors.Is:
