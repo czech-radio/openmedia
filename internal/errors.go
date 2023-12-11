@@ -125,15 +125,3 @@ func ErrorAppend(errs []error, err error) []error {
 	}
 	return resErrs
 }
-
-// Alt method using errors.Is:
-// for errCode, errBase := range ErrorCodeMap {
-// te
-// if errors.Is(err, errBase) {
-// resultCode = errCode
-// errCodeFound = true
-// }
-// }
-// if !errCodeFound {
-// resultCode = ErrCodeUnknown
-// }
