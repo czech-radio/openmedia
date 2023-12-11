@@ -129,7 +129,10 @@ func (f *FileMeta) Parse(
 	f.Day = date.Day()
 	f.Week = week
 	f.Weekday = date.Weekday()
-	f.RundownNameNew = fmt.Sprintf("RD_%s_%s_W%02d_%04d_%02d_%02d", metaInfo.RadioName, f.Weekday, f.Week, f.Year, f.Month, f.Day)
+	f.RundownNameNew = fmt.Sprintf("RD_%s_%s_%s_W%02d_%04d_%02d_%02d",
+		metaInfo.HoursRange, metaInfo.RadioName,
+		f.Weekday, f.Week, f.Year, f.Month, f.Day)
+	fmt.Println(f.RundownNameNew)
 	f.FileInfo = fileInfo
 	f.DirectorySource = sourceDir
 	f.DirectoryDestination = targetDir
@@ -265,7 +268,7 @@ func (p *Process) File(filePath string) error {
 		slog.Error(err.Error())
 	}
 
-	// Archivate original
+	// 1. Archivate original
 	fileMetaOriginal.SetWeekWorkerName(WorkerTypeOriginal)
 	err = p.CallArchivWorker(&fileMetaOriginal, WorkerTypeOriginal)
 	if err != nil {
@@ -277,7 +280,7 @@ func (p *Process) File(filePath string) error {
 	pr = PipeRundownMarshal(om)
 	pr = PipeRundownHeaderAdd(pr)
 
-	// Archivate original
+	// 2. Archivate original
 	fileMetaMinify := fileMetaOriginal
 	fileMetaMinify.FileReader = pr
 	fileMetaMinify.SetWeekWorkerName(WorkerTypeMinified)
@@ -318,8 +321,8 @@ func (p *Process) CallArchivWorker(fm *FileMeta, workerTypeCode WorkerTypeCode) 
 					slog.Error(err.Error())
 					break
 				}
-				p.WorkerLogInfo(fm.WorkerName, origSize, compressedSize,
-					bytesWritten, workerParams.FilePathSource)
+				// p.WorkerLogInfo(fm.WorkerName, origSize, compressedSize,
+				// bytesWritten, workerParams.FilePathSource)
 				// Update results stats
 				switch workerTypeCode {
 				case WorkerTypeMinified:

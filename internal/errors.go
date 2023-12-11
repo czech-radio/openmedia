@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log/slog"
 	"os"
+	"strings"
 )
 
 // Error codes for os.Exit
@@ -18,8 +19,8 @@ const (
 	ErrCodeClosed
 	ErrCodeDataFormat
 	ErrCodeInvalid
-	ErrCodeParsingField
-	ErrCodeParsingXML
+	ErrCodeParseField
+	ErrCodeParseXML
 	// ErrCodeInternal
 	// ErrCodeSystem
 	ErrCodeUnknown
@@ -30,14 +31,14 @@ type ErrorsCodeMap map[ErrorCode]string
 var Errors ErrorsCodeMap = ErrorsCodeMap{
 	ErrCodeSuccess: "",
 	// os.ErrPermission = errors.New("permission denied")
-	ErrCodePermission:   "permission denied",   // os.ErrPermission
-	ErrCodeExist:        "file already exists", // os.ErrExist
-	ErrCodeNotExist:     "file does not exist", // os.ErrNotExist
-	ErrCodeInvalid:      "invalid file",        // os.ErrInvalid
-	ErrCodeClosed:       "file already closed", // os.ErrClosed
-	ErrCodeUnknown:      "uknown error",
-	ErrCodeParsingXML:   "cannot parse xml",
-	ErrCodeParsingField: "cannot parse field",
+	ErrCodePermission: "permission denied",   // os.ErrPermission
+	ErrCodeExist:      "file already exists", // os.ErrExist
+	ErrCodeNotExist:   "file does not exist", // os.ErrNotExist
+	ErrCodeInvalid:    "invalid file",        // os.ErrInvalid
+	ErrCodeClosed:     "file already closed", // os.ErrClosed
+	ErrCodeUnknown:    "uknown error",
+	ErrCodeParseXML:   "cannot parse xml",
+	ErrCodeParseField: "cannot parse field",
 	// ErrCodeDataFormat: "file has incompatible format",
 }
 
@@ -80,12 +81,39 @@ func (ecm ErrorsCodeMap) ErrorCode(err error) ErrorCode {
 	return resultCode
 }
 
-func (ecm ErrorsCodeMap) ErrorExitWithCode(err error) {
+func (ecm ErrorsCodeMap) ExitWithCode(err error) {
 	code := ecm.ErrorCode(err)
 	if err != nil {
 		slog.Error(err.Error())
 		os.Exit(int(code))
 	}
+}
+
+type ErrorsAgregate struct {
+	Errors   []error
+	Messages []string
+}
+
+func (ea *ErrorsAgregate) MessageAdd(msg string) {
+	if msg != "" {
+		ea.Messages = append(ea.Messages, msg)
+	}
+}
+
+func (ea *ErrorsAgregate) MessagesJoin() string {
+	return strings.Join(ea.Messages, ", ")
+}
+
+func (ea *ErrorsAgregate) ErrorAdd(err error) {
+	if err != nil {
+		ea.Errors = append(ea.Errors, err)
+	}
+}
+
+func (ea *ErrorsAgregate) GetError() {
+}
+
+func (ea *ErrorsAgregate) GetMessage() {
 }
 
 func ErrorAppend(errs []error, err error) []error {
@@ -100,6 +128,7 @@ func ErrorAppend(errs []error, err error) []error {
 
 // Alt method using errors.Is:
 // for errCode, errBase := range ErrorCodeMap {
+// te
 // if errors.Is(err, errBase) {
 // resultCode = errCode
 // errCodeFound = true

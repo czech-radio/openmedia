@@ -16,13 +16,13 @@ import (
 func PipeConsume(input_reader *io.PipeReader) {
 	var resultBuffer bytes.Buffer
 	_, err := io.Copy(&resultBuffer, input_reader)
-	ErrorExitWithCode(err)
+	Errors.ExitWithCode(err)
 }
 
 func PipePrint(input_reader *io.PipeReader) {
 	var resultBuffer bytes.Buffer
 	_, err := io.Copy(&resultBuffer, input_reader)
-	ErrorExitWithCode(err)
+	Errors.ExitWithCode(err)
 	fmt.Println(resultBuffer.String())
 }
 
@@ -32,7 +32,7 @@ func PipeUTF16leToUTF8(r io.Reader) *io.PipeReader {
 	go func() {
 		defer pw.Close()
 		_, err := io.Copy(pw, utf8reader)
-		ErrorExitWithCode(err)
+		Errors.ExitWithCode(err)
 	}()
 	return pr
 }
@@ -54,10 +54,10 @@ func PipeRundownHeaderAmmend(input_reader io.Reader) *io.PipeReader {
 				_, err = writer.WriteString(line + "\n")
 			}
 		}
-		ErrorExitWithCode(err)
+		Errors.ExitWithCode(err)
 		// Write remainig bytes wihtout scanning?
 		err = writer.Flush()
-		ErrorExitWithCode(err)
+		Errors.ExitWithCode(err)
 
 	}()
 	return pr
@@ -71,9 +71,9 @@ func PipeRundownHeaderAdd(input_reader io.Reader) *io.PipeReader {
 		defer pw.Close()
 		defer writer.Flush()
 		_, err := writer.Write(openMediaXmlHeader)
-		ErrorExitWithCode(err)
+		Errors.ExitWithCode(err)
 		_, err = io.Copy(writer, buffReader)
-		ErrorExitWithCode(err)
+		Errors.ExitWithCode(err)
 	}()
 	return pr
 }
@@ -100,9 +100,9 @@ func PipeRundownMarshal(om *OPENMEDIA) *io.PipeReader {
 	go func() {
 		defer pw.Close()
 		xmlBytes, err := xml.MarshalIndent(om, "", "  ")
-		ErrorExitWithCode(err)
+		Errors.ExitWithCode(err)
 		_, err = writer.Write(xmlBytes)
-		ErrorExitWithCode(err)
+		Errors.ExitWithCode(err)
 		writer.Flush()
 	}()
 	return pr
@@ -159,7 +159,7 @@ func ValidateFilenamesInDirectory(sourceDir string) (*ArchiveResult, error) {
 	filepath.Walk(sourceDir, walk_func)
 	result.FilesProcessed++
 	if len(result.Errors) > 0 {
-		err := fmt.Errorf("%s, count %d", ErrorCodeMap[ErrCodeInvalid], len(result.Errors))
+		err := fmt.Errorf("%s, count %d", Errors.CodeMsg(ErrCodeInvalid), len(result.Errors))
 		return result, err
 		// errors.New("invalid files count: %d", len(result.Errors))
 	}
