@@ -223,6 +223,5 @@ func CopyFile(
 	if err != nil {
 		return err
 	}
-
 	return nil
 }

@@ -3,6 +3,7 @@ package internal
 import (
 	"encoding/json"
 	"encoding/xml"
+	"fmt"
 	"regexp"
 	"strings"
 	"time"
@@ -84,12 +85,12 @@ type RundownMetaInfo struct {
 	RundownType string
 }
 
-var RadioNameRegex = regexp.MustCompile(`([\d[:ascii:]]*)([\p{L}\ ]*)`)
+var RadioNameRegex = regexp.MustCompile(`(\d\d-\d\d) ([\p{L}\s?]*)`)
 
-func (r *RundownMetaInfo) ParseRundownName(rundownName string) error {
+func (r *RundownMetaInfo) ParseRundownName(rundownName string) {
 	// e.g.: "05-09 ČRo Karlovy Vary - Wed, 04.03.2020"
 	//TODO: match result against map of code vs radio name
-	var unparsedFields []string
+	// var unparsedFields []string
 	var radioName string
 	var hoursRange string
 	matches := RadioNameRegex.FindStringSubmatch(rundownName)
@@ -97,29 +98,21 @@ func (r *RundownMetaInfo) ParseRundownName(rundownName string) error {
 	case 3:
 		hoursRange = strings.TrimSpace(matches[1])
 		radioName = strings.TrimSpace(matches[2])
-	}
-	if hoursRange == "" {
-		// errs = append(errs, fmt.Errorf("cannot parse hours range from: %s", rundownName))
+		radioName = strings.ReplaceAll(radioName, " ", "_")
 	}
 	r.RadioName = radioName
 	r.HoursRange = hoursRange
-	// if radioName == "" {
-	// errs = append(errs, fmt.Errorf("cannot parse radio name from: %s", rundownName))
-	// }
-	return nil
 }
 
 // RundownMetaInfoParse
-// TODO: optimize without loops
 func (om OPENMEDIA) RundownMetaInfoParse() (RundownMetaInfo, error) {
 	fields := om.OM_OBJECT.OM_HEADER.Fields
-	// var noName = fmt.Errorf("cannot parse radio name")
 	var metaInfo RundownMetaInfo
 	var err error
-	var errs []error
-	// var rundownName string
 
 	// Get values of main object attrs
+	// TODO: optimize without loops
+	// TODO: check empty parsed fields and parsing errors
 	for _, attr := range om.OM_OBJECT.Attrs {
 		switch attr.Name.Local {
 		case "TemplateName":
@@ -131,18 +124,15 @@ func (om OPENMEDIA) RundownMetaInfoParse() (RundownMetaInfo, error) {
 	for _, field := range fields {
 		for _, attr := range field.Attrs {
 			switch attr.Value {
-			// case "Čas vytvoření": // FiledID: 1
 			case "Čas začátku": // FieldID: 1004
+				// case "Čas vytvoření": // FiledID: 1
 				metaInfo.Date, err = strftime.Parse("%Y%m%dT%H%M%S", field.OM_DATETIME)
-				// errs = ErrorAppend(errs, err)
-				// errs = append(errs, fmt.Errorf("cannot parse date from: %s", field.OM_DATETIME))
 			case "Název":
-				rundownName = field.OM_STRING
-				// errs = ErrorAppend()
-				// errs = append(errs, metaInfo.ParseRundownName(rundownName)...)
+				metaInfo.ParseRundownName(field.OM_STRING)
+				fmt.Printf("\nkek %s\n", field.OM_STRING)
 			}
 		}
 	}
-	// if len(errs)
+	fmt.Printf("%+v\n", metaInfo)
 	return metaInfo, err
 }

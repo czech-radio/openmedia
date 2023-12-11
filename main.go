@@ -25,4 +25,5 @@ import "github/czech-radio/openmedia-reduce/cmd"
 
 func main() {
 	cmd.Execute()
+
 }
