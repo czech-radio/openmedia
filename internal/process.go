@@ -80,10 +80,10 @@ type FileMeta struct {
 	WorkerName           string
 	CompressionType      string
 	RundownNameNew       string
-	FilePathSource       string
-	FilePathInArchive    string
 	FileInfo             os.FileInfo
 	FileReader           io.Reader
+	FilePathSource       string
+	FilePathInArchive    string
 	DirectoryDestination string
 	DirectorySource      string
 }
@@ -321,8 +321,8 @@ func (p *Process) CallArchivWorker(fm *FileMeta, workerTypeCode WorkerTypeCode) 
 					slog.Error(err.Error())
 					break
 				}
-				// p.WorkerLogInfo(fm.WorkerName, origSize, compressedSize,
-				// bytesWritten, workerParams.FilePathSource)
+				p.WorkerLogInfo(fm.WorkerName, origSize, compressedSize,
+					bytesWritten, workerParams.FilePathSource)
 				// Update results stats
 				switch workerTypeCode {
 				case WorkerTypeMinified:

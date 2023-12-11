@@ -27,7 +27,6 @@ var reduceCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(reduceCmd)
 	lf := reduceCmd.Flags()
-
 	// lf.BoolP("load-env", "", false,
 	// `Set commandline options from environment. Useful for example when running as systemd service or as docker container`)
 	lf.StringP("input", "i", "",
@@ -36,18 +35,12 @@ func init() {
 		"output filename pattern")
 	lf.BoolP("remove-orginals", "r", false,
 		"Delete original files after processing if process finishes without any errors")
+	lf.BoolP("invalid-file-continue", "", false,
+		"Continue processing files in folder when invalid file found")
 	lf.BoolP("output-csv", "", false,
 		"convert xml rundown files also to csv")
 	// lf.StringP("output-encoding", "E", "utf-8",
 	// "Convert file to specified encoding")
-	// lf.BoolP("xml-validate-lines-pre", "", true,
-	// "Validate xml on line by line basis before processing.")
-	// lf.BoolP("xml-validate-file-pre", "", true,
-	// "Validate xml as whole file before processing.")
-	// lf.BoolP("xml-validate-lines-post", "", true,
-	// "Validate xml on line by line basis after processing.")
-	// lf.BoolP("xml-validate-file-post", "", true,
-	// "Validate xml as whole file after processing.")
 	// lf.StringP("archive-compression", "", "default",
 	// `Specify the algorithm which will be used for archive compression`)
 	// lf.StringP("rename-invalid-files-pattern", "R", "",
@@ -104,13 +97,4 @@ func Reduce(cmd *cobra.Command, args []string) {
 		slog.Error(err.Error())
 		return
 	}
-	// internal.Sleeper(100, "s")
 }
-
-// load_env, err := fl.GetBool("load-env")
-// if err != nil {
-// panic(err)
-// }
-// if load_env {
-// slog.Info("loading environment variables")
-// }

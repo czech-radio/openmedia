@@ -1,10 +1,9 @@
 # Build the Go binary with linked variables.
-# Be sure that linked variable names matches!
 
-$buildTime = Get-Date -UFormat "%Y-%m-%dT%T"
-$sha1GitRevision = (git rev-parse HEAD).Trim()
-$versionGitTag = (git tag --sort=v:refname) | Select-Object -Last 1
+$BuildTime = Get-Date -UFormat "%Y-%m-%dT%T"
+$GitCommit= (git rev-parse HEAD).Trim()
+$GitTag = (git tag --sort=v:refname) | Select-Object -Last 1
 
-echo "Building $versionGitTag $buildTime $sha1GitRevision"
-
-go build -ldflags "-X main.versionGitTag=$versionGitTag -X main.sha1GitRevision=$sha1GitRevision -X main.buildTime=$buildTime"
+# go build -ldflags "-X main.versionGitTag=$versionGitTag -X main.sha1GitRevision=$sha1GitRevision -X main.buildTime=$buildTime"
+$vp="github/czech-radio/openmedia-reduce/cmd"
+go build -ldflags "-X $vp.BuildGitTag=$GitTag -X $vp.BuildGitCommit=$GitCommit -X $vp.BuildBuildTime=$BuildTime"

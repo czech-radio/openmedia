@@ -3,7 +3,6 @@ package internal
 import (
 	"encoding/json"
 	"encoding/xml"
-	"fmt"
 	"regexp"
 	"strings"
 	"time"
@@ -129,10 +128,8 @@ func (om OPENMEDIA) RundownMetaInfoParse() (RundownMetaInfo, error) {
 				metaInfo.Date, err = strftime.Parse("%Y%m%dT%H%M%S", field.OM_DATETIME)
 			case "Název":
 				metaInfo.ParseRundownName(field.OM_STRING)
-				fmt.Printf("\nkek %s\n", field.OM_STRING)
 			}
 		}
 	}
-	fmt.Printf("%+v\n", metaInfo)
 	return metaInfo, err
 }

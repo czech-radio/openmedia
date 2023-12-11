@@ -12,7 +12,16 @@ import (
 	"runtime"
 	"strconv"
 	"time"
+
+	"github.com/ncruces/go-strftime"
 )
+
+type VersionInfo struct {
+	Version   string
+	GitTag    string
+	GitCommit string
+	BuildTime string
+}
 
 // SetLogLevel: sets log level, default=0
 func SetLogLevel(level string) {
@@ -41,6 +50,11 @@ func Sleeper(duration int, time_unit string) {
 	default:
 		panic("Wrong time time_unit")
 	}
+}
+
+func TimeCurrent() string {
+	tm := time.Now()
+	return strftime.Format("%FT%T", tm)
 }
 
 var ErrFilePathExists = errors.New("file path exists")

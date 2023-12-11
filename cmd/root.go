@@ -22,6 +22,7 @@ THE SOFTWARE.
 package cmd
 
 import (
+	"fmt"
 	"github/czech-radio/openmedia-reduce/internal"
 	"log/slog"
 	"os"
@@ -29,10 +30,24 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// Build tags set with -ldflags. Cannot set struct fields directly.
+var (
+	BuildGitTag    string
+	BuildGitCommit string
+	BuildBuildTime string
+)
+
+var VersionInfo = internal.VersionInfo{
+	Version:   "0.9.0",
+	GitTag:    BuildGitTag,
+	GitCommit: BuildGitCommit,
+	BuildTime: BuildBuildTime,
+}
+
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:     "openmedia-reduce",
-	Version: "v0.0.1",
+	Version: fmt.Sprintf("%+v", VersionInfo),
 	Short:   "Archivates rundown xml files",
 	Long:    `Program operates on Rundown files. It strips down unnecessary or empty fields and produces light version of an original file. Then it can create packed archive to furher reduce size of files`,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
