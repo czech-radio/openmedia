@@ -28,9 +28,9 @@ const (
 
 type ErrorsCodeMap map[ErrorCode]string
 
+// e.g. from package os: os.ErrPermission = errors.New("permission denied")
 var Errors ErrorsCodeMap = ErrorsCodeMap{
-	ErrCodeSuccess: "",
-	// os.ErrPermission = errors.New("permission denied")
+	ErrCodeSuccess:    "",
 	ErrCodePermission: "permission denied",   // os.ErrPermission
 	ErrCodeExist:      "file already exists", // os.ErrExist
 	ErrCodeNotExist:   "file does not exist", // os.ErrNotExist
