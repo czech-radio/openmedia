@@ -117,16 +117,54 @@ type ArchiveResult struct {
 	FilesValid     []string
 }
 
+type OpenMediaFileTypeCode int
+
+const (
+	OmFileTypeRundown = iota
+	OmFileTypeContact
+)
+
+type OpenMediaFileType struct {
+	Code         OpenMediaFileTypeCode
+	ShortHand    string
+	TemplateName string
+	OutputDir    string
+}
+
+var OpenMediaFileTypeMap map[OpenMediaFileTypeCode]*OpenMediaFileType = map[OpenMediaFileTypeCode]*OpenMediaFileType{
+	OmFileTypeRundown: {
+		OmFileTypeRundown, "RD", "Radio Rundown", "Rundowns"},
+	OmFileTypeContact: {
+		OmFileTypeContact, "CT", "Contact Bin", "Contacts"},
+}
+
+func GetOMtypeByTemplateName(templateName string) (*OpenMediaFileType, error) {
+	var result *OpenMediaFileType
+	for _, t := range OpenMediaFileTypeMap {
+		if t.TemplateName == templateName {
+			result = t
+			return result, nil
+		}
+	}
+	return result, fmt.Errorf("unknown teplate type: %s", templateName)
+}
+
 func ValidateFileName(src_path string) (bool, error) {
 	file_extension := filepath.Ext(src_path)
 	if file_extension != ".xml" {
 		return false,
 			fmt.Errorf("file does not have xml extension: %s", src_path)
 	}
-	if !strings.Contains(src_path, "RD") {
-		return false,
-			fmt.Errorf("filename does not contaion 'RD' string: %s", src_path)
+	var isOpenMediaFile bool
+	for _, t := range OpenMediaFileTypeMap {
+		if strings.Contains(src_path, t.ShortHand) {
+			isOpenMediaFile = true
+		}
 	}
+	if !isOpenMediaFile {
+		return false, fmt.Errorf("filename is not valid OpenMedia file: %s", src_path)
+	}
+
 	_, err := os.Stat(src_path)
 	if err != nil {
 		return false, err

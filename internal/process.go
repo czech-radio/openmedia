@@ -75,10 +75,14 @@ type FileMeta struct {
 	Year                 int
 	Month                int
 	Day                  int
+	Hour                 int
+	Minute               int
+	Second               int
 	Week                 int
 	Weekday              time.Weekday
 	WorkerName           string
 	CompressionType      string
+	OpenMediaFileType    *OpenMediaFileType
 	RundownNameNew       string
 	FileInfo             os.FileInfo
 	FileReader           io.Reader
@@ -121,21 +125,38 @@ func (p *Process) DestroyWorkers() {
 }
 
 func (f *FileMeta) Parse(
-	metaInfo RundownMetaInfo, fileInfo os.FileInfo, compressionType, sourceDir, targetDir string, sourceFilePath string, reader io.Reader) error {
+	metaInfo OMmetaInfo, fileInfo os.FileInfo, compressionType, sourceDir, targetDir string, sourceFilePath string, reader io.Reader) error {
 	date := metaInfo.Date
 	year, week := date.ISOWeek()
 	f.Year = year
 	f.Month = int(date.Month())
 	f.Day = date.Day()
+	f.Hour = date.Hour()
 	f.Week = week
 	f.Weekday = date.Weekday()
-	f.RundownNameNew = fmt.Sprintf("RD_%s_%s_%s_W%02d_%04d_%02d_%02d",
-		metaInfo.HoursRange, metaInfo.RadioName,
-		f.Weekday, f.Week, f.Year, f.Month, f.Day)
-	fmt.Println(f.RundownNameNew)
+	f.Minute = date.Minute()
+	f.Second = date.Second()
+	omFileType, err := GetOMtypeByTemplateName(metaInfo.RundownType)
+	if err != nil {
+		return err
+	}
+	f.OpenMediaFileType = omFileType
+	switch omFileType.Code {
+	case OmFileTypeRundown:
+		f.RundownNameNew = fmt.Sprintf(
+			"%s_%s_%s_%s_W%02d_%04d_%02d_%02d",
+			omFileType.ShortHand, metaInfo.HoursRange,
+			metaInfo.Name,
+			f.Weekday, f.Week, f.Year, f.Month, f.Day)
+	case OmFileTypeContact:
+		f.RundownNameNew = fmt.Sprintf(
+			"%s_%s_%s_W%02d_%04d_%02d_%02dT%02d%02d%02d",
+			omFileType.ShortHand, metaInfo.Name, f.Weekday, f.Week,
+			f.Year, f.Month, f.Day, f.Hour, f.Minute, f.Second)
+	}
+	f.DirectoryDestination = filepath.Join(targetDir, omFileType.OutputDir)
 	f.FileInfo = fileInfo
 	f.DirectorySource = sourceDir
-	f.DirectoryDestination = targetDir
 	f.FilePathSource = sourceFilePath
 	pathInArchive, err := filepath.Rel(sourceDir, sourceFilePath)
 	if err != nil {
@@ -182,6 +203,17 @@ func (p *Process) CheckDuplicatesInArchive(fi *FileMeta) error {
 	return nil
 }
 
+func (p *Process) PrepareOutput() error {
+	for _, t := range OpenMediaFileTypeMap {
+		outputdir := filepath.Join(p.Options.DestinationDirectory, t.OutputDir)
+		if err := os.MkdirAll(outputdir, 0700); err != nil {
+			return err
+		}
+		slog.Debug("created directory", "output_dir", outputdir)
+	}
+	return nil
+}
+
 func (p *Process) Folder() error {
 	validateResult, err := ValidateFilenamesInDirectory(p.Options.SourceDirectory)
 	if p.ErrorHandle(err, validateResult.Errors...) == Break {
@@ -191,6 +223,10 @@ func (p *Process) Folder() error {
 	p.Results.FilesFailure = validateResult.FilesFailure
 	p.Workers = make(map[string]*ArchiveWorker)
 	p.WG = new(sync.WaitGroup)
+	err = p.PrepareOutput()
+	if err != nil {
+		return err
+	}
 processFolder:
 	for _, file := range validateResult.FilesValid {
 		err := p.File(file)
@@ -244,7 +280,7 @@ func (p *Process) File(filePath string) error {
 	}
 
 	// Infer rundown meta info from OM_HEADER fields
-	metaInfo, err := om.RundownMetaInfoParse()
+	omMetaInfo, err := om.OMmetaInfoParse()
 	if err != nil {
 		return err
 	}
@@ -257,7 +293,7 @@ func (p *Process) File(filePath string) error {
 	fileMetaOriginal := FileMeta{}
 	reader := bytes.NewReader(data)
 	opts := p.Options
-	err = fileMetaOriginal.Parse(metaInfo, fileInfo, opts.CompressionType, opts.SourceDirectory, opts.DestinationDirectory, filePath, reader)
+	err = fileMetaOriginal.Parse(omMetaInfo, fileInfo, opts.CompressionType, opts.SourceDirectory, opts.DestinationDirectory, filePath, reader)
 	if err != nil {
 		return err
 	}
@@ -265,7 +301,7 @@ func (p *Process) File(filePath string) error {
 	// Check resulting dupes
 	err = p.CheckDuplicatesInArchive(&fileMetaOriginal)
 	if err != nil {
-		slog.Error(err.Error())
+		return err
 	}
 
 	// 1. Archivate original

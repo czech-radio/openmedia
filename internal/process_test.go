@@ -1,10 +1,14 @@
 package internal
 
 import (
+	"fmt"
+	"log/slog"
 	"path/filepath"
 	"regexp"
 	"strings"
 	"testing"
+
+	"github.com/ncruces/go-strftime"
 )
 
 func Test_RundownNameParse(t *testing.T) {
@@ -36,11 +40,25 @@ func Test_RundownNameParse(t *testing.T) {
 	}
 }
 
+func Test_ParseUplink(t *testing.T) {
+	rgxPatt := `(\d*).xml$`
+	regexpObject := regexp.MustCompile(rgxPatt)
+	name := "ST_letohrad-zprovozneni-vodni-elektrarny-repo_2_18553718_20231212033507.xml"
+	matches := regexpObject.FindStringSubmatch(name)
+	date, err := strftime.Parse("%Y%m%d%H%M%S", matches[1])
+	if err != nil {
+		slog.Error(err.Error())
+	}
+	fmt.Printf("fuck %+v\n", date)
+}
+
 func Test_ProcessFolder(t *testing.T) {
-	srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_additional")
+	// srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_additional")
+	// srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "contacts")
 	// srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_mock")
 	// srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_valid")
 	// srcDir := filepath.Join(TEMP_DIR_TEST_SRC)
+	srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_mix")
 	dstDir := filepath.Join(TEMP_DIR_TEST_DST)
 	opts := ProcessOptions{
 		SourceDirectory:        srcDir,

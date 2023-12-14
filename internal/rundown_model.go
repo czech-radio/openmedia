@@ -3,11 +3,6 @@ package internal
 import (
 	"encoding/json"
 	"encoding/xml"
-	"regexp"
-	"strings"
-	"time"
-
-	"github.com/ncruces/go-strftime"
 )
 
 var lineEnd = []byte("\n")
@@ -75,61 +70,4 @@ func (omf *OM_FIELD) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 		return e.EncodeElement(nil, start)
 	}
 	return e.EncodeElement(*omf, start)
-}
-
-type RundownMetaInfo struct {
-	Date        time.Time
-	RadioName   string
-	HoursRange  string
-	RundownType string
-}
-
-var RadioNameRegex = regexp.MustCompile(`(\d\d-\d\d) ([\p{L}\s?]*)`)
-
-func (r *RundownMetaInfo) ParseRundownName(rundownName string) {
-	// e.g.: "05-09 ČRo Karlovy Vary - Wed, 04.03.2020"
-	//TODO: match result against map of code vs radio name
-	// var unparsedFields []string
-	var radioName string
-	var hoursRange string
-	matches := RadioNameRegex.FindStringSubmatch(rundownName)
-	switch len(matches) {
-	case 3:
-		hoursRange = strings.TrimSpace(matches[1])
-		radioName = strings.TrimSpace(matches[2])
-		radioName = strings.ReplaceAll(radioName, " ", "_")
-	}
-	r.RadioName = radioName
-	r.HoursRange = hoursRange
-}
-
-// RundownMetaInfoParse
-func (om OPENMEDIA) RundownMetaInfoParse() (RundownMetaInfo, error) {
-	fields := om.OM_OBJECT.OM_HEADER.Fields
-	var metaInfo RundownMetaInfo
-	var err error
-
-	// Get values of main object attrs
-	// TODO: optimize without loops
-	// TODO: check empty parsed fields and parsing errors
-	for _, attr := range om.OM_OBJECT.Attrs {
-		switch attr.Name.Local {
-		case "TemplateName":
-			metaInfo.RundownType = attr.Value
-		}
-	}
-
-	// Get values of main header fields
-	for _, field := range fields {
-		for _, attr := range field.Attrs {
-			switch attr.Value {
-			case "Čas začátku": // FieldID: 1004
-				// case "Čas vytvoření": // FiledID: 1
-				metaInfo.Date, err = strftime.Parse("%Y%m%dT%H%M%S", field.OM_DATETIME)
-			case "Název":
-				metaInfo.ParseRundownName(field.OM_STRING)
-			}
-		}
-	}
-	return metaInfo, err
 }
