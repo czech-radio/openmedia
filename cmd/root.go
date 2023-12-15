@@ -23,7 +23,7 @@ package cmd
 
 import (
 	"fmt"
-	"github/czech-radio/openmedia-reduce/internal"
+	"github/czech-radio/openmedia-archive/internal"
 	"log/slog"
 	"os"
 
