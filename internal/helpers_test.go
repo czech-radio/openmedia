@@ -71,7 +71,8 @@ func TestMain(m *testing.M) {
 	if err_copy != nil {
 		os.Exit(-1)
 	}
-	SetLogLevel(level)
+	SetLogLevel(level, "json")
+	// SetLogLevel(level)
 
 	// Clean up (teardown)
 	cleanupChan, waitGroup := CleanUp()

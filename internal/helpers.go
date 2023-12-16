@@ -24,7 +24,9 @@ type VersionInfo struct {
 }
 
 // SetLogLevel: sets log level, default=0
-func SetLogLevel(level string) {
+func SetLogLevel(level string, logType ...string) {
+	var logger *slog.Logger
+	var loggerType string
 	intlevel, err := strconv.Atoi(level)
 	if err != nil {
 		intlevel = 0
@@ -33,9 +35,21 @@ func SetLogLevel(level string) {
 		AddSource: true,
 		Level:     slog.Level(intlevel),
 	}
-	thandle := slog.NewTextHandler(os.Stderr, &hopts)
-	logt := slog.New(thandle)
-	slog.SetDefault(logt)
+	if logType != nil && logType[0] != "" {
+		loggerType = logType[0]
+	}
+	switch loggerType {
+	case "json":
+		jhandle := slog.NewJSONHandler(os.Stderr, &hopts)
+		logger = slog.New(jhandle)
+	case "txt":
+		thandle := slog.NewTextHandler(os.Stderr, &hopts)
+		logger = slog.New(thandle)
+	default:
+		thandle := slog.NewTextHandler(os.Stderr, &hopts)
+		logger = slog.New(thandle)
+	}
+	slog.SetDefault(logger)
 }
 
 // Sleeper sleeps for specified durration

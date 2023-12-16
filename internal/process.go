@@ -250,6 +250,14 @@ processFolder:
 		}
 		fmt.Printf("%s\n", ms)
 	}
+	if len(p.Errors) > 0 {
+		res, err := json.MarshalIndent(p.Errors, "", "\t")
+		if err != nil {
+			slog.Error(err.Error())
+			return nil
+		}
+		slog.Error(string(res))
+	}
 	p.DestroyWorkers()
 	return nil
 }
