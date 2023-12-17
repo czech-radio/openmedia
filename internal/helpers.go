@@ -253,3 +253,7 @@ func CopyFile(
 	}
 	return nil
 }
+
+func XOR(a, b bool) bool {
+	return (a || b) && !(a && b)
+}
