@@ -28,6 +28,7 @@ func VersionInfoPrint() {
 type Config_root struct {
 	Version bool   `cmd:"version; V; false; version of the program"`
 	Verbose string `cmd:"verbose; v; false; program verbosity level"`
+	DryRun  bool   `cmd:"dry_run; n; false; run program in dry run mode which does not make any pernament or dangerous action. Useful for testing purposes."`
 }
 
 func RunRoot() {
@@ -44,7 +45,7 @@ func RunRoot() {
 		slog.Info("subcommand called", "command", subcmd)
 		acfg := &Config_archivate{}
 		internal.SetupSubFlags(acfg)
-		RunArchivate(acfg)
+		RunArchivate(rcfg, acfg)
 	default:
 		slog.Error("unknown command", "command", subcmd)
 	}

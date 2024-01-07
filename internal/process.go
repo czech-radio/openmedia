@@ -44,17 +44,17 @@ type Process struct {
 }
 
 type ProcessOptions struct {
-	SourceDirectory        string
-	DestinationDirectory   string
-	InputEncoding          string
-	OutputEncoding         string
-	ValidateWithDefaultXSD bool   // validate with bundled file
-	ValidateWithXSD        string // path to XSD file
-	ValidatePre            bool
-	ValidatePost           bool
-	CompressionType        string
-	InvalidFileRename      bool
-	InvalidFileContinue    bool
+	SourceDirectory      string
+	DestinationDirectory string
+	InvalidFileRename    bool
+	InvalidFileContinue  bool
+	CompressionType      string
+	// InputEncoding          string
+	// OutputEncoding         string
+	// ValidateWithDefaultXSD bool   // validate with bundled file
+	// ValidateWithXSD        string // path to XSD file
+	// ValidatePre            bool
+	// ValidatePost           bool
 }
 
 type ProcessResults struct {

@@ -141,3 +141,19 @@ func SetupSubFlags(config interface{}) {
 		panic(err)
 	}
 }
+
+func CopyFields(a interface{}, b interface{}) {
+	va := reflect.ValueOf(a)
+	va_elem := va.Elem()
+	n := va_elem.NumField()
+	for i := 0; i < n; i++ {
+		field := va_elem.Type().Field(i)
+		fieldValue := va_elem.Field(i).Interface()
+		vb := reflect.ValueOf(b)
+		vbfield := vb.Elem().FieldByName(field.Name)
+		err := SetField(vbfield, fieldValue)
+		if err != nil {
+			panic(err)
+		}
+	}
+}
