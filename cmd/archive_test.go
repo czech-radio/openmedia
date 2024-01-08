@@ -7,9 +7,7 @@ import (
 )
 
 func TestArchive(t *testing.T) {
-	// acfg := new(config_archive)
-	acfg := Config_archive{}
-	// internal.DeclareFlags(acfg)
-	internal.ParseFlags(acfg)
+	acfg := &Config_archivate{}
+	internal.SetupRootFlags(acfg)
 	fmt.Printf("%+v", acfg)
 }
