@@ -6,7 +6,7 @@
 
 
 ## Description
-Program operates on xml Rundown and Contact files and creates zip archives from them. Archives will be named like 2023_W49_ORIGINAL.zip for original files or 2023_W49_MINIFIED.zip for minified original files. W49 means the iso week number. Each archive will contain only files corresponding to same iso week number.  The date and name-day is derived from XML time tag and it is the same as given folder on `ANNOVA` disk. Rundown files in archives are renamed like 'RD_05-09_Dvojka_Wednesday_W10_2020_03_04.xml'.
+Program operates on xml Rundown and Contact files and creates zip archives from them. Archives will be named like 2023_W49_ORIGINAL.zip for original files or 2023_W49_MINIFIED.zip for minified original files. W49 means the iso week number. Each archive will contain only files corresponding to the same iso week number.  The date and name-day is derived from XML time tag. Rundown files in archives are renamed like 'RD_05-09_Dvojka_Wednesday_W10_2020_03_04.xml'.
 
 
 1.  archivate original files
@@ -14,7 +14,7 @@ Program operates on xml Rundown and Contact files and creates zip archives from 
 -   Contact files archives will be created in OUTPUT_FOLDER/Contacts/ directory and files will be named also like 2023_W49_ORIGINAL.zip
 
 2.  minify original files
--   original files will be minified such that empty fields (fields that does not contain any valu) will be filter out. After minification the files are put in archive named like 2023_W49_MINIFIED.zip
+-   original files will be minified such that empty fields (fields that does not contain any value) will be filtered out. Original files are put in archive named like 2023_W49_MINIFIED.zip after minification.
 
 ## Example usage
 
