@@ -9,12 +9,12 @@
 Program operates on xml Rundown and Contact files and creates zip archives from them. Archives will be named like 2023_W49_ORIGINAL.zip for original files or 2023_W49_MINIFIED.zip for minified original files. W49 means the iso week number. Each archive will contain only files corresponding to same iso week number.  The date and name-day is derived from XML time tag and it is the same as given folder on `ANNOVA` disk. Rundown files in archives are renamed like 'RD_05-09_Dvojka_Wednesday_W10_2020_03_04.xml'.
 
 
-1. archivate original files
-    - Rundown files archives will be created in 'OUTPUT_FOLDER/Rundowns' directory and the archive will be named like 2023_W49_ORIGINAL.zip
-    - Contact files archives will be created in OUTPUT_FOLDER/Contacts/ directory and files will be named also like 2023_W49_ORIGINAL.zip
+1.  archivate original files
+-   Rundown files archives will be created in 'OUTPUT_FOLDER/Rundowns' directory and the archive will be named like 2023_W49_ORIGINAL.zip
+-   Contact files archives will be created in OUTPUT_FOLDER/Contacts/ directory and files will be named also like 2023_W49_ORIGINAL.zip
 
-2. minify original files
-    - original files will be minified such that empty fields (fields that does not contain any valu) will be filter out. After minification the files are put in archive named like 2023_W49_MINIFIED.zip
+2.  minify original files
+-   original files will be minified such that empty fields (fields that does not contain any valu) will be filter out. After minification the files are put in archive named like 2023_W49_MINIFIED.zip
 
 ## Example usage
 
@@ -24,7 +24,7 @@ openmedia-archive archivate -i SOURCE_FOLDER -o OUTPUT_FOLDER
 ```
 
 **dry run mode**
-- output files will be created in temporary directory
+-  output files will be created in temporary directory
 ```bash
 openmedia-archive --dry_run archivate -i SOURCE_FOLDER
 ```
@@ -48,7 +48,7 @@ openmedia-archive archivate -ifr -i SOURCE_FOLDER -o OUTPUT_FOLDER
 openmedia-archive -n archivate -ifr -i SOURCE_FOLDER -o OUTPUT_FOLDER
 ```
 
-- useful for example in dry-mode
+-   useful for example in dry-mode
 
 ## Logging
 ### logging level
