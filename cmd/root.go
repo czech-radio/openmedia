@@ -29,12 +29,13 @@ type Config_root struct {
 	Version bool   `cmd:"version; V; false; version of the program"`
 	Verbose string `cmd:"verbose; v; false; program verbosity level"`
 	DryRun  bool   `cmd:"dry_run; n; false; run program in dry run mode which does not make any pernament or dangerous action. Useful for testing purposes."`
+	LogType string `cmd:"log_type; lt; txt; use logger type [txt, json]"`
 }
 
 func RunRoot() {
 	rcfg := &Config_root{}
 	internal.SetupRootFlags(rcfg)
-	internal.SetLogLevel(rcfg.Verbose)
+	internal.SetLogLevel(rcfg.Verbose, rcfg.LogType)
 	if flag.NArg() < 1 {
 		VersionInfoPrint()
 		return

@@ -46,9 +46,9 @@ type Process struct {
 type ProcessOptions struct {
 	SourceDirectory      string
 	DestinationDirectory string
-	InvalidFileRename    bool
-	InvalidFileContinue  bool
 	CompressionType      string
+	InvalidFileContinue  bool
+	InvalidFileRename    bool
 	// InputEncoding          string
 	// OutputEncoding         string
 	// ValidateWithDefaultXSD bool   // validate with bundled file

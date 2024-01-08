@@ -8,9 +8,9 @@ import (
 type Config_archivate struct {
 	SourceDirectory      string `cmd:"source_directory; i; ; directory to be processed"`
 	DestinationDirectory string `cmd:"destination_directory; o; ; otput files"`
-	InvalidFileContinue  bool   `cmd:"invalid_file_continue; f; 0; continue even though unprocesable file encountered"`
-	InvalidFileRename    bool   `cmd:"invalid_file_rename; ifr; true; rename"`
 	CompressionType      string `cmd:"compression_type; ct; zip; type of file compression [zip]."`
+	InvalidFileContinue  bool   `cmd:"invalid_file_continue; ifc; 0; continue even though unprocesable file encountered"`
+	InvalidFileRename    bool   `cmd:"invalid_file_rename; ifr; true; rename"`
 }
 
 func RunArchivate(root_cfg *Config_root, archivate_cfg *Config_archivate) {
