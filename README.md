@@ -10,7 +10,11 @@ Program operates on Rundown files. It strips down unnecessary or empty fields an
 There are two flags needed to run the program `-i` for input folder and `-o` for output folder. Whole command would look like this:
 
 ```bash
-openmedia-reduce -i /path/to/source/folder -o /path/to/destination
+openmedia-archive archivate -i SOURCE_FOLDER -o OUTPUT_FOLDER
+```
+
+```bash
+openmedia-archive --dry_run archivate -i SOURCE_FOLDER
 ```
 
 When program runs it creates two files in output folder. Two files are:

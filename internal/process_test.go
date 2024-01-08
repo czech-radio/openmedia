@@ -56,23 +56,24 @@ func Test_ProcessFolder(t *testing.T) {
 	// srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_additional")
 	// srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "contacts")
 	// srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_mock")
+	// srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "invalid")
 	// srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_valid")
 	// srcDir := filepath.Join(TEMP_DIR_TEST_SRC)
 	srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_mix")
 	dstDir := filepath.Join(TEMP_DIR_TEST_DST)
 	opts := ProcessOptions{
-		SourceDirectory:        srcDir,
-		DestinationDirectory:   dstDir,
-		InputEncoding:          "",
-		OutputEncoding:         "",
-		ValidateWithDefaultXSD: false,
-		ValidateWithXSD:        "",
-		ValidatePre:            false,
-		ValidatePost:           false,
-		CompressionType:        "zip",
-		InvalidFileRename:      false,
+		SourceDirectory:      srcDir,
+		DestinationDirectory: dstDir,
+		InvalidFileRename:    false,
 		// InvalidFileContinue:    false,
 		InvalidFileContinue: true,
+		CompressionType:     "zip",
+		// InputEncoding:          "",
+		// OutputEncoding:         "",
+		// ValidateWithDefaultXSD: false,
+		// ValidateWithXSD:        "",
+		// ValidatePre:            false,
+		// ValidatePost:           false,
 	}
 	process := Process{Options: opts}
 	err := process.Folder()
