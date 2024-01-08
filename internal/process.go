@@ -44,17 +44,17 @@ type Process struct {
 }
 
 type ProcessOptions struct {
-	SourceDirectory        string
-	DestinationDirectory   string
-	InputEncoding          string
-	OutputEncoding         string
-	ValidateWithDefaultXSD bool   // validate with bundled file
-	ValidateWithXSD        string // path to XSD file
-	ValidatePre            bool
-	ValidatePost           bool
-	CompressionType        string
-	InvalidFileRename      bool
-	InvalidFileContinue    bool
+	SourceDirectory      string
+	DestinationDirectory string
+	InvalidFileRename    bool
+	InvalidFileContinue  bool
+	CompressionType      string
+	// InputEncoding          string
+	// OutputEncoding         string
+	// ValidateWithDefaultXSD bool   // validate with bundled file
+	// ValidateWithXSD        string // path to XSD file
+	// ValidatePre            bool
+	// ValidatePost           bool
 }
 
 type ProcessResults struct {
@@ -227,6 +227,7 @@ func (p *Process) Folder() error {
 	if err != nil {
 		return err
 	}
+	p.WG.Add(1)
 processFolder:
 	for _, file := range validateResult.FilesValid {
 		err := p.File(file)
@@ -238,6 +239,7 @@ processFolder:
 			break processFolder
 		}
 	}
+	p.WG.Done()
 	p.WG.Wait()
 	res := p.Results
 	p.WorkerLogInfo("GLOBAL_ORIGINAL", res.SizeOriginal, res.SizePackedBackup, res.SizeOriginal, p.Options.SourceDirectory)
@@ -249,6 +251,14 @@ processFolder:
 			slog.Error("cannot marshal dupes")
 		}
 		fmt.Printf("%s\n", ms)
+	}
+	if len(p.Errors) > 0 {
+		res, err := json.MarshalIndent(p.Errors, "", "\t")
+		if err != nil {
+			slog.Error(err.Error())
+			return nil
+		}
+		slog.Error(string(res))
 	}
 	p.DestroyWorkers()
 	return nil

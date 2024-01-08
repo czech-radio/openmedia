@@ -24,6 +24,5 @@ package main
 import "github/czech-radio/openmedia-archive/cmd"
 
 func main() {
-	cmd.Execute()
-
+	cmd.RunRoot()
 }

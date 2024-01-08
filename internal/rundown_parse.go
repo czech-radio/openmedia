@@ -54,7 +54,7 @@ func (om OPENMEDIA) ParseContactFields() (OMmetaInfo, error) {
 		for _, attr := range field.Attrs {
 			switch attr.Value {
 			case "Název":
-				metaInfo.Name = field.OM_STRING
+				metaInfo.Name = strings.ReplaceAll(field.OM_STRING, " ", "_")
 			}
 		}
 	}
