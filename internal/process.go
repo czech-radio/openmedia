@@ -227,6 +227,7 @@ func (p *Process) Folder() error {
 	if err != nil {
 		return err
 	}
+	p.WG.Add(1)
 processFolder:
 	for _, file := range validateResult.FilesValid {
 		err := p.File(file)
@@ -238,6 +239,7 @@ processFolder:
 			break processFolder
 		}
 	}
+	p.WG.Done()
 	p.WG.Wait()
 	res := p.Results
 	p.WorkerLogInfo("GLOBAL_ORIGINAL", res.SizeOriginal, res.SizePackedBackup, res.SizeOriginal, p.Options.SourceDirectory)

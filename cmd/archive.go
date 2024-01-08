@@ -27,6 +27,6 @@ func RunArchivate(root_cfg *Config_root, archivate_cfg *Config_archivate) {
 	process := internal.Process{Options: options}
 	err := process.Folder()
 	if err != nil {
-		slog.Error(err.Error())
+		internal.Errors.ExitWithCode(err)
 	}
 }
