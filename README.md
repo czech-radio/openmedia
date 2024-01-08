@@ -24,7 +24,7 @@ openmedia-archive archivate -i SOURCE_FOLDER -o OUTPUT_FOLDER
 ```
 
 **dry run mode**
--  output files will be created in temporary directory
+-   output files will be created in temporary directory
 ```bash
 openmedia-archive --dry_run archivate -i SOURCE_FOLDER
 ```
