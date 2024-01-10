@@ -68,17 +68,11 @@ func Test_ProcessFolder(t *testing.T) {
 		// InvalidFileContinue:    false,
 		InvalidFileContinue: true,
 		CompressionType:     "zip",
-		// InputEncoding:          "",
-		// OutputEncoding:         "",
-		// ValidateWithDefaultXSD: false,
-		// ValidateWithXSD:        "",
-		// ValidatePre:            false,
-		// ValidatePost:           false,
 	}
 	process := Process{Options: opts}
 	err := process.Folder()
 	// fmt.Printf("%+v\n", process.Results)
-	Sleeper(1000, "s")
+	// Sleeper(1000, "s")
 	if err != nil {
 		t.Error(err)
 	}

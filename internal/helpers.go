@@ -34,6 +34,16 @@ func SetLogLevel(level string, logType ...string) {
 	hopts := slog.HandlerOptions{
 		AddSource: true,
 		Level:     slog.Level(intlevel),
+		ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
+			if a.Key == slog.SourceKey {
+				// Shorten the the filepath in log
+				source, _ := a.Value.Any().(*slog.Source)
+				if source != nil {
+					source.File = filepath.Base(source.File)
+				}
+			}
+			return a
+		},
 	}
 	if logType != nil && logType[0] != "" {
 		loggerType = logType[0]
@@ -42,7 +52,7 @@ func SetLogLevel(level string, logType ...string) {
 	case "json":
 		jhandle := slog.NewJSONHandler(os.Stderr, &hopts)
 		logger = slog.New(jhandle)
-	case "txt":
+	case "plain":
 		thandle := slog.NewTextHandler(os.Stderr, &hopts)
 		logger = slog.New(thandle)
 	default:

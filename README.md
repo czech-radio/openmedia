@@ -1,4 +1,4 @@
-# openmedia-reduce
+# openmedia-archive
 
 **The console application archive OpenMedia XML files.**
 
@@ -6,123 +6,94 @@
 
 ## Description
 
-Program operates on Rundown files. It strips down unnecessary or empty fields and produces light version of an original file.
-There are two flags needed to run the program `-i` for input folder and `-o` for output folder. Whole command would look like this:
+Program operates on XML rundown and contact files and creates ZIP archives. Archives will be named like `2023_W49_ORIGINAL.zip` for original files or `2023_W49_MINIFIED.zip` for minified files, where the part `W49` means the ISO week number. Each archive will contain only files corresponding to the same ISO week number. A date and name of the week day is derived from XML time tag. Rundown files in archives are renamed like `RD_05-09_Dvojka_Wednesday_W10_2020_03_04.xml`.
 
-```bash
-openmedia-archive archivate -i SOURCE_FOLDER -o OUTPUT_FOLDER
-```
+The program executes two operations:
 
-```bash
-openmedia-archive --dry_run archivate -i SOURCE_FOLDER
-```
+- Archive original files
+  - Rundown files archives will be created in `OUTPUT_FOLDER/Rundowns` directory and the archive will be named like `2023_W49_ORIGINAL.zip`
+  - Contact files archives will be created in `OUTPUT_FOLDER/Contacts` directory and files will be named also like `2023_W49_ORIGINAL.zip`.
 
-When program runs it creates two files in output folder. Two files are:
+- Minify original files
+  - original files will be minified, so that empty fields (fields that do not contain any value) will be removed. Original files are put in archive named like `2023_W49_MINIFIED.zip` after minification.
 
-- zipped all minified (stripped down) version of original XML in `UTF-8` format. It is named: `2023_W02_MINIFIED.zip`
-- zipped all XML originals in `UTF-16` named similarly (inside of zip archive there are all of the original files with its original file-names): `2023_W02_ORIGINAL.zip`
+## Build
 
-The date and name-day is derived from XML time tag and it is the same as given folder on `ANNOVA` disk. Input folder remains unchanged.
+- linux
+  ```bash
+  ./scripts/build.sh
+  ```
 
-## Logging
+- win
+  ```ps
+  ./scripts/build.ps1
+  ```
 
-When everything works well you should see something similar in console output:
+## Usage
 
-```shell
-2023/01/31 15:07:35 Minifying: /mnt/cro.cz/Rundowns/2023/W04/RD_05-09_ČRo_Brno_-_Sun_29_01_2023_2_14561296_20230130001249.xml
-2023/01/31 15:07:35 Document minified from 57691 lines to 26500 lines, ratio: 45.934372%
-2023/01/31 15:07:35 Zipping: tmp/RD_05-09_ČRo_Brno_Sunday_W04_2023_01_29.zip
-2023/01/31 15:07:35 Validating source file: /mnt/cro.cz/Rundowns/2023/W04/RD_05-09_ČRo_Brno_-_Sun_29_01_2023_2_14561296_20230130001249.xml
-2023/01/31 15:07:35 Validating destination file: tmp/RD_05-09_ČRo_Brno_Sunday_W04_2023_01_29.xml
-2023/01/31 15:07:35 Minifying PASSED! 70/498
-2023/01/31 15:07:43 Minifying: /mnt/cro.cz/Rundowns/2023/W04/RD_05-09_ČRo_Brno_-_Thu_26_01_2023_2_14525751_20230127001315.xml
-2023/01/31 15:07:43 Document minified from 63116 lines to 29251 lines, ratio: 46.344826%
-2023/01/31 15:07:43 Zipping: tmp/RD_05-09_ČRo_Brno_Thursday_W04_2023_01_26.zip
-2023/01/31 15:07:43 Validating source file: /mnt/cro.cz/Rundowns/2023/W04/RD_05-09_ČRo_Brno_-_Thu_26_01_2023_2_14525751_20230127001315.xml
-2023/01/31 15:07:43 Validating destination file: tmp/RD_05-09_ČRo_Brno_Thursday_W04_2023_01_26.xml
-2023/01/31 15:07:43 Minifying PASSED! 71/498
-```
+Use `openmedia-archive -h` to see all available options.
 
-## Dependencies & Build
+- Production mode: Halts when unprocessable file encountered.
 
-Program requires libxml2-dev package to compile. Debian install:
+  ```bash
+  openmedia-archive -i <SOURCE_FOLDER> -o <OUTPUT_FOLDER>
+  ```
 
-```shell
-apt-get install libxml2-dev pkg-config
-go mod tidy
-go build
-```
+- Dry run mode: output files will be created in a temporary directory
 
-## Errors
+  ```bash
+  openmedia-archive -n -i <SOURCE_FOLDER> [-o <OUTPUT_FOLDER>]
+  ```
 
-There is a validation process of both input and output files. It can occasionally produce an error. Is such case resulting file will be marked as `_MALFORMED` in filename.
+- Continue processing folder when unprocessable file encountered
+  (useful for example in dry-mode).
+  
+  ```bash
+  openmedia-archive -ifr -i <SOURCE_FOLDER> -o <OUTPUT_FOLDER>
+  ```
 
-TODO: better memory handling, fixed by [b20445b](https://github.com/czech-radio/openmedia-reduce/commit/b20445b429d019a6392fb6738ea79c188a8878a7)
+  ```bash
+  openmedia-archive -n -ifr -i <SOURCE_FOLDER> [-o <OUTPUT_FOLDER>]
+  ```
 
-## Developement guide and discussion
+- By default, we log in structured JSON e.g.
 
-### Which golang version to lock?
-*2023-11-05*
+  ```bash
+  {"time":"2024-01-08T20:08:41.365154585+01:00","level":"INFO","source":{"function":"github/czech-radio/openmedia-archive/internal.(*Process).WorkerLogInfo","file":"process.go","line":346},"msg":"2020_W10_MINIFIED.zip","ArhiveRatio":"0.024","MinifyRatio":"0.327","original":13552180,"compressed":319488,"minified":4430320,"file":"test/testdata/rundowns_mix/RD_12-19_ČRo_Olomouc_-_Wed__04_03_2020_2_1608925_20200304234622.xml"}
+  {"time":"2024-01-08T20:08:41.519854699+01:00","level":"INFO","source":{"function":"github/czech-radio/openmedia-archive/internal.(*Process).WorkerLogInfo","file":"process.go","line":346},"msg":"2020_W10_ORIGINAL.zip","ArhiveRatio":"0.066","MinifyRatio":"1.000","original":18364782,"compressed":1204224,"minified":18364782,"file":"test/testdata/rundowns_mix/RD_12-19_ČRo_Ostrava_-_Středa_04_03_2020_2_1603282_20200304234540.xml"}
+  {"time":"2024-01-08T20:08:42.244667764+01:00","level":"INFO","source":{"function":"github/czech-radio/openmedia-archive/internal.(*Process).WorkerLogInfo","file":"process.go","line":346},"msg":"2020_W10_MINIFIED.zip","ArhiveRatio":"0.023","MinifyRatio":"0.314","original":18364782,"compressed":421888,"minified":5772375,"file":"test/testdata/rundowns_mix/RD_12-19_ČRo_Ostrava_-_Středa_04_03_2020_2_1603282_20200304234540.xml"}
+  {"time":"2024-01-08T20:08:42.244735372+01:00","level":"INFO","source":{"function":"github/czech-radio/openmedia-archive/internal.(*Process).WorkerLogInfo","file":"process.go","line":346},"msg":"GLOBAL_ORIGINAL","ArhiveRatio":"0.063","MinifyRatio":"1.000","original":449249600,"compressed":28196864,"minified":449249600,"file":"test/testdata/rundowns_mix/"}
+  {"time":"2024-01-08T20:08:42.244753922+01:00","level":"INFO","source":{"function":"github/czech-radio/openmedia-archive/internal.(*Process).WorkerLogInfo","file":"process.go","line":346},"msg":"GLOBAL_MINIFY","ArhiveRatio":"0.021","MinifyRatio":"0.287","original":449249600,"compressed":9629696,"minified":129017125,"file":"test/testdata/rundowns_mix/"}
+  ```
 
--   arch_actual: go version go1.21.3 linux/amd64
--   alpine_3.18 (./deploy/dockerfile_devel.yml): go version go1.20.10 linux/amd64
+- Plain logging output can be invoked with `-lt` e.g.
 
-### Logging
-[](https://betterstack.com/community/guides/logging/best-golang-logging-libraries/)
+  ```bash
+  openmedia_archive -n -lt plain -i <SOURCE_FOLDER> [-o <OUTPUT_FOLDER>]
+  ```
 
--   slog: new bulit-in logging in Go 1.21 (chosen one)
--   zerolog: fastest
--   zap: fast yet flexible
+  which outputs
 
-### Commandline interface
+  ```bash
+  time=2024-01-08T20:05:22.542+01:00 level=INFO source=process.go:346 msg=2020_W10_ORIGINAL.zip ArhiveRatio=0.067 MinifyRatio=1.000 original=13552180 compressed=905216 minified=13552180 file=test/testdata/rundowns_mix/RD_12-19_ČRo_Olomouc_-_Wed__04_03_2020_2_1608925_20200304234622.xml
+  time=2024-01-08T20:05:23.457+01:00 level=INFO source=process.go:346 msg=2020_W10_MINIFIED.zip ArhiveRatio=0.024 MinifyRatio=0.327 original=13552180 compressed=319488 minified=4430320 file=test/testdata/rundowns_mix/RD_12-19_ČRo_Olomouc_-_Wed__04_03_2020_2_1608925_20200304234622.xml
+  time=2024-01-08T20:05:23.662+01:00 level=INFO source=process.go:346 msg=2020_W10_ORIGINAL.zip ArhiveRatio=0.066 MinifyRatio=1.000 original=18364782 compressed=1204224 minified=18364782 file=test/testdata/rundowns_mix/RD_12-19_ČRo_Ostrava_-_Středa_04_03_2020_2_1603282_20200304234540.xml
+  time=2024-01-08T20:05:24.500+01:00 level=INFO source=process.go:346 msg=2020_W10_MINIFIED.zip ArhiveRatio=0.023 MinifyRatio=0.314 original=18364782 compressed=421888 minified=5772375 file=test/testdata/rundowns_mix/RD_12-19_ČRo_Ostrava_-_Středa_04_03_2020_2_1603282_20200304234540.xml
+  time=2024-01-08T20:05:24.500+01:00 level=INFO source=process.go:346 msg=GLOBAL_ORIGINAL ArhiveRatio=0.063 MinifyRatio=1.000 original=449249600 compressed=28196864 minified=449249600 file=test/testdata/rundowns_mix/
+  time=2024-01-08T20:05:24.500+01:00 level=INFO source=process.go:346 msg=GLOBAL_MINIFY ArhiveRatio=0.021 MinifyRatio=0.287 original=449249600 compressed=9629696 minified=129017125 file=test/testdata/rundowns_mix/
+  ```
 
--   using cobra package without viper
 
-### Rundown files
+## Development
 
-#### Element object structure
+- Rundown files structure is describede [here](<https://github.com/czech-radio/openmedia-extract/edit/main/docs/source/notes.md>).
 
-```plain
-OPENMEDIA
- OM_SERVER
- OM_OBJECT "Radio Rundown"
-  OM_HEADER
-   OM_FIELD [1-548]
-  OM_RECORD
-   OM_FILED [1-5012,-11,-12]
-   OM_OBJECT "Hourly Rundown"
+- Additional testing files are located in `R/GŘ/Strategický rozvoj/Analytická sekce/_Archiv/Projekty/OpenMedia/04_03_2020`.
 
-OM_OBJECT "Hourly Rundown"
- OM_HEADER
-  OM_FIELD [1-548]
- OM_UPLINK
- OM_RECORD
-  OM_FILED [1-5012,-11,-12]
-  OM_OBJECT "Sub Rundown"
-```
+- For XML rundown validation use program [`xmlint`](https://www.root.cz/man/1/xmllint/)[^1]
 
-#### Object structure
+  ```bash
+  xmllint --schema schema.xsd
+  ```
 
-```plain
-OM_OBJECT "Radio Rundown"
- OM_OBJECT "Hourly Rundown"
-  OM_OBJECT "Sub Rundown"
-   OM_OBJECT "Radio Story"
-    OM_OBJECT "Contact item" [Optional]
-    OM_OBJECT "Audio clip"   [Optional]
-```
-
-### Testing
-
-#### Additional testing files
-
-```
-:/GŘ/Strategický rozvoj/Analytická sekce/_Archiv/Projekty/OpenMedia/04_03_2020
-```
-
-#### XML rundown validation
-
-```
-xmllint --schema schema.xsd
-```
-The XML does not validate when schema.xsd imports another XSD for common objects.
+[^1]: The XML does not validate when `schema.xsd` imports another XSD for common objects.
