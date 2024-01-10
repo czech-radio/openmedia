@@ -17,7 +17,7 @@ The program executes two operations:
 - Minify original files
   - original files will be minified, so that empty fields (fields that do not contain any value) will be removed. Original files are put in archive named like `2023_W49_MINIFIED.zip` after minification.
 
-## Build
+## Installation
 
 - linux
   ```bash
@@ -82,7 +82,6 @@ Use `openmedia-archive -h` to see all available options.
   time=2024-01-08T20:05:24.500+01:00 level=INFO source=process.go:346 msg=GLOBAL_ORIGINAL ArhiveRatio=0.063 MinifyRatio=1.000 original=449249600 compressed=28196864 minified=449249600 file=test/testdata/rundowns_mix/
   time=2024-01-08T20:05:24.500+01:00 level=INFO source=process.go:346 msg=GLOBAL_MINIFY ArhiveRatio=0.021 MinifyRatio=0.287 original=449249600 compressed=9629696 minified=129017125 file=test/testdata/rundowns_mix/
   ```
-
 
 ## Development
 
