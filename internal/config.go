@@ -142,6 +142,7 @@ func SetupSubFlags(config interface{}) {
 	}
 }
 
+// CopyFields copy struct fields values from one struct to another struct
 func CopyFields(a interface{}, b interface{}) {
 	va := reflect.ValueOf(a)
 	va_elem := va.Elem()
@@ -151,6 +152,9 @@ func CopyFields(a interface{}, b interface{}) {
 		fieldValue := va_elem.Field(i).Interface()
 		vb := reflect.ValueOf(b)
 		vbfield := vb.Elem().FieldByName(field.Name)
+		if !vbfield.IsValid() {
+			continue
+		}
 		err := SetField(vbfield, fieldValue)
 		if err != nil {
 			panic(err)

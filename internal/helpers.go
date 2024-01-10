@@ -52,7 +52,7 @@ func SetLogLevel(level string, logType ...string) {
 	case "json":
 		jhandle := slog.NewJSONHandler(os.Stderr, &hopts)
 		logger = slog.New(jhandle)
-	case "txt":
+	case "plain":
 		thandle := slog.NewTextHandler(os.Stderr, &hopts)
 		logger = slog.New(thandle)
 	default:

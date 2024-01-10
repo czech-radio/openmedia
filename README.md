@@ -17,6 +17,18 @@ The program executes two operations:
 - Minify original files
   - original files will be minified, so that empty fields (fields that do not contain any value) will be removed. Original files are put in archive named like `2023_W49_MINIFIED.zip` after minification.
 
+## Build
+
+- linux
+  ```bash
+  ./scripts/build.sh
+  ```
+
+- win
+  ```ps
+  ./scripts/build.ps1
+  ```
+
 ## Usage
 
 Use `openmedia-archive -h` to see all available options.
