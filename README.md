@@ -19,14 +19,16 @@ The program executes two operations:
 
 ## Installation
 
-- linux
+- Linux
+
   ```bash
   ./scripts/build.sh
   ```
 
-- win
-  ```ps
-  ./scripts/build.ps1
+- Windows
+
+  ```powershell
+  .\scripts\build.ps1
   ```
 
 ## Usage
