@@ -6,7 +6,7 @@
 
 ## Description
 
-Program operates on XML Rundown and Contact files and creates ZIP archives. Archives will be named like `2023_W49_ORIGINAL.zip` for original files or `2023_W49_MINIFIED.zip` for minified files, where the part `W49` means the ISO week number. Each archive will contain only files corresponding to the same ISO week number. A date and name of the week day is derived from XML time tag. Rundown files in archives are renamed like `RD_05-09_Dvojka_Wednesday_W10_2020_03_04.xml`.
+Program operates on XML rundown and contact files and creates ZIP archives. Archives will be named like `2023_W49_ORIGINAL.zip` for original files or `2023_W49_MINIFIED.zip` for minified files, where the part `W49` means the ISO week number. Each archive will contain only files corresponding to the same ISO week number. A date and name of the week day is derived from XML time tag. Rundown files in archives are renamed like `RD_05-09_Dvojka_Wednesday_W10_2020_03_04.xml`.
 
 The program executes two operations:
 
