@@ -1,4 +1,4 @@
-# OPENMEDIA-ARCHIVE
+# openmedia-archive
 
 **The console application archive OpenMedia XML files.**
 
