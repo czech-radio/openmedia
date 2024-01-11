@@ -106,7 +106,7 @@ func (w *ArchiveWorker) Init(dstdir, archiveName string) error {
 	w.Call = make(chan *FileMeta)
 	path := filepath.Join(dstdir, archiveName)
 	w.ArchivePath = path
-	archive, err := os.Create(path)
+	archive, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE, 0600)
 	if err != nil {
 		return err
 	}
@@ -270,7 +270,7 @@ func (p *Process) File(filePath string) error {
 	if err != nil {
 		return err
 	}
-	// defer fileHandle.Close()
+	defer fileHandle.Close()
 
 	// Read file data
 	data, err := io.ReadAll(fileHandle)
@@ -335,6 +335,17 @@ func (p *Process) File(filePath string) error {
 		return err
 	}
 	p.WG.Add(1)
+	return RenameProcessedFile(filePath)
+}
+
+func RenameProcessedFile(originalPath string) error {
+	fileName := filepath.Base(originalPath)
+	directory := filepath.Dir(originalPath)
+	newPath := filepath.Join(directory, "processed_"+fileName)
+	err := os.Rename(originalPath, newPath)
+	if err != nil {
+		return fmt.Errorf("Error renaming file: %s", err)
+	}
 	return nil
 }
 
