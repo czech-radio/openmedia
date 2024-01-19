@@ -5,7 +5,7 @@ BUILD_TIME="$(date +%FT%T)"
 GIT_COMMIT="$(git rev-parse HEAD)"
 GIT_TAG="$(git describe --tags --abbrev=0)"
 GOSRC_PATH="github/triopium/github_workflows/golang_dummy/cmd"
-BINARY_NAME="${PWD##*/}.bin"
+BINARY_NAME="${PWD##*/}"
 
 declare -a GOSRC_VAR=(
 "-X $GOSRC_PATH.BuildGitTag=$GIT_TAG"

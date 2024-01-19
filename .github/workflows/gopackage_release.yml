@@ -41,7 +41,7 @@ jobs:
         with:
           files: |
             README.md
-            ./${{ env.PACKAGE_NAME }}.bin
+            ./${{ env.PACKAGE_NAME }}
           token: ${{ secrets.GITHUB_TOKEN }}
           body: |
             Release created automatically

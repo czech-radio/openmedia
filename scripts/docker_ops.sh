@@ -4,7 +4,7 @@
 SCRIPT_PATH="${BASH_SOURCE[0]:-$0}"
 SCRIPT_DIR="${SCRIPT_PATH%/*}"
 DEVEL_DOCKERFILE="${SCRIPT_DIR}/../deploy/Dockerfile_devel"
-DEVEL_IMAGENAME="localhost/openmedia_reduce_devel"
+DEVEL_IMAGENAME="localhost/openmedia_archive_devel"
 # TAG="v0.1.0"
 
 devel_build(){
@@ -26,7 +26,7 @@ devel_build(){
 # }
 
 devel_run(){
-  service="openmedia_reduce_devel"
+  service="openmedia_archive_devel"
   docker-compose -f ./deploy/docker-compose_devel.yml run --rm "$service"
 }
 

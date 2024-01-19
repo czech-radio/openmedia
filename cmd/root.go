@@ -49,7 +49,7 @@ func RunRoot() {
 	options := internal.ProcessOptions{}
 	internal.CopyFields(rcfg, &options)
 	if rcfg.DryRun {
-		TEMP_DIR := internal.DirectoryCreateTemporaryOrPanic("openmedia_reduce")
+		TEMP_DIR := internal.DirectoryCreateTemporaryOrPanic("openmedia_archive")
 		options.DestinationDirectory = TEMP_DIR
 	}
 	slog.Info("running process", "options", options)
