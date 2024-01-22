@@ -1,0 +1,23 @@
+[Unit]
+Description="Run auto_update service"
+
+[Service]
+WorkingDirectory=%h/services/openmedia-archive/
+# %h - user home directory
+
+Environment=REPOS_GROUP=czech-radio
+Environment=REPO_NAME=openmedia-archive
+Environment=RELEASE_TAG=latest
+Environment=AUTO_UPDATE_SERVICE=true
+Environment=BINARY_NAME=openmedia-archive
+Environment=MAIN_COMMAND='openmedia-archive -v'
+
+
+Type=simple
+#StandardInput=null
+StandardOutput=journal
+StandardError=journal
+ExecStart=%h/runs/bashruns/services/auto_update/run.sh ServiceRun
+
+[Install]
+WantedBy=default.target

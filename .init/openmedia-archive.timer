@@ -1,0 +1,12 @@
+[Unit]
+Description=Timer for app
+
+[Timer]
+#info: `man systmed.time`
+OnCalendar=*-*-* *:*:0/30
+  #DayOfWeek Year-Month-Day Hour:Minute:Second
+  #e.g.: Sat *-*-1..7 18:00:00 #run on ther first saturday of every month
+Persistent=true
+
+[Install]
+WantedBy=timers.target

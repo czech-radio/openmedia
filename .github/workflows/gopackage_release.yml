@@ -40,10 +40,13 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            README.md
-            ./${{ env.PACKAGE_NAME }}
+            ./README.md
+            ./run.sh
+            ./${{ env.PACKAGE_NAME }}.service
+            ./${{ env.PACKAGE_NAME }}.timer
+            ./.init/{{ env.PACKAGE_NAME }}
           token: ${{ secrets.GITHUB_TOKEN }}
           body: |
-            Release created automatically
+            Release version ${{github.ref_name}} created automatically
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
