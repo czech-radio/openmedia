@@ -42,9 +42,9 @@ jobs:
           files: |
             ./README.md
             ./run.sh
-            ./${{ env.PACKAGE_NAME }}.service
-            ./${{ env.PACKAGE_NAME }}.timer
-            ./.init/{{ env.PACKAGE_NAME }}
+            ./.init/${{ env.PACKAGE_NAME }}.service
+            ./.init/${{ env.PACKAGE_NAME }}.timer
+            ./{{ env.PACKAGE_NAME }}
           token: ${{ secrets.GITHUB_TOKEN }}
           body: |
             Release version ${{github.ref_name}} created automatically
