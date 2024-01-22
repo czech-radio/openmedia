@@ -19,5 +19,9 @@ StandardOutput=journal
 StandardError=journal
 ExecStart=%h/runs/bashruns/services/auto_update/run.sh ServiceRun
 
+# maybe split update service to use ExecStartPre
+#ExecStartPre
+#ExecStartPost
+
 [Install]
 WantedBy=default.target
