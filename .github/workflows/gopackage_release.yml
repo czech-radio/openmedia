@@ -42,7 +42,7 @@ jobs:
           files: |
             ./README.md
             ./${{ env.PACKAGE_NAME }}
-            ./run.sh
+            ./.init/run.sh
             ./.init/${{ env.PACKAGE_NAME }}.service
             ./.init/${{ env.PACKAGE_NAME }}.timer
           token: ${{ secrets.GITHUB_TOKEN }}
