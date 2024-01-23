@@ -34,17 +34,28 @@ GetNewReleaseTag(){
   curl -s "${REPO_URL}/releases/latest" | jq -r ".tag_name"
 }
 
-DownloadTagReleaseFiles(){
+
+DownloadAsset(){
   local tag="$1"
-  local assets_url="${ASSET_DOWNLOAD_URL}/${tag}"  
-  echo "Downloading asset: ${assets_url}/${BINARY_NAME}"
-  if ! curl -s -L -O "${assets_url}/${BINARY_NAME}" ; then
+  local asset="$2"
+  local assets_url="${ASSET_DOWNLOAD_URL}/${tag}"
+  if ! curl -s -L -O "${assets_url}/${asset}" ; then
     echo "Failed to download new version assets: $tag" >&2
     return 1
   fi
-  echo "Download new version assets: $tag"
-  chmod u+x "${BINARY_NAME}"
+  echo "Download new version asset: ${tag}/${asset}"
 }
+
+DownloadTagReleaseFiles(){
+  local tag="$1"
+  local assets_url="${ASSET_DOWNLOAD_URL}/${tag}"  
+  echo "Downloading assets"
+  DownloadAsset "$tag" "${BINARY_NAME}"
+  DownloadAsset "$tag" "${BINARY_NAME}.service"
+  DownloadAsset "$tag" "${BINARY_NAME}.timer"
+  DownloadAsset "$tag" "run.sh"
+}
+
 
 ServiceRun(){
   local tag="$RELEASE_TAG"
@@ -60,7 +71,9 @@ ServiceRun(){
   fi
   # Check if binary is present
   if [[ "$AUTO_UPDATE_SERVICE" == "true" ]]; then
+    #TODO: gracefull handling of deactivation of runnig service: when the command which service starts is still running. e.g. through service unit file directives
     DownloadTagReleaseFiles "$tag"
+    systemctl --user daemon-reload
   fi
   
   # Run main command

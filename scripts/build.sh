@@ -4,7 +4,7 @@
 BUILD_TIME="$(date +%FT%T)"
 GIT_COMMIT="$(git rev-parse HEAD)"
 GIT_TAG="$(git describe --tags --abbrev=0)"
-GOSRC_PATH="github/openmedia-archive/cmd"
+GOSRC_PATH="github/czech-radio/openmedia-archive/cmd"
 BINARY_NAME="${PWD##*/}"
 
 declare -a GOSRC_VAR=(
