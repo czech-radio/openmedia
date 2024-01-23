@@ -71,12 +71,13 @@ ServiceRun(){
   fi
   # Check if binary is present
   if [[ "$AUTO_UPDATE_SERVICE" == "true" ]]; then
-    #TODO: gracefull handling of deactivation of runnig service: when the command which service starts is still running. e.g. through service unit file directives
+    #TODO: gracefull handling of deactivation of runnig service: when the main command is still running. e.g. through service unit file directives
     DownloadTagReleaseFiles "$tag"
     systemctl --user daemon-reload
   fi
   
   # Run main command
+  chmod u+x ./"$BINARY_NAME"
   ./${MAIN_COMMAND}
 }
 
