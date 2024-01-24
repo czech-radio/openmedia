@@ -14,7 +14,7 @@ RELEASE_TAG=${RELEASE_TAG:-latest}
 
 ServiceActivate(){
   systemctl --user enable "${PWD}/${SERVICE_NAME}.service"
-  systemctl --user start "${SERVICE_NAME}.service"
+  # systemctl --user start "${SERVICE_NAME}.service"
   systemctl --user enable "${PWD}/${SERVICE_NAME}.timer"
   systemctl --user start "${SERVICE_NAME}.timer"
 }
@@ -55,10 +55,10 @@ DownloadTagReleaseFiles(){
   DownloadAsset "$tag" "${BINARY_NAME}.timer"
   DownloadAsset "$tag" "run.sh"
   chmod u+x "./run.sh"
-  chmod u+x "./{BINAR_NAME}"
+  chmod u+x "./${BINARY_NAME}"
 }
 
-ServiceRun(){
+ServiceServe(){
   local tag="$RELEASE_TAG"
   if [[ "$tag" == "latest" ]] ; then
     tag="$(GetNewReleaseTag)"
@@ -79,12 +79,14 @@ ServiceRun(){
   if [[ ! -f "$BINARY_NAME" ]]; then
     DownloadTagReleaseFiles "$tag"
   fi
-
-  # Enable service here?
   
-  # Run main command
-  chmod u+x ./"$BINARY_NAME"
-  ./${MAIN_COMMAND}
+  # Activate service
+  service_status="$(systemctl --user is-enable "$SERVICE_NAME")"
+  if [[ "$service_name" == "enabled" ]]; then
+    ServiceActivate
+    return
+  fi
+  ./${MAIN_COMMAND} 
 }
 
 "$@"

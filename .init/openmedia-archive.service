@@ -17,7 +17,7 @@ Type=simple
 #StandardInput=null
 StandardOutput=journal
 StandardError=journal
-ExecStart=%h/runs/bashruns/services/auto_update/run.sh ServiceRun
+ExecStart=%h/services/openmedia-archive/run.sh
 
 # maybe split update service to use ExecStartPre
 #ExecStartPre
