@@ -81,7 +81,7 @@ ServiceServe(){
   fi
   
   # Activate service
-  service_status="$(systemctl --user is-enable "$SERVICE_NAME")"
+  service_status="$(systemctl --user is-enabled "$SERVICE_NAME")"
   if [[ "$SERVICE_NAME" != "enabled" ]]; then
     ServiceActivate
     return

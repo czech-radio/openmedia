@@ -36,7 +36,7 @@ jobs:
       - name: Debug list files
         run: ls -la
       - name: Set current date as env variable
-        run: echo "NOW=$(date +'%Y-%m-%dT%H:%M:%S')" >> "$GITHUB_ENV"
+        run: echo "NOW=$(date +'%FT%T+%z')" >> "$GITHUB_ENV"
       - name: Create Release and include binary file
         id: create_release
         uses: softprops/action-gh-release@v1
