@@ -31,14 +31,14 @@ ServiceStatus(){
 }
 
 GetNewReleaseTag(){
-  curl -s "${REPO_URL}/releases/latest" | jq -r ".tag_name"
+  curl --silent "${REPO_URL}/releases/latest" | jq -r ".tag_name"
 }
 
 DownloadAsset(){
   local tag="$1"
   local asset="$2"
   local assets_url="${ASSET_DOWNLOAD_URL}/${tag}"
-  if ! curl -s -L -O --clobber "${assets_url}/${asset}" ; then
+  if ! curl --silent -L -O "${assets_url}/${asset}" ; then
     # --clobber: overwrite destination files
     echo "Failed to download new version assets: $tag" >&2
     return 1
@@ -69,7 +69,7 @@ ServiceRun(){
   fi
 
   if [[ "$AUTO_UPDATE_SERVICE" == "true" ]]; then
-    #TODO: graceful handling of deactivation of running service: when the main command is still running. e.g. through service unit file directives. Trap errors log.
+    #TODO: graceful handling of deactivation of running service: when the main command is still running. e.g. through service unit file directives. Trap errors log. Binary tag name either on github through actions or through bash rename.
     echo Updating service assets
     DownloadTagReleaseFiles "$tag"
     systemctl --user daemon-reload
@@ -79,6 +79,8 @@ ServiceRun(){
   if [[ ! -f "$BINARY_NAME" ]]; then
     DownloadTagReleaseFiles "$tag"
   fi
+
+  # Enable service here?
   
   # Run main command
   chmod u+x ./"$BINARY_NAME"
