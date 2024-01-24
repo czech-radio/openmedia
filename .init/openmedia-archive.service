@@ -17,7 +17,7 @@ Type=simple
 #StandardInput=null
 StandardOutput=journal
 StandardError=journal
-ExecStart=%h/services/openmedia-archive/run.sh
+ExecStart=%h/services/openmedia-archive/run.sh ServiceServe
 
 # maybe split update service to use ExecStartPre
 #ExecStartPre
