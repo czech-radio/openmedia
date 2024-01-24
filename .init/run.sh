@@ -53,8 +53,8 @@ DownloadTagReleaseFiles(){
   DownloadAsset "$tag" "${BINARY_NAME}"
   DownloadAsset "$tag" "${BINARY_NAME}.service"
   DownloadAsset "$tag" "${BINARY_NAME}.timer"
-  DownloadAsset "$tag" "run.sh"
-  chmod u+x "./run.sh"
+  # DownloadAsset "$tag" "run.sh"
+  # chmod u+x "./run.sh"
   chmod u+x "./${BINARY_NAME}"
 }
 
