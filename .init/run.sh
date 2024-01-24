@@ -34,12 +34,12 @@ GetNewReleaseTag(){
   curl -s "${REPO_URL}/releases/latest" | jq -r ".tag_name"
 }
 
-
 DownloadAsset(){
   local tag="$1"
   local asset="$2"
   local assets_url="${ASSET_DOWNLOAD_URL}/${tag}"
-  if ! curl -s -L -O "${assets_url}/${asset}" ; then
+  if ! curl -s -L -O --clobber "${assets_url}/${asset}" ; then
+    # --clobber: overwrite destination files
     echo "Failed to download new version assets: $tag" >&2
     return 1
   fi
@@ -58,7 +58,6 @@ DownloadTagReleaseFiles(){
   chmod u+x "./{BINAR_NAME}"
 }
 
-
 ServiceRun(){
   local tag="$RELEASE_TAG"
   if [[ "$tag" == "latest" ]] ; then
@@ -68,14 +67,17 @@ ServiceRun(){
     echo "Cannot get tag name. Asset files not downloaded." >&2
     return 1
   fi
-  if [[ ! -f "$BINARY_NAME" ]]; then
-    DownloadTagReleaseFiles "$tag"
-  fi
-  # Check if binary is present
+
   if [[ "$AUTO_UPDATE_SERVICE" == "true" ]]; then
-    #TODO: gracefull handling of deactivation of runnig service: when the main command is still running. e.g. through service unit file directives
+    #TODO: graceful handling of deactivation of running service: when the main command is still running. e.g. through service unit file directives. Trap errors log.
+    echo Updating service assets
     DownloadTagReleaseFiles "$tag"
     systemctl --user daemon-reload
+  fi
+  
+  # Check if binary is present
+  if [[ ! -f "$BINARY_NAME" ]]; then
+    DownloadTagReleaseFiles "$tag"
   fi
   
   # Run main command
