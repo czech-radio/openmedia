@@ -35,6 +35,8 @@ jobs:
         run: pwd
       - name: Debug list files
         run: ls -la
+      - name: Set current date as env variable
+        run: echo "NOW=$(date +'%Y-%m-%dT%H:%M:%S')" >> "$GITHUB_ENV"
       - name: Create Release and include binary file
         id: create_release
         uses: softprops/action-gh-release@v1
@@ -47,6 +49,6 @@ jobs:
             ./.init/${{ env.PACKAGE_NAME }}.timer
           token: ${{ secrets.GITHUB_TOKEN }}
           body: |
-            Release version ${{github.ref_name}} created automatically
+            Release version ${{ github.ref_name }} created automatically: ${{ env.NOW }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
