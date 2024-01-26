@@ -53,9 +53,29 @@ DownloadTagReleaseFiles(){
   DownloadAsset "$tag" "${BINARY_NAME}"
   DownloadAsset "$tag" "${BINARY_NAME}.service"
   DownloadAsset "$tag" "${BINARY_NAME}.timer"
+  DownloadAsset "$tag" "version.txt"
   # DownloadAsset "$tag" "run.sh"
   # chmod u+x "./run.sh"
   chmod u+x "./${BINARY_NAME}"
+}
+
+ServiceUpdate(){
+  #TODO: graceful handling of deactivation of running service: when the main command is still running. e.g. through service unit file directives. Trap errors log. Binary tag name either on github through actions or through bash rename.
+  local tag="$1"
+  if [[ "$AUTO_UPDATE_SERVICE" != "true" ]]; then
+    return
+  fi
+  # local latest_tag="$(curl -s -L https://github.com/czech-radio/openmedia-archive/releases/download/v0.9.0/version.txt | yq '.tag')"
+  # local current_tag=$(cat version.txt | yq '.tag')
+  local latest_date="$(curl -s -L https://github.com/czech-radio/openmedia-archive/releases/download/v0.9.0/version.txt | yq '.date')"
+  local current_date=$(cat version.txt | yq '.date')
+ 
+  # if [[ "$current_tag" != "$latest_tag" ]]; then
+  if [[ "$current_date" != "$latest_date" ]]; then
+    echo Updating service assets
+    DownloadTagReleaseFiles "$latest_tag"
+    systemctl --user daemon-reload
+  fi
 }
 
 ServiceServe(){
@@ -67,18 +87,12 @@ ServiceServe(){
     echo "Cannot get tag name. Asset files not downloaded." >&2
     return 1
   fi
-
-  if [[ "$AUTO_UPDATE_SERVICE" == "true" ]]; then
-    #TODO: graceful handling of deactivation of running service: when the main command is still running. e.g. through service unit file directives. Trap errors log. Binary tag name either on github through actions or through bash rename.
-    echo Updating service assets
-    DownloadTagReleaseFiles "$tag"
-    systemctl --user daemon-reload
-  fi
   
   # Check if binary is present
-  if [[ ! -f "$BINARY_NAME" ]]; then
+  if [[ ! -f "version.txt" ]]; then
     DownloadTagReleaseFiles "$tag"
   fi
+  ServiceUpdate "$tag"
   
   # Activate service
   service_status="$(systemctl --user is-enabled "$SERVICE_NAME")"
