@@ -36,7 +36,11 @@ jobs:
       - name: Debug list files
         run: ls -la
       - name: Set current date as env variable
-        run: echo "NOW=$(date +'%FT%T%z')" >> "$GITHUB_ENV"
+        run: |
+          echo "date: $(date +'%FT%T%z')" >> "$GITHUB_ENV"
+      - name: Create version info file
+        run: |
+          echo -e "tag: ${{ github.ref_name }}\ndate: ${{ env.NOV }}" > version.txt
       - name: Create Release and include binary file
         id: create_release
         uses: softprops/action-gh-release@v1
@@ -47,6 +51,7 @@ jobs:
             ./.init/run.sh
             ./.init/${{ env.PACKAGE_NAME }}.service
             ./.init/${{ env.PACKAGE_NAME }}.timer
+            ./version.txt
           token: ${{ secrets.GITHUB_TOKEN }}
           body: |
             Release version ${{ github.ref_name }} created automatically: ${{ env.NOW }}
