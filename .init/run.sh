@@ -60,7 +60,7 @@ DownloadTagReleaseFiles(){
 }
 
 ServiceUpdate(){
-  #TODO: graceful handling of deactivation of running service: when the main command is still running. e.g. through service unit file directives. Trap errors log. Binary tag name either on github through actions or through bash rename.
+  #TODO: graceful handling of deactivation of running service: when the main command is still running. e.g. through service unit file directives. Trap errors log.
   local tag="$1"
   if [[ "$AUTO_UPDATE_SERVICE" != "true" ]]; then
     return
@@ -88,7 +88,7 @@ ServiceServe(){
     return 1
   fi
   
-  # Check if binary is present
+  # Check if assets are present
   if [[ ! -f "version.txt" ]]; then
     DownloadTagReleaseFiles "$tag"
   fi
@@ -101,6 +101,10 @@ ServiceServe(){
     return
   fi
   ./${MAIN_COMMAND} 
+}
+
+ServiceTrigger(){
+  systemctl --user start "$SERVICE_NAME"
 }
 
 "$@"
