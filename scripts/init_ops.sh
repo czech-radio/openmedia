@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-MY_SERVICE=openmedia_reduce
+MY_SERVICE=openmedia_archive
 INIT_DIR="../init"
 
 enable_service(){
