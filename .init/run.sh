@@ -94,7 +94,8 @@ ServiceServe(){
     ServiceActivate
     return
   fi
-  ./${MAIN_COMMAND} 
+  declare -a cmd=( ${MAIN_COMMAND} )
+  exec "./{cmd[@]}"
 }
 
 ServiceTrigger(){
