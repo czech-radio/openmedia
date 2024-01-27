@@ -38,7 +38,7 @@ NeedsUpdate(){
   local latest_tag="$(GetNewReleaseTag)"
   local latest_date="$(curl -s -L "https://github.com/${REPOS_GROUP}/${REPO_NAME}/releases/download/${latest_tag}/version.txt" | head -1)"
   local current_date="$(head -1 version.txt)"
-  if [[ "$current_date" == "$latest_date" ]] && "${AUTO_UPDATE_SERVICE}" ; then
+  if [[ "$current_date" != "$latest_date" ]] && "${AUTO_UPDATE_SERVICE}" ; then
     echo true
     return
   fi
@@ -64,15 +64,16 @@ DownloadReleaseFiles(){
     "${BINARY_NAME}.timer"
     "version.txt"
   )
-  echo "Downloading assets"
   update="$(NeedsUpdate)"
   for file in "${ReleaseFiles[@]}"; do
-    if [[ ! -f $file ]] || "$update" ; then
+    if [[ ! -f "$file" ]] || "$update" ; then
       DownloadReleaseFile "$release_tag" "$file"
     fi
   done
   chmod u+x "./${BINARY_NAME}"
-  systemctl --user daemon-reload
+  if "$update" ; then
+    systemctl --user daemon-reload
+  fi
 }
 
 ServiceServe(){
@@ -89,7 +90,7 @@ ServiceServe(){
   
   # Activate service
   service_status="$(systemctl --user is-enabled "$SERVICE_NAME")"
-  if [[ "$SERVICE_NAME" != "enabled" ]]; then
+  if [[ "$service_status" != "enabled" ]]; then
     ServiceActivate
     return
   fi

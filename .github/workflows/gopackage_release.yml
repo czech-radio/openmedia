@@ -40,7 +40,7 @@ jobs:
           echo "NOW=$(date +'%FT%T%z')" >> "$GITHUB_ENV"
       - name: Create version info file
         run: |
-          echo -e "${{ env.NOW }}\n{{ github.ref_name }}" > version.txt
+          echo -e "${{ env.NOW }}\n${{ github.ref_name }}" > version.txt
       - name: Create Release and include binary file
         id: create_release
         uses: softprops/action-gh-release@v1
