@@ -52,7 +52,7 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 	TEST_DATA_DIR_SRC = current_directory + "/../test/testdata"
-	TEMP_DIR = DirectoryCreateTemporaryOrPanic("openmedia_reduce_test_")
+	TEMP_DIR = DirectoryCreateTemporaryOrPanic("openmedia_archive_test_")
 	DirectoryIsReadableOrPanic(TEST_DATA_DIR_SRC)
 	TEMP_DIR_TEST_SRC = filepath.Join(TEMP_DIR, "SRC")
 	TEMP_DIR_TEST_DST = filepath.Join(TEMP_DIR, "DST")

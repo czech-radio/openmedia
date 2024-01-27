@@ -1,0 +1,27 @@
+[Unit]
+Description="Run auto_update service"
+
+[Service]
+WorkingDirectory=%h/services/openmedia_archive/
+# %h - user home directory
+
+Environment=RELEASE_TAG=latest
+Environment=AUTO_UPDATE_SERVICE=true
+Environment=REPOS_GROUP=czech-radio
+Environment=REPO_NAME=openmedia-archive
+Environment=BINARY_NAME=openmedia-archive
+Environment=MAIN_COMMAND='./openmedia-archive -v'
+
+
+Type=simple
+#StandardInput=null
+StandardOutput=journal
+StandardError=journal
+ExecStart=%h/services/openmedia_archive/run.sh ServiceServe
+
+# maybe split update service to use ExecStartPre
+#ExecStartPre
+#ExecStartPost
+
+[Install]
+WantedBy=default.target
