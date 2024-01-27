@@ -94,7 +94,7 @@ ServiceServe(){
     ServiceActivate
     return
   fi
-  eval "${MAIN_COMMAND}"
+  eval "./${MAIN_COMMAND}"
 }
 
 ServiceTrigger(){
