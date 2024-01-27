@@ -14,4 +14,4 @@ declare -a GOSRC_VAR=(
 )
 go build -ldflags "${GOSRC_VAR[*]}" -o "$BINARY_NAME"
 
-./$BINARY_NAME
+./"$BINARY_NAME"

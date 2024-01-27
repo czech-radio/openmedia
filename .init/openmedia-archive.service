@@ -10,7 +10,7 @@ Environment=AUTO_UPDATE_SERVICE=true
 Environment=REPOS_GROUP=czech-radio
 Environment=REPO_NAME=openmedia-archive
 Environment=BINARY_NAME=openmedia-archive
-Environment=MAIN_COMMAND='openmedia-archive -v'
+Environment=MAIN_COMMAND='./openmedia-archive -v'
 
 
 Type=simple
