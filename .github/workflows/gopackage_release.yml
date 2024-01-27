@@ -41,7 +41,6 @@ jobs:
       - name: Create version info file
         run: |
           echo -e "${{ env.NOW }}\n{{ github.ref_name }}" > version.txt
-          # echo "${{ env.NOW }}" >> version.txt
       - name: Create Release and include binary file
         id: create_release
         uses: softprops/action-gh-release@v1

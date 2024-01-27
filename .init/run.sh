@@ -34,26 +34,26 @@ GetNewReleaseTag(){
   curl --silent "${REPO_URL}/releases/latest" | jq -r ".tag_name"
 }
 
-DownloadReleaseFile(){
-  local release_tag="$1"
-  local filename="$2"
-  local filename_url="$ASSET_DOWNLOAD_URL/$release_tag/$filename"
-  if curl --silent -L -O "${filename_url}" ; then
-    echo "Failed to download release file: $release_tag" >&2
-    rm "$filename"
-  fi
-  echo "Download release file: ${tag}/${asset}"
-}
-
 NeedsUpdate(){
   local latest_tag="$(GetNewReleaseTag)"
-  local latest_date="$(curl -s -L "https://github.com/czech-radio/openmedia-archive/releases/download/${latest_tag}/version.txt" | head -1)"
+  local latest_date="$(curl -s -L "https://github.com/${REPOS_GROUP}/${REPO_NAME}/releases/download/${latest_tag}/version.txt" | head -1)"
   local current_date="$(head -1 version.txt)"
   if [[ "$current_date" == "$latest_date" ]] && "${AUTO_UPDATE_SERVICE}" ; then
     echo true
     return
   fi
   echo false
+}
+
+DownloadReleaseFile(){
+  local release_tag="$1"
+  local filename="$2"
+  local filename_url="$ASSET_DOWNLOAD_URL/$release_tag/$filename"
+  if ! curl --silent -L -O "${filename_url}" ; then
+    echo "Failed to download release file: $release_tag/$filename" >&2
+    rm "$filename"
+  fi
+  echo "Downloaded release file: $release_tag/$filename"
 }
 
 DownloadReleaseFiles(){
@@ -65,10 +65,9 @@ DownloadReleaseFiles(){
     "version.txt"
   )
   echo "Downloading assets"
-
   update="$(NeedsUpdate)"
   for file in "${ReleaseFiles[@]}"; do
-    if [[ ! -f $filename ]] || "$update" ; then
+    if [[ ! -f $file ]] || "$update" ; then
       DownloadReleaseFile "$release_tag" "$file"
     fi
   done
@@ -79,10 +78,10 @@ DownloadReleaseFiles(){
 ServiceServe(){
   #TODO: graceful handling of deactivation of running service: when the main command is still running. e.g. through service unit file directives. Trap errors log.
   local release_tag="$RELEASE_TAG"
-  if [[ "$relese_tag" == "latest" ]] ; then
-    tag="$(GetNewReleaseTag)"
+  if [[ "$release_tag" == "latest" ]] ; then
+    release_tag="$(GetNewReleaseTag)"
   fi
-  if [[ ! "$relese_tag" =~ v.* ]] ; then
+  if [[ ! "$release_tag" =~ v.* ]] ; then
     echo "Cannot get tag name. Asset files not downloaded." >&2
     return 1
   fi
