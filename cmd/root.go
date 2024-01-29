@@ -34,7 +34,9 @@ type Config_root struct {
 	DestinationDirectory string `cmd:"destination_directory; o; ; otput files"`
 	CompressionType      string `cmd:"compression_type; ct; zip; type of file compression [zip]."`
 	InvalidFileContinue  bool   `cmd:"invalid_file_continue; ifc; 0; continue even though unprocesable file encountered"`
-	InvalidFileRename    bool   `cmd:"invalid_file_rename; ifr; false; rename"`
+	InvalidFileRename    bool   `cmd:"invalid_file_rename; ifr; false; rename invalid files"`
+	ProcessedFileRename  bool   `cmd:"processed_file_rename; pfr; false; rename processesd files"`
+	ProcessedFileDelete  bool   `cmd:"processed_file_delete; pfd; false; delete processed files"`
 }
 
 func RunRoot() {
