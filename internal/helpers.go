@@ -264,6 +264,21 @@ func CopyFile(
 	return nil
 }
 
+// FileExists: returns true if file exists, false when the filePath doesnot exists, error when it is directory
+func FileExists(filePath string) (bool, error) {
+	info, err := os.Stat(filePath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return false, nil
+		}
+		return false, err
+	}
+	if info.IsDir() {
+		return false, fmt.Errorf("specified path is a directory, not a zip file")
+	}
+	return true, nil
+}
+
 func XOR(a, b bool) bool {
 	return (a || b) && !(a && b)
 }

@@ -78,6 +78,8 @@ DownloadReleaseFiles(){
 
 ServiceServe(){
   #TODO: graceful handling of deactivation of running service: when the main command is still running. e.g. through service unit file directives. Trap errors log.
+  #
+  # systemctl is-active --quiet service
   local release_tag="$RELEASE_TAG"
   if [[ "$release_tag" == "latest" ]] ; then
     release_tag="$(GetNewReleaseTag)"
