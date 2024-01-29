@@ -100,7 +100,7 @@ type ArchiveWorker struct {
 	ArchivePath    string
 	ArchiveFile    *os.File
 	ArchiveWriter  *zip.Writer
-	ArchiveFiles   []string
+	ArchiveFiles   map[string][]string // map filenames in archive to original files
 }
 
 func (w *ArchiveWorker) MapFilesInOldArchive(archivePath string) error {
@@ -116,9 +116,10 @@ func (w *ArchiveWorker) MapFilesInOldArchive(archivePath string) error {
 			return err
 		}
 		defer r.Close()
-		w.ArchiveFiles = make([]string, len(r.File))
-		for idx, file := range r.File {
-			w.ArchiveFiles[idx] = file.Name
+		w.ArchiveFiles = make(map[string][]string, len(r.File))
+		for _, file := range r.File {
+			filePathInArchive := filepath.Join(archivePath, file.Name)
+			w.ArchiveFiles[filePathInArchive] = []string{}
 		}
 	}
 	return nil
@@ -400,6 +401,14 @@ func (p *Process) CallArchivWorker(fm *FileMeta, workerTypeCode WorkerTypeCode) 
 			return err
 		}
 		p.Workers[fm.WorkerName] = worker
+
+		// Check resulting duplicate here/map duplicates
+		// filePathInArchive := filepath.Join(worker.ArchivePath, fm.FilePathInArchive)
+		_, filePresent := worker.ArchiveFiles[fm.FilePathInArchive]
+		if filePresent {
+			return fmt.Errorf("file %s will result in duplicate in %s",
+				fm.FilePathSource, fm.FilePathInArchive)
+		}
 
 		go func(w *ArchiveWorker, workerTypeCode WorkerTypeCode) {
 			for {
