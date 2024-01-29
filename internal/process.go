@@ -100,13 +100,43 @@ type ArchiveWorker struct {
 	ArchivePath    string
 	ArchiveFile    *os.File
 	ArchiveWriter  *zip.Writer
+	ArchiveFiles   []string
+}
+
+func (w *ArchiveWorker) MapFilesInOldArchive(archivePath string) error {
+	// Check if there is an old archive
+	ok, err := FileExists(archivePath)
+	if err != nil {
+		return err
+	}
+	// Read files already present in an archive
+	if ok {
+		r, err := zip.OpenReader(archivePath)
+		if err != nil {
+			return err
+		}
+		defer r.Close()
+		w.ArchiveFiles = make([]string, len(r.File))
+		for idx, file := range r.File {
+			w.ArchiveFiles[idx] = file.Name
+		}
+	}
+	return nil
 }
 
 func (w *ArchiveWorker) Init(dstdir, archiveName string) error {
 	w.Call = make(chan *FileMeta)
-	path := filepath.Join(dstdir, archiveName)
-	w.ArchivePath = path
-	archive, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE, 0600)
+	archivePath := filepath.Join(dstdir, archiveName)
+	w.ArchivePath = archivePath
+
+	// 1. Open old zip file if present and read file list
+	err := w.MapFilesInOldArchive(archivePath)
+	if err != nil {
+		return err
+	}
+
+	// 2. Create or open archive for writing
+	archive, err := os.OpenFile(archivePath, os.O_RDWR|os.O_CREATE, 0600)
 	if err != nil {
 		return err
 	}
@@ -370,6 +400,7 @@ func (p *Process) CallArchivWorker(fm *FileMeta, workerTypeCode WorkerTypeCode) 
 			return err
 		}
 		p.Workers[fm.WorkerName] = worker
+
 		go func(w *ArchiveWorker, workerTypeCode WorkerTypeCode) {
 			for {
 				workerParams := <-w.Call

@@ -77,3 +77,12 @@ func Test_ProcessFolder(t *testing.T) {
 		t.Error(err)
 	}
 }
+
+func Test_MapFilesInOldArchive(t *testing.T) {
+	// No archive file present
+	worker := new(ArchiveWorker)
+	err := worker.MapFilesInOldArchive("some_path")
+	if err != nil {
+		t.Error(err)
+	}
+}
