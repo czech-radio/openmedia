@@ -1,0 +1,44 @@
+name: main
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go-version: ['1.21']
+        # go-version: ['1.21', '1.21.x' ]
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set env
+        run: echo "PACKAGE_NAME=${PWD##*/}" >> "$GITHUB_ENV"
+      - run: echo "${{ env.PACKAGE_NAME }}"
+      - name: Setup Go ${{ matrix.go-version }}
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ matrix.go-version }}
+          cache: false
+          # cache-dependency-path: go.sum
+      - name: Display Go version
+        run: go version
+      - name: Test vet package
+        run: go vet -v ./...
+      - name: Test Go package
+        run: go test -v ./...
+      - name: Build package with bash script
+        run: ./scripts/build.sh
+      - name: Debug working directory
+        run: pwd
+      - name: Debug list files
+        run: ls -la
+      - name: test run binary
+        run: eval "./${{ env.PACKAGE_NAME }} -V"
