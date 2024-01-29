@@ -49,6 +49,9 @@ type ProcessOptions struct {
 	CompressionType      string
 	InvalidFileContinue  bool
 	InvalidFileRename    bool
+	ProcessedFileRename  bool
+	ProcessedFileDelete  bool
+
 	// InputEncoding          string
 	// OutputEncoding         string
 	// ValidateWithDefaultXSD bool   // validate with bundled file
@@ -68,7 +71,7 @@ type ProcessResults struct {
 	SizeMinified       uint64
 	SizePackedMinified uint64
 	Duplicates         map[string][]string // dstFile vs srcFile
-	DuplicatesFound    bool
+	DuplicatesFound    int
 }
 
 type FileMeta struct {
@@ -100,7 +103,7 @@ type ArchiveWorker struct {
 	ArchivePath    string
 	ArchiveFile    *os.File
 	ArchiveWriter  *zip.Writer
-	ArchiveFiles   map[string][]string // map filenames in archive to original files
+	ArchiveFiles   map[string]int // map filenames in archive
 }
 
 func (w *ArchiveWorker) MapFilesInOldArchive(archivePath string) error {
@@ -116,10 +119,10 @@ func (w *ArchiveWorker) MapFilesInOldArchive(archivePath string) error {
 			return err
 		}
 		defer r.Close()
-		w.ArchiveFiles = make(map[string][]string, len(r.File))
+		w.ArchiveFiles = make(map[string]int, len(r.File))
 		for _, file := range r.File {
 			filePathInArchive := filepath.Join(archivePath, file.Name)
-			w.ArchiveFiles[filePathInArchive] = []string{}
+			w.ArchiveFiles[filePathInArchive]++
 		}
 	}
 	return nil
@@ -206,9 +209,12 @@ func (f *FileMeta) SetWeekWorkerName(wtc WorkerTypeCode) string {
 }
 
 func (p *Process) ErrorHandle(errMain error, errorsPartial ...error) ControlFlowAction {
+	p.Results.FilesProcessed++
 	if errMain == nil {
+		p.Results.FilesSuccess++
 		return Continue
 	}
+	p.Results.FilesFailure++
 	// p.Results.FilesFailure++
 	p.Errors = append(p.Errors, errMain)
 	p.Errors = append(p.Errors, errorsPartial...)
@@ -220,19 +226,19 @@ func (p *Process) ErrorHandle(errMain error, errorsPartial ...error) ControlFlow
 	}
 }
 
-func (p *Process) CheckDuplicatesInArchive(fi *FileMeta) error {
-	if p.Results.Duplicates == nil {
-		p.Results.Duplicates = make(map[string][]string)
-	}
-	dupes, _ := p.Results.Duplicates[fi.FilePathInArchive]
-	p.Results.Duplicates[fi.FilePathInArchive] = append(dupes, fi.FilePathSource)
+// func (p *Process) CheckDuplicatesInArchive(fi *FileMeta) error {
+// 	if p.Results.Duplicates == nil {
+// 		p.Results.Duplicates = make(map[string][]string)
+// 	}
+// 	dupes, _ := p.Results.Duplicates[fi.FilePathInArchive]
+// 	p.Results.Duplicates[fi.FilePathInArchive] = append(dupes, fi.FilePathSource)
 
-	if len(dupes) > 0 {
-		p.Results.DuplicatesFound = true
-		return fmt.Errorf("file %s will result in duplicate %s file in archive", fi.FilePathSource, fi.FilePathInArchive)
-	}
-	return nil
-}
+// 	if len(dupes) > 0 {
+// 		p.Results.DuplicatesFound = true
+// 		return fmt.Errorf("file %s will result in duplicate %s file in archive", fi.FilePathSource, fi.FilePathInArchive)
+// 	}
+// 	return nil
+// }
 
 func (p *Process) PrepareOutput() error {
 	for _, t := range OpenMediaFileTypeMap {
@@ -275,14 +281,16 @@ processFolder:
 	res := p.Results
 	p.WorkerLogInfo("GLOBAL_ORIGINAL", res.SizeOriginal, res.SizePackedBackup, res.SizeOriginal, p.Options.SourceDirectory)
 	p.WorkerLogInfo("GLOBAL_MINIFY", res.SizeOriginal, res.SizePackedMinified, res.SizeMinified, p.Options.SourceDirectory)
-	if p.Results.DuplicatesFound {
-		slog.Error("duplicates found")
+
+	if p.Results.DuplicatesFound > 0 {
+		slog.Error("duplicates found", "count", p.Results.DuplicatesFound)
 		ms, err := json.MarshalIndent(p.Results.Duplicates, "", "  ")
 		if err != nil {
 			slog.Error("cannot marshal dupes")
 		}
 		fmt.Printf("%s\n", ms)
 	}
+
 	if len(p.Errors) > 0 {
 		res, err := json.MarshalIndent(p.Errors, "", "\t")
 		if err != nil {
@@ -339,12 +347,6 @@ func (p *Process) File(filePath string) error {
 		return err
 	}
 
-	// Check resulting dupes
-	err = p.CheckDuplicatesInArchive(&fileMetaOriginal)
-	if err != nil {
-		return err
-	}
-
 	// 1. Archivate original
 	fileMetaOriginal.SetWeekWorkerName(WorkerTypeOriginal)
 	err = p.CallArchivWorker(&fileMetaOriginal, WorkerTypeOriginal)
@@ -366,10 +368,16 @@ func (p *Process) File(filePath string) error {
 		return err
 	}
 	p.WG.Add(1)
-	return RenameProcessedFile(filePath)
+	if p.Options.ProcessedFileRename {
+		return ProcessedFileRename(filePath)
+	}
+	if p.Options.ProcessedFileDelete {
+		return os.Remove(filePath)
+	}
+	return nil
 }
 
-func RenameProcessedFile(originalPath string) error {
+func ProcessedFileRename(originalPath string) error {
 	fileName := filepath.Base(originalPath)
 	directory := filepath.Dir(originalPath)
 	newPath := filepath.Join(directory, "processed_"+fileName)
@@ -392,6 +400,22 @@ func (p *Process) WorkerLogInfo(workerType string, sizeOrig, sizePacked, sizeMin
 		"minified", sizeMinified, "file", filePath)
 }
 
+func (p *Process) CheckArchiveWorkerDupes(worker *ArchiveWorker, fm *FileMeta) error {
+	if p.Results.Duplicates == nil {
+		p.Results.Duplicates = make(map[string][]string)
+	}
+	_, filePresent := worker.ArchiveFiles[fm.FilePathInArchive]
+	if !filePresent {
+		return nil
+	}
+	p.Results.DuplicatesFound++
+	dupes := p.Results.Duplicates[fm.FilePathInArchive]
+	p.Results.Duplicates[fm.FilePathInArchive] = append(dupes, fm.FilePathSource)
+	return fmt.Errorf(
+		"file %s will result in duplicate in %s",
+		fm.FilePathSource, fm.FilePathInArchive)
+}
+
 func (p *Process) CallArchivWorker(fm *FileMeta, workerTypeCode WorkerTypeCode) error {
 	worker, ok := p.Workers[fm.WorkerName]
 	if !ok {
@@ -401,15 +425,10 @@ func (p *Process) CallArchivWorker(fm *FileMeta, workerTypeCode WorkerTypeCode) 
 			return err
 		}
 		p.Workers[fm.WorkerName] = worker
-
-		// Check resulting duplicate here/map duplicates
-		// filePathInArchive := filepath.Join(worker.ArchivePath, fm.FilePathInArchive)
-		_, filePresent := worker.ArchiveFiles[fm.FilePathInArchive]
-		if filePresent {
-			return fmt.Errorf("file %s will result in duplicate in %s",
-				fm.FilePathSource, fm.FilePathInArchive)
+		err = p.CheckArchiveWorkerDupes(worker, fm)
+		if err != nil {
+			return err
 		}
-
 		go func(w *ArchiveWorker, workerTypeCode WorkerTypeCode) {
 			for {
 				workerParams := <-w.Call
@@ -425,7 +444,6 @@ func (p *Process) CallArchivWorker(fm *FileMeta, workerTypeCode WorkerTypeCode) 
 				case WorkerTypeMinified:
 					p.Results.SizePackedMinified += compressedSize
 					p.Results.SizeMinified += bytesWritten
-					p.Results.FilesProcessed++
 				case WorkerTypeOriginal:
 					p.Results.SizePackedBackup += compressedSize
 					p.Results.SizeOriginal += origSize
