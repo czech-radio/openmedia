@@ -48,9 +48,9 @@ jobs:
           files: |
             ./README.md
             ./${{ env.PACKAGE_NAME }}
-            ./.init/run.sh
-            ./.init/${{ env.PACKAGE_NAME }}.service
-            ./.init/${{ env.PACKAGE_NAME }}.timer
+            ./.deploy/run.sh
+            ./.deploy/${{ env.PACKAGE_NAME }}.service
+            ./.deploy/${{ env.PACKAGE_NAME }}.timer
             ./version.txt
           token: ${{ secrets.GITHUB_TOKEN }}
           body: |

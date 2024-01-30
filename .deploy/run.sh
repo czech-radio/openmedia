@@ -31,12 +31,12 @@ ServiceStatus(){
 }
 
 GetNewReleaseTag(){
-  curl --silent "${REPO_URL}/releases/latest" | jq -r ".tag_name"
+  curl --silent --show-error "${REPO_URL}/releases/latest" | jq -r ".tag_name"
 }
 
 NeedsUpdate(){
   local latest_tag="$(GetNewReleaseTag)"
-  local latest_date="$(curl -s -L "https://github.com/${REPOS_GROUP}/${REPO_NAME}/releases/download/${latest_tag}/version.txt" | head -1)"
+  local latest_date="$(curl --silent --show-error -L "https://github.com/${REPOS_GROUP}/${REPO_NAME}/releases/download/${latest_tag}/version.txt" | head -1)"
   local current_date="$(head -1 version.txt)"
   if [[ "$current_date" != "$latest_date" ]] && "${AUTO_UPDATE_SERVICE}" ; then
     echo true
@@ -49,7 +49,7 @@ DownloadReleaseFile(){
   local release_tag="$1"
   local filename="$2"
   local filename_url="$ASSET_DOWNLOAD_URL/$release_tag/$filename"
-  if ! curl --silent -L -O "${filename_url}" ; then
+  if ! curl --silent --show-error -L -O "${filename_url}" ; then
     echo "Failed to download release file: $release_tag/$filename" >&2
     rm "$filename"
   fi
