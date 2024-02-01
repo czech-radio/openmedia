@@ -214,10 +214,14 @@ func (p *Process) ErrorHandle(errMain error, errorsPartial ...error) ControlFlow
 		p.Results.FilesSuccess++
 		return Continue
 	}
+
+	// PC=1?
 	p.Results.FilesFailure++
-	// p.Results.FilesFailure++
+	slog.Error(errMain.Error())
 	p.Errors = append(p.Errors, errMain)
-	p.Errors = append(p.Errors, errorsPartial...)
+	if len(errorsPartial) > 0 {
+		p.Errors = append(p.Errors, errorsPartial...)
+	}
 
 	if p.Options.InvalidFileContinue {
 		return Skip
@@ -225,20 +229,6 @@ func (p *Process) ErrorHandle(errMain error, errorsPartial ...error) ControlFlow
 		return Break
 	}
 }
-
-// func (p *Process) CheckDuplicatesInArchive(fi *FileMeta) error {
-// 	if p.Results.Duplicates == nil {
-// 		p.Results.Duplicates = make(map[string][]string)
-// 	}
-// 	dupes, _ := p.Results.Duplicates[fi.FilePathInArchive]
-// 	p.Results.Duplicates[fi.FilePathInArchive] = append(dupes, fi.FilePathSource)
-
-// 	if len(dupes) > 0 {
-// 		p.Results.DuplicatesFound = true
-// 		return fmt.Errorf("file %s will result in duplicate %s file in archive", fi.FilePathSource, fi.FilePathInArchive)
-// 	}
-// 	return nil
-// }
 
 func (p *Process) PrepareOutput() error {
 	for _, t := range OpenMediaFileTypeMap {

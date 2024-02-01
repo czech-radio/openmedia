@@ -1,5 +1,6 @@
 # Build the Go binary with linked variables.
 
+### add time zone?
 $BuildTime = Get-Date -UFormat "%Y-%m-%dT%T"
 $GitCommit= (git rev-parse HEAD).Trim()
 $GitTag = (git tag --sort=v:refname) | Select-Object -Last 1

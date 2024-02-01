@@ -86,3 +86,22 @@ func Test_MapFilesInOldArchive(t *testing.T) {
 		t.Error(err)
 	}
 }
+
+func Test_ProcessFolderInvalid(t *testing.T) {
+	srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_invalid")
+	dstDir := filepath.Join(TEMP_DIR_TEST_DST)
+	opts := ProcessOptions{
+		SourceDirectory:      srcDir,
+		DestinationDirectory: dstDir,
+		InvalidFileRename:    false,
+		InvalidFileContinue:  true,
+		CompressionType:      "zip",
+	}
+	process := Process{Options: opts}
+	err := process.Folder()
+	fmt.Printf("%+v\n", process.Results)
+	Sleeper(1000, "s")
+	if err != nil {
+		t.Error(err)
+	}
+}
