@@ -106,7 +106,7 @@ func Test_ProcessFolderInvalid(t *testing.T) {
 }
 
 func Test_ProcessFolderComplexNoDupes(t *testing.T) {
-	srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_complex_dupes")
+	srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_complex_nodupes")
 	// srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_complex_nodupes")
 	dstDir := filepath.Join(TEMP_DIR_TEST_DST)
 	opts := ProcessOptions{
@@ -116,10 +116,13 @@ func Test_ProcessFolderComplexNoDupes(t *testing.T) {
 		InvalidFileContinue:      true,
 		CompressionType:          "zip",
 		PreserveFoldersInArchive: false,
+		// PreserveFoldersInArchive: true,
 	}
 	process := Process{Options: opts}
 	err := process.Folder()
 	fmt.Printf("%+v\n", process.Results)
+
+	// Sleeper(1000, "s")
 	if err != nil {
 		t.Error(err)
 	}
@@ -133,15 +136,15 @@ func Test_ProcessFolderComplexDupes(t *testing.T) {
 		SourceDirectory:      srcDir,
 		DestinationDirectory: dstDir,
 		InvalidFileRename:    false,
-		// InvalidFileContinue:      false,
-		InvalidFileContinue:      true,
+		InvalidFileContinue:  false,
+		// InvalidFileContinue:      true,
 		CompressionType:          "zip",
 		PreserveFoldersInArchive: false,
 	}
 	process := Process{Options: opts}
 	err := process.Folder()
 	fmt.Printf("%+v\n", process.Results)
-	Sleeper(1000, "s")
+	// Sleeper(1000, "s")
 	if err != nil {
 		t.Error(err)
 	}

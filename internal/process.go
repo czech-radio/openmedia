@@ -426,35 +426,34 @@ func (p *Process) CallArchivWorker(fm *FileMeta, workerTypeCode WorkerTypeCode) 
 		if err != nil {
 			return err
 		}
+		p.Workers[fm.WorkerName] = worker
+		go func(w *ArchiveWorker, workerTypeCode WorkerTypeCode) {
+			for {
+				workerParams := <-w.Call
+				origSize, compressedSize, bytesWritten, err := p.Archivate(worker, workerParams)
+				if err != nil {
+					slog.Error(err.Error())
+					break
+				}
+				p.WorkerLogInfo(fm.WorkerName, origSize, compressedSize,
+					bytesWritten, workerParams.FilePathSource)
+				// Update results stats
+				switch workerTypeCode {
+				case WorkerTypeMinified:
+					p.Results.SizePackedMinified += compressedSize
+					p.Results.SizeMinified += bytesWritten
+				case WorkerTypeOriginal:
+					p.Results.SizePackedBackup += compressedSize
+					p.Results.SizeOriginal += origSize
+				}
+				p.WG.Done()
+			}
+		}(worker, workerTypeCode)
 	}
-	p.Workers[fm.WorkerName] = worker
-	fmt.Println("FUCK", fm.FilePathInArchive)
 	err := p.CheckArchiveWorkerDupes(worker, fm)
 	if err != nil {
 		return err
 	}
-	go func(w *ArchiveWorker, workerTypeCode WorkerTypeCode) {
-		for {
-			workerParams := <-w.Call
-			origSize, compressedSize, bytesWritten, err := p.Archivate(worker, workerParams)
-			if err != nil {
-				slog.Error(err.Error())
-				break
-			}
-			p.WorkerLogInfo(fm.WorkerName, origSize, compressedSize,
-				bytesWritten, workerParams.FilePathSource)
-			// Update results stats
-			switch workerTypeCode {
-			case WorkerTypeMinified:
-				p.Results.SizePackedMinified += compressedSize
-				p.Results.SizeMinified += bytesWritten
-			case WorkerTypeOriginal:
-				p.Results.SizePackedBackup += compressedSize
-				p.Results.SizeOriginal += origSize
-			}
-			p.WG.Done()
-		}
-	}(worker, workerTypeCode)
 	worker.Call <- fm
 	return nil
 }
