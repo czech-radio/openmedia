@@ -44,13 +44,14 @@ type Process struct {
 }
 
 type ProcessOptions struct {
-	SourceDirectory      string
-	DestinationDirectory string
-	CompressionType      string
-	InvalidFileContinue  bool
-	InvalidFileRename    bool
-	ProcessedFileRename  bool
-	ProcessedFileDelete  bool
+	SourceDirectory          string
+	DestinationDirectory     string
+	CompressionType          string
+	InvalidFileContinue      bool
+	InvalidFileRename        bool
+	ProcessedFileRename      bool
+	ProcessedFileDelete      bool
+	PreserveFoldersInArchive bool
 
 	// InputEncoding          string
 	// OutputEncoding         string
@@ -112,6 +113,9 @@ func (w *ArchiveWorker) MapFilesInOldArchive(archivePath string) error {
 	if err != nil {
 		return err
 	}
+	if !ok {
+		w.ArchiveFiles = make(map[string]int)
+	}
 	// Read files already present in an archive
 	if ok {
 		r, err := zip.OpenReader(archivePath)
@@ -159,7 +163,8 @@ func (p *Process) DestroyWorkers() {
 }
 
 func (f *FileMeta) Parse(
-	metaInfo OMmetaInfo, fileInfo os.FileInfo, compressionType, sourceDir, targetDir string, sourceFilePath string, reader io.Reader) error {
+	metaInfo OMmetaInfo, fileInfo os.FileInfo, reader io.Reader,
+	opts *ProcessOptions, sourceFilePath string) error {
 	date := metaInfo.Date
 	year, week := date.ISOWeek()
 	f.Year = year
@@ -188,17 +193,22 @@ func (f *FileMeta) Parse(
 			omFileType.ShortHand, metaInfo.Name, f.Weekday, f.Week,
 			f.Year, f.Month, f.Day, f.Hour, f.Minute, f.Second)
 	}
-	f.DirectoryDestination = filepath.Join(targetDir, omFileType.OutputDir)
+	f.DirectoryDestination = filepath.Join(opts.DestinationDirectory, omFileType.OutputDir)
 	f.FileInfo = fileInfo
-	f.DirectorySource = sourceDir
+	f.DirectorySource = opts.SourceDirectory
 	f.FilePathSource = sourceFilePath
-	pathInArchive, err := filepath.Rel(sourceDir, sourceFilePath)
+	pathInArchive, err := filepath.Rel(opts.SourceDirectory, sourceFilePath)
 	if err != nil {
 		return err
 	}
-	f.FilePathInArchive = filepath.Join(filepath.Dir(pathInArchive), f.RundownNameNew+filepath.Ext(sourceFilePath))
+	if opts.PreserveFoldersInArchive {
+		f.FilePathInArchive = filepath.Join(
+			filepath.Dir(pathInArchive), f.RundownNameNew+filepath.Ext(sourceFilePath))
+	} else {
+		f.FilePathInArchive = f.RundownNameNew + filepath.Ext(sourceFilePath)
+	}
 	f.FileReader = reader
-	f.CompressionType = compressionType
+	f.CompressionType = opts.CompressionType
 	return nil
 }
 
@@ -293,9 +303,9 @@ processFolder:
 	return nil
 }
 
-func (p *Process) File(filePath string) error {
+func (p *Process) File(sourceFilePath string) error {
 	// Open file
-	fileHandle, err := os.Open(filePath)
+	fileHandle, err := os.Open(sourceFilePath)
 	if err != nil {
 		return err
 	}
@@ -331,8 +341,9 @@ func (p *Process) File(filePath string) error {
 	}
 	fileMetaOriginal := FileMeta{}
 	reader := bytes.NewReader(data)
-	opts := p.Options
-	err = fileMetaOriginal.Parse(omMetaInfo, fileInfo, opts.CompressionType, opts.SourceDirectory, opts.DestinationDirectory, filePath, reader)
+	// err = fileMetaOriginal.Parse(omMetaInfo, fileInfo, opts.CompressionType, opts.SourceDirectory, opts.DestinationDirectory, sourceFilePath, reader)
+	err = fileMetaOriginal.Parse(omMetaInfo, fileInfo, reader,
+		&p.Options, sourceFilePath)
 	if err != nil {
 		return err
 	}
@@ -359,10 +370,10 @@ func (p *Process) File(filePath string) error {
 	}
 	p.WG.Add(1)
 	if p.Options.ProcessedFileRename {
-		return ProcessedFileRename(filePath)
+		return ProcessedFileRename(sourceFilePath)
 	}
 	if p.Options.ProcessedFileDelete {
-		return os.Remove(filePath)
+		return os.Remove(sourceFilePath)
 	}
 	return nil
 }
@@ -396,6 +407,7 @@ func (p *Process) CheckArchiveWorkerDupes(worker *ArchiveWorker, fm *FileMeta) e
 	}
 	_, filePresent := worker.ArchiveFiles[fm.FilePathInArchive]
 	if !filePresent {
+		worker.ArchiveFiles[fm.FilePathInArchive]++
 		return nil
 	}
 	p.Results.DuplicatesFound++
@@ -414,34 +426,35 @@ func (p *Process) CallArchivWorker(fm *FileMeta, workerTypeCode WorkerTypeCode) 
 		if err != nil {
 			return err
 		}
-		p.Workers[fm.WorkerName] = worker
-		err = p.CheckArchiveWorkerDupes(worker, fm)
-		if err != nil {
-			return err
-		}
-		go func(w *ArchiveWorker, workerTypeCode WorkerTypeCode) {
-			for {
-				workerParams := <-w.Call
-				origSize, compressedSize, bytesWritten, err := p.Archivate(worker, workerParams)
-				if err != nil {
-					slog.Error(err.Error())
-					break
-				}
-				p.WorkerLogInfo(fm.WorkerName, origSize, compressedSize,
-					bytesWritten, workerParams.FilePathSource)
-				// Update results stats
-				switch workerTypeCode {
-				case WorkerTypeMinified:
-					p.Results.SizePackedMinified += compressedSize
-					p.Results.SizeMinified += bytesWritten
-				case WorkerTypeOriginal:
-					p.Results.SizePackedBackup += compressedSize
-					p.Results.SizeOriginal += origSize
-				}
-				p.WG.Done()
-			}
-		}(worker, workerTypeCode)
 	}
+	p.Workers[fm.WorkerName] = worker
+	fmt.Println("FUCK", fm.FilePathInArchive)
+	err := p.CheckArchiveWorkerDupes(worker, fm)
+	if err != nil {
+		return err
+	}
+	go func(w *ArchiveWorker, workerTypeCode WorkerTypeCode) {
+		for {
+			workerParams := <-w.Call
+			origSize, compressedSize, bytesWritten, err := p.Archivate(worker, workerParams)
+			if err != nil {
+				slog.Error(err.Error())
+				break
+			}
+			p.WorkerLogInfo(fm.WorkerName, origSize, compressedSize,
+				bytesWritten, workerParams.FilePathSource)
+			// Update results stats
+			switch workerTypeCode {
+			case WorkerTypeMinified:
+				p.Results.SizePackedMinified += compressedSize
+				p.Results.SizeMinified += bytesWritten
+			case WorkerTypeOriginal:
+				p.Results.SizePackedBackup += compressedSize
+				p.Results.SizeOriginal += origSize
+			}
+			p.WG.Done()
+		}
+	}(worker, workerTypeCode)
 	worker.Call <- fm
 	return nil
 }
