@@ -179,7 +179,6 @@ func ValidateFilenamesInDirectory(sourceDir string) (*ArchiveResult, error) {
 		if err != nil {
 			return err
 		}
-		result.FilesProcessed++
 		// Skip directories
 		if info.IsDir() {
 			return nil
@@ -190,12 +189,13 @@ func ValidateFilenamesInDirectory(sourceDir string) (*ArchiveResult, error) {
 			result.AddError(err)
 			return nil
 		}
+		result.FilesProcessed++
 		result.FilesValid = append(result.FilesValid, filePath)
 		result.FilesCount = result.FilesProcessed
 		return nil
 	}
 	filepath.Walk(sourceDir, walk_func)
-	result.FilesProcessed++
+	// result.FilesProcessed++
 	if len(result.Errors) > 0 {
 		err := fmt.Errorf("%s, count %d", Errors.CodeMsg(ErrCodeInvalid), len(result.Errors))
 		return result, err
