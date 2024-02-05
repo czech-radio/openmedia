@@ -71,7 +71,7 @@ Use `opendmedia-archive -h` to see all available options.
 - Plain logging output can be invoked with `-lt` e.g.
 
   ```bash
-  openmedia_archive -n -lt plain -i <SOURCE_FOLDER> [-o <OUTPUT_FOLDER>]
+  openmedia-archive -n -lt plain -i <SOURCE_FOLDER> [-o <OUTPUT_FOLDER>]
   ```
 
   which outputs
