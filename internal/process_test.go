@@ -165,7 +165,7 @@ func Test_ProcessFolderComplexDupesSame(t *testing.T) {
 	process := Process{Options: opts}
 	err := process.Folder()
 	fmt.Printf("%+v\n", process.Results)
-	Sleeper(1000, "s")
+	// Sleeper(1000, "s")
 	if err != nil {
 		t.Error(err)
 	}
