@@ -149,3 +149,24 @@ func Test_ProcessFolderComplexDupes(t *testing.T) {
 		t.Error(err)
 	}
 }
+
+func Test_ProcessFolderComplexDupesSame(t *testing.T) {
+	srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_complex_dupes")
+	// srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_complex_nodupes")
+	// dstDir := filepath.Join(TEMP_DIR_TEST_DST)
+	opts := ProcessOptions{
+		SourceDirectory:          srcDir,
+		DestinationDirectory:     srcDir,
+		InvalidFileRename:        false,
+		InvalidFileContinue:      true,
+		CompressionType:          "zip",
+		PreserveFoldersInArchive: false,
+	}
+	process := Process{Options: opts}
+	err := process.Folder()
+	fmt.Printf("%+v\n", process.Results)
+	Sleeper(1000, "s")
+	if err != nil {
+		t.Error(err)
+	}
+}
