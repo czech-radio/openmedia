@@ -279,8 +279,8 @@ processFolder:
 	p.WG.Done()
 	p.WG.Wait()
 	res := p.Results
-	p.WorkerLogInfo("GLOBAL_ORIGINAL", res.SizeOriginal, res.SizePackedBackup, res.SizeOriginal, p.Options.SourceDirectory)
-	p.WorkerLogInfo("GLOBAL_MINIFY", res.SizeOriginal, res.SizePackedMinified, res.SizeMinified, p.Options.SourceDirectory)
+	p.WorkerLogInfo("GLOBAL_ORIGINAL", res.SizeOriginal, res.SizePackedBackup, res.SizeOriginal, p.Options.SourceDirectory, p.Options.DestinationDirectory)
+	p.WorkerLogInfo("GLOBAL_MINIFY", res.SizeOriginal, res.SizePackedMinified, res.SizeMinified, p.Options.SourceDirectory, p.Options.DestinationDirectory)
 
 	if p.Results.DuplicatesFound > 0 {
 		slog.Error("duplicates found", "count", p.Results.DuplicatesFound)
@@ -389,7 +389,7 @@ func ProcessedFileRename(originalPath string) error {
 	return nil
 }
 
-func (p *Process) WorkerLogInfo(workerType string, sizeOrig, sizePacked, sizeMinified uint64, filePath string) {
+func (p *Process) WorkerLogInfo(workerType string, sizeOrig, sizePacked, sizeMinified uint64, filePathSource, filePathDestination string) {
 	archiveRatio := float64(sizePacked) / float64(sizeOrig)
 	archiveRatioString := fmt.Sprintf("%.3f", archiveRatio)
 	minifyRatio := float64(sizeMinified) / float64(sizeOrig)
@@ -398,7 +398,7 @@ func (p *Process) WorkerLogInfo(workerType string, sizeOrig, sizePacked, sizeMin
 		workerType, "ArhiveRatio", archiveRatioString,
 		"MinifyRatio", minifyRatioString,
 		"original", sizeOrig, "compressed", sizePacked,
-		"minified", sizeMinified, "file", filePath)
+		"minified", sizeMinified, "filePathSource", filePathSource, "filePathDestination", filePathDestination)
 }
 
 func (p *Process) CheckArchiveWorkerDupes(worker *ArchiveWorker, fm *FileMeta) error {
@@ -436,7 +436,7 @@ func (p *Process) CallArchivWorker(fm *FileMeta, workerTypeCode WorkerTypeCode) 
 					break
 				}
 				p.WorkerLogInfo(fm.WorkerName, origSize, compressedSize,
-					bytesWritten, workerParams.FilePathSource)
+					bytesWritten, workerParams.FilePathSource, fm.FilePathInArchive)
 				// Update results stats
 				switch workerTypeCode {
 				case WorkerTypeMinified:
