@@ -136,8 +136,8 @@ func Test_ProcessFolderComplexDupes(t *testing.T) {
 		SourceDirectory:      srcDir,
 		DestinationDirectory: dstDir,
 		InvalidFileRename:    false,
-		InvalidFileContinue:  false,
-		// InvalidFileContinue:      true,
+		// InvalidFileContinue:  false,
+		InvalidFileContinue:      true,
 		CompressionType:          "zip",
 		PreserveFoldersInArchive: false,
 	}
