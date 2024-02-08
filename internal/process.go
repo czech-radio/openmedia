@@ -76,17 +76,18 @@ type ProcessResults struct {
 }
 
 type FileMeta struct {
-	Year                 int
-	Month                int
-	Day                  int
-	Hour                 int
-	Minute               int
-	Second               int
-	Week                 int
-	Weekday              time.Weekday
-	WorkerName           string
-	CompressionType      string
-	OpenMediaFileType    *OpenMediaFileType
+	Year              int
+	Month             int
+	Day               int
+	Hour              int
+	Minute            int
+	Second            int
+	Week              int
+	Weekday           time.Weekday
+	WorkerName        string
+	CompressionType   string
+	OpenMediaFileType *OpenMediaFileType
+
 	RundownNameNew       string
 	FileInfo             os.FileInfo
 	FileReader           io.Reader
@@ -436,7 +437,7 @@ func (p *Process) CallArchivWorker(fm *FileMeta, workerTypeCode WorkerTypeCode) 
 					break
 				}
 				p.WorkerLogInfo(fm.WorkerName, origSize, compressedSize,
-					bytesWritten, workerParams.FilePathSource, fm.FilePathInArchive)
+					bytesWritten, workerParams.FilePathSource, workerParams.FilePathInArchive)
 				// Update results stats
 				switch workerTypeCode {
 				case WorkerTypeMinified:
