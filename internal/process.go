@@ -100,7 +100,7 @@ type FileMeta struct {
 
 type ArchiveWorker struct {
 	Call           chan *FileMeta
-	WorkrerName    string
+	WorkerName     string
 	WorkerTypeName string
 	WorkerTypeCode WorkerTypeCode
 	ArchivePath    string
@@ -127,8 +127,8 @@ func (w *ArchiveWorker) MapFilesInOldArchive(archivePath string) error {
 		defer r.Close()
 		w.ArchiveFiles = make(map[string]int, len(r.File))
 		for _, file := range r.File {
-			filePathInArchive := filepath.Join(archivePath, file.Name)
-			w.ArchiveFiles[filePathInArchive]++
+			archiveNameAndFilePath := filepath.Join(w.WorkerName, file.Name)
+			w.ArchiveFiles[archiveNameAndFilePath]++
 		}
 	}
 	return nil
@@ -364,7 +364,7 @@ func (p *Process) File(sourceFilePath string) error {
 		return err
 	}
 
-	// 1. Archivate original
+	// 1. Create archive from original files
 	fileMetaOriginal.SetWeekWorkerName(WorkerTypeOriginal)
 	err = p.CallArchivWorker(&fileMetaOriginal, WorkerTypeOriginal)
 	if err != nil {
@@ -376,7 +376,7 @@ func (p *Process) File(sourceFilePath string) error {
 	pr = PipeRundownMarshal(om)
 	pr = PipeRundownHeaderAdd(pr)
 
-	// 2. Archivate original
+	// 2. Create archive from minified files
 	fileMetaMinify := fileMetaOriginal
 	fileMetaMinify.FileReader = pr
 	fileMetaMinify.SetWeekWorkerName(WorkerTypeMinified)
@@ -421,7 +421,8 @@ func (p *Process) CheckArchiveWorkerDupes(worker *ArchiveWorker, fm *FileMeta) e
 	if p.Results.Duplicates == nil {
 		p.Results.Duplicates = make(map[string][]string)
 	}
-	_, filePresent := worker.ArchiveFiles[fm.FilePathInArchive]
+	archiveNameAndFileName := filepath.Join(worker.WorkerName, fm.FilePathInArchive)
+	_, filePresent := worker.ArchiveFiles[archiveNameAndFileName]
 	if !filePresent {
 		worker.ArchiveFiles[fm.FilePathInArchive]++
 		return nil
@@ -431,13 +432,14 @@ func (p *Process) CheckArchiveWorkerDupes(worker *ArchiveWorker, fm *FileMeta) e
 	p.Results.Duplicates[fm.FilePathInArchive] = append(dupes, fm.FilePathSource)
 	return fmt.Errorf(
 		"file %s will result in duplicate in %s",
-		fm.FilePathSource, fm.FilePathInArchive)
+		fm.FilePathSource, archiveNameAndFileName)
 }
 
 func (p *Process) CallArchivWorker(fm *FileMeta, workerTypeCode WorkerTypeCode) error {
 	worker, ok := p.Workers[fm.WorkerName]
 	if !ok {
 		worker = new(ArchiveWorker)
+		worker.WorkerName = fm.WorkerName
 		err := worker.Init(fm.DirectoryDestination, fm.WorkerName)
 		if err != nil {
 			return err
@@ -446,7 +448,7 @@ func (p *Process) CallArchivWorker(fm *FileMeta, workerTypeCode WorkerTypeCode) 
 		go func(w *ArchiveWorker, workerTypeCode WorkerTypeCode) {
 			for {
 				workerParams := <-w.Call
-				origSize, compressedSize, bytesWritten, err := p.Archivate(worker, workerParams)
+				origSize, compressedSize, bytesWritten, err := p.AddFileToArchive(worker, workerParams)
 				if err != nil {
 					slog.Error(err.Error())
 					break
@@ -474,7 +476,7 @@ func (p *Process) CallArchivWorker(fm *FileMeta, workerTypeCode WorkerTypeCode) 
 	return nil
 }
 
-func (p *Process) Archivate(worker *ArchiveWorker, f *FileMeta) (
+func (p *Process) AddFileToArchive(worker *ArchiveWorker, f *FileMeta) (
 	uint64, uint64, uint64, error) {
 	var fileSize, compressedSize, minifiedSize uint64
 	// Create a new zip file header

@@ -142,8 +142,8 @@ func Test_ProcessFolderComplexNoDupes(t *testing.T) {
 
 func Test_ProcessFolderComplexDupes(t *testing.T) {
 	srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_complex_dupes")
-	// srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_complex_nodupes")
 	dstDir := filepath.Join(TEMP_DIR_TEST_DST)
+	// srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_complex_nodupes")
 	opts := ProcessOptions{
 		SourceDirectory:      srcDir,
 		DestinationDirectory: dstDir,
@@ -184,4 +184,37 @@ func Test_ProcessFolderComplexDupesSame(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
+}
+
+func Test_ProcessFolderRundownsAppend(t *testing.T) {
+	srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_append")
+	subDirs := []string{
+		"dir1",
+		"dir1",
+		// "dir2",
+		// "dir3",
+		// "dir4",
+	}
+	dstDir := filepath.Join(TEMP_DIR_TEST_DST, "rundowns_append")
+	for i := range subDirs {
+		srcSubDir := filepath.Join(srcDir, subDirs[i])
+		fmt.Println("PROCESSING FOLDER", srcSubDir)
+		opts := ProcessOptions{
+			SourceDirectory:          srcSubDir,
+			DestinationDirectory:     dstDir,
+			InvalidFileRename:        false,
+			InvalidFileContinue:      true,
+			CompressionType:          "zip",
+			PreserveFoldersInArchive: false,
+			// PreserveFoldersInArchive: true,
+			RecurseSourceDirectory: true,
+		}
+		process := Process{Options: opts}
+		err := process.Folder()
+		fmt.Printf("%+v\n", process.Results)
+		if err != nil {
+			t.Error(err)
+		}
+	}
+	Sleeper(1000, "s")
 }
