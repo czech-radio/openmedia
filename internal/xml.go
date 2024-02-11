@@ -185,6 +185,9 @@ func ValidateFilesInDirectory(rootDir string, recursive bool) (*ArchiveResult, e
 		if file.IsDir() && !recursive {
 			return filepath.SkipDir
 		}
+		if file.IsDir() {
+			return nil
+		}
 		_, err = ValidateFileName(filePath)
 		if err != nil {
 			result.FilesFailure++

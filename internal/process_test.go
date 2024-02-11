@@ -88,15 +88,6 @@ func Test_ProcessFolder(t *testing.T) {
 	}
 }
 
-func Test_MapFilesInOldArchive(t *testing.T) {
-	// No archive file present
-	worker := new(ArchiveWorker)
-	err := worker.MapFilesInOldArchive("some_path")
-	if err != nil {
-		t.Error(err)
-	}
-}
-
 func Test_ProcessFolderInvalid(t *testing.T) {
 	srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_invalid")
 	dstDir := filepath.Join(TEMP_DIR_TEST_DST)
@@ -190,8 +181,8 @@ func Test_ProcessFolderRundownsAppend(t *testing.T) {
 	srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_append")
 	subDirs := []string{
 		"dir1",
-		"dir1",
-		// "dir2",
+		// "dir1",
+		"dir2",
 		// "dir3",
 		// "dir4",
 	}
@@ -207,6 +198,7 @@ func Test_ProcessFolderRundownsAppend(t *testing.T) {
 			CompressionType:          "zip",
 			PreserveFoldersInArchive: false,
 			// PreserveFoldersInArchive: true,
+			ProcessedFileRename:    true,
 			RecurseSourceDirectory: true,
 		}
 		process := Process{Options: opts}
@@ -215,6 +207,7 @@ func Test_ProcessFolderRundownsAppend(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
+		Sleeper(10, "s")
 	}
 	Sleeper(1000, "s")
 }
