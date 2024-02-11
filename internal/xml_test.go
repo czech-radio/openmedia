@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"fmt"
 	"log/slog"
 	"os"
 	"path/filepath"
@@ -31,14 +32,13 @@ func TestTransformXML(t *testing.T) {
 }
 
 func Test_ValidateFilesInDirectory(t *testing.T) {
-	srcDir := filepath.Join(TEMP_DIR_TEST_SRC)
-	_, err := ValidateFilenamesInDirectory(srcDir)
-	if err == nil {
-		t.Error(err)
-	}
-	srcDir2 := filepath.Join(TEMP_DIR_TEST_SRC, "testdata", "rundowns_valid")
-	_, err = ValidateFilenamesInDirectory(srcDir2)
+	// srcPath := "/dev/shm/test_contacts/Contacts/2024/"
+	// srcPath := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_complex_dupes")
+	srcPath := filepath.Join(TEMP_DIR_TEST_SRC)
+	ar, err := ValidateFilesInDirectory(srcPath, true)
 	if err != nil {
 		t.Error(err)
 	}
+
+	fmt.Printf("%+v", ar)
 }

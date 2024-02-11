@@ -6,6 +6,7 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -172,16 +173,17 @@ func ValidateFileName(src_path string) (bool, error) {
 	return true, nil
 }
 
-func ValidateFilenamesInDirectory(sourceDir string) (*ArchiveResult, error) {
+func ValidateFilesInDirectory(rootDir string, recursive bool) (*ArchiveResult, error) {
 	var result *ArchiveResult = &ArchiveResult{}
-	// var result ArchiveResult = ArchiveResult{}
-	walk_func := func(filePath string, info os.FileInfo, err error) error {
+	dirWalker := func(filePath string, file fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
-		// Skip directories
-		if info.IsDir() {
+		if filePath == rootDir {
 			return nil
+		}
+		if file.IsDir() && !recursive {
+			return filepath.SkipDir
 		}
 		_, err = ValidateFileName(filePath)
 		if err != nil {
@@ -194,8 +196,11 @@ func ValidateFilenamesInDirectory(sourceDir string) (*ArchiveResult, error) {
 		result.FilesCount = result.FilesProcessed
 		return nil
 	}
-	filepath.Walk(sourceDir, walk_func)
-	// result.FilesProcessed++
+
+	err := filepath.WalkDir(rootDir, dirWalker)
+	if err != nil {
+		return result, err
+	}
 	if len(result.Errors) > 0 {
 		err := fmt.Errorf("%s, count %d", Errors.CodeMsg(ErrCodeInvalid), len(result.Errors))
 		return result, err

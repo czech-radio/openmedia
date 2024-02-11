@@ -52,6 +52,7 @@ type ProcessOptions struct {
 	ProcessedFileRename      bool
 	ProcessedFileDelete      bool
 	PreserveFoldersInArchive bool
+	RecurseSourceDirectory   bool
 
 	// InputEncoding          string
 	// OutputEncoding         string
@@ -253,7 +254,7 @@ func (p *Process) PrepareOutput() error {
 }
 
 func (p *Process) Folder() error {
-	validateResult, err := ValidateFilenamesInDirectory(p.Options.SourceDirectory)
+	validateResult, err := ValidateFilesInDirectory(p.Options.SourceDirectory, p.Options.RecurseSourceDirectory)
 	if p.ErrorHandle(err, validateResult.Errors...) == Break {
 		return err
 	}
@@ -284,23 +285,37 @@ processFolder:
 	p.WorkerLogInfo("GLOBAL_MINIFY", res.SizeOriginal, res.SizePackedMinified, res.SizeMinified, p.Options.SourceDirectory, p.Options.DestinationDirectory)
 
 	if p.Results.DuplicatesFound > 0 {
-		slog.Error("duplicates found", "count", p.Results.DuplicatesFound)
-		ms, err := json.MarshalIndent(p.Results.Duplicates, "", "  ")
-		if err != nil {
-			slog.Error("cannot marshal dupes")
-		}
-		fmt.Printf("%s\n", ms)
+		dupesErr := fmt.Errorf("duplicates found, cout: %d", p.Results.DuplicatesFound)
+		p.ErrorHandle(dupesErr)
 	}
 
-	if len(p.Errors) > 0 {
-		res, err := json.MarshalIndent(p.Errors, "", "\t")
-		if err != nil {
-			slog.Error(err.Error())
-			return nil
-		}
-		slog.Error(string(res))
-	}
+	ErrorsMarshalLog(p.Errors)
 	p.DestroyWorkers()
+	return nil
+}
+
+func ErrorsMarshalLog(errs []error) error {
+	var results []string
+	var marshalErrors []error
+	if errs == nil {
+		return nil
+	}
+	if len(errs) == 0 {
+		return nil
+	}
+	for e := range errs {
+		result, err := json.MarshalIndent(errs[e].Error(), "", "\t")
+		if err != nil {
+			slog.Warn("cannot marshal error", "error", err.Error())
+			marshalErrors = append(marshalErrors, err)
+			continue
+		}
+		results = append(results, string(result))
+	}
+	slog.Error("AggregatedErrors", "errors", results)
+	if len(marshalErrors) > 0 {
+		return fmt.Errorf("error unmarshaling AggregatedErrors, count: %d", len(marshalErrors))
+	}
 	return nil
 }
 

@@ -15,7 +15,7 @@ var (
 )
 
 var VersionInfo = internal.VersionInfo{
-	Version:   "0.9.0",
+	Version:   "0.9.9",
 	GitTag:    BuildGitTag,
 	GitCommit: BuildGitCommit,
 	BuildTime: BuildBuildTime,
@@ -38,6 +38,7 @@ type Config_root struct {
 	ProcessedFileRename      bool   `cmd:"processed_file_rename; pfr; false; rename processesd files"`
 	ProcessedFileDelete      bool   `cmd:"processed_file_delete; pfd; false; delete processed files"`
 	PreserveFoldersInArchive bool   `cmd:"PreserveFoldersInArchive; pfia; false; preserve source folder structure in archive"`
+	RecurseSourceDirectory   bool   `cmd:"recurse_source_directory; R; false; recurse source directory"`
 }
 
 func RunRoot() {
