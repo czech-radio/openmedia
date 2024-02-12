@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"errors"
 	"fmt"
 	"log/slog"
 	"path/filepath"
@@ -10,6 +11,14 @@ import (
 
 	"github.com/ncruces/go-strftime"
 )
+
+func Test_ErrorsMarshalLog(t *testing.T) {
+	errs := []error{errors.New("hello"), errors.New("world")}
+	err := ErrorsMarshalLog(errs)
+	if err != nil {
+		t.Error(err)
+	}
+}
 
 func Test_RundownNameParse(t *testing.T) {
 	type Case struct {
@@ -53,49 +62,37 @@ func Test_ParseUplink(t *testing.T) {
 }
 
 func Test_ProcessFolder(t *testing.T) {
-	// srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "contacts")
-	// srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_mock")
-	// srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "invalid")
-	// srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "garbage")
-	// srcDir := filepath.Join(TEMP_DIR_TEST_SRC)
-	srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_mix")
-
-	dstDir := filepath.Join(TEMP_DIR_TEST_DST)
+	subDir := "rundowns_mix"
+	srcDir := filepath.Join(TEMP_DIR_TEST_SRC, subDir)
+	dstDir := filepath.Join(TEMP_DIR_TEST_DST, subDir)
 	opts := ProcessOptions{
 		SourceDirectory:      srcDir,
 		DestinationDirectory: dstDir,
 		InvalidFileRename:    false,
 		// InvalidFileContinue:  false,
-		InvalidFileContinue: true,
-		CompressionType:     "zip",
+		InvalidFileContinue:    true,
+		CompressionType:        "zip",
+		RecurseSourceDirectory: true,
 	}
 	process := Process{Options: opts}
 	err := process.Folder()
 	fmt.Printf("%+v\n", process.Results)
-	// Sleeper(1000, "s")
-	if err != nil {
-		t.Error(err)
-	}
-}
-
-func Test_MapFilesInOldArchive(t *testing.T) {
-	// No archive file present
-	worker := new(ArchiveWorker)
-	err := worker.MapFilesInOldArchive("some_path")
 	if err != nil {
 		t.Error(err)
 	}
 }
 
 func Test_ProcessFolderInvalid(t *testing.T) {
-	srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_invalid")
-	dstDir := filepath.Join(TEMP_DIR_TEST_DST)
+	subDir := "rundowns_invalid"
+	srcDir := filepath.Join(TEMP_DIR_TEST_SRC, subDir)
+	dstDir := filepath.Join(TEMP_DIR_TEST_DST, subDir)
 	opts := ProcessOptions{
-		SourceDirectory:      srcDir,
-		DestinationDirectory: dstDir,
-		InvalidFileRename:    false,
-		InvalidFileContinue:  true,
-		CompressionType:      "zip",
+		SourceDirectory:        srcDir,
+		DestinationDirectory:   dstDir,
+		InvalidFileRename:      false,
+		InvalidFileContinue:    true,
+		CompressionType:        "zip",
+		RecurseSourceDirectory: true,
 	}
 	process := Process{Options: opts}
 	err := process.Folder()
@@ -106,9 +103,9 @@ func Test_ProcessFolderInvalid(t *testing.T) {
 }
 
 func Test_ProcessFolderComplexNoDupes(t *testing.T) {
-	srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_complex_nodupes")
-	// srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_complex_nodupes")
-	dstDir := filepath.Join(TEMP_DIR_TEST_DST)
+	subDir := "rundowns_complex_nodupes"
+	srcDir := filepath.Join(TEMP_DIR_TEST_SRC, subDir)
+	dstDir := filepath.Join(TEMP_DIR_TEST_DST, subDir)
 	opts := ProcessOptions{
 		SourceDirectory:          srcDir,
 		DestinationDirectory:     dstDir,
@@ -116,22 +113,21 @@ func Test_ProcessFolderComplexNoDupes(t *testing.T) {
 		InvalidFileContinue:      true,
 		CompressionType:          "zip",
 		PreserveFoldersInArchive: false,
+		RecurseSourceDirectory:   true,
 		// PreserveFoldersInArchive: true,
 	}
 	process := Process{Options: opts}
 	err := process.Folder()
 	fmt.Printf("%+v\n", process.Results)
-
-	// Sleeper(1000, "s")
 	if err != nil {
 		t.Error(err)
 	}
 }
 
 func Test_ProcessFolderComplexDupes(t *testing.T) {
-	srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_complex_dupes")
-	// srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_complex_nodupes")
-	dstDir := filepath.Join(TEMP_DIR_TEST_DST)
+	subDir := "rundowns_complex_dupes"
+	srcDir := filepath.Join(TEMP_DIR_TEST_SRC, subDir)
+	dstDir := filepath.Join(TEMP_DIR_TEST_DST, subDir)
 	opts := ProcessOptions{
 		SourceDirectory:      srcDir,
 		DestinationDirectory: dstDir,
@@ -140,11 +136,12 @@ func Test_ProcessFolderComplexDupes(t *testing.T) {
 		InvalidFileContinue:      true,
 		CompressionType:          "zip",
 		PreserveFoldersInArchive: false,
+		RecurseSourceDirectory:   false,
+		// RecurseSourceDirectory: true,
 	}
 	process := Process{Options: opts}
 	err := process.Folder()
 	fmt.Printf("%+v\n", process.Results)
-	// Sleeper(1000, "s")
 	if err != nil {
 		t.Error(err)
 	}
@@ -152,8 +149,6 @@ func Test_ProcessFolderComplexDupes(t *testing.T) {
 
 func Test_ProcessFolderComplexDupesSame(t *testing.T) {
 	srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_complex_dupes")
-	// srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_complex_nodupes")
-	// dstDir := filepath.Join(TEMP_DIR_TEST_DST)
 	opts := ProcessOptions{
 		SourceDirectory:          srcDir,
 		DestinationDirectory:     srcDir,
@@ -161,11 +156,65 @@ func Test_ProcessFolderComplexDupesSame(t *testing.T) {
 		InvalidFileContinue:      true,
 		CompressionType:          "zip",
 		PreserveFoldersInArchive: false,
+		RecurseSourceDirectory:   true,
 	}
 	process := Process{Options: opts}
 	err := process.Folder()
 	fmt.Printf("%+v\n", process.Results)
-	// Sleeper(1000, "s")
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func Test_ProcessFolderRundownsAppend(t *testing.T) {
+	subDir := "rundowns_append"
+	srcDir := filepath.Join(TEMP_DIR_TEST_SRC, subDir)
+	subDirs := []string{
+		"dir1",
+		// "dir2",
+		// "dir3",
+		// "dir4",
+	}
+	dstDir := filepath.Join(TEMP_DIR_TEST_DST, subDir)
+	for i := range subDirs {
+		srcSubDir := filepath.Join(srcDir, subDirs[i])
+		fmt.Println("PROCESSING FOLDER", srcSubDir)
+		opts := ProcessOptions{
+			SourceDirectory:          srcSubDir,
+			DestinationDirectory:     dstDir,
+			InvalidFileRename:        false,
+			InvalidFileContinue:      true,
+			CompressionType:          "zip",
+			PreserveFoldersInArchive: false,
+			// PreserveFoldersInArchive: true,
+			ProcessedFileRename:    true,
+			RecurseSourceDirectory: true,
+		}
+		process := Process{Options: opts}
+		err := process.Folder()
+		fmt.Printf("%+v\n", process.Results)
+		if err != nil {
+			t.Error(err)
+		}
+	}
+}
+
+func Test_ProcessFolderDate(t *testing.T) {
+	subDir := "rundowns_date"
+	srcDir := filepath.Join(TEMP_DIR_TEST_SRC, subDir)
+	dstDir := filepath.Join(TEMP_DIR_TEST_DST, subDir)
+	opts := ProcessOptions{
+		SourceDirectory:          srcDir,
+		DestinationDirectory:     dstDir,
+		InvalidFileRename:        false,
+		InvalidFileContinue:      true,
+		CompressionType:          "zip",
+		PreserveFoldersInArchive: false,
+		RecurseSourceDirectory:   true,
+	}
+	process := Process{Options: opts}
+	err := process.Folder()
+	fmt.Printf("%+v\n", process.Results)
 	if err != nil {
 		t.Error(err)
 	}

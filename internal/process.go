@@ -52,6 +52,7 @@ type ProcessOptions struct {
 	ProcessedFileRename      bool
 	ProcessedFileDelete      bool
 	PreserveFoldersInArchive bool
+	RecurseSourceDirectory   bool
 
 	// InputEncoding          string
 	// OutputEncoding         string
@@ -99,7 +100,7 @@ type FileMeta struct {
 
 type ArchiveWorker struct {
 	Call           chan *FileMeta
-	WorkrerName    string
+	WorkerName     string
 	WorkerTypeName string
 	WorkerTypeCode WorkerTypeCode
 	ArchivePath    string
@@ -108,11 +109,11 @@ type ArchiveWorker struct {
 	ArchiveFiles   map[string]int // map filenames in archive
 }
 
-func (w *ArchiveWorker) MapFilesInOldArchive(archivePath string) error {
+func (w *ArchiveWorker) MapFilesInOldArchive(archivePath string) (bool, error) {
 	// Check if there is an old archive
 	ok, err := FileExists(archivePath)
 	if err != nil {
-		return err
+		return false, err
 	}
 	if !ok {
 		w.ArchiveFiles = make(map[string]int)
@@ -121,16 +122,66 @@ func (w *ArchiveWorker) MapFilesInOldArchive(archivePath string) error {
 	if ok {
 		r, err := zip.OpenReader(archivePath)
 		if err != nil {
-			return err
+			return true, err
 		}
 		defer r.Close()
 		w.ArchiveFiles = make(map[string]int, len(r.File))
 		for _, file := range r.File {
-			filePathInArchive := filepath.Join(archivePath, file.Name)
-			w.ArchiveFiles[filePathInArchive]++
+			archiveNameAndFilePath := filepath.Join(w.WorkerName, file.Name)
+			w.ArchiveFiles[archiveNameAndFilePath]++
 		}
 	}
-	return nil
+	return true, nil
+}
+
+// func (w *ArchiveWorker) ArchiveRecreate(archivePath string) (*zip.Writer, error) {
+// origZip, err := os.OpenFile(archivePath, os.O_RDWR, 0600)
+// if err != nil {
+// return nil, err
+// }
+// defer origZip.Close()
+// zipWriter := zip.NewWriter(origZip)
+// _, err = origZip.Seek(0, io.SeekStart) // Rewind original zip file
+// origReader, err := zip.OpenReader(archivePath)
+
+// Create temp zip
+// newZipName := filepath.Join(filepath.Dir(archivePath), fmt.Sprintf("%d", time.Now().UnixNano()))
+// newZipFile, err := os.Create(newZipName)
+// if err != nil {
+// return nil, err
+// }
+// defer newZipFile.Close()
+// if err != nil {
+// return nil, err
+// }
+
+// return nil, nil
+// }
+
+func (w *ArchiveWorker) MapOldArchive(archivePath string) (bool, error) {
+	// Check if there is an old archive
+	ok, err := FileExists(archivePath)
+	if err != nil {
+		return false, err
+	}
+	if !ok {
+		w.ArchiveFiles = make(map[string]int)
+		return false, nil
+	}
+	// Read files already present in an archive
+	if ok {
+		r, err := zip.OpenReader(archivePath)
+		if err != nil {
+			return true, err
+		}
+		defer r.Close()
+		w.ArchiveFiles = make(map[string]int, len(r.File))
+		for _, file := range r.File {
+			archiveNameAndFilePath := filepath.Join(w.WorkerName, file.Name)
+			w.ArchiveFiles[archiveNameAndFilePath]++
+		}
+	}
+	return true, nil
 }
 
 func (w *ArchiveWorker) Init(dstdir, archiveName string) error {
@@ -139,18 +190,23 @@ func (w *ArchiveWorker) Init(dstdir, archiveName string) error {
 	w.ArchivePath = archivePath
 
 	// 1. Open old zip file if present and read file list
-	err := w.MapFilesInOldArchive(archivePath)
+	exists, err := w.MapOldArchive(archivePath)
 	if err != nil {
 		return err
 	}
 
-	// 2. Create or open archive for writing
-	archive, err := os.OpenFile(archivePath, os.O_RDWR|os.O_CREATE, 0600)
-	if err != nil {
-		return err
+	var archive *os.File
+	if !exists {
+		archive, err = os.OpenFile(archivePath, os.O_RDWR|os.O_CREATE, 0600)
+		if err != nil {
+			return err
+		}
+		w.ArchiveFile = archive
+		w.ArchiveWriter = zip.NewWriter(archive)
 	}
-	w.ArchiveFile = archive
-	w.ArchiveWriter = zip.NewWriter(archive)
+	if exists {
+		return fmt.Errorf("archive already exists: %s", archiveName)
+	}
 	return nil
 }
 
@@ -160,13 +216,30 @@ func (p *Process) DestroyWorkers() {
 	}
 	for _, worker := range p.Workers {
 		worker.ArchiveWriter.Close()
+		worker.ArchiveFile.Close()
 	}
+}
+
+func CheckCurrentWeek(date time.Time) bool {
+	now := time.Now()
+	if date.Year() < now.Year() {
+		return true
+	}
+	_, nowWeek := now.ISOWeek()
+	_, dateWeek := date.ISOWeek()
+	if dateWeek >= nowWeek {
+		return false
+	}
+	return true
 }
 
 func (f *FileMeta) Parse(
 	metaInfo OMmetaInfo, fileInfo os.FileInfo, reader io.Reader,
 	opts *ProcessOptions, sourceFilePath string) error {
 	date := metaInfo.Date
+	if !CheckCurrentWeek(date) {
+		return fmt.Errorf("date not older than 1 ISOWeek: %s", sourceFilePath)
+	}
 	year, week := date.ISOWeek()
 	f.Year = year
 	f.Month = int(date.Month())
@@ -194,7 +267,8 @@ func (f *FileMeta) Parse(
 			omFileType.ShortHand, metaInfo.Name, f.Weekday, f.Week,
 			f.Year, f.Month, f.Day, f.Hour, f.Minute, f.Second)
 	}
-	f.DirectoryDestination = filepath.Join(opts.DestinationDirectory, omFileType.OutputDir)
+	// f.DirectoryDestination = filepath.Join(opts.DestinationDirectory, omFileType.OutputDir)
+	f.DirectoryDestination = opts.DestinationDirectory
 	f.FileInfo = fileInfo
 	f.DirectorySource = opts.SourceDirectory
 	f.FilePathSource = sourceFilePath
@@ -214,8 +288,8 @@ func (f *FileMeta) Parse(
 }
 
 func (f *FileMeta) SetWeekWorkerName(wtc WorkerTypeCode) string {
-	workerName, _ := WorkerTypeMap[wtc]
-	f.WorkerName = fmt.Sprintf("%d_W%02d_%s.%s", f.Year, f.Week, workerName, f.CompressionType)
+	workerTypeString, _ := WorkerTypeMap[wtc]
+	f.WorkerName = fmt.Sprintf("%s/%d_W%02d_%s.%s", f.OpenMediaFileType.OutputDir, f.Year, f.Week, workerTypeString, f.CompressionType)
 	return f.WorkerName
 }
 
@@ -253,7 +327,7 @@ func (p *Process) PrepareOutput() error {
 }
 
 func (p *Process) Folder() error {
-	validateResult, err := ValidateFilenamesInDirectory(p.Options.SourceDirectory)
+	validateResult, err := ValidateFilesInDirectory(p.Options.SourceDirectory, p.Options.RecurseSourceDirectory)
 	if p.ErrorHandle(err, validateResult.Errors...) == Break {
 		return err
 	}
@@ -284,23 +358,37 @@ processFolder:
 	p.WorkerLogInfo("GLOBAL_MINIFY", res.SizeOriginal, res.SizePackedMinified, res.SizeMinified, p.Options.SourceDirectory, p.Options.DestinationDirectory)
 
 	if p.Results.DuplicatesFound > 0 {
-		slog.Error("duplicates found", "count", p.Results.DuplicatesFound)
-		ms, err := json.MarshalIndent(p.Results.Duplicates, "", "  ")
-		if err != nil {
-			slog.Error("cannot marshal dupes")
-		}
-		fmt.Printf("%s\n", ms)
+		dupesErr := fmt.Errorf("duplicates found, cout: %d", p.Results.DuplicatesFound)
+		p.ErrorHandle(dupesErr)
 	}
 
-	if len(p.Errors) > 0 {
-		res, err := json.MarshalIndent(p.Errors, "", "\t")
-		if err != nil {
-			slog.Error(err.Error())
-			return nil
-		}
-		slog.Error(string(res))
-	}
+	ErrorsMarshalLog(p.Errors)
 	p.DestroyWorkers()
+	return nil
+}
+
+func ErrorsMarshalLog(errs []error) error {
+	var results []string
+	var marshalErrors []error
+	if errs == nil {
+		return nil
+	}
+	if len(errs) == 0 {
+		return nil
+	}
+	for e := range errs {
+		result, err := json.MarshalIndent(errs[e].Error(), "", "\t")
+		if err != nil {
+			slog.Warn("cannot marshal error", "error", err.Error())
+			marshalErrors = append(marshalErrors, err)
+			continue
+		}
+		results = append(results, string(result))
+	}
+	slog.Error("AggregatedErrors", "errors", results)
+	if len(marshalErrors) > 0 {
+		return fmt.Errorf("error unmarshaling AggregatedErrors, count: %d", len(marshalErrors))
+	}
 	return nil
 }
 
@@ -349,9 +437,9 @@ func (p *Process) File(sourceFilePath string) error {
 		return err
 	}
 
-	// 1. Archivate original
+	// 1. Create archive from original files
 	fileMetaOriginal.SetWeekWorkerName(WorkerTypeOriginal)
-	err = p.CallArchivWorker(&fileMetaOriginal, WorkerTypeOriginal)
+	err = p.CallArchiveWorker(&fileMetaOriginal, WorkerTypeOriginal)
 	if err != nil {
 		return err
 	}
@@ -361,11 +449,11 @@ func (p *Process) File(sourceFilePath string) error {
 	pr = PipeRundownMarshal(om)
 	pr = PipeRundownHeaderAdd(pr)
 
-	// 2. Archivate original
+	// 2. Create archive from minified files
 	fileMetaMinify := fileMetaOriginal
 	fileMetaMinify.FileReader = pr
 	fileMetaMinify.SetWeekWorkerName(WorkerTypeMinified)
-	err = p.CallArchivWorker(&fileMetaMinify, WorkerTypeMinified)
+	err = p.CallArchiveWorker(&fileMetaMinify, WorkerTypeMinified)
 	if err != nil {
 		return err
 	}
@@ -406,7 +494,8 @@ func (p *Process) CheckArchiveWorkerDupes(worker *ArchiveWorker, fm *FileMeta) e
 	if p.Results.Duplicates == nil {
 		p.Results.Duplicates = make(map[string][]string)
 	}
-	_, filePresent := worker.ArchiveFiles[fm.FilePathInArchive]
+	archiveNameAndFileName := filepath.Join(worker.WorkerName, fm.FilePathInArchive)
+	_, filePresent := worker.ArchiveFiles[archiveNameAndFileName]
 	if !filePresent {
 		worker.ArchiveFiles[fm.FilePathInArchive]++
 		return nil
@@ -416,28 +505,33 @@ func (p *Process) CheckArchiveWorkerDupes(worker *ArchiveWorker, fm *FileMeta) e
 	p.Results.Duplicates[fm.FilePathInArchive] = append(dupes, fm.FilePathSource)
 	return fmt.Errorf(
 		"file %s will result in duplicate in %s",
-		fm.FilePathSource, fm.FilePathInArchive)
+		fm.FilePathSource, archiveNameAndFileName)
 }
 
-func (p *Process) CallArchivWorker(fm *FileMeta, workerTypeCode WorkerTypeCode) error {
+func (p *Process) CallArchiveWorker(fm *FileMeta, workerTypeCode WorkerTypeCode) error {
 	worker, ok := p.Workers[fm.WorkerName]
 	if !ok {
 		worker = new(ArchiveWorker)
+		worker.WorkerName = fm.WorkerName
 		err := worker.Init(fm.DirectoryDestination, fm.WorkerName)
 		if err != nil {
-			return err
+			return fmt.Errorf("file not proccessed: %s, %w", fm.FilePathSource, err)
 		}
 		p.Workers[fm.WorkerName] = worker
 		go func(w *ArchiveWorker, workerTypeCode WorkerTypeCode) {
 			for {
 				workerParams := <-w.Call
-				origSize, compressedSize, bytesWritten, err := p.Archivate(worker, workerParams)
+				origSize, compressedSize, bytesWritten, err := p.AddFileToArchive(worker, workerParams)
 				if err != nil {
 					slog.Error(err.Error())
 					break
 				}
-				p.WorkerLogInfo(fm.WorkerName, origSize, compressedSize,
-					bytesWritten, workerParams.FilePathSource, workerParams.FilePathInArchive)
+				fileDestinationInArchive := filepath.Join(worker.WorkerName, workerParams.FilePathInArchive)
+				p.WorkerLogInfo(
+					fm.WorkerName, origSize, compressedSize,
+					bytesWritten, workerParams.FilePathSource,
+					fileDestinationInArchive,
+				)
 				// Update results stats
 				switch workerTypeCode {
 				case WorkerTypeMinified:
@@ -459,17 +553,17 @@ func (p *Process) CallArchivWorker(fm *FileMeta, workerTypeCode WorkerTypeCode) 
 	return nil
 }
 
-func (p *Process) Archivate(worker *ArchiveWorker, f *FileMeta) (
+func (p *Process) AddFileToArchive(worker *ArchiveWorker, f *FileMeta) (
 	uint64, uint64, uint64, error) {
 	var fileSize, compressedSize, minifiedSize uint64
 	// Create a new zip file header
 	header, err := zip.FileInfoHeader(f.FileInfo)
 	if err != nil {
-		return fileSize, compressedSize, minifiedSize, nil
+		return fileSize, compressedSize, minifiedSize, err
 	}
 	finfo, err := worker.ArchiveFile.Stat()
 	if err != nil {
-		return fileSize, compressedSize, minifiedSize, nil
+		return fileSize, compressedSize, minifiedSize, err
 	}
 	before := finfo.Size()
 	// fileSize := header.UncompressedSize64 // Not working -> 0
@@ -480,18 +574,18 @@ func (p *Process) Archivate(worker *ArchiveWorker, f *FileMeta) (
 	// Create a new entry in the zip archive
 	entry, err := worker.ArchiveWriter.CreateHeader(header)
 	if err != nil {
-		return fileSize, compressedSize, minifiedSize, nil
+		return fileSize, compressedSize, minifiedSize, err
 	}
 	// Copy the file content to the zip entry
 	bytesCount, err := io.Copy(entry, f.FileReader)
 	minifiedSize = uint64(bytesCount)
 	if err != nil {
-		return fileSize, compressedSize, minifiedSize, nil
+		return fileSize, compressedSize, minifiedSize, err
 	}
 	// compressedSize := header.CompressedSize64 // Not working ->0
 	finfo, err = worker.ArchiveFile.Stat()
 	if err != nil {
-		return fileSize, compressedSize, minifiedSize, nil
+		return fileSize, compressedSize, minifiedSize, err
 	}
 	after := finfo.Size()
 	compressedSize = uint64(after - before)
