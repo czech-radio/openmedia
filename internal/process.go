@@ -109,31 +109,6 @@ type ArchiveWorker struct {
 	ArchiveFiles   map[string]int // map filenames in archive
 }
 
-func (w *ArchiveWorker) MapFilesInOldArchive(archivePath string) (bool, error) {
-	// Check if there is an old archive
-	ok, err := FileExists(archivePath)
-	if err != nil {
-		return false, err
-	}
-	if !ok {
-		w.ArchiveFiles = make(map[string]int)
-	}
-	// Read files already present in an archive
-	if ok {
-		r, err := zip.OpenReader(archivePath)
-		if err != nil {
-			return true, err
-		}
-		defer r.Close()
-		w.ArchiveFiles = make(map[string]int, len(r.File))
-		for _, file := range r.File {
-			archiveNameAndFilePath := filepath.Join(w.WorkerName, file.Name)
-			w.ArchiveFiles[archiveNameAndFilePath]++
-		}
-	}
-	return true, nil
-}
-
 // func (w *ArchiveWorker) ArchiveRecreate(archivePath string) (*zip.Writer, error) {
 // origZip, err := os.OpenFile(archivePath, os.O_RDWR, 0600)
 // if err != nil {
@@ -204,6 +179,8 @@ func (w *ArchiveWorker) Init(dstdir, archiveName string) error {
 		w.ArchiveFile = archive
 		w.ArchiveWriter = zip.NewWriter(archive)
 	}
+	// 2. Skip if exists. TODO: Golang zip package does not support adding files to old archive.
+	// archive must be reacreated such that the content from old archive is copied to the new archive
 	if exists {
 		return fmt.Errorf("archive already exists: %s", archiveName)
 	}
