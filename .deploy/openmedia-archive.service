@@ -11,7 +11,7 @@ Environment=AUTO_UPDATE_SERVICE=true
 Environment=REPOS_GROUP=czech-radio
 Environment=REPO_NAME=openmedia-archive
 Environment=BINARY_NAME=openmedia-archive
-#Environment=MAIN_COMMAND='./openmedia-archive -v'
+#Environment=MAIN_COMMAND='./openmedia-archive -V'
 Environment=MAIN_COMMAND='./openmedia-archive -i /mnt/cro.cz/openmedia -o /mnt/cro.cz/openmedia --invalid_file_continue true --recurse_source_directory false --processed_file_rename'
 
 ### Loging
