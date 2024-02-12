@@ -31,14 +31,17 @@ func TestTransformXML(t *testing.T) {
 }
 
 func Test_ValidateFilesInDirectory(t *testing.T) {
-	srcDir := filepath.Join(TEMP_DIR_TEST_SRC)
-	_, err := ValidateFilenamesInDirectory(srcDir)
-	if err == nil {
-		t.Error(err)
-	}
-	srcDir2 := filepath.Join(TEMP_DIR_TEST_SRC, "testdata", "rundowns_valid")
-	_, err = ValidateFilenamesInDirectory(srcDir2)
+	valid := "rundowns_valid"
+	srcPath := filepath.Join(TEMP_DIR_TEST_SRC, valid)
+	_, err := ValidateFilesInDirectory(srcPath, true)
 	if err != nil {
 		t.Error(err)
+	}
+
+	invalid := "rundowns_invalid"
+	srcPath = filepath.Join(TEMP_DIR_TEST_SRC, invalid)
+	_, err = ValidateFilesInDirectory(srcPath, true)
+	if err == nil {
+		t.Error("failed to catch error")
 	}
 }
