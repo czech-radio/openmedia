@@ -62,14 +62,9 @@ func Test_ParseUplink(t *testing.T) {
 }
 
 func Test_ProcessFolder(t *testing.T) {
-	// srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "contacts")
-	// srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_mock")
-	// srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "invalid")
-	// srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "garbage")
-	// srcDir := filepath.Join(TEMP_DIR_TEST_SRC)
-	srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_mix")
-
-	dstDir := filepath.Join(TEMP_DIR_TEST_DST)
+	subDir := "rundowns_mix"
+	srcDir := filepath.Join(TEMP_DIR_TEST_SRC, subDir)
+	dstDir := filepath.Join(TEMP_DIR_TEST_DST, subDir)
 	opts := ProcessOptions{
 		SourceDirectory:      srcDir,
 		DestinationDirectory: dstDir,
@@ -88,8 +83,9 @@ func Test_ProcessFolder(t *testing.T) {
 }
 
 func Test_ProcessFolderInvalid(t *testing.T) {
-	srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_invalid")
-	dstDir := filepath.Join(TEMP_DIR_TEST_DST)
+	subDir := "rundowns_invalid"
+	srcDir := filepath.Join(TEMP_DIR_TEST_SRC, subDir)
+	dstDir := filepath.Join(TEMP_DIR_TEST_DST, subDir)
 	opts := ProcessOptions{
 		SourceDirectory:        srcDir,
 		DestinationDirectory:   dstDir,
@@ -107,9 +103,9 @@ func Test_ProcessFolderInvalid(t *testing.T) {
 }
 
 func Test_ProcessFolderComplexNoDupes(t *testing.T) {
-	srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_complex_nodupes")
-	// srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_complex_nodupes")
-	dstDir := filepath.Join(TEMP_DIR_TEST_DST)
+	subDir := "rundowns_complex_nodupes"
+	srcDir := filepath.Join(TEMP_DIR_TEST_SRC, subDir)
+	dstDir := filepath.Join(TEMP_DIR_TEST_DST, subDir)
 	opts := ProcessOptions{
 		SourceDirectory:          srcDir,
 		DestinationDirectory:     dstDir,
@@ -129,9 +125,9 @@ func Test_ProcessFolderComplexNoDupes(t *testing.T) {
 }
 
 func Test_ProcessFolderComplexDupes(t *testing.T) {
-	srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_complex_dupes")
-	dstDir := filepath.Join(TEMP_DIR_TEST_DST)
-	// srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_complex_nodupes")
+	subDir := "rundowns_complex_dupes"
+	srcDir := filepath.Join(TEMP_DIR_TEST_SRC, subDir)
+	dstDir := filepath.Join(TEMP_DIR_TEST_DST, subDir)
 	opts := ProcessOptions{
 		SourceDirectory:      srcDir,
 		DestinationDirectory: dstDir,
@@ -153,8 +149,6 @@ func Test_ProcessFolderComplexDupes(t *testing.T) {
 
 func Test_ProcessFolderComplexDupesSame(t *testing.T) {
 	srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_complex_dupes")
-	// srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_complex_nodupes")
-	// dstDir := filepath.Join(TEMP_DIR_TEST_DST)
 	opts := ProcessOptions{
 		SourceDirectory:          srcDir,
 		DestinationDirectory:     srcDir,
@@ -173,15 +167,15 @@ func Test_ProcessFolderComplexDupesSame(t *testing.T) {
 }
 
 func Test_ProcessFolderRundownsAppend(t *testing.T) {
-	srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_append")
+	subDir := "rundowns_append"
+	srcDir := filepath.Join(TEMP_DIR_TEST_SRC, subDir)
 	subDirs := []string{
 		"dir1",
-		// "dir1",
-		"dir2",
+		// "dir2",
 		// "dir3",
 		// "dir4",
 	}
-	dstDir := filepath.Join(TEMP_DIR_TEST_DST, "rundowns_append")
+	dstDir := filepath.Join(TEMP_DIR_TEST_DST, subDir)
 	for i := range subDirs {
 		srcSubDir := filepath.Join(srcDir, subDirs[i])
 		fmt.Println("PROCESSING FOLDER", srcSubDir)
@@ -206,8 +200,9 @@ func Test_ProcessFolderRundownsAppend(t *testing.T) {
 }
 
 func Test_ProcessFolderDate(t *testing.T) {
-	srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_date")
-	dstDir := filepath.Join(TEMP_DIR_TEST_DST)
+	subDir := "rundowns_date"
+	srcDir := filepath.Join(TEMP_DIR_TEST_SRC, subDir)
+	dstDir := filepath.Join(TEMP_DIR_TEST_DST, subDir)
 	opts := ProcessOptions{
 		SourceDirectory:          srcDir,
 		DestinationDirectory:     dstDir,
