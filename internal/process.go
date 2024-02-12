@@ -237,9 +237,9 @@ func (f *FileMeta) Parse(
 	metaInfo OMmetaInfo, fileInfo os.FileInfo, reader io.Reader,
 	opts *ProcessOptions, sourceFilePath string) error {
 	date := metaInfo.Date
-	// if !CheckCurrentWeek(date) {
-	// return fmt.Errorf("date not older than 1 ISOWeek: %s", f.FilePathSource)
-	// }
+	if !CheckCurrentWeek(date) {
+		return fmt.Errorf("date not older than 1 ISOWeek: %s", sourceFilePath)
+	}
 	year, week := date.ISOWeek()
 	f.Year = year
 	f.Month = int(date.Month())
@@ -289,9 +289,7 @@ func (f *FileMeta) Parse(
 
 func (f *FileMeta) SetWeekWorkerName(wtc WorkerTypeCode) string {
 	workerTypeString, _ := WorkerTypeMap[wtc]
-	// f.WorkerName = fmt.Sprintf("%d_W%02d_%s.%s", f.Year, f.Week, workerTypeString, f.CompressionType)
 	f.WorkerName = fmt.Sprintf("%s/%d_W%02d_%s.%s", f.OpenMediaFileType.OutputDir, f.Year, f.Week, workerTypeString, f.CompressionType)
-	fmt.Println("FUCK", f.WorkerName)
 	return f.WorkerName
 }
 

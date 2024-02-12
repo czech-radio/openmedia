@@ -211,7 +211,7 @@ func Test_ProcessFolderRundownsAppend(t *testing.T) {
 }
 
 func Test_ProcessFolderDate(t *testing.T) {
-	srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_date2")
+	srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_date")
 	dstDir := filepath.Join(TEMP_DIR_TEST_DST)
 	opts := ProcessOptions{
 		SourceDirectory:          srcDir,
