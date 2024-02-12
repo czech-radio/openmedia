@@ -13,6 +13,12 @@ Go_test_debug(){
   GOLOGLEVEL=-4 go test -v "$path" -run "$test_pattern"
 }
 
+Go_delve(){
+  local package="$1"
+  local function="$2"
+  dlv test "$package" -- -test.run="$2"
+}
+
 Go_bench(){
   local path
   local path="$1"
