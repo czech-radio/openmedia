@@ -82,7 +82,6 @@ func Test_ProcessFolder(t *testing.T) {
 	process := Process{Options: opts}
 	err := process.Folder()
 	fmt.Printf("%+v\n", process.Results)
-	// Sleeper(1000, "s")
 	if err != nil {
 		t.Error(err)
 	}
@@ -124,8 +123,6 @@ func Test_ProcessFolderComplexNoDupes(t *testing.T) {
 	process := Process{Options: opts}
 	err := process.Folder()
 	fmt.Printf("%+v\n", process.Results)
-
-	// Sleeper(1000, "s")
 	if err != nil {
 		t.Error(err)
 	}
@@ -149,7 +146,6 @@ func Test_ProcessFolderComplexDupes(t *testing.T) {
 	process := Process{Options: opts}
 	err := process.Folder()
 	fmt.Printf("%+v\n", process.Results)
-	Sleeper(1000, "s")
 	if err != nil {
 		t.Error(err)
 	}
@@ -171,7 +167,6 @@ func Test_ProcessFolderComplexDupesSame(t *testing.T) {
 	process := Process{Options: opts}
 	err := process.Folder()
 	fmt.Printf("%+v\n", process.Results)
-	// Sleeper(1000, "s")
 	if err != nil {
 		t.Error(err)
 	}
@@ -225,7 +220,6 @@ func Test_ProcessFolderDate(t *testing.T) {
 	process := Process{Options: opts}
 	err := process.Folder()
 	fmt.Printf("%+v\n", process.Results)
-	Sleeper(1000, "s")
 	if err != nil {
 		t.Error(err)
 	}
