@@ -143,8 +143,8 @@ func Test_ProcessFolderComplexDupes(t *testing.T) {
 		InvalidFileContinue:      true,
 		CompressionType:          "zip",
 		PreserveFoldersInArchive: false,
-		// RecurseSourceDirectory:   false,
-		RecurseSourceDirectory: true,
+		RecurseSourceDirectory:   false,
+		// RecurseSourceDirectory: true,
 	}
 	process := Process{Options: opts}
 	err := process.Folder()
@@ -207,7 +207,26 @@ func Test_ProcessFolderRundownsAppend(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
-		Sleeper(10, "s")
 	}
+}
+
+func Test_ProcessFolderDate(t *testing.T) {
+	srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_date2")
+	dstDir := filepath.Join(TEMP_DIR_TEST_DST)
+	opts := ProcessOptions{
+		SourceDirectory:          srcDir,
+		DestinationDirectory:     dstDir,
+		InvalidFileRename:        false,
+		InvalidFileContinue:      true,
+		CompressionType:          "zip",
+		PreserveFoldersInArchive: false,
+		RecurseSourceDirectory:   true,
+	}
+	process := Process{Options: opts}
+	err := process.Folder()
+	fmt.Printf("%+v\n", process.Results)
 	Sleeper(1000, "s")
+	if err != nil {
+		t.Error(err)
+	}
 }
