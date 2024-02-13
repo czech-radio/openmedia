@@ -12,8 +12,7 @@ Environment=REPOS_GROUP=czech-radio
 Environment=REPO_NAME=openmedia-archive
 Environment=BINARY_NAME=openmedia-archive
 #Environment=MAIN_COMMAND='./openmedia-archive -V'
-#Environment=MAIN_COMMAND='./openmedia-archive -i /mnt/cro.cz/openmedia -o /mnt/cro.cz/openmedia --invalid_file_continue true --recurse_source_directory false --processed_file_rename true'
-Environment=MAIN_COMMAND='./openmedia-archive -dc -i /mnt/cro.cz/openmedia -o /mnt/cro.cz/openmedia --invalid_file_continue true --recurse_source_directory false --processed_file_rename true'
+Environment=MAIN_COMMAND='./openmedia-archive -i /mnt/cro.cz/openmedia -o /mnt/cro.cz/openmedia --invalid_file_continue=true --recurse_source_directory=false --processed_file_rename=true'
 
 ### Loging
 SyslogIdentifier=openmedia-archive
