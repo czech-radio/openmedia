@@ -28,13 +28,13 @@ func VersionInfoPrint() {
 type Config_root struct {
 	Version                  bool   `cmd:"version; V; false; version of the program"`
 	Verbose                  string `cmd:"verbose; v; 0; program verbosity level: DEBUG (-4), INFO (0), WARN (4), and ERROR (8)"`
-	DebugConfig              bool   `cmd:"debug_config; dc; print effective config variables"`
+	DebugConfig              bool   `cmd:"debug_config; dc; false; print effective config variables"`
 	DryRun                   bool   `cmd:"dry_run; n; false; run program in dry run mode which does not make any pernament or dangerous action. Useful for testing purposes."`
 	LogType                  string `cmd:"log_type; lt; json; use logger type [json,plain]"`
 	SourceDirectory          string `cmd:"source_directory; i; ; directory to be processed"`
 	DestinationDirectory     string `cmd:"destination_directory; o; ; otput files"`
 	CompressionType          string `cmd:"compression_type; ct; zip; type of file compression [zip]."`
-	InvalidFileContinue      bool   `cmd:"invalid_file_continue; ifc; 0; continue even though unprocesable file encountered"`
+	InvalidFileContinue      bool   `cmd:"invalid_file_continue; ifc; false; continue even though unprocesable file encountered"`
 	InvalidFileRename        bool   `cmd:"invalid_file_rename; ifr; false; rename invalid files"`
 	ProcessedFileRename      bool   `cmd:"processed_file_rename; pfr; false; rename processesd files"`
 	ProcessedFileDelete      bool   `cmd:"processed_file_delete; pfd; false; delete processed files"`
