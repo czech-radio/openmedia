@@ -96,6 +96,7 @@ ServiceServe(){
     ServiceActivate
     return
   fi
+  printenv
   eval "./${MAIN_COMMAND}"
 }
 

@@ -76,6 +76,15 @@ func Sleeper(duration int, time_unit string) {
 	}
 }
 
+func IsOlderThanOneISOweek(dateToCheck, dateNow time.Time) bool {
+	year_check, week_check := dateToCheck.ISOWeek()
+	year_now, week_now := dateNow.ISOWeek()
+	if year_check < year_now {
+		return true
+	}
+	return week_check < week_now
+}
+
 func TimeCurrent() string {
 	tm := time.Now()
 	return strftime.Format("%FT%T", tm)

@@ -197,25 +197,12 @@ func (p *Process) DestroyWorkers() {
 	}
 }
 
-func CheckCurrentWeek(date time.Time) bool {
-	now := time.Now()
-	if date.Year() < now.Year() {
-		return true
-	}
-	_, nowWeek := now.ISOWeek()
-	_, dateWeek := date.ISOWeek()
-	if dateWeek >= nowWeek {
-		return false
-	}
-	return true
-}
-
 func (f *FileMeta) Parse(
 	metaInfo OMmetaInfo, fileInfo os.FileInfo, reader io.Reader,
 	opts *ProcessOptions, sourceFilePath string) error {
 	date := metaInfo.Date
-	if !CheckCurrentWeek(date) {
-		return fmt.Errorf("date not older than 1 ISOWeek: %s", sourceFilePath)
+	if !IsOlderThanOneISOweek(date, time.Now()) {
+		return fmt.Errorf("file date not older than 1 ISOWeek: %s", sourceFilePath)
 	}
 	year, week := date.ISOWeek()
 	f.Year = year

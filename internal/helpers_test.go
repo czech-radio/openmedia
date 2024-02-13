@@ -9,6 +9,7 @@ import (
 	"sync"
 	"syscall"
 	"testing"
+	"time"
 )
 
 var TESTS_RESULT_CODE int
@@ -82,6 +83,29 @@ func TestMain(m *testing.M) {
 	// os.Exit(TESTS_RESULT_CODE)
 	cleanupChan <- syscall.SIGHUP
 	waitGroup.Wait()
+}
+
+type TestPair struct {
+	Input          any
+	ExpectedOutput any
+}
+
+func Test_IsOlderThanOneISOweek(t *testing.T) {
+	timeNow := time.Now()
+	testPairs := []TestPair{
+		// Input date is older
+		{timeNow.AddDate(0, 0, -int(timeNow.Weekday())), true},
+		{timeNow.AddDate(0, 0, -19), true},
+		// Input date is newer
+		{timeNow.AddDate(0, 0, 7-int(timeNow.Weekday())), false},
+		{timeNow.AddDate(0, 0, 10), false},
+	}
+	for p := range testPairs {
+		ok := IsOlderThanOneISOweek(testPairs[p].Input.(time.Time), timeNow)
+		if ok != testPairs[p].ExpectedOutput {
+			t.Errorf("failed for inputs: %v, %v", testPairs[p].Input, timeNow)
+		}
+	}
 }
 
 func Test_CurrentDir(t *testing.T) {
