@@ -130,15 +130,16 @@ func TestDirectoryCreateTemporary(t *testing.T) {
 
 func Test_DirectoryCopy(t *testing.T) {
 	dstDir := filepath.Join(TEMP_DIR_TEST_DST, "DirectoryCopy")
+	srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_complex_nodupes")
 	// Test copy matching files
 	err := DirectoryCopy(
-		TEST_DATA_DIR_SRC, dstDir, true, false, "hello")
+		srcDir, dstDir, true, false, "hello")
 	if err != nil {
 		t.Error(err)
 	}
 	// Test copy recursive and overwrite destination files
 	err = DirectoryCopy(
-		TEST_DATA_DIR_SRC, dstDir, true, true, "")
+		srcDir, dstDir, true, true, "")
 	if err != nil && errors.Unwrap(err) != ErrFilePathExists {
 		t.Error(err)
 	}

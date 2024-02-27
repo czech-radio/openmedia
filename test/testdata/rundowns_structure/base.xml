@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE OPENMEDIA SYSTEM "ann_objects.dtd">
+<OPENMEDIA>
+  <OM_SERVER/>
+  <OM_OBJECT SystemID="3fc88f5c-ef6b-44fa-bdef-002c69855f16" ObjectID="0000000200da1b00" DocumentURN="urn:openmedia:3fc88f5c-ef6b-44fa-bdef-002c69855f16:0000000200DA1B00" DirectoryID="00000002007dbae5" InternalType="1" TemplateID="fffffffa00001022" TemplateType="1" TemplateName="Radio Rundown">
+    <OM_HEADER>
+      <OM_FIELD FieldID="1" FieldType="3" FieldName="Čas vytvoření" IsEmpty="no">
+        <OM_DATETIME>20221223T010414,000</OM_DATETIME>
+      </OM_FIELD>
+    </OM_HEADER>
+    <OM_RECORD RecordID="1">
+      <OM_FIELD FieldID="1" FieldType="3" FieldName="Čas vytvoření" IsEmpty="yes">
+        <OM_DATETIME/>
+      </OM_FIELD>
+      <OM_OBJECT SystemID="3fc88f5c-ef6b-44fa-bdef-002c69855f16" ObjectID="0000000200da1b01" DocumentURN="urn:openmedia:3fc88f5c-ef6b-44fa-bdef-002c69855f16:0000000200DA1B01" DirectoryID="00000002007dbae5" InternalType="1" TemplateID="fffffffa000013fe" TemplateType="1" TemplateName="Hourly Rundown">
+        <OM_HEADER>
+          <OM_FIELD FieldID="1" FieldType="3" FieldName="Čas vytvoření" IsEmpty="no">
+            <OM_DATETIME>20221223T010414,000</OM_DATETIME>
+          </OM_FIELD>
+        </OM_HEADER>
+        <OM_UPLINK ObjectID="0000000200da1b00" TemplateID="fffffffa00001022" RecordID="1" TemplateType="1"/>
+        <!-- Hourly records 1-12 -->
+        <OM_RECORD RecordID="1">
+          <OM_FIELD FieldID="1" FieldType="3" FieldName="Čas vytvoření" IsEmpty="yes">
+            <OM_DATETIME/>
+          </OM_FIELD>
+          <OM_OBJECT SystemID="3fc88f5c-ef6b-44fa-bdef-002c69855f16" ObjectID="0000000200da1b01" DocumentURN="urn:openmedia:3fc88f5c-ef6b-44fa-bdef-002c69855f16:0000000200DA1B01" DirectoryID="00000002007dbae5" InternalType="1" TemplateID="fffffffa000013fe" TemplateType="1" TemplateName="Hourly Rundown">
+            <OM_HEADER>
+						</OM_HEADER>
+            <OM_UPLINK ObjectID="0000000200da1b00" TemplateID="fffffffa00001022" RecordID="1" TemplateType="1"/>
+            <OM_RECORD RecordID="1">
+              <OM_FIELD FieldID="1" FieldType="3" FieldName="Čas vytvoření" IsEmpty="yes">
+                <OM_DATETIME/>
+              </OM_FIELD>
+              <OM_OBJECT SystemID="3fc88f5c-ef6b-44fa-bdef-002c69855f16" ObjectID="0000000200da1b02" DocumentURN="urn:openmedia:3fc88f5c-ef6b-44fa-bdef-002c69855f16:0000000200DA1B02" DirectoryID="00000002007dbae5" InternalType="1" TemplateID="fffffffa000013fd" TemplateType="1" TemplateName="Sub Rundown">
+                <OM_HEADER>
+								</OM_HEADER>
+                <OM_UPLINK ObjectID="0000000200da1b01" TemplateID="fffffffa000013fe" RecordID="1" TemplateType="1"/>
+                <OM_RECORD RecordID="26">
+                  <OM_FIELD FieldID="1" FieldType="3" FieldName="Čas vytvoření" IsEmpty="yes">
+                    <OM_DATETIME/>
+                  </OM_FIELD>
+                  <OM_OBJECT SystemID="3fc88f5c-ef6b-44fa-bdef-002c69855f16" ObjectID="0000000200da1b05" DocumentURN="urn:openmedia:3fc88f5c-ef6b-44fa-bdef-002c69855f16:0000000200DA1B05" DirectoryID="00000002007dbae5" InternalType="1" TemplateID="fffffffa0000101e" TemplateType="2" TemplateName="Radio Story">
+                    <OM_HEADER>
+                    </OM_HEADER>
+                    <OM_UPLINK ObjectID="0000000200da1b02" TemplateID="fffffffa000013fd" RecordID="26" TemplateType="1"/>
+                    <OM_RECORD RecordID="2">
+                      <OM_FIELD FieldID="1" FieldType="3" FieldName="Čas vytvoření" IsEmpty="yes">
+                        <OM_DATETIME/>
+                      </OM_FIELD>
+                    </OM_RECORD>
+                  </OM_OBJECT>
+                </OM_RECORD>
+              </OM_OBJECT>
+            </OM_RECORD>
+          </OM_OBJECT>
+        </OM_RECORD>
+      </OM_OBJECT>
+    </OM_RECORD>
+  </OM_OBJECT>
+</OPENMEDIA>��
