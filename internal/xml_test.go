@@ -23,8 +23,9 @@ func TestTransformXML(t *testing.T) {
 		t.Error(err)
 	}
 	pr = PipeRundownMarshal(om)
-	pr = PipeRundownHeaderAdd(pr)
-	PipePrint(pr)
+	// pr = PipeRundownHeaderAdd(pr)
+	_ = PipeRundownHeaderAdd(pr)
+	// PipePrint(pr)
 	if err != nil {
 		t.Error(err)
 	}
