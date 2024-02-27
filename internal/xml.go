@@ -11,6 +11,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/antchfx/xmlquery"
+	"github.com/go-xmlfmt/xmlfmt"
 	"golang.org/x/text/encoding/unicode"
 )
 
@@ -216,4 +218,9 @@ func (ar *ArchiveResult) AddError(err ...error) {
 	if err != nil && len(err) > 0 {
 		ar.Errors = append(ar.Errors, err...)
 	}
+}
+
+func XMLprint(node *xmlquery.Node) {
+	ex := xmlfmt.FormatXML(node.OutputXML(true), "", "\t")
+	fmt.Println(ex)
 }

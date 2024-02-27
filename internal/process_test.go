@@ -58,7 +58,7 @@ func Test_ParseUplink(t *testing.T) {
 	if err != nil {
 		slog.Error(err.Error())
 	}
-	fmt.Printf("fuck %+v\n", date)
+	_ = date
 }
 
 func Test_ProcessFolder(t *testing.T) {
@@ -76,7 +76,6 @@ func Test_ProcessFolder(t *testing.T) {
 	}
 	process := Process{Options: opts}
 	err := process.Folder()
-	fmt.Printf("%+v\n", process.Results)
 	if err != nil {
 		t.Error(err)
 	}
@@ -96,7 +95,6 @@ func Test_ProcessFolderInvalid(t *testing.T) {
 	}
 	process := Process{Options: opts}
 	err := process.Folder()
-	fmt.Printf("%+v\n", process.Results)
 	if err != nil {
 		t.Error(err)
 	}
@@ -118,7 +116,6 @@ func Test_ProcessFolderComplexNoDupes(t *testing.T) {
 	}
 	process := Process{Options: opts}
 	err := process.Folder()
-	fmt.Printf("%+v\n", process.Results)
 	if err != nil {
 		t.Error(err)
 	}
@@ -141,7 +138,6 @@ func Test_ProcessFolderComplexDupes(t *testing.T) {
 	}
 	process := Process{Options: opts}
 	err := process.Folder()
-	fmt.Printf("%+v\n", process.Results)
 	if err != nil {
 		t.Error(err)
 	}
@@ -214,7 +210,6 @@ func Test_ProcessFolderDate(t *testing.T) {
 	}
 	process := Process{Options: opts}
 	err := process.Folder()
-	fmt.Printf("%+v\n", process.Results)
 	if err != nil {
 		t.Error(err)
 	}
