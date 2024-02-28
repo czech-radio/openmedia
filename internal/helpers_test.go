@@ -73,7 +73,6 @@ func TestMain(m *testing.M) {
 		os.Exit(-1)
 	}
 	SetLogLevel(level, "json")
-	// SetLogLevel(level)
 
 	// Clean up (teardown)
 	cleanupChan, waitGroup := CleanUp()
@@ -129,8 +128,8 @@ func TestDirectoryCreateTemporary(t *testing.T) {
 }
 
 func Test_DirectoryCopy(t *testing.T) {
+	srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_complex_dupes")
 	dstDir := filepath.Join(TEMP_DIR_TEST_DST, "DirectoryCopy")
-	srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_complex_nodupes")
 	// Test copy matching files
 	err := DirectoryCopy(
 		srcDir, dstDir, true, false, "hello")

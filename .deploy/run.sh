@@ -86,9 +86,9 @@ ServiceServe(){
   fi
   if [[ ! "$release_tag" =~ v.* ]] ; then
     echo "Cannot get tag name. Asset files not downloaded." >&2
-    return 1
+  else
+    DownloadReleaseFiles "$release_tag"
   fi
-  DownloadReleaseFiles "$release_tag"
   
   # Activate service
   service_status="$(systemctl --user is-enabled "$SERVICE_NAME")"

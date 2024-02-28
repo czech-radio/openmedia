@@ -109,30 +109,6 @@ type ArchiveWorker struct {
 	ArchiveFiles   map[string]int // map filenames in archive
 }
 
-// func (w *ArchiveWorker) ArchiveRecreate(archivePath string) (*zip.Writer, error) {
-// origZip, err := os.OpenFile(archivePath, os.O_RDWR, 0600)
-// if err != nil {
-// return nil, err
-// }
-// defer origZip.Close()
-// zipWriter := zip.NewWriter(origZip)
-// _, err = origZip.Seek(0, io.SeekStart) // Rewind original zip file
-// origReader, err := zip.OpenReader(archivePath)
-
-// Create temp zip
-// newZipName := filepath.Join(filepath.Dir(archivePath), fmt.Sprintf("%d", time.Now().UnixNano()))
-// newZipFile, err := os.Create(newZipName)
-// if err != nil {
-// return nil, err
-// }
-// defer newZipFile.Close()
-// if err != nil {
-// return nil, err
-// }
-
-// return nil, nil
-// }
-
 func (w *ArchiveWorker) MapOldArchive(archivePath string) (bool, error) {
 	// Check if there is an old archive
 	ok, err := FileExists(archivePath)
@@ -394,7 +370,6 @@ func (p *Process) File(sourceFilePath string) error {
 	}
 	fileMetaOriginal := FileMeta{}
 	reader := bytes.NewReader(data)
-	// err = fileMetaOriginal.Parse(omMetaInfo, fileInfo, opts.CompressionType, opts.SourceDirectory, opts.DestinationDirectory, sourceFilePath, reader)
 	err = fileMetaOriginal.Parse(omMetaInfo, fileInfo, reader,
 		&p.Options, sourceFilePath)
 	if err != nil {
@@ -461,7 +436,7 @@ func (p *Process) CheckArchiveWorkerDupes(worker *ArchiveWorker, fm *FileMeta) e
 	archiveNameAndFileName := filepath.Join(worker.WorkerName, fm.FilePathInArchive)
 	_, filePresent := worker.ArchiveFiles[archiveNameAndFileName]
 	if !filePresent {
-		worker.ArchiveFiles[fm.FilePathInArchive]++
+		worker.ArchiveFiles[archiveNameAndFileName]++
 		return nil
 	}
 	p.Results.DuplicatesFound++
