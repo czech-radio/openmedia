@@ -26,7 +26,7 @@ func VersionInfoPrint() {
 }
 
 type Config_root struct {
-	// "long flag; short falg; default value; description"
+	// "long flag; short flag; default value; description"
 	Version     bool   `cmd:"version; V; false; version of the program"`
 	Verbose     string `cmd:"verbose; v; 0; program verbosity level: DEBUG (-4), INFO (0), WARN (4), and ERROR (8)"`
 	DebugConfig bool   `cmd:"debug_config; dc; false; print effective config variables"`

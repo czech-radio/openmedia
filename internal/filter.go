@@ -28,9 +28,8 @@ type FilterOptions struct {
 }
 
 type ObjectAttributes = map[string]string
-type Fields = map[int]string
-type UniqueValues = map[string]int // value:count
-// type FieldUniqueValues = map[int]UniqueValues
+type Fields = map[int]string       // FieldID vs value
+type UniqueValues = map[string]int // value vs count
 
 type Filter struct {
 	Options               FilterOptions
@@ -42,7 +41,7 @@ type Filter struct {
 	HeaderFieldsIDsSorted []int
 	HeaderFieldsIDsSubset map[int]bool
 	Rows                  []Fields
-	FieldsUniqueValues    map[int]UniqueValues // FiledID:UniqueValues
+	FieldsUniqueValues    map[int]UniqueValues // FiledID vs UniqueValues
 	MaxUniqueCount        int
 }
 
@@ -102,13 +101,8 @@ func (ft *Filter) Folder() error {
 	ft.LogResults("valid files")
 	ft.KeysToExtract()
 	ft.Rows = make([]Fields, 0, 10)
-	// count := 0
 processFolder:
 	for _, file := range validateResult.FilesValid {
-		// count++
-		// if count > 100 {
-		// break
-		// }
 		// Clear rows for next file
 		// ft.Rows = make([]Fields, 0, 10)
 		ft.ObjectsAttrValues = make([]ObjectAttributes, 0, 10)
@@ -232,10 +226,8 @@ func (ft *Filter) UniqueFieldValues(fieldID int, fieldValue string) {
 	_, ok := ft.FieldsUniqueValues[fieldID]
 	if !ok {
 		ft.FieldsUniqueValues[fieldID] = make(map[string]int)
-		// uv := make(UniqueValues)
-		// ft.FieldsUniqueValues[fieldID] = &uv
 	}
-	uv, _ := ft.FieldsUniqueValues[fieldID]
+	uv := ft.FieldsUniqueValues[fieldID]
 	uv[fieldValue]++
 }
 
@@ -422,15 +414,15 @@ func (ft *Filter) CSVwriteUniqueFieldsValuesB() error {
 	rows := make([][]string, rowsCount, rowsCount)
 	rowLen := len(ft.FieldsUniqueValues)
 	for i, key := range FieldKeysToExtract {
-		// i index (column)
-		// FiledID
+		// i:		index (column)
+		// key: FiledID
 		fvals, _ := ft.FieldsUniqueValues[key]
 		rown := 0
 		for j, k := range fvals {
 			if len(rows[rown]) == 0 {
 				rows[rown] = make([]string, 2*rowLen, 2*rowLen)
 			}
-			// unique value occurence count
+			// unique value frequency (četnost)
 			rows[rown][i*2] = fmt.Sprint(k)
 			// unique value
 			rows[rown][i*2+1] = EscapeDelim(j)
@@ -449,33 +441,6 @@ func (ft *Filter) CSVwriteUniqueFieldsValuesB() error {
 }
 
 func (ft *Filter) CSVwriteUniqueFieldsValuesSorted() error {
-	// counts in separate column
-	rowsCount := ft.GetMaxUniqueFieldsValues()
-	rows := make([][]string, rowsCount, rowsCount)
-	rowLen := len(ft.FieldsUniqueValues)
-	for i, key := range FieldKeysToExtract {
-		// i index (column)
-		// FiledID
-		fvals, _ := ft.FieldsUniqueValues[key]
-		rown := 0
-		for j, k := range fvals {
-			if len(rows[rown]) == 0 {
-				rows[rown] = make([]string, 2*rowLen, 2*rowLen)
-			}
-			// unique value occurence count
-			rows[rown][i*2] = fmt.Sprint(k)
-			// unique value
-			rows[rown][i*2+1] = EscapeDelim(j)
-			rown++
-		}
-	}
-	for i := range rows {
-		var csvRow strings.Builder
-		for j := range rows[i] {
-			row := rows[i]
-			fmt.Fprintf(&csvRow, "%s%s", row[j], ft.Options.CSVdelim)
-		}
-		fmt.Fprintf(os.Stdout, "%s\n", csvRow.String())
-	}
+	// TODO
 	return nil
 }

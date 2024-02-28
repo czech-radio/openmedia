@@ -133,8 +133,8 @@ func Test_ProcessFolderComplexDupes(t *testing.T) {
 		InvalidFileContinue:      true,
 		CompressionType:          "zip",
 		PreserveFoldersInArchive: false,
-		RecurseSourceDirectory:   false,
-		// RecurseSourceDirectory: true,
+		// RecurseSourceDirectory:   false,
+		RecurseSourceDirectory: true,
 	}
 	process := Process{Options: opts}
 	err := process.Folder()
