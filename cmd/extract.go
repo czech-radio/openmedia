@@ -5,7 +5,7 @@ import (
 	"log/slog"
 )
 
-type Config_filter struct {
+type Config_extract struct {
 	SourceDirectory        string `cmd:"source_directory; i; ; directory to be processed"`
 	DestinationDirectory   string `cmd:"destination_directory; o; ; otput files"`
 	RecurseSourceDirectory bool   `cmd:"recurse_source_directory; R; false; recurse source directory"`
@@ -18,7 +18,7 @@ type Config_filter struct {
 	CSVheader              bool   `cmd:"csv_header; csvh; true; write csv column headers"`
 }
 
-func RunFilter(root_cfg *Config_root, filter_cfg *Config_filter) {
+func RunExtract(root_cfg *Config_root, filter_cfg *Config_extract) {
 	options := internal.FilterOptions{}
 	internal.CopyFields(filter_cfg, &options)
 	slog.Info("effective subcommand options", "options", options)
@@ -30,7 +30,6 @@ func RunFilter(root_cfg *Config_root, filter_cfg *Config_filter) {
 		options.DestinationDirectory = TEMP_DIR
 	}
 	internal.DirectoryIsReadableOrPanic(options.SourceDirectory)
-	// internal.DirectoryIsReadableOrPanic(options.DestinationDirectory)
 	filter := internal.Filter{Options: options}
 	err := filter.Folder()
 	if err != nil {
