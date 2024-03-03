@@ -1,0 +1,9 @@
+<!-- importedSchema.xsd -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+           <!-- targetNamespace="kak" -->
+           <!-- xmlns="http://example.com/imported"> -->
+
+           <!-- targetNamespace="http://example.com/imported" -->
+  <xs:element name="importedElement" type="xs:string"/>
+
+</xs:schema>

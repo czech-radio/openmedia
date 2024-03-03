@@ -91,6 +91,7 @@ func (ft *Filter) ErrorHandle(errMain error, errorsPartial ...error) ControlFlow
 func (ft *Filter) LogResults(msg string) {
 	slog.Info(msg, "results", fmt.Sprintf("%+v", ft.Results))
 }
+
 func (ft *Filter) Folder() error {
 	validateResult, err := ValidateFilesInDirectory(ft.Options.SourceDirectory, ft.Options.RecurseSourceDirectory)
 	if ft.ErrorHandle(err, validateResult.Errors...) == Break {

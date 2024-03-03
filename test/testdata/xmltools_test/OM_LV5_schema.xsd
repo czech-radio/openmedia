@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- XML Schema Definition (XSD) for openmedia  -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="OPENMEDIA">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="OM_SERVER"/>
+        <xs:element name="OM_OBJECT">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="OM_HEADER">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="OM_FIELD" minOccurs="1" maxOccurs="unbounded"/>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="OM_RECORD" minOccurs="1" maxOccurs="unbounded"/>
+            </xs:sequence>
+            <xs:attribute name="SystemID" type="xs:string"/>
+            <xs:attribute name="ObjectID" type="xs:string"/>
+            <xs:attribute name="DocumentURN" type="xs:string"/>
+            <xs:attribute name="DirectoryID" type="xs:string"/>
+            <xs:attribute name="InternalType" type="xs:int"/>
+            <xs:attribute name="TemplateID" type="xs:string"/>
+            <xs:attribute name="TemplateType" type="xs:int"/>
+            <xs:attribute name="TemplateName" type="xs:string"/>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>
