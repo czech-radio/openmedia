@@ -91,18 +91,26 @@ type TestPair struct {
 
 func Test_IsOlderThanOneISOweek(t *testing.T) {
 	timeNow := time.Now()
+	weekDay := int(time.Now().Weekday())
+	addWeek := 7 - weekDay
 	testPairs := []TestPair{
-		// Input date is older
-		{timeNow.AddDate(0, 0, -int(timeNow.Weekday())), true},
+
+		// Input date is same ISOweek
+		{timeNow.AddDate(0, 0, 0), false},
+
+		// Input date older ISOweek
+		{timeNow.AddDate(0, 0, -7), true},
 		{timeNow.AddDate(0, 0, -19), true},
+
 		// Input date is newer
-		{timeNow.AddDate(0, 0, 7-int(timeNow.Weekday())), false},
+		{timeNow.AddDate(0, 0, addWeek), false},
+		{timeNow.AddDate(0, 0, 7), false},
 		{timeNow.AddDate(0, 0, 10), false},
 	}
-	for p := range testPairs {
-		ok := IsOlderThanOneISOweek(testPairs[p].Input.(time.Time), timeNow)
-		if ok != testPairs[p].ExpectedOutput {
-			t.Errorf("failed for inputs: %v, %v", testPairs[p].Input, timeNow)
+	for i := range testPairs {
+		ok := IsOlderThanOneISOweek(testPairs[i].Input.(time.Time), timeNow)
+		if ok != testPairs[i].ExpectedOutput {
+			t.Errorf("pair %d failed for inputs: %v, %v", i, testPairs[i].Input, timeNow)
 		}
 	}
 }
