@@ -7,6 +7,14 @@ import (
 	"strings"
 )
 
+type ControlFlowAction int
+
+const (
+	Continue ControlFlowAction = iota
+	Skip
+	Break
+)
+
 // Error codes for os.Exit
 type ErrorCode int8
 

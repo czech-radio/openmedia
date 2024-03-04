@@ -65,7 +65,7 @@ func Test_ProcessFolder(t *testing.T) {
 	subDir := "rundowns_mix"
 	srcDir := filepath.Join(TEMP_DIR_TEST_SRC, subDir)
 	dstDir := filepath.Join(TEMP_DIR_TEST_DST, subDir)
-	opts := ProcessOptions{
+	opts := ArchiveOptions{
 		SourceDirectory:      srcDir,
 		DestinationDirectory: dstDir,
 		InvalidFileRename:    false,
@@ -74,7 +74,7 @@ func Test_ProcessFolder(t *testing.T) {
 		CompressionType:        "zip",
 		RecurseSourceDirectory: true,
 	}
-	process := Process{Options: opts}
+	process := Archive{Options: opts}
 	err := process.Folder()
 	if err != nil {
 		t.Error(err)
@@ -85,7 +85,7 @@ func Test_ProcessFolderInvalid(t *testing.T) {
 	subDir := "rundowns_invalid"
 	srcDir := filepath.Join(TEMP_DIR_TEST_SRC, subDir)
 	dstDir := filepath.Join(TEMP_DIR_TEST_DST, subDir)
-	opts := ProcessOptions{
+	opts := ArchiveOptions{
 		SourceDirectory:        srcDir,
 		DestinationDirectory:   dstDir,
 		InvalidFileRename:      false,
@@ -93,7 +93,7 @@ func Test_ProcessFolderInvalid(t *testing.T) {
 		CompressionType:        "zip",
 		RecurseSourceDirectory: true,
 	}
-	process := Process{Options: opts}
+	process := Archive{Options: opts}
 	err := process.Folder()
 	if err != nil {
 		t.Error(err)
@@ -104,7 +104,7 @@ func Test_ProcessFolderComplexNoDupes(t *testing.T) {
 	subDir := "rundowns_complex_nodupes"
 	srcDir := filepath.Join(TEMP_DIR_TEST_SRC, subDir)
 	dstDir := filepath.Join(TEMP_DIR_TEST_DST, subDir)
-	opts := ProcessOptions{
+	opts := ArchiveOptions{
 		SourceDirectory:          srcDir,
 		DestinationDirectory:     dstDir,
 		InvalidFileRename:        false,
@@ -114,7 +114,7 @@ func Test_ProcessFolderComplexNoDupes(t *testing.T) {
 		RecurseSourceDirectory:   true,
 		// PreserveFoldersInArchive: true,
 	}
-	process := Process{Options: opts}
+	process := Archive{Options: opts}
 	err := process.Folder()
 	if err != nil {
 		t.Error(err)
@@ -125,7 +125,7 @@ func Test_ProcessFolderComplexDupes(t *testing.T) {
 	subDir := "rundowns_complex_dupes"
 	srcDir := filepath.Join(TEMP_DIR_TEST_SRC, subDir)
 	dstDir := filepath.Join(TEMP_DIR_TEST_DST, subDir)
-	opts := ProcessOptions{
+	opts := ArchiveOptions{
 		SourceDirectory:      srcDir,
 		DestinationDirectory: dstDir,
 		InvalidFileRename:    false,
@@ -136,7 +136,7 @@ func Test_ProcessFolderComplexDupes(t *testing.T) {
 		// RecurseSourceDirectory:   false,
 		RecurseSourceDirectory: true,
 	}
-	process := Process{Options: opts}
+	process := Archive{Options: opts}
 	err := process.Folder()
 	if err != nil {
 		t.Error(err)
@@ -145,7 +145,7 @@ func Test_ProcessFolderComplexDupes(t *testing.T) {
 
 func Test_ProcessFolderComplexDupesSame(t *testing.T) {
 	srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_complex_dupes")
-	opts := ProcessOptions{
+	opts := ArchiveOptions{
 		SourceDirectory:          srcDir,
 		DestinationDirectory:     srcDir,
 		InvalidFileRename:        false,
@@ -154,7 +154,7 @@ func Test_ProcessFolderComplexDupesSame(t *testing.T) {
 		PreserveFoldersInArchive: false,
 		RecurseSourceDirectory:   true,
 	}
-	process := Process{Options: opts}
+	process := Archive{Options: opts}
 	err := process.Folder()
 	fmt.Printf("%+v\n", process.Results)
 	if err != nil {
@@ -175,7 +175,7 @@ func Test_ProcessFolderRundownsAppend(t *testing.T) {
 	for i := range subDirs {
 		srcSubDir := filepath.Join(srcDir, subDirs[i])
 		fmt.Println("PROCESSING FOLDER", srcSubDir)
-		opts := ProcessOptions{
+		opts := ArchiveOptions{
 			SourceDirectory:          srcSubDir,
 			DestinationDirectory:     dstDir,
 			InvalidFileRename:        false,
@@ -186,7 +186,7 @@ func Test_ProcessFolderRundownsAppend(t *testing.T) {
 			ProcessedFileRename:    true,
 			RecurseSourceDirectory: true,
 		}
-		process := Process{Options: opts}
+		process := Archive{Options: opts}
 		err := process.Folder()
 		fmt.Printf("%+v\n", process.Results)
 		if err != nil {
@@ -199,7 +199,7 @@ func Test_ProcessFolderDate(t *testing.T) {
 	subDir := "rundowns_date"
 	srcDir := filepath.Join(TEMP_DIR_TEST_SRC, subDir)
 	dstDir := filepath.Join(TEMP_DIR_TEST_DST, subDir)
-	opts := ProcessOptions{
+	opts := ArchiveOptions{
 		SourceDirectory:          srcDir,
 		DestinationDirectory:     dstDir,
 		InvalidFileRename:        false,
@@ -208,7 +208,7 @@ func Test_ProcessFolderDate(t *testing.T) {
 		PreserveFoldersInArchive: false,
 		RecurseSourceDirectory:   true,
 	}
-	process := Process{Options: opts}
+	process := Archive{Options: opts}
 	err := process.Folder()
 	if err != nil {
 		t.Error(err)

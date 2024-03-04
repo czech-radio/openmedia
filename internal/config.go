@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-var flagsUsage string = "Usage:\n"
+var flagsUsage = "Usage:\n"
 
 // Usage called when help command invoked
 func Usage() {

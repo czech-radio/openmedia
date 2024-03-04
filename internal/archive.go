@@ -13,14 +13,6 @@ import (
 	"time"
 )
 
-type ControlFlowAction int
-
-const (
-	Continue ControlFlowAction = iota
-	Skip
-	Break
-)
-
 type WorkerTypeCode int
 
 const (
@@ -35,15 +27,15 @@ var WorkerTypeMap map[WorkerTypeCode]string = map[WorkerTypeCode]string{
 	WorkerTypeCSV:      "CSV",
 }
 
-type Process struct {
-	Options ProcessOptions
-	Results ProcessResults
-	Errors  []error
-	Workers map[string]*ArchiveWorker // WorkerName->
-	WG      *sync.WaitGroup
+type Archive struct {
+	Options        ArchiveOptions
+	Results        ArchiveResults
+	Errors         []error
+	ArchiveWorkers map[string]*ArchivePackageWorker // WorkerName->
+	WG             *sync.WaitGroup
 }
 
-type ProcessOptions struct {
+type ArchiveOptions struct {
 	SourceDirectory          string
 	DestinationDirectory     string
 	CompressionType          string
@@ -62,7 +54,7 @@ type ProcessOptions struct {
 	// ValidatePost           bool
 }
 
-type ProcessResults struct {
+type ArchiveResults struct {
 	Weeks              int
 	FilesProcessed     int
 	FilesSuccess       int
@@ -76,7 +68,7 @@ type ProcessResults struct {
 	DuplicatesFound    int
 }
 
-type FileMeta struct {
+type ArchiveItemFileMeta struct {
 	Year              int
 	Month             int
 	Day               int
@@ -98,8 +90,8 @@ type FileMeta struct {
 	DirectorySource      string
 }
 
-type ArchiveWorker struct {
-	Call           chan *FileMeta
+type ArchivePackageWorker struct {
+	Call           chan *ArchiveItemFileMeta
 	WorkerName     string
 	WorkerTypeName string
 	WorkerTypeCode WorkerTypeCode
@@ -109,7 +101,7 @@ type ArchiveWorker struct {
 	ArchiveFiles   map[string]int // map filenames in archive
 }
 
-func (w *ArchiveWorker) MapOldArchive(archivePath string) (bool, error) {
+func (w *ArchivePackageWorker) MapOldArchive(archivePath string) (bool, error) {
 	// Check if there is an old archive
 	ok, err := FileExists(archivePath)
 	if err != nil {
@@ -135,8 +127,8 @@ func (w *ArchiveWorker) MapOldArchive(archivePath string) (bool, error) {
 	return true, nil
 }
 
-func (w *ArchiveWorker) Init(dstdir, archiveName string) error {
-	w.Call = make(chan *FileMeta)
+func (w *ArchivePackageWorker) Init(dstdir, archiveName string) error {
+	w.Call = make(chan *ArchiveItemFileMeta)
 	archivePath := filepath.Join(dstdir, archiveName)
 	w.ArchivePath = archivePath
 
@@ -163,19 +155,19 @@ func (w *ArchiveWorker) Init(dstdir, archiveName string) error {
 	return nil
 }
 
-func (p *Process) DestroyWorkers() {
-	if p.Workers == nil {
+func (p *Archive) DestroyWorkers() {
+	if p.ArchiveWorkers == nil {
 		return
 	}
-	for _, worker := range p.Workers {
+	for _, worker := range p.ArchiveWorkers {
 		worker.ArchiveWriter.Close()
 		worker.ArchiveFile.Close()
 	}
 }
 
-func (f *FileMeta) Parse(
+func (f *ArchiveItemFileMeta) Parse(
 	metaInfo OMmetaInfo, fileInfo os.FileInfo, reader io.Reader,
-	opts *ProcessOptions, sourceFilePath string) error {
+	opts *ArchiveOptions, sourceFilePath string) error {
 	date := metaInfo.Date
 	if !IsOlderThanOneISOweek(date, time.Now()) {
 		return fmt.Errorf("file date not older than 1 ISOWeek: %s", sourceFilePath)
@@ -227,13 +219,13 @@ func (f *FileMeta) Parse(
 	return nil
 }
 
-func (f *FileMeta) SetWeekWorkerName(wtc WorkerTypeCode) string {
+func (f *ArchiveItemFileMeta) SetWeekWorkerName(wtc WorkerTypeCode) string {
 	workerTypeString, _ := WorkerTypeMap[wtc]
 	f.WorkerName = fmt.Sprintf("%s/%d_W%02d_%s.%s", f.OpenMediaFileType.OutputDir, f.Year, f.Week, workerTypeString, f.CompressionType)
 	return f.WorkerName
 }
 
-func (p *Process) ErrorHandle(errMain error, errorsPartial ...error) ControlFlowAction {
+func (p *Archive) ErrorHandle(errMain error, errorsPartial ...error) ControlFlowAction {
 	p.Results.FilesProcessed++
 	if errMain == nil {
 		p.Results.FilesSuccess++
@@ -250,12 +242,11 @@ func (p *Process) ErrorHandle(errMain error, errorsPartial ...error) ControlFlow
 
 	if p.Options.InvalidFileContinue {
 		return Skip
-	} else {
-		return Break
 	}
+	return Break
 }
 
-func (p *Process) PrepareOutput() error {
+func (p *Archive) PrepareOutput() error {
 	for _, t := range OpenMediaFileTypeMap {
 		outputdir := filepath.Join(p.Options.DestinationDirectory, t.OutputDir)
 		if err := os.MkdirAll(outputdir, 0700); err != nil {
@@ -266,14 +257,14 @@ func (p *Process) PrepareOutput() error {
 	return nil
 }
 
-func (p *Process) Folder() error {
+func (p *Archive) Folder() error {
 	validateResult, err := ValidateFilesInDirectory(p.Options.SourceDirectory, p.Options.RecurseSourceDirectory)
 	if p.ErrorHandle(err, validateResult.Errors...) == Break {
 		return err
 	}
 	p.Results.FilesCount = validateResult.FilesCount
 	p.Results.FilesFailure = validateResult.FilesFailure
-	p.Workers = make(map[string]*ArchiveWorker)
+	p.ArchiveWorkers = make(map[string]*ArchivePackageWorker)
 	p.WG = new(sync.WaitGroup)
 	err = p.PrepareOutput()
 	if err != nil {
@@ -332,7 +323,7 @@ func ErrorsMarshalLog(errs []error) error {
 	return nil
 }
 
-func (p *Process) File(sourceFilePath string) error {
+func (p *Archive) File(sourceFilePath string) error {
 	// Open file
 	fileHandle, err := os.Open(sourceFilePath)
 	if err != nil {
@@ -368,7 +359,7 @@ func (p *Process) File(sourceFilePath string) error {
 	if err != nil {
 		return err
 	}
-	fileMetaOriginal := FileMeta{}
+	fileMetaOriginal := ArchiveItemFileMeta{}
 	reader := bytes.NewReader(data)
 	err = fileMetaOriginal.Parse(omMetaInfo, fileInfo, reader,
 		&p.Options, sourceFilePath)
@@ -406,18 +397,7 @@ func (p *Process) File(sourceFilePath string) error {
 	return nil
 }
 
-func ProcessedFileRename(originalPath string) error {
-	fileName := filepath.Base(originalPath)
-	directory := filepath.Dir(originalPath)
-	newPath := filepath.Join(directory, "processed_"+fileName)
-	err := os.Rename(originalPath, newPath)
-	if err != nil {
-		return fmt.Errorf("Error renaming file: %s", err)
-	}
-	return nil
-}
-
-func (p *Process) WorkerLogInfo(workerType string, sizeOrig, sizePacked, sizeMinified uint64, filePathSource, filePathDestination string) {
+func (p *Archive) WorkerLogInfo(workerType string, sizeOrig, sizePacked, sizeMinified uint64, filePathSource, filePathDestination string) {
 	archiveRatio := float64(sizePacked) / float64(sizeOrig)
 	archiveRatioString := fmt.Sprintf("%.3f", archiveRatio)
 	minifyRatio := float64(sizeMinified) / float64(sizeOrig)
@@ -429,7 +409,7 @@ func (p *Process) WorkerLogInfo(workerType string, sizeOrig, sizePacked, sizeMin
 		"minified", sizeMinified, "filePathSource", filePathSource, "filePathDestination", filePathDestination)
 }
 
-func (p *Process) CheckArchiveWorkerDupes(worker *ArchiveWorker, fm *FileMeta) error {
+func (p *Archive) CheckArchiveWorkerDupes(worker *ArchivePackageWorker, fm *ArchiveItemFileMeta) error {
 	if p.Results.Duplicates == nil {
 		p.Results.Duplicates = make(map[string][]string)
 	}
@@ -447,17 +427,17 @@ func (p *Process) CheckArchiveWorkerDupes(worker *ArchiveWorker, fm *FileMeta) e
 		fm.FilePathSource, archiveNameAndFileName)
 }
 
-func (p *Process) CallArchiveWorker(fm *FileMeta, workerTypeCode WorkerTypeCode) error {
-	worker, ok := p.Workers[fm.WorkerName]
+func (p *Archive) CallArchiveWorker(fm *ArchiveItemFileMeta, workerTypeCode WorkerTypeCode) error {
+	worker, ok := p.ArchiveWorkers[fm.WorkerName]
 	if !ok {
-		worker = new(ArchiveWorker)
+		worker = new(ArchivePackageWorker)
 		worker.WorkerName = fm.WorkerName
 		err := worker.Init(fm.DirectoryDestination, fm.WorkerName)
 		if err != nil {
 			return fmt.Errorf("file not proccessed: %s, %w", fm.FilePathSource, err)
 		}
-		p.Workers[fm.WorkerName] = worker
-		go func(w *ArchiveWorker, workerTypeCode WorkerTypeCode) {
+		p.ArchiveWorkers[fm.WorkerName] = worker
+		go func(w *ArchivePackageWorker, workerTypeCode WorkerTypeCode) {
 			for {
 				workerParams := <-w.Call
 				origSize, compressedSize, bytesWritten, err := p.AddFileToArchive(worker, workerParams)
@@ -492,7 +472,7 @@ func (p *Process) CallArchiveWorker(fm *FileMeta, workerTypeCode WorkerTypeCode)
 	return nil
 }
 
-func (p *Process) AddFileToArchive(worker *ArchiveWorker, f *FileMeta) (
+func (p *Archive) AddFileToArchive(worker *ArchivePackageWorker, f *ArchiveItemFileMeta) (
 	uint64, uint64, uint64, error) {
 	var fileSize, compressedSize, minifiedSize uint64
 	// Create a new zip file header

@@ -291,3 +291,14 @@ func FileExists(filePath string) (bool, error) {
 func XOR(a, b bool) bool {
 	return (a || b) && !(a && b)
 }
+
+func ProcessedFileRename(originalPath string) error {
+	fileName := filepath.Base(originalPath)
+	directory := filepath.Dir(originalPath)
+	newPath := filepath.Join(directory, "processed_"+fileName)
+	err := os.Rename(originalPath, newPath)
+	if err != nil {
+		return fmt.Errorf("Error renaming file: %s", err)
+	}
+	return nil
+}

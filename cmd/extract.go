@@ -5,7 +5,7 @@ import (
 	"log/slog"
 )
 
-type Config_extract struct {
+type ConfigExtract struct {
 	SourceDirectory        string `cmd:"source_directory; i; ; directory to be processed"`
 	DestinationDirectory   string `cmd:"destination_directory; o; ; otput files"`
 	RecurseSourceDirectory bool   `cmd:"recurse_source_directory; R; false; recurse source directory"`
@@ -18,16 +18,16 @@ type Config_extract struct {
 	CSVheader              bool   `cmd:"csv_header; csvh; true; write csv column headers"`
 }
 
-func RunExtract(root_cfg *Config_root, filter_cfg *Config_extract) {
+func RunExtract(rootCfg *ConfigRoot, filterCfg *ConfigExtract) {
 	options := internal.FilterOptions{}
-	internal.CopyFields(filter_cfg, &options)
+	internal.CopyFields(filterCfg, &options)
 	slog.Info("effective subcommand options", "options", options)
-	if root_cfg.DebugConfig {
+	if rootCfg.DebugConfig {
 		return
 	}
-	if root_cfg.DryRun {
-		TEMP_DIR := internal.DirectoryCreateTemporaryOrPanic("openmedia_archive")
-		options.DestinationDirectory = TEMP_DIR
+	if rootCfg.DryRun {
+		TempDir := internal.DirectoryCreateTemporaryOrPanic("openmedia_archive")
+		options.DestinationDirectory = TempDir
 	}
 	internal.DirectoryIsReadableOrPanic(options.SourceDirectory)
 	filter := internal.Filter{Options: options}

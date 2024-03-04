@@ -14,6 +14,7 @@ var (
 	BuildBuildTime string
 )
 
+// VersionInfo Binary version info
 var VersionInfo = internal.VersionInfo{
 	Version:   "0.9.9",
 	GitTag:    BuildGitTag,
@@ -21,11 +22,13 @@ var VersionInfo = internal.VersionInfo{
 	BuildTime: BuildBuildTime,
 }
 
+// VersionInfoPrint print binary version info
 func VersionInfoPrint() {
 	fmt.Printf("openmedia_archive:%+v\n", VersionInfo)
 }
 
-type Config_root struct {
+// ConfigRoot Config for root command
+type ConfigRoot struct {
 	// "long flag; short flag; default value; description"
 	Version     bool   `cmd:"version; V; false; version of the program"`
 	Verbose     string `cmd:"verbose; v; 0; program verbosity level: DEBUG (-4), INFO (0), WARN (4), and ERROR (8)"`
@@ -35,7 +38,7 @@ type Config_root struct {
 }
 
 func RunRoot() {
-	rcfg := &Config_root{}
+	rcfg := &ConfigRoot{}
 	internal.SetupRootFlags(rcfg)
 	internal.SetLogLevel(rcfg.Verbose, rcfg.LogType)
 	if flag.NArg() < 1 {
@@ -48,11 +51,11 @@ func RunRoot() {
 
 	switch subcmd {
 	case "archive":
-		cmdCfg := &Config_archive{}
+		cmdCfg := &ConfigArchive{}
 		internal.SetupSubFlags(cmdCfg)
 		RunArchive(rcfg, cmdCfg)
 	case "extract":
-		cmdCfg := &Config_extract{}
+		cmdCfg := &ConfigExtract{}
 		internal.SetupSubFlags(cmdCfg)
 		RunExtract(rcfg, cmdCfg)
 	default:
