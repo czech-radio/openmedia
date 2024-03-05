@@ -350,7 +350,7 @@ func (ft *Filter) CSVheaderWriteB() {
 func (ft *Filter) CSVwriteUniqueFieldsValuesB() error {
 	// counts in separate column
 	rowsCount := ft.GetMaxUniqueFieldsValues()
-	rows := make([][]string, rowsCount, rowsCount)
+	rows := make([][]string, rowsCount)
 	rowLen := len(ft.FieldsUniqueValues)
 	for i, key := range FieldKeysToExtract {
 		// i:		index (column)
@@ -359,7 +359,7 @@ func (ft *Filter) CSVwriteUniqueFieldsValuesB() error {
 		rown := 0
 		for j, k := range fvals {
 			if len(rows[rown]) == 0 {
-				rows[rown] = make([]string, 2*rowLen, 2*rowLen)
+				rows[rown] = make([]string, 2*rowLen)
 			}
 			// unique value frequency (četnost)
 			rows[rown][i*2] = fmt.Sprint(k)

@@ -1,3 +1,4 @@
+// Package cmd defines subcommands for binary
 package cmd
 
 import (
@@ -19,7 +20,6 @@ var VersionInfo = internal.VersionInfo{
 	Version:   "0.9.9",
 	GitTag:    BuildGitTag,
 	GitCommit: BuildGitCommit,
-	BuildTime: BuildBuildTime,
 }
 
 // VersionInfoPrint print binary version info

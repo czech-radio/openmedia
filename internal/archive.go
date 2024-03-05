@@ -293,7 +293,7 @@ processFolder:
 		p.ErrorHandle(dupesErr)
 	}
 
-	ErrorsMarshalLog(p.Errors)
+	_ = ErrorsMarshalLog(p.Errors)
 	p.DestroyWorkers()
 	return nil
 }
