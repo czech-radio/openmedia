@@ -16,15 +16,18 @@ import (
 type WorkerTypeCode int
 
 const (
-	WorkerTypeOriginal WorkerTypeCode = iota
-	WorkerTypeMinified
+	WorkerTypeOriginalZip WorkerTypeCode = iota
+	WorkerTypeMinifiedZip
 	WorkerTypeCSV
 )
 
 var WorkerTypeMap map[WorkerTypeCode]string = map[WorkerTypeCode]string{
-	WorkerTypeOriginal: "ORIGINAL",
-	WorkerTypeMinified: "MINIFIED",
-	WorkerTypeCSV:      "CSV",
+	// WorkerTypeOriginal: "ORIGINAL",
+	// WorkerTypeMinified: "MINIFIED",
+	// WorkerTypeCSV:      "CSV",
+	WorkerTypeOriginalZip: "ORIGINAL.zip",
+	WorkerTypeMinifiedZip: "MINIFIED.zip",
+	WorkerTypeCSV:         "CSV",
 }
 
 type Archive struct {
@@ -221,7 +224,8 @@ func (f *ArchiveItemFileMeta) Parse(
 
 func (f *ArchiveItemFileMeta) SetWeekWorkerName(wtc WorkerTypeCode) string {
 	workerTypeString, _ := WorkerTypeMap[wtc]
-	f.WorkerName = fmt.Sprintf("%s/%d_W%02d_%s.%s", f.OpenMediaFileType.OutputDir, f.Year, f.Week, workerTypeString, f.CompressionType)
+	// f.WorkerName = fmt.Sprintf("%s/%d_W%02d_%s.%s", f.OpenMediaFileType.OutputDir, f.Year, f.Week, workerTypeString, f.CompressionType)
+	f.WorkerName = fmt.Sprintf("%s/%d_W%02d_%s", f.OpenMediaFileType.OutputDir, f.Year, f.Week, workerTypeString)
 	return f.WorkerName
 }
 
@@ -368,8 +372,8 @@ func (p *Archive) File(sourceFilePath string) error {
 	}
 
 	// 1. Create archive from original files
-	fileMetaOriginal.SetWeekWorkerName(WorkerTypeOriginal)
-	err = p.CallArchiveWorker(&fileMetaOriginal, WorkerTypeOriginal)
+	fileMetaOriginal.SetWeekWorkerName(WorkerTypeOriginalZip)
+	err = p.CallArchiveWorker(&fileMetaOriginal, WorkerTypeOriginalZip)
 	if err != nil {
 		return err
 	}
@@ -382,8 +386,8 @@ func (p *Archive) File(sourceFilePath string) error {
 	// 2. Create archive from minified files
 	fileMetaMinify := fileMetaOriginal
 	fileMetaMinify.FileReader = pr
-	fileMetaMinify.SetWeekWorkerName(WorkerTypeMinified)
-	err = p.CallArchiveWorker(&fileMetaMinify, WorkerTypeMinified)
+	fileMetaMinify.SetWeekWorkerName(WorkerTypeMinifiedZip)
+	err = p.CallArchiveWorker(&fileMetaMinify, WorkerTypeMinifiedZip)
 	if err != nil {
 		return err
 	}
@@ -453,10 +457,10 @@ func (p *Archive) CallArchiveWorker(fm *ArchiveItemFileMeta, workerTypeCode Work
 				)
 				// Update results stats
 				switch workerTypeCode {
-				case WorkerTypeMinified:
+				case WorkerTypeMinifiedZip:
 					p.Results.SizePackedMinified += compressedSize
 					p.Results.SizeMinified += bytesWritten
-				case WorkerTypeOriginal:
+				case WorkerTypeOriginalZip:
 					p.Results.SizePackedBackup += compressedSize
 					p.Results.SizeOriginal += origSize
 				}

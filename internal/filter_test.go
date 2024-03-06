@@ -28,7 +28,7 @@ func TestArchiveFolderMap(t *testing.T) {
 	arf := ArchiveFolder{
 		Years:       []int{2020},
 		IsoWeeks:    []int{6},
-		PackageType: "MINIFIED",
+		PackageType: WorkerTypeMinifiedZip,
 	}
 	err := arf.FolderMap(srcFolder, true)
 	if err != nil {
@@ -40,22 +40,23 @@ func TestArchiveFolderMap(t *testing.T) {
 func TestMatchArchivePackage(t *testing.T) {
 	pairs := [][]any{
 		// should match
-		{"2020_W09_MINIFIED.zip", []int{2020}, []int{}, "MINIFIED", true},
-		{"2021_W09_MINIFIED", []int{2021}, []int{9}, "MINIFIED", true},
-		{"2021_W09_MINIFIED", []int{}, []int{9}, "MINIFIED", true},
-		{"2021_W09_MINIFIED", []int{2020, 2021}, []int{9}, "MINIFIED", true},
-		{"2021_W09_MINIFIED", []int{2020, 2021}, []int{9}, "ORIGINAL", true},
+		{"2020_W09_MINIFIED.zip", []int{2020}, []int{}, WorkerTypeMinifiedZip, true},
+		{"2021_W09_MINIFIED.zip", []int{2021}, []int{9}, WorkerTypeMinifiedZip, true},
+		{"2021_W09_MINIFIED.zip", []int{}, []int{9}, WorkerTypeMinifiedZip, true},
+		{"2021_W09_MINIFIED.zip", []int{2020, 2021}, []int{9}, WorkerTypeMinifiedZip, true},
+		{"2021_W09_MINIFIED.zip", []int{2020, 2021}, []int{9}, WorkerTypeMinifiedZip, true},
 		// should not match
-		{"2021_W09_MINIFIED", []int{2020}, []int{}, "MINIFIED", false},
-		{"2021_W09_MINIFIED", []int{2021}, []int{8, 7}, "MINIFIED", false},
-		{"2021_W09_MINIFIED", []int{2021, 2022}, []int{8, 7}, "MINIFIED", false},
-		{"2021_W09_MINIFIED", []int{2020, 2022}, []int{9}, "FUCK", false},
+		{"2021_W09_MINIFIED.zip", []int{2020}, []int{}, WorkerTypeMinifiedZip, false},
+		{"2021_W09_MINIFIED.zip", []int{2021}, []int{8, 7}, WorkerTypeMinifiedZip, false},
+		{"2021_W09_MINIFIED.zip", []int{2021, 2022}, []int{8, 7}, WorkerTypeMinifiedZip, false},
+		{"2021_W09_MINIFIED.zip", []int{2020, 2022}, []int{9}, WorkerTypeCode(10), false},
+		{"2021_W09_MINIFIED.zip", []int{2020, 2021}, []int{9}, WorkerTypeOriginalZip, false},
 	}
 	for _, p := range pairs {
 		fileName := p[0].(string)
 		years := p[1].([]int)
 		weeks := p[2].([]int)
-		packageType := p[3].(string)
+		packageType := p[3].(WorkerTypeCode)
 		ok := MatchArchivePackage(fileName, years, weeks, packageType)
 		if ok != p[4].(bool) {
 			t.Error(fmt.Errorf("not matching: %+v, result: %v", p, ok))

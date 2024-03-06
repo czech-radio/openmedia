@@ -59,12 +59,13 @@ type ArchiveFolder struct {
 	PackageReaders   []*zip.ReadCloser // zipr.File //[]*File contains all zip files
 	Years            []int
 	IsoWeeks         []int
-	PackageType      string
+	PackageType      WorkerTypeCode
 	// MatchPackageRegex regexp.Regexp
 }
 
-func MatchArchivePackage(fileName string, years []int, weeks []int, packageType string) bool {
+func MatchArchivePackage(fileName string, years []int, weeks []int, WorkerTypeCode WorkerTypeCode) bool {
 	// fileName '2020_W05_MINIFIED.zip'
+	packageType := WorkerTypeMap[WorkerTypeCode]
 	fmt.Println(fileName, years, weeks, packageType)
 	var matchingYear bool
 	var matchingWeek bool

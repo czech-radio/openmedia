@@ -79,6 +79,7 @@ func Test_ProcessFolder(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
+	Sleeper(100, "s")
 }
 
 func Test_ProcessFolderInvalid(t *testing.T) {
