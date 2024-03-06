@@ -16,18 +16,17 @@ import (
 type WorkerTypeCode int
 
 const (
-	WorkerTypeOriginalZip WorkerTypeCode = iota
-	WorkerTypeMinifiedZip
-	WorkerTypeCSV
+	WorkerTypeZIPoriginal WorkerTypeCode = iota
+	WorkerTypeZIPminified
+	WorkerTypeCSVcontactsFields
+	WorkerTypeCSVcontactsUniqueFields
 )
 
-var WorkerTypeMap map[WorkerTypeCode]string = map[WorkerTypeCode]string{
-	// WorkerTypeOriginal: "ORIGINAL",
-	// WorkerTypeMinified: "MINIFIED",
-	// WorkerTypeCSV:      "CSV",
-	WorkerTypeOriginalZip: "ORIGINAL.zip",
-	WorkerTypeMinifiedZip: "MINIFIED.zip",
-	WorkerTypeCSV:         "CSV",
+var WorkerTypeMap = map[WorkerTypeCode]string{
+	WorkerTypeZIPoriginal:             "ORIGINAL.zip",
+	WorkerTypeZIPminified:             "MINIFIED.zip",
+	WorkerTypeCSVcontactsFields:       "CONTACT_FIELDS.csv",
+	WorkerTypeCSVcontactsUniqueFields: "CONTACT_FIELDS_UNIQUE.csv",
 }
 
 type Archive struct {
@@ -374,8 +373,8 @@ func (p *Archive) File(sourceFilePath string) error {
 	}
 
 	// 1. Create archive from original files
-	fileMetaOriginal.SetWeekWorkerName(WorkerTypeOriginalZip)
-	err = p.CallArchiveWorker(&fileMetaOriginal, WorkerTypeOriginalZip)
+	fileMetaOriginal.SetWeekWorkerName(WorkerTypeZIPoriginal)
+	err = p.CallArchiveWorker(&fileMetaOriginal, WorkerTypeZIPoriginal)
 	if err != nil {
 		return err
 	}
@@ -388,8 +387,8 @@ func (p *Archive) File(sourceFilePath string) error {
 	// 2. Create archive from minified files
 	fileMetaMinify := fileMetaOriginal
 	fileMetaMinify.FileReader = pr
-	fileMetaMinify.SetWeekWorkerName(WorkerTypeMinifiedZip)
-	err = p.CallArchiveWorker(&fileMetaMinify, WorkerTypeMinifiedZip)
+	fileMetaMinify.SetWeekWorkerName(WorkerTypeZIPminified)
+	err = p.CallArchiveWorker(&fileMetaMinify, WorkerTypeZIPminified)
 	if err != nil {
 		return err
 	}
@@ -459,10 +458,10 @@ func (p *Archive) CallArchiveWorker(fm *ArchiveItemFileMeta, workerTypeCode Work
 				)
 				// Update results stats
 				switch workerTypeCode {
-				case WorkerTypeMinifiedZip:
+				case WorkerTypeZIPminified:
 					p.Results.SizePackedMinified += compressedSize
 					p.Results.SizeMinified += bytesWritten
-				case WorkerTypeOriginalZip:
+				case WorkerTypeZIPoriginal:
 					p.Results.SizePackedBackup += compressedSize
 					p.Results.SizeOriginal += origSize
 				}

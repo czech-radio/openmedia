@@ -27,8 +27,8 @@ func TestArchiveFolderListing(t *testing.T) {
 func TestArchiveFolderMap(t *testing.T) {
 	arf := ArchiveFolder{
 		Years:       []int{2020},
-		IsoWeeks:    []int{6},
-		PackageType: WorkerTypeMinifiedZip,
+		IsoWeeks:    []int{},
+		PackageType: WorkerTypeZIPminified,
 	}
 	err := arf.FolderMap(srcFolder, true)
 	if err != nil {
@@ -40,17 +40,17 @@ func TestArchiveFolderMap(t *testing.T) {
 func TestMatchArchivePackage(t *testing.T) {
 	pairs := [][]any{
 		// should match
-		{"2020_W09_MINIFIED.zip", []int{2020}, []int{}, WorkerTypeMinifiedZip, true},
-		{"2021_W09_MINIFIED.zip", []int{2021}, []int{9}, WorkerTypeMinifiedZip, true},
-		{"2021_W09_MINIFIED.zip", []int{}, []int{9}, WorkerTypeMinifiedZip, true},
-		{"2021_W09_MINIFIED.zip", []int{2020, 2021}, []int{9}, WorkerTypeMinifiedZip, true},
-		{"2021_W09_MINIFIED.zip", []int{2020, 2021}, []int{9}, WorkerTypeMinifiedZip, true},
+		{"2020_W09_MINIFIED.zip", []int{2020}, []int{}, WorkerTypeZIPminified, true},
+		{"2021_W09_MINIFIED.zip", []int{2021}, []int{9}, WorkerTypeZIPminified, true},
+		{"2021_W09_MINIFIED.zip", []int{}, []int{9}, WorkerTypeZIPminified, true},
+		{"2021_W09_MINIFIED.zip", []int{2020, 2021}, []int{9}, WorkerTypeZIPminified, true},
+		{"2021_W09_MINIFIED.zip", []int{2020, 2021}, []int{9}, WorkerTypeZIPminified, true},
 		// should not match
-		{"2021_W09_MINIFIED.zip", []int{2020}, []int{}, WorkerTypeMinifiedZip, false},
-		{"2021_W09_MINIFIED.zip", []int{2021}, []int{8, 7}, WorkerTypeMinifiedZip, false},
-		{"2021_W09_MINIFIED.zip", []int{2021, 2022}, []int{8, 7}, WorkerTypeMinifiedZip, false},
+		{"2021_W09_MINIFIED.zip", []int{2020}, []int{}, WorkerTypeZIPminified, false},
+		{"2021_W09_MINIFIED.zip", []int{2021}, []int{8, 7}, WorkerTypeZIPminified, false},
+		{"2021_W09_MINIFIED.zip", []int{2021, 2022}, []int{8, 7}, WorkerTypeZIPminified, false},
 		{"2021_W09_MINIFIED.zip", []int{2020, 2022}, []int{9}, WorkerTypeCode(10), false},
-		{"2021_W09_MINIFIED.zip", []int{2020, 2021}, []int{9}, WorkerTypeOriginalZip, false},
+		{"2021_W09_MINIFIED.zip", []int{2020, 2021}, []int{9}, WorkerTypeZIPoriginal, false},
 	}
 	for _, p := range pairs {
 		fileName := p[0].(string)

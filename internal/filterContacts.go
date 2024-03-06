@@ -59,8 +59,8 @@ processFolder:
 			break processFolder
 		}
 	}
-	switch ft.Options.OutputType {
-	case "csv":
+	switch ft.Options.FilterType {
+	case WorkerTypeCSVcontactsFields:
 		if ft.Options.CSVheader {
 			ft.CSVheaderWrite()
 		}
@@ -68,7 +68,7 @@ processFolder:
 		if err != nil {
 			slog.Error(err.Error())
 		}
-	case "unique":
+	case WorkerTypeCSVcontactsUniqueFields:
 		if ft.Options.CSVheader {
 			ft.CSVheaderWriteB()
 			ft.CSVwriteUniqueCountsB()

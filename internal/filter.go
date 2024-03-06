@@ -14,12 +14,14 @@ type FilterOptions struct {
 	DestinationDirectory   string
 	RecurseSourceDirectory bool
 	InvalidFileContinue    bool
-	FileType               string
-	DateFrom               string
-	DateTo                 string
-	OutputType             string // csv contacts,unique contact fields,
-	CSVdelim               string
-	CSVheader              bool
+
+	FilterType WorkerTypeCode
+	OutputType string // csv contacts,unique contact fields,
+	CSVdelim   string
+	CSVheader  bool
+
+	DateFrom string
+	DateTo   string
 }
 
 type ResultsCompounded map[string]*FilterResults
@@ -63,24 +65,24 @@ type ArchiveFolder struct {
 	// MatchPackageRegex regexp.Regexp
 }
 
-func MatchArchivePackage(fileName string, years []int, weeks []int, WorkerTypeCode WorkerTypeCode) bool {
+func MatchArchivePackage(packageFilename string, years []int, weeks []int, WorkerTypeCode WorkerTypeCode) bool {
 	// fileName '2020_W05_MINIFIED.zip'
 	packageType := WorkerTypeMap[WorkerTypeCode]
-	fmt.Println(fileName, years, weeks, packageType)
+	fmt.Println(packageFilename, years, weeks, packageType)
 	var matchingYear bool
 	var matchingWeek bool
-	if !strings.Contains(fileName, packageType) {
+	if !strings.Contains(packageFilename, packageType) {
 		return false
 	}
 	for _, year := range years {
-		idx := strings.Index(fileName, fmt.Sprintf("%04d", year))
+		idx := strings.Index(packageFilename, fmt.Sprintf("%04d", year))
 		if idx == 0 {
 			matchingYear = true
 			break
 		}
 	}
 	for _, week := range weeks {
-		idx := strings.Index(fileName, fmt.Sprintf("%02d", week))
+		idx := strings.Index(packageFilename, fmt.Sprintf("%02d", week))
 		if idx == 6 {
 			matchingWeek = true
 			break
@@ -96,6 +98,9 @@ func MatchArchivePackage(fileName string, years []int, weeks []int, WorkerTypeCo
 		return matchingWeek
 	}
 	return true
+}
+
+func MatchArchivePackageFile(packageFilename string) {
 }
 
 func (af *ArchiveFolder) FolderListing(rootDir string, recursive bool) error {
@@ -146,6 +151,9 @@ func (af *ArchiveFolder) FolderMap(
 		af.PackageReaders = append(af.PackageReaders, zipr)
 	}
 	return nil
+}
+
+func (af *ArchiveFolder) FolderProcess() {
 }
 
 func (ft *Filter) ErrorHandle(errMain error, errorsPartial ...error) ControlFlowAction {
