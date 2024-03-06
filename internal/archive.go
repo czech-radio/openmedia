@@ -236,9 +236,10 @@ func (p *Archive) ErrorHandle(errMain error, errorsPartial ...error) ControlFlow
 		return Continue
 	}
 
-	// PC=1?
 	p.Results.FilesFailure++
-	slog.Error(errMain.Error())
+	// Get info about function which called this hadnler
+	fileName, funcName, line := TraceFunction(2)
+	slog.Error(errMain.Error(), "source", fileName, "function", funcName, "line", line)
 	p.Errors = append(p.Errors, errMain)
 	if len(errorsPartial) > 0 {
 		p.Errors = append(p.Errors, errorsPartial...)
@@ -278,6 +279,7 @@ func (p *Archive) Folder() error {
 processFolder:
 	for _, file := range validateResult.FilesValid {
 		err := p.File(file)
+		err = ErrorWrap("filename", file, err)
 		flow := p.ErrorHandle(err)
 		switch flow {
 		case Skip:

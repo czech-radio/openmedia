@@ -2,6 +2,7 @@ package internal
 
 import (
 	"errors"
+	"fmt"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -150,4 +151,9 @@ func Test_DirectoryCopy(t *testing.T) {
 	if err != nil && errors.Unwrap(err) != ErrFilePathExists {
 		t.Error(err)
 	}
+}
+
+func Test_LogTraceFunction(t *testing.T) {
+	fmt.Println(TraceFunction(0))
+	fmt.Println(TraceFunction(1))
 }

@@ -2,6 +2,7 @@ package internal
 
 import (
 	"errors"
+	"fmt"
 	"log/slog"
 	"os"
 	"strings"
@@ -48,6 +49,13 @@ var Errors ErrorsCodeMap = ErrorsCodeMap{
 	ErrCodeParseXML:   "cannot parse xml",
 	ErrCodeParseField: "cannot parse field",
 	// ErrCodeDataFormat: "file has incompatible format",
+}
+
+func ErrorWrap(fieldName, fieldValue string, err error) error {
+	if err != nil {
+		return fmt.Errorf("%s: %s, %w", fieldName, fieldValue, err)
+	}
+	return nil
 }
 
 func (ecm ErrorsCodeMap) CodeMsg(code ErrorCode) string {
