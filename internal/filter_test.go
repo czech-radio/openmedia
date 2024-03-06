@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"testing"
+	"time"
 )
 
 var srcFolder = "/home/jk/CRO/CRO_BASE/openmedia-archive_backup/Archive/"
@@ -16,8 +17,14 @@ func skipTest(t *testing.T) {
 
 func TestArchiveFolderListing(t *testing.T) {
 	skipTest(t)
-	arf := new(ArchiveFolder)
-	err := arf.FolderListing(srcFolder, true)
+	timeZone, _ := time.LoadLocation("")
+	workerTypes := []WorkerTypeCode{WorkerTypeZIPminified}
+	arf := ArchiveFolder{
+		PackageTypes: workerTypes,
+	}
+	dateFrom := time.Date(2020, 1, 1, 0, 0, 0, 0, timeZone)
+	dateTo := time.Date(2025, 2, 1, 0, 0, 0, 0, timeZone)
+	err := arf.FolderListing(srcFolder, true, dateFrom, dateTo)
 	if err != nil {
 		t.Error(err)
 	}
@@ -25,41 +32,17 @@ func TestArchiveFolderListing(t *testing.T) {
 }
 
 func TestArchiveFolderMap(t *testing.T) {
+	workerTypes := []WorkerTypeCode{WorkerTypeZIPminified}
 	arf := ArchiveFolder{
-		Years:       []int{2020},
-		IsoWeeks:    []int{},
-		PackageType: WorkerTypeZIPminified,
+		PackageTypes: workerTypes,
 	}
-	err := arf.FolderMap(srcFolder, true)
+
+	timeZone, _ := time.LoadLocation("")
+	dateFrom := time.Date(2020, 1, 1, 0, 0, 0, 0, timeZone)
+	dateTo := time.Date(2022, 2, 1, 0, 0, 0, 0, timeZone)
+	err := arf.FolderMap(srcFolder, true, dateFrom, dateTo)
 	if err != nil {
 		t.Error(err)
 	}
 	fmt.Println(arf)
-}
-
-func TestMatchArchivePackage(t *testing.T) {
-	pairs := [][]any{
-		// should match
-		{"2020_W09_MINIFIED.zip", []int{2020}, []int{}, WorkerTypeZIPminified, true},
-		{"2021_W09_MINIFIED.zip", []int{2021}, []int{9}, WorkerTypeZIPminified, true},
-		{"2021_W09_MINIFIED.zip", []int{}, []int{9}, WorkerTypeZIPminified, true},
-		{"2021_W09_MINIFIED.zip", []int{2020, 2021}, []int{9}, WorkerTypeZIPminified, true},
-		{"2021_W09_MINIFIED.zip", []int{2020, 2021}, []int{9}, WorkerTypeZIPminified, true},
-		// should not match
-		{"2021_W09_MINIFIED.zip", []int{2020}, []int{}, WorkerTypeZIPminified, false},
-		{"2021_W09_MINIFIED.zip", []int{2021}, []int{8, 7}, WorkerTypeZIPminified, false},
-		{"2021_W09_MINIFIED.zip", []int{2021, 2022}, []int{8, 7}, WorkerTypeZIPminified, false},
-		{"2021_W09_MINIFIED.zip", []int{2020, 2022}, []int{9}, WorkerTypeCode(10), false},
-		{"2021_W09_MINIFIED.zip", []int{2020, 2021}, []int{9}, WorkerTypeZIPoriginal, false},
-	}
-	for _, p := range pairs {
-		fileName := p[0].(string)
-		years := p[1].([]int)
-		weeks := p[2].([]int)
-		packageType := p[3].(WorkerTypeCode)
-		ok := MatchArchivePackage(fileName, years, weeks, packageType)
-		if ok != p[4].(bool) {
-			t.Error(fmt.Errorf("not matching: %+v, result: %v", p, ok))
-		}
-	}
 }

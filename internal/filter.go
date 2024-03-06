@@ -6,7 +6,7 @@ import (
 	"io/fs"
 	"log/slog"
 	"path/filepath"
-	"strings"
+	"time"
 )
 
 type FilterOptions struct {
@@ -15,14 +15,24 @@ type FilterOptions struct {
 	RecurseSourceDirectory bool
 	InvalidFileContinue    bool
 
-	FilterType WorkerTypeCode
-	OutputType string // csv contacts,unique contact fields,
-	CSVdelim   string
-	CSVheader  bool
-
-	DateFrom string
-	DateTo   string
+	FilterType  WorkerTypeCode
+	OutputType  string // csv contacts,unique contact fields,
+	CSVdelim    string
+	CSVheader   bool
+	DateFrom    string
+	DateTo      string
+	WeekDays    []time.Weekday
+	RadionNames []string
 }
+
+// type Query struct {
+// DateFrom string
+// DateTo   string
+// Months []int
+// WeekDays []int
+// IsoWeeks []int
+// RadioName string
+// }
 
 type ResultsCompounded map[string]*FilterResults
 
@@ -59,51 +69,12 @@ type ArchiveFolder struct {
 	PackageFilenames []string
 	SimpleFilenames  []string
 	PackageReaders   []*zip.ReadCloser // zipr.File //[]*File contains all zip files
-	Years            []int
-	IsoWeeks         []int
-	PackageType      WorkerTypeCode
+	PackageTypes     []WorkerTypeCode
 	// MatchPackageRegex regexp.Regexp
 }
 
-func MatchArchivePackage(packageFilename string, years []int, weeks []int, WorkerTypeCode WorkerTypeCode) bool {
-	// fileName '2020_W05_MINIFIED.zip'
-	packageType := WorkerTypeMap[WorkerTypeCode]
-	fmt.Println(packageFilename, years, weeks, packageType)
-	var matchingYear bool
-	var matchingWeek bool
-	if !strings.Contains(packageFilename, packageType) {
-		return false
-	}
-	for _, year := range years {
-		idx := strings.Index(packageFilename, fmt.Sprintf("%04d", year))
-		if idx == 0 {
-			matchingYear = true
-			break
-		}
-	}
-	for _, week := range weeks {
-		idx := strings.Index(packageFilename, fmt.Sprintf("%02d", week))
-		if idx == 6 {
-			matchingWeek = true
-			break
-		}
-	}
-	if len(years) > 0 && len(weeks) > 0 {
-		return matchingYear && matchingWeek
-	}
-	if len(years) > 0 && len(weeks) == 0 {
-		return matchingYear
-	}
-	if len(years) == 0 && len(weeks) > 0 {
-		return matchingWeek
-	}
-	return true
-}
-
-func MatchArchivePackageFile(packageFilename string) {
-}
-
-func (af *ArchiveFolder) FolderListing(rootDir string, recursive bool) error {
+func (af *ArchiveFolder) FolderListing(
+	rootDir string, recursive bool, dateFrom, dateTo time.Time) error {
 	dirWalker := func(filePath string, file fs.DirEntry, err error) error {
 		slog.Info(filePath)
 		if err != nil {
@@ -118,18 +89,14 @@ func (af *ArchiveFolder) FolderListing(rootDir string, recursive bool) error {
 		if file.IsDir() {
 			return nil
 		}
-		file_extension := filepath.Ext(filePath)
-		switch file_extension {
-		case ".zip":
-			fileName := filepath.Base(filePath)
-			ok := MatchArchivePackage(
-				fileName, af.Years, af.IsoWeeks, af.PackageType,
-			)
-			if ok {
-				af.PackageFilenames = append(af.PackageFilenames, filePath)
+		for _, wtc := range af.PackageTypes {
+			switch wtc {
+			case WorkerTypeZIPminified, WorkerTypeZIPoriginal:
+				ok, _ := ArchivePackageMatch(filePath, wtc, dateFrom, dateTo)
+				if ok {
+					af.PackageFilenames = append(af.PackageFilenames, filePath)
+				}
 			}
-		case ".xml":
-			af.SimpleFilenames = append(af.SimpleFilenames, filePath)
 		}
 		return nil
 	}
@@ -138,8 +105,8 @@ func (af *ArchiveFolder) FolderListing(rootDir string, recursive bool) error {
 
 // NOTE: Do not forget to close all files
 func (af *ArchiveFolder) FolderMap(
-	rootDir string, recursive bool) error {
-	err := af.FolderListing(rootDir, recursive)
+	rootDir string, recursive bool, dateFrom, dateTo time.Time) error {
+	err := af.FolderListing(rootDir, recursive, dateFrom, dateTo)
 	if err != nil {
 		return err
 	}

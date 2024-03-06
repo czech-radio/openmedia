@@ -312,3 +312,27 @@ func ProcessedFileRename(originalPath string) error {
 	}
 	return nil
 }
+
+func DateIntervalsIntersec(rA, rB [2]time.Time) bool {
+	if rA[0].Before(rB[0]) && rA[1].After(rB[1]) {
+		// no truncate
+		return true
+	}
+	if rA[0].Before(rB[0]) && rA[1].After(rB[1]) {
+		// truncate right
+		return true
+	}
+	if rA[0].After(rB[0]) && rA[1].Before(rB[1]) {
+		// truncate left and right
+		return true
+	}
+	if rA[0].After(rB[0]) && rA[1].Before(rB[1]) {
+		// truncate left
+		return true
+	}
+	return false
+}
+
+func DateInInterval(interval [2]time.Time, dateToCheck time.Time) bool {
+	return interval[0].Before(dateToCheck) && interval[1].After(dateToCheck)
+}

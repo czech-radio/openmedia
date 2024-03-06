@@ -6,6 +6,7 @@ require (
 	github.com/antchfx/xmlquery v1.3.18
 	github.com/go-xmlfmt/xmlfmt v1.1.2
 	github.com/ncruces/go-strftime v0.1.9
+	github.com/snabb/isoweek v1.0.3
 	golang.org/x/text v0.13.0
 )
 
