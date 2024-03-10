@@ -38,7 +38,7 @@ func TestArchiveFolderMap(t *testing.T) {
 	}
 
 	dateFrom := time.Date(2020, 2, 1, 0, 0, 0, 0, ArchiveTimeZone)
-	dateTo := time.Date(2020, 2, 1, 23, 0, 0, 0, ArchiveTimeZone)
+	dateTo := time.Date(2020, 2, 1, 10, 0, 0, 0, ArchiveTimeZone)
 	filterRange := [2]time.Time{dateFrom, dateTo}
 	query := ArchiveFolderQuery{DateRange: filterRange}
 	err := arf.FolderMap(srcFolder, true, &query)
@@ -46,20 +46,7 @@ func TestArchiveFolderMap(t *testing.T) {
 		t.Error(err)
 	}
 	fmt.Println("packages", len(arf.Packages))
-	// fmt.Println(len(arf.Packages))
-	// for _, i := range arf.Packages {
-	// fmt.Println(i.PackageName)
-	// files := i.PackageFilenames
-	// fmt.Println(len(files))
-	// if i.PackageFilenames == nil {
-	// fmt.Println(i, "is nil")
-	// }
-	// fmt.Println(i.PackageName, len(i.PackageFilenames))
-	// }
-	// fmt.Println(dateFrom.ISOWeek())
-	// fmt.Println(dateFrom.Weekday())
-	// fmt.Println(dateTo.ISOWeek())
-	// fmt.Println(dateTo.Weekday())
-	// dateC := time.Date(2020, 2, 3, 0, 0, 0, 0, ArchiveTimeZone)
-	// fmt.Println(dateC.ISOWeek())
+	for _, i := range arf.Packages {
+		fmt.Println(len(i.PackageFilenames))
+	}
 }

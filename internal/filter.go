@@ -124,7 +124,9 @@ func (af *ArchiveFolder) FolderMap(
 		if err != nil {
 			return err
 		}
-		af.Packages[packageName] = archivePackage
+		if len(archivePackage.PackageFilenames) > 0 {
+			af.Packages[packageName] = archivePackage
+		}
 	}
 	return nil
 }
@@ -137,11 +139,14 @@ func PackageMap(packageName PackageName, q *ArchiveFolderQuery) (*ArchivePackage
 	var ap ArchivePackage
 	for _, f := range zipr.File {
 		ok, err := ArchivePackageFileMatch(f.Name, q)
-		if err != nil || !ok {
-			slog.Debug("no match", f.Name, q.DateRange)
+		if err != nil {
 			return nil, err
 		}
-		slog.Debug("matches", f.Name, q.DateRange)
+		if !ok {
+			slog.Debug("no match", f.Name, q.DateRange)
+			continue
+		}
+		slog.Debug("matche", f.Name, q.DateRange)
 		ap.PackageName = packageName
 		ap.PackageReader = zipr
 		ap.PackageFilenames = append(ap.PackageFilenames, f.Name)
