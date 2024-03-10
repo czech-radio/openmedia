@@ -157,3 +157,72 @@ func Test_LogTraceFunction(t *testing.T) {
 	fmt.Println(TraceFunction(0))
 	fmt.Println(TraceFunction(1))
 }
+
+func TestDateRangesIntersection(t *testing.T) {
+	testCases := []struct {
+		name      string
+		r1        [2]time.Time
+		r2        [2]time.Time
+		intersect bool
+	}{
+		{
+			name: "Whole intersection",
+			r1: [2]time.Time{
+				time.Date(2024, 3, 10, 8, 0, 0, 0, ArchiveTimeZone),
+				time.Date(2024, 3, 10, 12, 0, 0, 0, ArchiveTimeZone)},
+			r2: [2]time.Time{
+				time.Date(2024, 3, 10, 9, 0, 0, 0, ArchiveTimeZone),
+				time.Date(2024, 3, 10, 10, 0, 0, 0, ArchiveTimeZone)},
+			intersect: true,
+		},
+		{
+			name: "Partial Intersection right",
+			r1: [2]time.Time{
+				time.Date(2024, 3, 10, 8, 0, 0, 0, ArchiveTimeZone),
+				time.Date(2024, 3, 10, 12, 0, 0, 0, ArchiveTimeZone)},
+			r2: [2]time.Time{
+				time.Date(2024, 3, 10, 10, 0, 0, 0, ArchiveTimeZone),
+				time.Date(2024, 3, 10, 14, 0, 0, 0, ArchiveTimeZone)},
+			intersect: true,
+		},
+		{
+			name: "Partial Intersection left",
+			r1: [2]time.Time{
+				time.Date(2024, 3, 10, 10, 0, 0, 0, ArchiveTimeZone),
+				time.Date(2024, 3, 10, 14, 0, 0, 0, ArchiveTimeZone)},
+			r2: [2]time.Time{
+				time.Date(2024, 3, 10, 8, 0, 0, 0, ArchiveTimeZone),
+				time.Date(2024, 3, 10, 12, 0, 0, 0, ArchiveTimeZone)},
+			intersect: true,
+		},
+		{
+			name: "No Intersection before",
+			r1: [2]time.Time{
+				time.Date(2024, 4, 10, 0, 0, 0, 0, ArchiveTimeZone),
+				time.Date(2024, 4, 11, 0, 0, 0, 0, ArchiveTimeZone)},
+			r2: [2]time.Time{
+				time.Date(2024, 3, 10, 0, 0, 0, 0, ArchiveTimeZone),
+				time.Date(2024, 3, 10, 0, 0, 0, 0, ArchiveTimeZone)},
+			intersect: false,
+		},
+		{
+			name: "No Intersection After",
+			r1: [2]time.Time{
+				time.Date(2024, 2, 10, 0, 0, 0, 0, ArchiveTimeZone),
+				time.Date(2024, 2, 11, 0, 0, 0, 0, ArchiveTimeZone)},
+			r2: [2]time.Time{
+				time.Date(2024, 3, 10, 0, 0, 0, 0, ArchiveTimeZone),
+				time.Date(2024, 3, 11, 0, 0, 0, 0, ArchiveTimeZone)},
+			intersect: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			dateRange, ok := DateRangesIntersection(tc.r1, tc.r2)
+			if ok != tc.intersect {
+				t.Errorf("expected intersect to be %t; got %v", tc.intersect, dateRange)
+			}
+		})
+	}
+}

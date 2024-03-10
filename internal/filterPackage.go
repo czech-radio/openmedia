@@ -2,6 +2,7 @@ package internal
 
 import (
 	"fmt"
+	"log/slog"
 	"regexp"
 	"strconv"
 	"strings"
@@ -37,6 +38,7 @@ func ArchivePackageMatch(
 	if !ok {
 		panic("unknown workertype code")
 	}
+	slog.Debug(packageName, "range", filterRange)
 	packageStart, packageEnd, ptype, err := ArchivePackageNameParse(packageName)
 	if err != nil {
 		return false, err
@@ -45,7 +47,8 @@ func ArchivePackageMatch(
 		return false, nil
 	}
 	packageRange := [2]time.Time{packageStart, packageEnd}
-	return DateIntervalsIntersec(filterRange, packageRange), nil
+	_, ok = DateRangesIntersection(filterRange, packageRange)
+	return ok, nil
 }
 
 // var packageFileNameRegex = regexp.MustCompile(`^(RD)_(\d\d)_(\d\d)_(\s*.*)$`)
@@ -87,10 +90,17 @@ func ArchivePackageFilenameParse(fileName string) (RundownName, error) {
 	if err != nil {
 		return out, err
 	}
+	//Max hour number is 23
+	if hourTo == "24" {
+		hourTo = "00"
+	}
 	strDateTo := fmt.Sprintf("%s%s%s%s", year, month, day, hourTo)
 	dateTo, err := strftime.Parse(timeFormat, strDateTo)
 	if err != nil {
 		return out, err
+	}
+	if hourTo == "24" {
+		dateTo = dateTo.AddDate(0, 0, 1)
 	}
 
 	splited := strings.Split(res[4], "_")
@@ -109,7 +119,7 @@ func ArchivePackageFilenameParse(fileName string) (RundownName, error) {
 	return out, nil
 }
 
-func ArchivePackageFilesMatch(nestedFileName string, q *ArchiveFolderPackageQuery) (bool, error) {
+func ArchivePackageFileMatch(nestedFileName string, q *ArchiveFolderQuery) (bool, error) {
 	if q == nil {
 		return false, nil
 	}
@@ -117,16 +127,13 @@ func ArchivePackageFilesMatch(nestedFileName string, q *ArchiveFolderPackageQuer
 	if err != nil {
 		return false, err
 	}
-
-	if len(q.RadioNames) >= 0 && !q.RadioNames[meta.RadioName] {
+	if len(q.RadioNames) > 0 && !q.RadioNames[meta.RadioName] {
 		return false, nil
 	}
-	if len(q.WeekDays) >= 0 && !q.WeekDays[meta.WeekDay] {
+	if len(q.WeekDays) > 0 && !q.WeekDays[meta.WeekDay] {
 		return false, nil
 	}
-	// Match date range
-	// ok := DateIntervalsIntersec(q.DateRange, meta.DateRange)
-	ok := DateIntervalsIntersec(q.DateRange, meta.DateRange)
+	_, ok := DateRangesIntersection(q.DateRange, meta.DateRange)
 	if !ok {
 		return false, nil
 	}

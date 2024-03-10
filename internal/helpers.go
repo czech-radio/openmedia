@@ -145,7 +145,8 @@ func DirectoryCreateTemporaryOrPanic(base_name string) string {
 	switch runtime.GOOS {
 	case "linux":
 		// Create temp directory in RAM
-		file_path, err = os.MkdirTemp("/dev/shm", base_name)
+		// file_path, err = os.MkdirTemp("/dev/shm", base_name)
+		file_path, err = os.MkdirTemp("/tmp/", base_name)
 	default:
 		// Create temp directory in system default temp directory
 		file_path, err = os.MkdirTemp("", base_name)
@@ -321,31 +322,43 @@ func ProcessedFileRename(originalPath string) error {
 	return nil
 }
 
-// DateIntervalsIntersec check if two dates intersect. If default value for range is given then intersect of ranges is true.
-func DateIntervalsIntersec(rA, rB [2]time.Time) bool {
+func DateRangesIntersection(rA, rB [2]time.Time) ([2]time.Time, bool) {
+	resrange := [2]time.Time{}
 	if rA[0].IsZero() && rA[1].IsZero() {
-		return true
+		return rB, true
 	}
+	if rA[0].After(rB[1]) {
+		return resrange, false
+	}
+	if rA[1].Before(rB[0]) {
+		return resrange, false
+	}
+	var start time.Time
+	if rA[0].Before(rB[0]) {
+		start = rB[0]
+	} else {
+		start = rA[0]
+	}
+	var end time.Time
+	if rA[1].Before(rB[1]) {
+		end = rA[1]
+	} else {
+		end = rB[1]
+	}
+	resrange[0] = start
+	resrange[1] = end
+	return resrange, true
+}
 
-	if rA[0].Before(rB[0]) && rA[1].After(rB[1]) {
-		// no truncate
+func DateInRange(interval [2]time.Time, dateToCheck time.Time) bool {
+	if interval[0].Before(dateToCheck) && interval[1].After(dateToCheck) {
 		return true
 	}
-	if rA[0].Before(rB[0]) && rA[1].After(rB[1]) {
-		// truncate right
+	if dateToCheck.Equal(interval[0]) {
 		return true
 	}
-	if rA[0].After(rB[0]) && rA[1].Before(rB[1]) {
-		// truncate left and right
-		return true
-	}
-	if rA[0].After(rB[0]) && rA[1].Before(rB[1]) {
-		// truncate left
+	if dateToCheck.Equal(interval[1]) {
 		return true
 	}
 	return false
-}
-
-func DateInInterval(interval [2]time.Time, dateToCheck time.Time) bool {
-	return interval[0].Before(dateToCheck) && interval[1].After(dateToCheck)
 }

@@ -5,6 +5,7 @@ SCRIPT_DIR="${SCRIPT_PATH%/*}"
 # TEST_CMD="${HOME}/go/bin/gotestsum --format testname "
 
 Go_test_debug(){
+  go clean -testcache
   local path
   local path="$1"
   local path="${SCRIPT_DIR}/../${path}/..."
@@ -25,7 +26,13 @@ Go_test_auto(){
 Go_delve(){
   local package="$1"
   local function="$2"
-  dlv test "$package" -- -test.run="$2"
+  dlv test "$package" -- -test.run="$function"
+}
+
+Go_delve_trace(){
+  local package="$1"
+  local function="$2"
+  dlv trace "$package" -- -test.run="$function"
 }
 
 Go_bench(){

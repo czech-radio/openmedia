@@ -46,7 +46,7 @@ func TestArchivePackageFileMatch(t *testing.T) {
 	}
 	dateFrom := time.Date(2021, 1, 1, 0, 0, 0, 0, ArchiveTimeZone)
 	dateTo := time.Date(2022, 2, 1, 0, 0, 0, 0, ArchiveTimeZone)
-	query := &ArchiveFolderPackageQuery{
+	query := &ArchiveFolderQuery{
 		DateRange: [2]time.Time{
 			dateFrom,
 			dateTo,
@@ -57,7 +57,7 @@ func TestArchivePackageFileMatch(t *testing.T) {
 		RadioNames: map[string]bool{},
 	}
 	for i := range files {
-		ok, err := ArchivePackageFilesMatch(files[i], query)
+		ok, err := ArchivePackageFileMatch(files[i], query)
 		if err != nil {
 			t.Error(err)
 		}
@@ -69,7 +69,7 @@ func TestArchivePackageFileMatch(t *testing.T) {
 }
 
 func TestArchivePackageFileMatchER(t *testing.T) {
-	af := ArchiveFolderPackageQuery{
+	af := ArchiveFolderQuery{
 		RadioNames: map[string]bool{
 			"zurnal": false,
 		},
