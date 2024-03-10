@@ -128,13 +128,16 @@ func ArchivePackageFileMatch(nestedFileName string, q *ArchiveFolderQuery) (bool
 		return false, err
 	}
 	if len(q.RadioNames) > 0 && !q.RadioNames[meta.RadioName] {
+		slog.Debug("not matched radioname", "filename", nestedFileName)
 		return false, nil
 	}
 	if len(q.WeekDays) > 0 && !q.WeekDays[meta.WeekDay] {
+		slog.Debug("no matched weekdays", "filename", nestedFileName)
 		return false, nil
 	}
 	_, ok := DateRangesIntersection(q.DateRange, meta.DateRange)
 	if !ok {
+		slog.Debug("not matched daterange", "filename", nestedFileName)
 		return false, nil
 	}
 

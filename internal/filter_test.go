@@ -50,3 +50,34 @@ func TestArchiveFolderMap(t *testing.T) {
 		fmt.Println(len(i.PackageFilenames))
 	}
 }
+
+func TestArchiveFolderMap2(t *testing.T) {
+	workerTypes := []WorkerTypeCode{WorkerTypeZIPminified}
+	arf := ArchiveFolder{
+		PackageTypes: workerTypes,
+	}
+
+	dateFrom := time.Date(2020, 2, 1, 0, 0, 0, 0, ArchiveTimeZone)
+	dateTo := time.Date(2020, 2, 1, 10, 0, 0, 0, ArchiveTimeZone)
+	filterRange := [2]time.Time{dateFrom, dateTo}
+
+	query := ArchiveFolderQuery{
+		RadioNames: map[string]bool{
+			"Vltava":      true,
+			"Radiožurnál": true,
+		},
+		DateRange: filterRange,
+		IsoWeeks:  map[int]bool{},
+		Months:    map[int]bool{},
+		WeekDays:  map[time.Weekday]bool{},
+	}
+
+	err := arf.FolderMap(srcFolder, true, &query)
+	if err != nil {
+		t.Error(err)
+	}
+	fmt.Println("packages", len(arf.Packages))
+	for _, i := range arf.Packages {
+		fmt.Println(len(i.PackageFilenames))
+	}
+}

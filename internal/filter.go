@@ -146,7 +146,7 @@ func PackageMap(packageName PackageName, q *ArchiveFolderQuery) (*ArchivePackage
 			slog.Debug("no match", f.Name, q.DateRange)
 			continue
 		}
-		slog.Debug("matche", f.Name, q.DateRange)
+		slog.Debug("matches", f.Name, q.DateRange)
 		ap.PackageName = packageName
 		ap.PackageReader = zipr
 		ap.PackageFilenames = append(ap.PackageFilenames, f.Name)
