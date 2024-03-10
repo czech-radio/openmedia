@@ -13,6 +13,8 @@ import (
 	"time"
 )
 
+var ArchiveTimeZone, _ = time.LoadLocation("")
+
 type WorkerTypeCode int
 
 const (

@@ -11,42 +11,68 @@ func TestPackageNameParse(t *testing.T) {
 	fmt.Println(ArchivePackageNameParse(packName))
 }
 
-func TestMatchArchivePackage(t *testing.T) {
-	pairs := [][]any{
-		// should match
-		{"2020_W09_MINIFIED.zip", []int{2020}, []int{}, WorkerTypeZIPminified, true},
-		{"2021_W09_MINIFIED.zip", []int{2021}, []int{9}, WorkerTypeZIPminified, true},
-		{"2021_W09_MINIFIED.zip", []int{}, []int{9}, WorkerTypeZIPminified, true},
-		{"2021_W09_MINIFIED.zip", []int{2020, 2021}, []int{9}, WorkerTypeZIPminified, true},
-		{"2021_W09_MINIFIED.zip", []int{2020, 2021}, []int{9}, WorkerTypeZIPminified, true},
-		// should not match
-		{"2021_W09_MINIFIED.zip", []int{2020}, []int{}, WorkerTypeZIPminified, false},
-		{"2021_W09_MINIFIED.zip", []int{2021}, []int{8, 7}, WorkerTypeZIPminified, false},
-		{"2021_W09_MINIFIED.zip", []int{2021, 2022}, []int{8, 7}, WorkerTypeZIPminified, false},
-		{"2021_W09_MINIFIED.zip", []int{2020, 2022}, []int{9}, WorkerTypeCode(10), false},
-		{"2021_w09_minified.zip", []int{2020, 2021}, []int{9}, WorkerTypeZIPoriginal, false},
-	}
-	for _, p := range pairs {
-		fileName := p[0].(string)
-		years := p[1].([]int)
-		weeks := p[2].([]int)
-		packageType := p[3].(WorkerTypeCode)
-		ok := MatchArchivePackage(fileName, years, weeks, packageType)
-		if ok != p[4].(bool) {
-			t.Error(fmt.Errorf("not matching: %+v, result: %v", p, ok))
-		}
-	}
-}
 func TestArchivePackageMatch(t *testing.T) {
 	packageName := "2021_W09_MINIFIED.zip"
-	timeZone, _ := time.LoadLocation("")
-	dateFrom := time.Date(2021, 1, 1, 0, 0, 0, 0, timeZone)
-	dateTo := time.Date(2022, 2, 1, 0, 0, 0, 0, timeZone)
-	ok, err := ArchivePackageMatch(packageName, WorkerTypeZIPminified, dateFrom, dateTo)
+	dateFrom := time.Date(2021, 1, 1, 0, 0, 0, 0, ArchiveTimeZone)
+	dateTo := time.Date(2022, 2, 1, 0, 0, 0, 0, ArchiveTimeZone)
+	filterRange := [2]time.Time{dateFrom, dateTo}
+	ok, err :=
+		ArchivePackageMatch(packageName, WorkerTypeZIPminified, filterRange)
 	if err != nil {
 		t.Error(err)
 	}
 	if !ok {
 		t.Error(fmt.Errorf("should match"))
 	}
+}
+func TestArchivePackageFileParse(t *testing.T) {
+	files := []string{
+		"RD_00-05_Radiožurnál_Saturday_W05_2020_02_01.xml",
+		"RD_05-09_ČRo_Brno_Saturday_W05_2020_02_01.xml",
+	}
+	for i := range files {
+		res, err := ArchivePackageFilenameParse(files[i])
+		if err != nil {
+			t.Error(res)
+		}
+		fmt.Println(res)
+	}
+}
+
+func TestArchivePackageFileMatch(t *testing.T) {
+	files := []string{
+		"RD_00-05_Radiožurnál_Saturday_W05_2020_02_01.xml",
+		"RD_05-09_ČRo_Brno_Saturday_W05_2020_02_01.xml",
+	}
+	dateFrom := time.Date(2021, 1, 1, 0, 0, 0, 0, ArchiveTimeZone)
+	dateTo := time.Date(2022, 2, 1, 0, 0, 0, 0, ArchiveTimeZone)
+	query := &ArchiveFolderPackageQuery{
+		DateRange: [2]time.Time{
+			dateFrom,
+			dateTo,
+		},
+		Months:     map[int]bool{},
+		WeekDays:   map[time.Weekday]bool{},
+		IsoWeeks:   map[int]bool{},
+		RadioNames: map[string]bool{},
+	}
+	for i := range files {
+		ok, err := ArchivePackageFilesMatch(files[i], query)
+		if err != nil {
+			t.Error(err)
+		}
+		if ok != true {
+			t.Error("not matched")
+		}
+	}
+
+}
+
+func TestArchivePackageFileMatchER(t *testing.T) {
+	af := ArchiveFolderPackageQuery{
+		RadioNames: map[string]bool{
+			"zurnal": false,
+		},
+	}
+	fmt.Println(af)
 }

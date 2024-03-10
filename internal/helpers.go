@@ -11,6 +11,7 @@ import (
 	"regexp"
 	"runtime"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/ncruces/go-strftime"
@@ -302,6 +303,13 @@ func TraceFunction(depth int) (string, string, int) {
 	return "", "", -1
 }
 
+func EscapeCSVdelim(value string) string {
+	out := strings.TrimSpace(value)
+	out = strings.ReplaceAll(out, "\t", "\\t")
+	out = strings.ReplaceAll(out, "\n", "\\n")
+	return out
+}
+
 func ProcessedFileRename(originalPath string) error {
 	fileName := filepath.Base(originalPath)
 	directory := filepath.Dir(originalPath)
@@ -313,7 +321,12 @@ func ProcessedFileRename(originalPath string) error {
 	return nil
 }
 
+// DateIntervalsIntersec check if two dates intersect. If default value for range is given then intersect of ranges is true.
 func DateIntervalsIntersec(rA, rB [2]time.Time) bool {
+	if rA[0].IsZero() && rA[1].IsZero() {
+		return true
+	}
+
 	if rA[0].Before(rB[0]) && rA[1].After(rB[1]) {
 		// no truncate
 		return true

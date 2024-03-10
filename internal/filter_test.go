@@ -17,14 +17,14 @@ func skipTest(t *testing.T) {
 
 func TestArchiveFolderListing(t *testing.T) {
 	skipTest(t)
-	timeZone, _ := time.LoadLocation("")
 	workerTypes := []WorkerTypeCode{WorkerTypeZIPminified}
 	arf := ArchiveFolder{
 		PackageTypes: workerTypes,
 	}
-	dateFrom := time.Date(2020, 1, 1, 0, 0, 0, 0, timeZone)
-	dateTo := time.Date(2025, 2, 1, 0, 0, 0, 0, timeZone)
-	err := arf.FolderListing(srcFolder, true, dateFrom, dateTo)
+	dateFrom := time.Date(2020, 1, 1, 0, 0, 0, 0, ArchiveTimeZone)
+	dateTo := time.Date(2025, 2, 1, 0, 0, 0, 0, ArchiveTimeZone)
+	filterRange := [2]time.Time{dateFrom, dateTo}
+	err := arf.FolderListing(srcFolder, true, filterRange)
 	if err != nil {
 		t.Error(err)
 	}
@@ -37,10 +37,10 @@ func TestArchiveFolderMap(t *testing.T) {
 		PackageTypes: workerTypes,
 	}
 
-	timeZone, _ := time.LoadLocation("")
-	dateFrom := time.Date(2020, 1, 1, 0, 0, 0, 0, timeZone)
-	dateTo := time.Date(2022, 2, 1, 0, 0, 0, 0, timeZone)
-	err := arf.FolderMap(srcFolder, true, dateFrom, dateTo)
+	dateFrom := time.Date(2020, 1, 1, 0, 0, 0, 0, ArchiveTimeZone)
+	dateTo := time.Date(2022, 2, 1, 0, 0, 0, 0, ArchiveTimeZone)
+	filterRange := [2]time.Time{dateFrom, dateTo}
+	err := arf.FolderMap(srcFolder, true, filterRange)
 	if err != nil {
 		t.Error(err)
 	}

@@ -7,45 +7,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ncruces/go-strftime"
 	"github.com/snabb/isoweek"
 )
-
-// '2020_W05_MINIFIED.zip/RD_00-12_Vltava_Sunday_W05_2020_02_02.xml'
-func MatchArchivePackage(packageFilename string, years []int, weeks []int, WorkerTypeCode WorkerTypeCode) bool {
-	//DEPRECATED
-	// fileName '2020_W05_MINIFIED.zip'
-	packageType := WorkerTypeMap[WorkerTypeCode]
-	// fmt.Println(packageFilename, years, weeks, packageType)
-	var matchingYear bool
-	var matchingWeek bool
-	if !strings.Contains(packageFilename, packageType) {
-		return false
-	}
-	for _, year := range years {
-		idx := strings.Index(packageFilename, fmt.Sprintf("%04d", year))
-		if idx == 0 {
-			matchingYear = true
-			break
-		}
-	}
-	for _, week := range weeks {
-		idx := strings.Index(packageFilename, fmt.Sprintf("%02d", week))
-		if idx == 6 {
-			matchingWeek = true
-			break
-		}
-	}
-	if len(years) > 0 && len(weeks) > 0 {
-		return matchingYear && matchingWeek
-	}
-	if len(years) > 0 && len(weeks) == 0 {
-		return matchingYear
-	}
-	if len(years) == 0 && len(weeks) > 0 {
-		return matchingWeek
-	}
-	return true
-}
 
 // '2020_W05_MINIFIED.zip/RD_00-12_Vltava_Sunday_W05_2020_02_02.xml'
 var packageNameRegex = regexp.MustCompile(`(\d\d\d\d)_W(\d\d)_(\s*.*)`)
@@ -67,7 +31,8 @@ func ArchivePackageNameParse(packageName string) (time.Time, time.Time, string, 
 	return dateFrom, dateTo, packageType, nil
 }
 
-func ArchivePackageMatch(packageName string, wtc WorkerTypeCode, dateFrom, dateTo time.Time) (bool, error) {
+func ArchivePackageMatch(
+	packageName string, wtc WorkerTypeCode, filterRange [2]time.Time) (bool, error) {
 	wtcTypeName, ok := WorkerTypeMap[wtc]
 	if !ok {
 		panic("unknown workertype code")
@@ -79,7 +44,92 @@ func ArchivePackageMatch(packageName string, wtc WorkerTypeCode, dateFrom, dateT
 	if wtcTypeName != ptype {
 		return false, nil
 	}
-	filterRange := [2]time.Time{dateFrom, dateTo}
 	packageRange := [2]time.Time{packageStart, packageEnd}
 	return DateIntervalsIntersec(filterRange, packageRange), nil
+}
+
+// var packageFileNameRegex = regexp.MustCompile(`^(RD)_(\d\d)_(\d\d)_(\s*.*)$`)
+// 'RD_00-05_Radiožurnál_Saturday_W05_2020_02_01.xml'
+// 'RD_05-09_ČRo_Brno_Saturday_W05_2020_02_01.xml'
+// `^(RD)_(\d\d)-(\d\d)_(\p{L}+_)*W(\d\d)_(\d\d\d\d)_(\d\d)_(\d\d).xml$`)
+var packageFileNameRegex = regexp.MustCompile(
+	`^(RD)_(\d\d)-(\d\d)_(.*)_W(\d\d)_(\d\d\d\d)_(\d\d)_(\d\d).xml$`)
+
+type RundownName struct {
+	Type          string
+	DateRange     [2]time.Time
+	RadioName     string
+	IsoWeekNumber int
+	WeekDay       time.Weekday
+}
+
+func ArchivePackageFilenameParse(fileName string) (RundownName, error) {
+	var out RundownName
+	res := packageFileNameRegex.FindStringSubmatch(fileName)
+	if len(res) != 9 {
+		return out, fmt.Errorf("unknown archive package file")
+	}
+	rundownType := res[1]
+	hourFrom := res[2]
+	hourTo := res[3]
+	isoWeekStr := res[5]
+	isoWeek, err := strconv.Atoi(isoWeekStr)
+	if err != nil {
+		return RundownName{}, err
+	}
+
+	year := res[6]
+	month := res[7]
+	day := res[8]
+	strDateFrom := fmt.Sprintf("%s%s%s%s", year, month, day, hourFrom)
+	timeFormat := "%Y%m%d%H"
+	dateFrom, err := strftime.Parse(timeFormat, strDateFrom)
+	if err != nil {
+		return out, err
+	}
+	strDateTo := fmt.Sprintf("%s%s%s%s", year, month, day, hourTo)
+	dateTo, err := strftime.Parse(timeFormat, strDateTo)
+	if err != nil {
+		return out, err
+	}
+
+	splited := strings.Split(res[4], "_")
+	RadionName := strings.Join(splited[0:len(splited)-1], "_")
+
+	out = RundownName{
+		Type: rundownType,
+		DateRange: [2]time.Time{
+			dateFrom,
+			dateTo,
+		},
+		RadioName:     RadionName,
+		IsoWeekNumber: isoWeek,
+		WeekDay:       dateFrom.Weekday(),
+	}
+	return out, nil
+}
+
+func ArchivePackageFilesMatch(nestedFileName string, q *ArchiveFolderPackageQuery) (bool, error) {
+	if q == nil {
+		return false, nil
+	}
+	meta, err := ArchivePackageFilenameParse(nestedFileName)
+	if err != nil {
+		return false, err
+	}
+
+	if len(q.RadioNames) >= 0 && !q.RadioNames[meta.RadioName] {
+		return false, nil
+	}
+	if len(q.WeekDays) >= 0 && !q.WeekDays[meta.WeekDay] {
+		return false, nil
+	}
+	// Match date range
+	// ok := DateIntervalsIntersec(q.DateRange, meta.DateRange)
+	ok := DateIntervalsIntersec(q.DateRange, meta.DateRange)
+	if !ok {
+		return false, nil
+	}
+
+	return true, nil
 }

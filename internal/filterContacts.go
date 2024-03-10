@@ -260,7 +260,7 @@ func (ft *Filter) CSVwriteRows() error {
 				slog.Warn("missing field value", "fieldID", id)
 				rowField = ""
 			}
-			fmt.Fprintf(&csvRow, "%s%s", EscapeDelim(rowField), ft.Options.CSVdelim)
+			fmt.Fprintf(&csvRow, "%s%s", EscapeCSVdelim(rowField), ft.Options.CSVdelim)
 		}
 		//Row to stdout
 		fmt.Fprintf(os.Stdout, "%s\n", csvRow.String())
@@ -295,13 +295,6 @@ func (ft *Filter) CSVwriteUniqueCountsB() {
 		fmt.Fprintf(&csvRow, "%d%s%s", count, ft.Options.CSVdelim, ft.Options.CSVdelim)
 	}
 	fmt.Fprintf(os.Stdout, "%s\n", csvRow.String())
-}
-
-func EscapeDelim(value string) string {
-	out := strings.TrimSpace(value)
-	out = strings.ReplaceAll(out, "\t", "\\t")
-	out = strings.ReplaceAll(out, "\n", "\\n")
-	return out
 }
 
 func (ft *Filter) CSVwriteUniqueFieldsValues() error {
@@ -364,7 +357,7 @@ func (ft *Filter) CSVwriteUniqueFieldsValuesB() error {
 			// unique value frequency (četnost)
 			rows[rown][i*2] = fmt.Sprint(k)
 			// unique value
-			rows[rown][i*2+1] = EscapeDelim(j)
+			rows[rown][i*2+1] = EscapeCSVdelim(j)
 			rown++
 		}
 	}

@@ -15,24 +15,23 @@ type FilterOptions struct {
 	RecurseSourceDirectory bool
 	InvalidFileContinue    bool
 
-	FilterType  WorkerTypeCode
-	OutputType  string // csv contacts,unique contact fields,
-	CSVdelim    string
-	CSVheader   bool
-	DateFrom    string
-	DateTo      string
-	WeekDays    []time.Weekday
-	RadionNames []string
+	FilterType WorkerTypeCode
+	CSVdelim   string
+	CSVheader  bool
+
+	DateFrom   string
+	DateTo     string
+	WeekDays   string
+	RadioNames string
 }
 
-// type Query struct {
-// DateFrom string
-// DateTo   string
-// Months []int
-// WeekDays []int
-// IsoWeeks []int
-// RadioName string
-// }
+type ArchiveFolderPackageQuery struct {
+	RadioNames map[string]bool
+	DateRange  [2]time.Time
+	IsoWeeks   map[int]bool
+	Months     map[int]bool
+	WeekDays   map[time.Weekday]bool
+}
 
 type ResultsCompounded map[string]*FilterResults
 
@@ -46,9 +45,9 @@ type Filter struct {
 	HeaderFields          map[int]string
 	HeaderFieldsIDsSorted []int
 	HeaderFieldsIDsSubset map[int]bool
-	Rows                  []Fields
 	FieldsUniqueValues    map[int]UniqueValues // FiledID vs UniqueValues
 	MaxUniqueCount        int                  // Field which has the highest unique values count - servers. Used when transforming rows to columns
+	Rows                  []Fields
 }
 
 type FilterResults struct {
@@ -74,7 +73,7 @@ type ArchiveFolder struct {
 }
 
 func (af *ArchiveFolder) FolderListing(
-	rootDir string, recursive bool, dateFrom, dateTo time.Time) error {
+	rootDir string, recursive bool, filterRange [2]time.Time) error {
 	dirWalker := func(filePath string, file fs.DirEntry, err error) error {
 		slog.Info(filePath)
 		if err != nil {
@@ -92,7 +91,7 @@ func (af *ArchiveFolder) FolderListing(
 		for _, wtc := range af.PackageTypes {
 			switch wtc {
 			case WorkerTypeZIPminified, WorkerTypeZIPoriginal:
-				ok, _ := ArchivePackageMatch(filePath, wtc, dateFrom, dateTo)
+				ok, _ := ArchivePackageMatch(filePath, wtc, filterRange)
 				if ok {
 					af.PackageFilenames = append(af.PackageFilenames, filePath)
 				}
@@ -105,8 +104,8 @@ func (af *ArchiveFolder) FolderListing(
 
 // NOTE: Do not forget to close all files
 func (af *ArchiveFolder) FolderMap(
-	rootDir string, recursive bool, dateFrom, dateTo time.Time) error {
-	err := af.FolderListing(rootDir, recursive, dateFrom, dateTo)
+	rootDir string, recursive bool, filterRange [2]time.Time) error {
+	err := af.FolderListing(rootDir, recursive, filterRange)
 	if err != nil {
 		return err
 	}
