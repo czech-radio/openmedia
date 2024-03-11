@@ -2,26 +2,29 @@ package internal
 
 import (
 	"archive/zip"
+	"encoding/xml"
 	"fmt"
 	"io/fs"
 	"log/slog"
 	"path/filepath"
 	"time"
-)
 
-type PackageName string
+	"github.com/antchfx/xmlquery"
+)
 
 type ArchiveFolder struct {
 	PackageTypes  []WorkerTypeCode
+	XMLencoding   FileEncodingNumber
 	PackagesNames []PackageName
 	Packages      map[PackageName]*ArchivePackage
-	// PackageReaders []*zip.ReadCloser // zipr.File //[]*File contains all zip files
+	Table         Table
 }
 
+type PackageName string
 type ArchivePackage struct {
-	PackageName      PackageName
-	PackageReader    *zip.ReadCloser
-	PackageFilenames []string
+	PackageName   PackageName
+	PackageReader *zip.ReadCloser
+	PackageFiles  map[string]*zip.File
 }
 
 type ArchiveFolderQuery struct {
@@ -51,6 +54,7 @@ func (af *ArchiveFolder) FolderListing(
 		for _, wtc := range af.PackageTypes {
 			switch wtc {
 			case WorkerTypeZIPminified, WorkerTypeZIPoriginal:
+				af.InferEncoding(wtc)
 				ok, _ := ArchivePackageMatch(filePath, wtc, filterRange)
 				if !ok {
 					slog.Debug("package omitted", "package", filePath)
@@ -68,6 +72,18 @@ func (af *ArchiveFolder) FolderListing(
 	return filepath.WalkDir(rootDir, dirWalker)
 }
 
+func (af *ArchiveFolder) InferEncoding(wtc WorkerTypeCode) FileEncodingNumber {
+	var enc FileEncodingNumber
+	switch wtc {
+	case WorkerTypeZIPminified:
+		enc = UTF8
+	case WorkerTypeZIPoriginal:
+		enc = UTF16le
+	}
+	af.XMLencoding = enc
+	return enc
+}
+
 // NOTE: Do not forget to close all files
 func (af *ArchiveFolder) FolderMap(
 	rootDir string, recursive bool, q *ArchiveFolderQuery) error {
@@ -83,7 +99,7 @@ func (af *ArchiveFolder) FolderMap(
 		if err != nil {
 			return err
 		}
-		if len(archivePackage.PackageFilenames) > 0 {
+		if len(archivePackage.PackageFiles) > 0 {
 			af.Packages[packageName] = archivePackage
 		}
 	}
@@ -96,6 +112,7 @@ func PackageMap(packageName PackageName, q *ArchiveFolderQuery) (*ArchivePackage
 		return nil, err
 	}
 	var ap ArchivePackage
+	ap.PackageFiles = make(map[string]*zip.File)
 	for _, f := range zipr.File {
 		ok, err := ArchivePackageFileMatch(f.Name, q)
 		if err != nil {
@@ -108,30 +125,71 @@ func PackageMap(packageName PackageName, q *ArchiveFolderQuery) (*ArchivePackage
 		slog.Debug("matches", f.Name, q.DateRange)
 		ap.PackageName = packageName
 		ap.PackageReader = zipr
-		ap.PackageFilenames = append(ap.PackageFilenames, f.Name)
+		ap.PackageFiles[f.Name] = f
 	}
 	return &ap, nil
 }
 
-func (ft *Filter) ErrorHandle(errMain error, errorsPartial ...error) ControlFlowAction {
-	if errMain == nil {
-		ft.Results.FilesSuccess++
-		return Continue
+func (af *ArchiveFolder) FolderExtract() {
+	for _, p := range af.Packages {
+		for _, f := range p.PackageFiles {
+			err := af.PackageFileExtractByParser(f)
+			if err != nil {
+				slog.Error(err.Error())
+			}
+			break
+		}
 	}
-
-	ft.Results.FilesFailure++
-	slog.Error(errMain.Error())
-	ft.Errors = append(ft.Errors, errMain)
-	if len(errorsPartial) > 0 {
-		ft.Errors = append(ft.Errors, errorsPartial...)
-	}
-
-	if ft.Options.InvalidFileContinue {
-		return Skip
-	}
-	return Break
 }
 
-func (ft *Filter) LogResults(msg string) {
-	slog.Info(msg, "results", fmt.Sprintf("%+v", ft.Results))
+func (af *ArchiveFolder) PackageExtract(packageName PackageName) {
+	// pkg := af.Packages[packageName]
+}
+
+type ObjectName string
+type AttrNames []string
+type FieldID int
+
+// var ObjectsHeader = map[ObjectName][]FieldID{
+// "<Radio Rundown>.<HEADER>": {},
+// "<Radio Rundown>.<RECORD>": {},
+// "Hourly Rundown":           {},
+// "
+// }
+
+func (af *ArchiveFolder) PackageFileExtractByParser(zf *zip.File) error {
+	dr, err := ZipXmlFileDecodeData(zf, af.XMLencoding)
+	if err != nil {
+		return err
+	}
+	var OM OPENMEDIA
+	err = xml.NewDecoder(dr).Decode(&OM)
+	if err != nil {
+		return err
+	}
+	OM.Traverse()
+	return nil
+}
+
+func (af *ArchiveFolder) PackageFileExtractByXMLquery(zf *zip.File) error {
+	dataReader, err := ZipXmlFileDecodeData(zf, af.XMLencoding)
+	if err != nil {
+		return err
+	}
+	node, err := xmlquery.Parse(dataReader)
+	if err != nil {
+		return err
+	}
+	fmt.Println(node.Attr)
+	// templateName := "Radio Rundown"
+	// slog.Debug("filtering", "file", zf.Name)
+	// templateName := "Hourly Rundown"
+	// templateQuery := fmt.Sprintf("//OM_OBJECT[@TemplateName='%s']", templateName)
+	// templates := xmlquery.Find(node, templateQuery)
+	// fmt.Println(len(templates))
+	// err = ft.FilterObjectByTemplateName(doc, "Contact Item")
+	// if err != nil {
+	// return err
+	// }
+	return nil
 }

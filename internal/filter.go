@@ -1,5 +1,10 @@
 package internal
 
+import (
+	"fmt"
+	"log/slog"
+)
+
 type Filter struct {
 	Options               FilterOptions
 	Results               FilterResults
@@ -39,4 +44,27 @@ type FilterResults struct {
 	FilesFailure   int
 	FilesCount     int
 	ErrorsCount    int
+}
+
+func (ft *Filter) ErrorHandle(errMain error, errorsPartial ...error) ControlFlowAction {
+	if errMain == nil {
+		ft.Results.FilesSuccess++
+		return Continue
+	}
+
+	ft.Results.FilesFailure++
+	slog.Error(errMain.Error())
+	ft.Errors = append(ft.Errors, errMain)
+	if len(errorsPartial) > 0 {
+		ft.Errors = append(ft.Errors, errorsPartial...)
+	}
+
+	if ft.Options.InvalidFileContinue {
+		return Skip
+	}
+	return Break
+}
+
+func (ft *Filter) LogResults(msg string) {
+	slog.Info(msg, "results", fmt.Sprintf("%+v", ft.Results))
 }

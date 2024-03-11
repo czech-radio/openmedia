@@ -1,6 +1,9 @@
 package internal
 
 import (
+	"archive/zip"
+	"bufio"
+	"bytes"
 	"errors"
 	"fmt"
 	"io"
@@ -15,6 +18,8 @@ import (
 	"time"
 
 	"github.com/ncruces/go-strftime"
+
+	enc_unicode "golang.org/x/text/encoding/unicode"
 )
 
 type VersionInfo struct {
@@ -361,4 +366,65 @@ func DateInRange(interval [2]time.Time, dateToCheck time.Time) bool {
 		return true
 	}
 	return false
+}
+
+type FileEncodingNumber int
+
+const (
+	UNKNOWN FileEncodingNumber = iota
+	UTF8
+	UTF16le
+	UTF16be
+)
+
+func ZipFileExtractData(zf *zip.File, enc FileEncodingNumber) ([]byte, error) {
+	fileHandle, err := zf.Open()
+	if err != nil {
+		return nil, err
+	}
+	defer fileHandle.Close()
+	var data []byte
+	switch enc {
+	case UTF8:
+		data, err = io.ReadAll(fileHandle)
+	case UTF16le:
+		utf8reader := enc_unicode.UTF16(enc_unicode.LittleEndian, enc_unicode.IgnoreBOM).NewDecoder().Reader(fileHandle)
+		data, err = io.ReadAll(utf8reader)
+	default:
+		err = fmt.Errorf("unknown encoding")
+	}
+	return data, err
+}
+
+func ZipXmlFileDecodeData(zf *zip.File, enc FileEncodingNumber) (*bytes.Reader, error) {
+	data, err := ZipFileExtractData(zf, enc)
+	if err != nil {
+		return nil, err
+	}
+	breader := bytes.NewReader(data)
+	switch enc {
+	case UTF8:
+	case UTF16le:
+		var buf bytes.Buffer
+		replace := "encoding=\"UTF-16\""
+		scanner := bufio.NewScanner(breader)
+		for scanner.Scan() {
+			line := scanner.Text()
+			if strings.Contains(line, replace) {
+				line = strings.Replace(line, replace, "encoding=\"UTF-8\"", 1)
+				_, err = fmt.Fprintln(&buf, line)
+				// _, err = buf.WriteString(line + "\n")
+			} else {
+				_, err = fmt.Fprintln(&buf, line)
+				// _, err = buf.WriteString(line + "\n")
+			}
+			if err != nil {
+				return nil, err
+			}
+		}
+		breader = bytes.NewReader(buf.Bytes())
+	default:
+		err = fmt.Errorf("unknown encoding")
+	}
+	return breader, err
 }

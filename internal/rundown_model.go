@@ -3,6 +3,7 @@ package internal
 import (
 	"encoding/json"
 	"encoding/xml"
+	"fmt"
 )
 
 var lineEnd = []byte("\n")
@@ -70,4 +71,10 @@ func (omf *OM_FIELD) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 		return e.EncodeElement(nil, start)
 	}
 	return e.EncodeElement(*omf, start)
+}
+
+func (omf *OPENMEDIA) Traverse() {
+	for _, i := range omf.OM_OBJECT.OM_RECORDS {
+		fmt.Println(i.OM_OBJECTS.Attrs)
+	}
 }

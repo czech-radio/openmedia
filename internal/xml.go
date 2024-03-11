@@ -16,10 +16,6 @@ import (
 	"golang.org/x/text/encoding/unicode"
 )
 
-type ObjectAttributes = map[string]string
-type Fields = map[int]string       // FieldID vs value
-type UniqueValues = map[string]int // value vs count
-
 func PipeConsume(input_reader *io.PipeReader) {
 	var resultBuffer bytes.Buffer
 	_, err := io.Copy(&resultBuffer, input_reader)

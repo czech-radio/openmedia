@@ -13,6 +13,12 @@ import (
 	"time"
 )
 
+func skipTest(t *testing.T) {
+	if os.Getenv("GO_TEST_TYPE") != "manual" {
+		t.Skip("skipping test in CI environment")
+	}
+}
+
 var TESTS_RESULT_CODE int
 var TEST_DATA_DIR_SRC string // Test data which will be copied to TEMP_DIR
 var TEMP_DIR string          // Temporary directory inside /dev/shm created for test source files and output files
