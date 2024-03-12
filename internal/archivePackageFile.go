@@ -87,7 +87,7 @@ var CSVproduction = []OMobjExtractor{
 	{
 		OmObject:   "Hourly Rundown",
 		FieldsPath: "/OM_HEADER/OM_FIELD",
-		FieldIDs:   []string{"8"},
+		FieldIDs:   []string{"1", "8"},
 		Level:      0,
 	},
 	// {
