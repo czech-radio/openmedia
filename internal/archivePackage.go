@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"archive/zip"
 	"fmt"
 	"log/slog"
 	"regexp"
@@ -142,4 +143,31 @@ func ArchivePackageFileMatch(nestedFileName string, q *ArchiveFolderQuery) (bool
 	}
 
 	return true, nil
+}
+
+func PackageMap(packageName PackageName, q *ArchiveFolderQuery) (*ArchivePackage, error) {
+	zipr, err := zip.OpenReader(string(packageName))
+	if err != nil {
+		return nil, err
+	}
+	var ap ArchivePackage
+	// ap.PackageFiles = make(map[string]*zip.File)
+	ap.PackageFiles = make(map[string]*ArchivePackageFile)
+	for _, fr := range zipr.File {
+		ok, err := ArchivePackageFileMatch(fr.Name, q)
+		if err != nil {
+			return nil, err
+		}
+		if !ok {
+			slog.Debug("no match", fr.Name, q.DateRange)
+			continue
+		}
+		slog.Debug("matches", fr.Name, q.DateRange)
+		ap.PackageName = packageName
+		ap.PackageReader = zipr
+		apf := ArchivePackageFile{}
+		apf.Reader = fr
+		ap.PackageFiles[fr.Name] = &apf
+	}
+	return &ap, nil
 }

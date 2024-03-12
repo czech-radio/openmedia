@@ -224,3 +224,27 @@ func XMLprint(node *xmlquery.Node) {
 	ex := xmlfmt.FormatXML(node.OutputXML(true), "", "\t")
 	fmt.Println(ex)
 }
+
+func GetFieldValueByID(attrs []xmlquery.Attr, id string) (string, bool) {
+	for _, i := range attrs {
+		if i.Name.Local == id {
+			return i.Value, true
+		}
+	}
+	return "", false
+}
+
+func XMLbuildAttrQuery(attrName string, ids []string) string {
+	var expr strings.Builder
+	attrQuery := "@" + attrName + "='"
+	expr.WriteString("[")
+	for i, id := range ids {
+		if i != len(ids)-1 {
+			expr.WriteString(attrQuery + id + "' or ")
+		} else {
+			// expr.WriteString("@FieldID='" + id + "']@FieldID")
+			expr.WriteString(attrQuery + id + "']")
+		}
+	}
+	return expr.String()
+}

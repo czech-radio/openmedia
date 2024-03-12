@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"fmt"
 	"log/slog"
 	"os"
 	"path/filepath"
@@ -45,4 +46,8 @@ func Test_ValidateFilesInDirectory(t *testing.T) {
 	if err == nil {
 		t.Error("failed to catch error")
 	}
+}
+
+func Test_XMLbuildAttrQuery(t *testing.T) {
+	fmt.Println(XMLbuildAttrQuery("FieldID", []string{"1", "2", "3"}))
 }

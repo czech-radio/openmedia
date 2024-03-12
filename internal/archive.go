@@ -22,6 +22,7 @@ const (
 	WorkerTypeZIPminified
 	WorkerTypeCSVcontactsFields
 	WorkerTypeCSVcontactsUniqueFields
+	WorkerTypeCSVprodukce
 )
 
 var WorkerTypeMap = map[WorkerTypeCode]string{
@@ -29,6 +30,7 @@ var WorkerTypeMap = map[WorkerTypeCode]string{
 	WorkerTypeZIPminified:             "MINIFIED.zip",
 	WorkerTypeCSVcontactsFields:       "CONTACT_FIELDS.csv",
 	WorkerTypeCSVcontactsUniqueFields: "CONTACT_FIELDS_UNIQUE.csv",
+	WorkerTypeCSVprodukce:             "PRODUKCE.csv",
 }
 
 type Archive struct {
