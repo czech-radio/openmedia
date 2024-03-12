@@ -72,24 +72,24 @@ var FieldName = map[int]string{
 }
 
 var CSVproduction = []OMobjExtractor{
-	{
-		OmObject:   "Radio Rundown",
-		FieldsPath: "/OM_HEADER/OM_FIELD",
-		FieldIDs:   []string{"1", "8"},
-		Level:      0,
-	},
-	{
-		OmObject:   "Radio Rundown",
-		FieldsPath: "/OM_RECORD/OM_FIELD",
-		FieldIDs:   []string{"8"},
-		Level:      0,
-	},
 	// {
-	// OmObject:   "Hourly Rundown",
+	// OmObject:   "Radio Rundown",
 	// FieldsPath: "/OM_HEADER/OM_FIELD",
+	// FieldIDs:   []string{"1", "8"},
+	// Level:      0,
+	// },
+	// {
+	// OmObject:   "Radio Rundown",
+	// FieldsPath: "/OM_RECORD/OM_FIELD",
 	// FieldIDs:   []string{"8"},
 	// Level:      0,
 	// },
+	{
+		OmObject:   "Hourly Rundown",
+		FieldsPath: "/OM_HEADER/OM_FIELD",
+		FieldIDs:   []string{"8"},
+		Level:      0,
+	},
 	// {
 	// OmObject:   "Sub Rundown",
 	// FieldsPath: "/OM_HEADER/OM_FIELD",
