@@ -28,9 +28,13 @@ type LinkedRow struct {
 	CSVrow   CSVrow
 }
 
-func (l *LinkedRow) NewNextLink(
-	parentNode *xmlquery.Node, csvRow CSVrow,
-) *LinkedRow {
+type LinkPayload struct {
+	NodePath string
+	Node     *xmlquery.Node
+	CSVrow   CSVrow
+}
+
+func (l *LinkedRow) NewNextLink(parentNode *xmlquery.Node) *LinkedRow {
 	newRow := new(LinkedRow)
 	newRow.Node = parentNode
 	if l == nil || !l.Initialized {
@@ -50,9 +54,6 @@ func (l *LinkedRow) NewNextLink(
 		newRow.End = l.End
 		*l.End = newRow
 		newRow.PrevL = l
-	}
-	if csvRow != nil {
-		newRow.CSVrow = append(newRow.CSVrow, csvRow...)
 	}
 	newRow.Initialized = true
 	slog.Debug("initialized new link")
@@ -131,7 +132,7 @@ func (apf *ArchivePackageFile) ExtractByXMLquery(
 		return err
 	}
 	firstRow := new(LinkedRow)
-	firstRow = firstRow.NewNextLink(node, nil)
+	firstRow = firstRow.NewNextLink(node)
 	firstRow.CSVrow = []CSVrowField{{1, "testF1", "valueF1"}}
 	firstRow = NodeToCSVlinkedRow(node, CSVproduction[0], firstRow)
 	PrintLinks(firstRow)
@@ -170,6 +171,7 @@ func NodeToCSVlinkedRow(
 	}
 	return curL
 }
+
 func NodesExtractFieldsToRows(
 	parentCsvRow CSVrow, nodes []*xmlquery.Node, ext OMobjExtractor,
 ) []*LinkedRow {
@@ -179,7 +181,8 @@ func NodesExtractFieldsToRows(
 		// Object fields
 		csvrow := NodeToCSVrow(node, ext)
 		csvRowJoined := append(parentCsvRow, csvrow...)
-		nlr = nlr.NewNextLink(node, csvRowJoined)
+		nlr = nlr.NewNextLink(node)
+		nlr.CSVrow = csvRowJoined
 		lrows[i] = nlr
 	}
 	return lrows
