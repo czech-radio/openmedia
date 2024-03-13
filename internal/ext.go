@@ -26,6 +26,7 @@ type LinkedRow struct {
 }
 
 type LinkPayload struct {
+	OmObject string
 	NodePath string
 	Node     *xmlquery.Node
 	CSVrow   CSVrow
@@ -74,6 +75,12 @@ func (l *LinkedRow) GoToStartLink() *LinkedRow {
 func (l *LinkedRow) GoToEndLink() *LinkedRow {
 	l = *l.End
 	return *l.End
+}
+
+func (l *LinkedRow) ExportCurrentLinkToCSV() {
+}
+
+func (l *LinkedRow) ExportAllLinksToCSV() {
 }
 
 func (l *LinkedRow) ReplaceLinkWithLinkSequence(newLink *LinkedRow) *LinkedRow {
@@ -128,15 +135,20 @@ func (apf *ArchivePackageFile) ExtractByXMLquery(
 	if err != nil {
 		return err
 	}
+
+	// First link construct
 	firstRow := new(LinkedRow)
 	payload := LinkPayload{
-		NodePath: "",
+		NodePath: CSVproduction[1].Path,
 		Node:     node,
 		CSVrow:   CSVrow{{1, "testF1", "valueF1"}},
 	}
 	firstRow = firstRow.NewNextLink(payload)
 	firstRow.Payload.CSVrow = []CSVrowField{{1, "testF1", "valueF1"}}
-	rows := firstRow.ExtractOMobjectsFields(CSVproduction[0])
+
+	// Expand rows
+	// rows := firstRow.ExtractOMobjectsFields(CSVproduction[0])
+	rows := firstRow.ExtractOMobjectsFields(CSVproduction[1])
 	PrintLinks(rows)
 	return nil
 }
@@ -149,18 +161,29 @@ func (l *LinkedRow) ExtractOMobjectsFields(ext OMobjExtractor) *LinkedRow {
 	}
 	curL := l
 	var index int
+
+	var lrows []*LinkedRow
+	var nodes []*xmlquery.Node
+	var parentCsvRow CSVrow
 	for {
 		index++
+		// Check the type of node
+		if l.Payload.NodePath != ext.Path {
+			slog.Warn("skipping node")
+			goto checkNextLink
+		}
+
 		// Find objects
-		nodes := xmlquery.Find(curL.Payload.Node, query)
-		parentCsvRow := curL.Payload.CSVrow
-		lrows := NodesExtractFieldsToRows(parentCsvRow, nodes, ext)
+		nodes = xmlquery.Find(curL.Payload.Node, query)
+		parentCsvRow = curL.Payload.CSVrow
+		lrows = NodesExtractFieldsToRows(parentCsvRow, nodes, ext)
 		slog.Debug("rows", "count", len(lrows))
 		if len(lrows) > 0 {
 			slog.Debug("replacing link", "count", len(lrows))
 			curL = curL.ReplaceLinkWithLinkSequence(lrows[0])
 		}
 		// Checkout next link
+	checkNextLink:
 		slog.Debug("checking after index", "index", index)
 		check := curL.NextL
 		if check == nil {
@@ -182,7 +205,9 @@ func NodesExtractFieldsToRows(
 		csvrow := NodeToCSVrow(node, ext)
 		csvRowJoined := append(parentCsvRow, csvrow...)
 		payload := LinkPayload{
-			NodePath: ext.OmObject,
+			// NodePath: ext.OmObject,
+			OmObject: ext.OmObject,
+			NodePath: ext.Path,
 			Node:     node,
 			CSVrow:   csvRowJoined,
 		}

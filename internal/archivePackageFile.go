@@ -54,6 +54,7 @@ func (apf *ArchivePackageFile) ExtractByParser(
 
 type OMobjExtractor struct {
 	OmObject    string
+	Path        string
 	FieldsPath  string
 	FieldIDs    []string
 	Level       int
@@ -72,27 +73,33 @@ var FieldName = map[int]string{
 }
 
 // "//OM_OBJECT[@TemplateName='%s']/%s/*", ext.OM_type, ext.Path,
+// FieldsPath: "/OM_HEADER/OM_FIELD",
+// FieldsPath: "/OM_RECORD/OM_FIELD",
 var CSVproduction = []OMobjExtractor{
-	// {
-	// OmObject:   "Radio Rundown",
-	// FieldsPath: "/OM_HEADER/OM_FIELD",
-	// FieldIDs:   []string{"1", "8"},
-	// Level:      0,
-	// },
-	// {
-	// OmObject:   "Radio Rundown",
-	// FieldsPath: "/OM_RECORD/OM_FIELD",
-	// FieldIDs:   []string{"8"},
-	// Level:      0,
-	// },
+	{
+		OmObject:   "Radio Rundown",
+		Path:       "Radio Rundown",
+		FieldsPath: "/OM_HEADER/OM_FIELD",
+		FieldIDs:   []string{"1", "8"},
+		Level:      0,
+	},
 	{
 		OmObject:   "Hourly Rundown",
+		Path:       "Radio Rundown/Hourly Rundown",
 		FieldsPath: "/OM_HEADER/OM_FIELD",
 		FieldIDs:   []string{"1", "8"},
 		Level:      0,
 	},
 	{
 		OmObject:   "Sub Rundown",
+		Path:       "Radio Rundown/Hourly Rundown/Sub Rundown",
+		FieldsPath: "/OM_HEADER/OM_FIELD",
+		FieldIDs:   []string{"8"},
+		Level:      1,
+	},
+	{
+		OmObject:   "Sub Rundown",
+		Path:       "Radio Rundown/Hourly Rundown/Sub Rundown",
 		FieldsPath: "/OM_HEADER/OM_FIELD",
 		FieldIDs:   []string{"8"},
 		Level:      1,
