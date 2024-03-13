@@ -8,7 +8,11 @@ import (
 )
 
 type LinkedRow struct {
+	// ** Double pointer address of address of object. Global variable for list of objects
+	// Link internals
 	Initialized bool
+	RowsCount   *int
+	LinkCount   **int
 	Start       **LinkedRow
 	End         **LinkedRow
 	FirstL      *LinkedRow
@@ -16,13 +20,10 @@ type LinkedRow struct {
 	NextL       *LinkedRow
 	PrevL       *LinkedRow
 	Node        *xmlquery.Node
-	RowsCount   *int
-	CSVrow      CSVrow
-	// LinkNumber int ??? without function?
-}
 
-// func NewLink(xmlquery.Node,csvRow CSVrow) *LinkedRow {
-// }
+	// Payload
+	CSVrow CSVrow
+}
 
 func (l *LinkedRow) NewNextLink(
 	parentNode *xmlquery.Node, csvRow CSVrow,
@@ -34,21 +35,22 @@ func (l *LinkedRow) NewNextLink(
 		count := 1
 		newRow.RowsCount = &count
 		newRow.Start = &newRow
-		slog.Debug("new sequence")
+		slog.Debug("new link sequence")
 		newRow.End = &newRow
 	} else {
-		slog.Debug("new link")
+		slog.Debug("new link add to sequence")
 		newRow.Start = l.Start
 		newRow.FirstL = l.FirstL
 		l.NextL = newRow
+		newRow.End = l.End
+		*l.End = newRow
 	}
 	if csvRow != nil {
 		newRow.CSVrow = append(newRow.CSVrow, csvRow...)
 	}
-	// *newRow.End = &newRow
 	newRow.PrevL = l
 	newRow.Initialized = true
-	slog.Debug("initialized")
+	slog.Debug("initialized new link")
 	return newRow
 }
 
@@ -75,12 +77,6 @@ func (l *LinkedRow) ReplaceLinkWithLinkSequence(newLink *LinkedRow) *LinkedRow {
 		slog.Warn("replacing nil link")
 		return newLink
 	}
-	// newLink.Start
-	// newLink.
-	// newLink.
-	// firstl := l.FirstL
-	// prevl := l.PrevL
-	// nextl := l.NextL
 	return l
 }
 
@@ -94,11 +90,9 @@ func (apf *ArchivePackageFile) ExtractByXMLquery(
 	if err != nil {
 		return err
 	}
-	// firstRow := NewLinkedRow(node, nil, nil, nil)
 	firstRow := new(LinkedRow)
 	firstRow = firstRow.NewNextLink(node, nil)
 	firstRow.CSVrow = []CSVrowField{{1, "testF1", "valueF1"}}
-	// lrow := NodeToCSVlinkedRow(node, CSVproduction[0], firstRow)
 	firstRow = NodeToCSVlinkedRow(node, CSVproduction[0], firstRow)
 	fmt.Println("ka", firstRow)
 	return nil
@@ -116,24 +110,16 @@ func NodeToCSVlinkedRow(
 	for {
 		// Find objects
 		nodes := xmlquery.Find(lrow.Node, query)
-		// slog.Debug("nodes found", "count", len(nodes))
 		parentCsvRow := curL.CSVrow
 		lrows := NodesExtractFieldsToRows(parentCsvRow, nodes, ext)
 		slog.Debug("rows", "count", len(lrows))
-		// start := *lrows[1].Start
-		// fmt.Println("starter", start.CSVrow)
-		// fmt.Println("six: end", lrows[0].GoToEndLink().CSVrow)
-		// fmt.Println("six: end", lrows[0].GoToEndLink())
 		// Checkout next link
 		curL = curL.NextL
 		if curL == nil {
 			break
 		}
 	}
-	// fmt.Println("six", lrow.Start.End)
-	// start = lrow.GoToStartLink()
 	return lrow.FirstL
-	// return curL.FirstL
 }
 func NodesExtractFieldsToRows(
 	parentCsvRow CSVrow, nodes []*xmlquery.Node, ext OMobjExtractor,
@@ -147,26 +133,27 @@ func NodesExtractFieldsToRows(
 		nlr = nlr.NewNextLink(node, csvRowJoined)
 		lrows[i] = nlr
 	}
-	// fmt.Println(lrows[3])
-	// fmt.Println(lrows[3].PrevL)
-	// fmt.Println(lrows[3].PrevL.PrevL)
 	PrintLinks(lrows[len(lrows)-1])
-	// PrintLinesSlice(lrows)
 	return lrows
 }
 
 func PrintLinks(link *LinkedRow) {
+	// TODO: create test instead
 	lnk := link
 	slog.Debug("printing input")
 	fmt.Println(lnk)
 	slog.Debug("printing start")
 	fmt.Println(lnk.Start)
+	start := *lnk.Start
+	fmt.Println(start)
 	slog.Debug("printing end")
-	fmt.Println(lnk.End)
+	fmt.Println(*lnk.End)
 	slog.Debug("printing by previous")
 	count := 10
 	for i := 0; i < count; i++ {
 		fmt.Println(lnk)
+		fmt.Println("start_prev", *lnk.Start)
+		fmt.Println("end_prev", *lnk.End)
 		lnktest := lnk.PrevL
 		if lnktest == nil {
 			slog.Debug("sequence end")
@@ -174,10 +161,11 @@ func PrintLinks(link *LinkedRow) {
 		}
 		lnk = lnk.PrevL
 	}
-	// lnk = link
 	slog.Debug("printing by next")
 	for i := 0; i < count; i++ {
 		fmt.Println(lnk)
+		fmt.Println("start_next", *lnk.Start)
+		fmt.Println("end_next", *lnk.End)
 		lnk = lnk.NextL
 		if lnk == nil {
 			slog.Debug("sequence end")
