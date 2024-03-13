@@ -8,21 +8,24 @@ import (
 )
 
 type LinkedRow struct {
-	// ** Double pointer address of address of object. Global variable for list of objects
 	// Link internals
-	Initialized bool
+	// ** Double pointer address of address of object. Shared accross all links
+	LinksCount **int
+	Start      **LinkedRow
+	End        **LinkedRow
+
+	// Local variables to one link
 	RowsCount   *int
-	LinkCount   **int
-	Start       **LinkedRow
-	End         **LinkedRow
 	FirstL      *LinkedRow
 	LastL       *LinkedRow
 	NextL       *LinkedRow
 	PrevL       *LinkedRow
-	Node        *xmlquery.Node
+	Initialized bool
 
 	// Payload
-	CSVrow CSVrow
+	NodePath string
+	Node     *xmlquery.Node
+	CSVrow   CSVrow
 }
 
 func (l *LinkedRow) NewNextLink(
@@ -35,10 +38,10 @@ func (l *LinkedRow) NewNextLink(
 		count := 1
 		newRow.RowsCount = &count
 		newRow.Start = &newRow
-		slog.Debug("new link sequence")
+		// slog.Debug("new link sequence")
 		newRow.End = &newRow
 	} else {
-		slog.Debug("new link add to sequence")
+		// slog.Debug("new link add to sequence")
 		newRow.Start = l.Start
 		newRow.FirstL = l.FirstL
 		l.NextL = newRow
@@ -77,6 +80,14 @@ func (l *LinkedRow) ReplaceLinkWithLinkSequence(newLink *LinkedRow) *LinkedRow {
 		slog.Warn("replacing nil link")
 		return newLink
 	}
+	// Replace start and end in newLink sequence with from 'l'
+	lstart := *l.Start
+	lend := *l.End
+	*newLink.Start = lstart
+	*newLink.End = lend
+	// 1. replace prevl in newLink.Start
+	// 2. replace nextL in newLink.End
+	// 3. replace 'l' with new sequnce
 	return l
 }
 
@@ -133,7 +144,7 @@ func NodesExtractFieldsToRows(
 		nlr = nlr.NewNextLink(node, csvRowJoined)
 		lrows[i] = nlr
 	}
-	PrintLinks(lrows[len(lrows)-1])
+	// PrintLinks(lrows[len(lrows)-1])
 	return lrows
 }
 
