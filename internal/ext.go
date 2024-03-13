@@ -136,13 +136,13 @@ func (apf *ArchivePackageFile) ExtractByXMLquery(
 	}
 	firstRow = firstRow.NewNextLink(payload)
 	firstRow.Payload.CSVrow = []CSVrowField{{1, "testF1", "valueF1"}}
-	firstRow = NodeToCSVlinkedRow(node, CSVproduction[0], firstRow)
-	PrintLinks(firstRow)
+	rows := NodeToCSVlinkedRow(firstRow, CSVproduction[0])
+	PrintLinks(rows)
 	return nil
 }
 
 func NodeToCSVlinkedRow(
-	objNode *xmlquery.Node, ext OMobjExtractor, inputRow *LinkedRow,
+	inputRow *LinkedRow, ext OMobjExtractor,
 ) *LinkedRow {
 	query := fmt.Sprintf("//OM_OBJECT[@TemplateName='%s']", ext.OmObject)
 	if inputRow == nil {

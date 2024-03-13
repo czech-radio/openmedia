@@ -90,12 +90,12 @@ var CSVproduction = []OMobjExtractor{
 		FieldIDs:   []string{"1", "8"},
 		Level:      0,
 	},
-	// {
-	// OmObject:   "Sub Rundown",
-	// FieldsPath: "/OM_HEADER/OM_FIELD",
-	// FieldIDs:   []string{"8"},
-	// Level:      1,
-	// },
+	{
+		OmObject:   "Sub Rundown",
+		FieldsPath: "/OM_HEADER/OM_FIELD",
+		FieldIDs:   []string{"8"},
+		Level:      1,
+	},
 }
 
 type CSVrowsIntMap map[int]CSVrow
