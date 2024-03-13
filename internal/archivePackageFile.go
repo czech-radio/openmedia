@@ -71,6 +71,7 @@ var FieldName = map[int]string{
 	8: "Název",
 }
 
+// "//OM_OBJECT[@TemplateName='%s']/%s/*", ext.OM_type, ext.Path,
 var CSVproduction = []OMobjExtractor{
 	// {
 	// OmObject:   "Radio Rundown",
@@ -101,55 +102,11 @@ var CSVproduction = []OMobjExtractor{
 type CSVrowsIntMap map[int]CSVrow
 type CSVrowsStringMap map[string]CSVrow
 
-func (apf *ArchivePackageFile) ExtractByXMLqueryB(
-	enc FileEncodingNumber, q *ArchiveFolderQuery) error {
-	dataReader, err := ZipXmlFileDecodeData(apf.Reader, enc)
-	if err != nil {
-		return err
-	}
-	node, err := xmlquery.Parse(dataReader)
-	if err != nil {
-		return err
-	}
-	// var rows []CSVrow
-	// var rowsm map[string]CSVrow
-	var rowsm CSVrowsIntMap
-
-	nodes := FindBaseNodes(node, CSVproduction[0])
-	rowsm = NodesToCSVrows(nodes, CSVproduction[0], rowsm)
-	PrintRows(rowsm)
-
-	// for _, n := range nodes {
-	// }
-	return nil
-}
-
-// for i := range nodes {
-// for i := range nodes {
-// fmt.Println(nodes[i].Attr)
-// nodules := FindSubNodes(nodes[i], CSVproduction[1])
-// fmt.Println(len(nodules))
-// rowsm := NodesToCSVrows(nodules, CSVproduction[1], rowsm)
-// PrintRows(rowsm)
-// }
-// nodes := []xmlquery.Node{*node}
-// CSVproduction[0].MapFields()
-// rows = ExtractNodeToCSVrows(node, CSVproduction[0], rows)
-// rows = ExtractNodeToCSVrows(node, CSVproduction[1], rows)
-// fmt.Println("fuck", rows)
-// fmt.Println(apf.Reader.Name)
-// PrintRows(rowsm)
-
 func PrintRows(rows map[int]CSVrow) {
 	for i := 0; i < len(rows); i++ {
 		fmt.Println(i, rows[i])
 		fmt.Println()
 	}
-}
-
-func FindBaseNodes(node *xmlquery.Node, ext OMobjExtractor) []*xmlquery.Node {
-	query := fmt.Sprintf("//OM_OBJECT[@TemplateName='%s']", ext.OmObject)
-	return xmlquery.Find(node, query)
 }
 
 func FindSubNodes(node *xmlquery.Node, ext OMobjExtractor) []*xmlquery.Node {
@@ -190,51 +147,3 @@ func NodeToCSVrow(node *xmlquery.Node, ext OMobjExtractor) CSVrow {
 	}
 	return csvrow
 }
-
-func ExtractNodeToCSVrows(
-	node *xmlquery.Node, ext OMobjExtractor, rows []CSVrow) []CSVrow {
-	query := fmt.Sprintf("//OM_OBJECT[@TemplateName='%s']", ext.OmObject)
-
-	// Objects query
-	nodes := xmlquery.Find(node, query)
-	// fmt.Println(len(nodes))
-	// if len(ext.FieldIDs) == 0 {
-	// return rows
-	// }
-
-	// // Fields query
-	// // subquery := fmt.Sprintf("%s%s", query, ext.FieldsPath)
-	if len(rows) == 0 {
-		rowadd := make([]CSVrow, len(nodes))
-		rows = append(rows, rowadd...)
-	}
-	// fmt.Println("LEN OBJECTS", len(nodes))
-	for i, node := range nodes {
-		row := NodeToCSVrow(node, ext)
-		rows[i] = row
-	}
-	return rows
-}
-
-// func ExtractFields(node *xmlquery.Node, query string, fieldIDsMap map[string]bool) CSVrow {
-// func ExtractFieldsB(node *xmlquery.Node, path string, fieldIDs []string) CSVrow {
-// var row CSVrow
-// query := path + BuildFieldsQuery(fieldIDs)
-// fields := xmlquery.Find(node, query)
-// for _, f := range fields {
-// fieldID, _ := GetFieldValueByID(f.Attr, "FieldID")
-// field := CSVrowField{
-// FieldPosition: 0,
-// FieldID:       fieldID,
-// Value:         f.InnerText(),
-// }
-// row = append(row, field)
-// }
-// return row
-// }
-
-// query := fmt.Sprintf(
-// "//OM_OBJECT[@TemplateName='Radio Rundown']",
-// "//OM_OBJECT[@TemplateName='%s']/%s/*", ext.OM_type, ext.Path,
-// "//OM_OBJECT[@TemplateName='%s']", ext.OM_type,
-// )

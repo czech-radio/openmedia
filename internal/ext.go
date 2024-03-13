@@ -136,20 +136,18 @@ func (apf *ArchivePackageFile) ExtractByXMLquery(
 	}
 	firstRow = firstRow.NewNextLink(payload)
 	firstRow.Payload.CSVrow = []CSVrowField{{1, "testF1", "valueF1"}}
-	rows := NodeToCSVlinkedRow(firstRow, CSVproduction[0])
+	rows := firstRow.ExtractOMobjectsFields(CSVproduction[0])
 	PrintLinks(rows)
 	return nil
 }
 
-func NodeToCSVlinkedRow(
-	inputRow *LinkedRow, ext OMobjExtractor,
-) *LinkedRow {
+func (l *LinkedRow) ExtractOMobjectsFields(ext OMobjExtractor) *LinkedRow {
 	query := fmt.Sprintf("//OM_OBJECT[@TemplateName='%s']", ext.OmObject)
-	if inputRow == nil {
-		slog.Debug("querying nil node")
-		return inputRow
+	if l == nil {
+		slog.Warn("querying nil node")
+		return l
 	}
-	curL := inputRow
+	curL := l
 	var index int
 	for {
 		index++
@@ -194,6 +192,9 @@ func NodesExtractFieldsToRows(
 	}
 	return lrows
 }
+
+// func NodeExtractFields() *LinkedRow {
+// }
 
 func PrintLinks(link *LinkedRow) {
 	// TODO: create test instead
