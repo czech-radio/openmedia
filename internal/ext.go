@@ -147,9 +147,11 @@ func (apf *ArchivePackageFile) ExtractByXMLquery(
 	firstRow.Payload.CSVrow = []CSVrowField{{1, "testF1", "valueF1"}}
 
 	// Expand rows
-	// rows := firstRow.ExtractOMobjectsFields(CSVproduction[0])
-	rows := firstRow.ExtractOMobjectsFields(CSVproduction[1])
-	PrintLinks(rows)
+	slog.Debug("fist object")
+	firstRow = firstRow.ExtractOMobjectsFields(CSVproduction[0])
+	slog.Debug("second object")
+	firstRow = firstRow.ExtractOMobjectsFields(CSVproduction[1])
+	PrintLinks(firstRow)
 	return nil
 }
 
@@ -161,7 +163,6 @@ func (l *LinkedRow) ExtractOMobjectsFields(ext OMobjExtractor) *LinkedRow {
 	}
 	curL := l
 	var index int
-
 	var lrows []*LinkedRow
 	var nodes []*xmlquery.Node
 	var parentCsvRow CSVrow
@@ -170,6 +171,7 @@ func (l *LinkedRow) ExtractOMobjectsFields(ext OMobjExtractor) *LinkedRow {
 		// Check the type of node
 		if l.Payload.NodePath != ext.Path {
 			slog.Warn("skipping node")
+			fmt.Println(l.Payload.NodePath, ext.Path)
 			goto checkNextLink
 		}
 
@@ -192,7 +194,7 @@ func (l *LinkedRow) ExtractOMobjectsFields(ext OMobjExtractor) *LinkedRow {
 		}
 		curL = curL.NextL
 	}
-	return curL
+	return *curL.Start
 }
 
 func NodesExtractFieldsToRows(
@@ -205,11 +207,11 @@ func NodesExtractFieldsToRows(
 		csvrow := NodeToCSVrow(node, ext)
 		csvRowJoined := append(parentCsvRow, csvrow...)
 		payload := LinkPayload{
-			// NodePath: ext.OmObject,
 			OmObject: ext.OmObject,
 			NodePath: ext.Path,
-			Node:     node,
-			CSVrow:   csvRowJoined,
+			// NodePath: strings.Join([]string{ext.Path, ext.OmObject}, "/"),
+			Node:   node,
+			CSVrow: csvRowJoined,
 		}
 		nlr = nlr.NewNextLink(payload)
 		nlr.Payload.CSVrow = csvRowJoined
@@ -217,9 +219,6 @@ func NodesExtractFieldsToRows(
 	}
 	return lrows
 }
-
-// func NodeExtractFields() *LinkedRow {
-// }
 
 func PrintLinks(link *LinkedRow) {
 	// TODO: create test instead

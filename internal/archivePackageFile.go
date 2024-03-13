@@ -80,30 +80,30 @@ var CSVproduction = []OMobjExtractor{
 		OmObject:   "Radio Rundown",
 		Path:       "Radio Rundown",
 		FieldsPath: "/OM_HEADER/OM_FIELD",
-		FieldIDs:   []string{"1", "8"},
+		FieldIDs:   []string{"8"},
 		Level:      0,
 	},
 	{
 		OmObject:   "Hourly Rundown",
-		Path:       "Radio Rundown/Hourly Rundown",
+		Path:       "Radio Rundown",
 		FieldsPath: "/OM_HEADER/OM_FIELD",
 		FieldIDs:   []string{"1", "8"},
 		Level:      0,
 	},
 	{
 		OmObject:   "Sub Rundown",
-		Path:       "Radio Rundown/Hourly Rundown/Sub Rundown",
+		Path:       "Radio Rundown/Hourly Rundown",
 		FieldsPath: "/OM_HEADER/OM_FIELD",
 		FieldIDs:   []string{"8"},
 		Level:      1,
 	},
-	{
-		OmObject:   "Sub Rundown",
-		Path:       "Radio Rundown/Hourly Rundown/Sub Rundown",
-		FieldsPath: "/OM_HEADER/OM_FIELD",
-		FieldIDs:   []string{"8"},
-		Level:      1,
-	},
+	// {
+	// OmObject:   "Sub Rundown",
+	// Path:       "Radio Rundown/Hourly Rundown/Sub Rundown",
+	// FieldsPath: "/OM_HEADER/OM_FIELD",
+	// FieldIDs:   []string{"8"},
+	// Level:      1,
+	// },
 }
 
 type CSVrowsIntMap map[int]CSVrow
