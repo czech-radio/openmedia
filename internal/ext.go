@@ -22,10 +22,7 @@ type LinkedRow struct {
 	PrevL       *LinkedRow
 	Initialized bool
 
-	// Payload
-	NodePath string
-	Node     *xmlquery.Node
-	CSVrow   CSVrow
+	Payload LinkPayload
 }
 
 type LinkPayload struct {
@@ -34,9 +31,9 @@ type LinkPayload struct {
 	CSVrow   CSVrow
 }
 
-func (l *LinkedRow) NewNextLink(parentNode *xmlquery.Node) *LinkedRow {
+func (l *LinkedRow) NewNextLink(
+	payload LinkPayload) *LinkedRow {
 	newRow := new(LinkedRow)
-	newRow.Node = parentNode
 	if l == nil || !l.Initialized {
 		// Not initialized
 		newRow.FirstL = newRow
@@ -55,6 +52,7 @@ func (l *LinkedRow) NewNextLink(parentNode *xmlquery.Node) *LinkedRow {
 		*l.End = newRow
 		newRow.PrevL = l
 	}
+	newRow.Payload = payload
 	newRow.Initialized = true
 	slog.Debug("initialized new link")
 	return newRow
@@ -132,8 +130,13 @@ func (apf *ArchivePackageFile) ExtractByXMLquery(
 		return err
 	}
 	firstRow := new(LinkedRow)
-	firstRow = firstRow.NewNextLink(node)
-	firstRow.CSVrow = []CSVrowField{{1, "testF1", "valueF1"}}
+	payload := LinkPayload{
+		NodePath: "",
+		Node:     node,
+		CSVrow:   CSVrow{{1, "testF1", "valueF1"}},
+	}
+	firstRow = firstRow.NewNextLink(payload)
+	firstRow.Payload.CSVrow = []CSVrowField{{1, "testF1", "valueF1"}}
 	firstRow = NodeToCSVlinkedRow(node, CSVproduction[0], firstRow)
 	PrintLinks(firstRow)
 	return nil
@@ -152,8 +155,8 @@ func NodeToCSVlinkedRow(
 	for {
 		index++
 		// Find objects
-		nodes := xmlquery.Find(curL.Node, query)
-		parentCsvRow := curL.CSVrow
+		nodes := xmlquery.Find(curL.Payload.Node, query)
+		parentCsvRow := curL.Payload.CSVrow
 		lrows := NodesExtractFieldsToRows(parentCsvRow, nodes, ext)
 		slog.Debug("rows", "count", len(lrows))
 		if len(lrows) > 0 {
@@ -181,8 +184,13 @@ func NodesExtractFieldsToRows(
 		// Object fields
 		csvrow := NodeToCSVrow(node, ext)
 		csvRowJoined := append(parentCsvRow, csvrow...)
-		nlr = nlr.NewNextLink(node)
-		nlr.CSVrow = csvRowJoined
+		payload := LinkPayload{
+			NodePath: ext.OmObject,
+			Node:     node,
+			CSVrow:   csvRowJoined,
+		}
+		nlr = nlr.NewNextLink(payload)
+		nlr.Payload.CSVrow = csvRowJoined
 		lrows[i] = nlr
 	}
 	return lrows
@@ -230,9 +238,9 @@ func PrintLinks(link *LinkedRow) {
 
 func PrintLinesSlice(lrows []*LinkedRow) {
 	for _, r := range lrows {
-		fmt.Println("current", r.CSVrow)
+		fmt.Println("current", r.Payload.CSVrow)
 		if r.PrevL != nil {
-			fmt.Println("previous", r.PrevL.CSVrow)
+			fmt.Println("previous", r.PrevL.Payload.CSVrow)
 		}
 	}
 }

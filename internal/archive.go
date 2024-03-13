@@ -226,7 +226,7 @@ func (f *ArchiveItemFileMeta) Parse(
 }
 
 func (f *ArchiveItemFileMeta) SetWeekWorkerName(wtc WorkerTypeCode) string {
-	workerTypeString, _ := WorkerTypeMap[wtc]
+	workerTypeString := WorkerTypeMap[wtc]
 	// f.WorkerName = fmt.Sprintf("%s/%d_W%02d_%s.%s", f.OpenMediaFileType.OutputDir, f.Year, f.Week, workerTypeString, f.CompressionType)
 	f.WorkerName = fmt.Sprintf("%s/%d_W%02d_%s", f.OpenMediaFileType.OutputDir, f.Year, f.Week, workerTypeString)
 	return f.WorkerName

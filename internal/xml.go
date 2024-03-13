@@ -215,7 +215,10 @@ func ValidateFilesInDirectory(rootDir string, recursive bool) (*ArchiveResult, e
 }
 
 func (ar *ArchiveResult) AddError(err ...error) {
-	if err != nil && len(err) > 0 {
+	if err == nil {
+		return
+	}
+	if len(err) > 0 {
 		ar.Errors = append(ar.Errors, err...)
 	}
 }

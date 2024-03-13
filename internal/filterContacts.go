@@ -228,7 +228,7 @@ func (ft *Filter) CSVheaderWrite() {
 	// }
 	// fmt.Fprintf(os.Stdout, "%s\n", headerNamed.String())
 	// 2.) Write fields names
-	for ki, _ := range keys {
+	for ki := range keys {
 		key := keys[ki]
 		fmt.Fprintf(&headerNamed, "%s%s", ft.HeaderFields[key], ft.Options.CSVdelim)
 	}
@@ -302,7 +302,7 @@ func (ft *Filter) CSVwriteUniqueFieldsValues() error {
 	rows := make([][]string, rowsCount)
 	rowLen := len(ft.FieldsUniqueValues)
 	for i, key := range FieldKeysToExtract {
-		fvals, _ := ft.FieldsUniqueValues[key]
+		fvals := ft.FieldsUniqueValues[key]
 		rown := 0
 		for j, k := range fvals {
 			if len(rows[rown]) == 0 {
@@ -328,7 +328,7 @@ func (ft *Filter) CSVheaderWriteB() {
 	var headerNamed strings.Builder
 	keys := FieldKeysToExtract
 	// Write fields names
-	for ki, _ := range keys {
+	for ki := range keys {
 		key := keys[ki]
 		// fmt.Fprintf(&headerNamed, "%s%s", ft.HeaderFields[key], ft.Options.CSVdelim)
 		fmt.Fprintf(&headerNamed, "c(%s)%s", ft.HeaderFields[key], ft.Options.CSVdelim)
@@ -348,7 +348,7 @@ func (ft *Filter) CSVwriteUniqueFieldsValuesB() error {
 	for i, key := range FieldKeysToExtract {
 		// i:		index (column)
 		// key: FiledID
-		fvals, _ := ft.FieldsUniqueValues[key]
+		fvals := ft.FieldsUniqueValues[key]
 		rown := 0
 		for j, k := range fvals {
 			if len(rows[rown]) == 0 {

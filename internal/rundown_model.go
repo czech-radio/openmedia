@@ -58,7 +58,10 @@ type OM_FIELD struct {
 func (omf *OM_FIELD) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 	var inInterface map[string]interface{}
 	inrec, _ := json.Marshal(omf)
-	json.Unmarshal(inrec, &inInterface)
+	err := json.Unmarshal(inrec, &inInterface)
+	if err != nil {
+		return err
+	}
 	maxEmptyCount := len(inInterface) - 1 // Filed attrs should never be empty
 	var emptyCount int
 	for _, val := range inInterface {
