@@ -82,7 +82,6 @@ func (l *LinkedRow) ReplaceLinkWithLinkSequence(newLink *LinkedRow) *LinkedRow {
 		return newLink
 	}
 	var out *LinkedRow
-	slog.Warn("checking")
 	nlend := *newLink.End
 	if l.PrevL == nil && l.NextL == nil {
 		slog.Warn("replacing one link")
@@ -91,8 +90,7 @@ func (l *LinkedRow) ReplaceLinkWithLinkSequence(newLink *LinkedRow) *LinkedRow {
 
 	nlstart := *newLink.Start
 	if l.PrevL == nil {
-		// Insert at the begining
-		slog.Warn("inserting at the begining of links")
+		slog.Debug("Replacing first link of links sequence")
 		*l.Start = nlstart
 		nlend.NextL = l.NextL
 		*nlend.End = *l.End
@@ -100,11 +98,12 @@ func (l *LinkedRow) ReplaceLinkWithLinkSequence(newLink *LinkedRow) *LinkedRow {
 	}
 
 	if l.NextL == nil {
-		// Insert at the end
-		slog.Warn("inserting at the end of links")
+		slog.Debug("Replacing last link in sequence")
 		lend := *l.End
 		lend.NextL = nlstart
 	}
+	slog.Debug("Replacing link in the middle of links sequence")
+
 	// Replace start and end in newLink sequence with from 'l'
 	// lstart := *l.Start
 	// lend := *l.End
