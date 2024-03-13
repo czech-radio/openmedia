@@ -37,11 +37,11 @@ func (l *LinkedRow) NewNextLink(
 	newRow := new(LinkedRow)
 	if l == nil || !l.Initialized {
 		// Not initialized
+		// slog.Debug("new link sequence")
 		newRow.FirstL = newRow
 		count := 1
 		newRow.RowsCount = &count
 		newRow.Start = &newRow
-		// slog.Debug("new link sequence")
 		newRow.End = &newRow
 	} else {
 		// Initialized
@@ -139,7 +139,7 @@ func (apf *ArchivePackageFile) ExtractByXMLquery(
 	// First link construct
 	firstRow := new(LinkedRow)
 	payload := LinkPayload{
-		NodePath: CSVproduction[1].Path,
+		NodePath: "",
 		Node:     node,
 		CSVrow:   CSVrow{{1, "testF1", "valueF1"}},
 	}
@@ -151,6 +151,8 @@ func (apf *ArchivePackageFile) ExtractByXMLquery(
 	firstRow = firstRow.ExtractOMobjectsFields(CSVproduction[0])
 	slog.Debug("second object")
 	firstRow = firstRow.ExtractOMobjectsFields(CSVproduction[1])
+	// slog.Debug("third object")
+	// firstRow = firstRow.ExtractOMobjectsFields(CSVproduction[2])
 	PrintLinks(firstRow)
 	return nil
 }
@@ -170,10 +172,11 @@ func (l *LinkedRow) ExtractOMobjectsFields(ext OMobjExtractor) *LinkedRow {
 		index++
 		// Check the type of node
 		if l.Payload.NodePath != ext.Path {
-			slog.Warn("skipping node")
-			fmt.Println(l.Payload.NodePath, ext.Path)
+			slog.Warn("skipping extraction", "ext", ext)
+			slog.Warn("skipping based on", "nodePath", l.Payload.NodePath, "extPath", ext.Path)
 			goto checkNextLink
 		}
+		slog.Warn("extracting", "ext", ext)
 
 		// Find objects
 		nodes = xmlquery.Find(curL.Payload.Node, query)
@@ -208,10 +211,9 @@ func NodesExtractFieldsToRows(
 		csvRowJoined := append(parentCsvRow, csvrow...)
 		payload := LinkPayload{
 			OmObject: ext.OmObject,
-			NodePath: ext.Path,
-			// NodePath: strings.Join([]string{ext.Path, ext.OmObject}, "/"),
-			Node:   node,
-			CSVrow: csvRowJoined,
+			NodePath: JoinObjectPath(ext.Path, ext.OmObject),
+			Node:     node,
+			CSVrow:   csvRowJoined,
 		}
 		nlr = nlr.NewNextLink(payload)
 		nlr.Payload.CSVrow = csvRowJoined

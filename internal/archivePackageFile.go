@@ -61,6 +61,10 @@ type OMobjExtractor struct {
 	FieldIDsMap map[string]bool
 }
 
+func JoinObjectPath(oldpath, newpath string) string {
+	return oldpath + "/" + newpath
+}
+
 func (omo *OMobjExtractor) MapFields() {
 	omo.FieldIDsMap = make(map[string]bool, len(omo.FieldIDs))
 	for _, id := range omo.FieldIDs {
@@ -77,15 +81,17 @@ var FieldName = map[int]string{
 // FieldsPath: "/OM_RECORD/OM_FIELD",
 var CSVproduction = []OMobjExtractor{
 	{
+		// OmObject:   "Radio Rundown",
+		// Path:       "Radio Rundown",
 		OmObject:   "Radio Rundown",
-		Path:       "Radio Rundown",
+		Path:       "",
 		FieldsPath: "/OM_HEADER/OM_FIELD",
 		FieldIDs:   []string{"8"},
 		Level:      0,
 	},
 	{
 		OmObject:   "Hourly Rundown",
-		Path:       "Radio Rundown",
+		Path:       "/Radio Rundown",
 		FieldsPath: "/OM_HEADER/OM_FIELD",
 		FieldIDs:   []string{"1", "8"},
 		Level:      0,
