@@ -102,6 +102,7 @@ func CrossLinkSequences(A, B *LinkedRow) *LinkedRow {
 }
 
 func (l *LinkedRow) ReplaceLinkWithLinkSequence(
+	//NOTE: Maybe split it smalle functions
 	newLink *LinkedRow) *LinkedRow {
 	if l == nil {
 		slog.Warn("replacing nil link")
@@ -125,16 +126,19 @@ func (l *LinkedRow) ReplaceLinkWithLinkSequence(
 
 	if l.NextL == nil {
 		slog.Debug("replacing the last link in sequence")
+		l.NextL = nlend
 		// PrintLinks("KUKD", newLink)
-		return newLink
+		// PrintLinks("KUKCn", newLink)
+		return nlend
 	}
 
 	slog.Debug("replacing link in the middle of links sequence")
-	nlstart := *newLink.Start
-	nlstart.PrevL = l.PrevL
-	nlend.NextL = l.NextL
-	// PrintLinks("KUKCn", newLink)
-	return newLink
+	nlstart := *newLink.Start // go to start of newLink
+	nlstart.PrevL = l.PrevL   // Join and omit current l-link
+	nlend.NextL = l.NextL     // Join and omit current l-link
+	*newLink.Start = *l.Start
+	*newLink.End = *l.End
+	return nlend
 }
 
 func (apf *ArchivePackageFile) ExtractByXMLquery(
