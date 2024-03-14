@@ -159,10 +159,10 @@ func PackageMap(packageName PackageName, q *ArchiveFolderQuery) (*ArchivePackage
 			return nil, err
 		}
 		if !ok {
-			slog.Debug("no match", fr.Name, q.DateRange)
+			slog.Debug("package file does not match", "package", packageName, "file", fr.Name, "query", q.DateRange)
 			continue
 		}
-		slog.Debug("matches", fr.Name, q.DateRange)
+		slog.Debug("package file matches", "package", packageName, "file", fr.Name, "query", q.DateRange)
 		ap.PackageName = packageName
 		ap.PackageReader = zipr
 		apf := ArchivePackageFile{}

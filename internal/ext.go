@@ -88,48 +88,53 @@ func (l *LinkedRow) NextLinkAdd(payload LinkPayload) *LinkedRow {
 	return newRow
 }
 
+func JoinLinksSequences(A, B *LinkedRow) *LinkedRow {
+	A.NextL = *B.End
+	B.PrevL = *A.End
+	*A.End = *B.End
+	*B.Start = *A.Start
+	return nil
+}
+
+func CrossLinkSequences(A, B *LinkedRow) *LinkedRow {
+	// Must define intersection of links
+	return nil
+}
+
 func (l *LinkedRow) ReplaceLinkWithLinkSequence(
 	newLink *LinkedRow) *LinkedRow {
-	// PrintLinks("KEK", newLink)
 	if l == nil {
 		slog.Warn("replacing nil link")
 		return newLink
 	}
-	var out *LinkedRow
 	nlend := *newLink.End
+
 	if l.PrevL == nil && l.NextL == nil {
 		slog.Warn("replacing one link")
 		return nlend
 	}
 
-	nlstart := *newLink.Start
 	if l.PrevL == nil {
-		slog.Warn("Replacing first link of links sequence")
-		*l.Start = nlstart
-		nlend.NextL = l.NextL
-		*nlend.End = *l.End
+		slog.Warn("replacing the first link of the links sequence")
+		*l.Start = *newLink.Start    // Replace start link in all original links
+		l.NextL.PrevL = *newLink.End // Go to next current l-link and replace its previous link with last of newLink. (Effectively omiting current l-link)
+		*newLink.End = *l.End        // Rplace end link in all new links
+		nlend.NextL = l.NextL        // Join current l.link to the end of newLink
 		return nlend
 	}
 
 	if l.NextL == nil {
-		slog.Debug("Replacing last link in sequence")
-		lend := *l.End
-		lend.NextL = nlstart
+		slog.Debug("replacing the last link in sequence")
+		// PrintLinks("KUKD", newLink)
+		return newLink
 	}
-	slog.Debug("Replacing link in the middle of links sequence")
 
-	// Replace start and end in newLink sequence with from 'l'
-	// lstart := *l.Start
-	// lend := *l.End
-	// nlstart := *newLink.Start
-	// nend := newLink.End
-	// *newLink.Start = lstart
-	// *newLink.End = lend
-	// newLink.Prev = l.PrevL
-	// 1. replace prevl in newLink.Start
-	// 2. replace nextL in newLink.End
-	// 3. replace 'l' with new sequnce
-	return out
+	slog.Debug("replacing link in the middle of links sequence")
+	nlstart := *newLink.Start
+	nlstart.PrevL = l.PrevL
+	nlend.NextL = l.NextL
+	// PrintLinks("KUKCn", newLink)
+	return newLink
 }
 
 func (apf *ArchivePackageFile) ExtractByXMLquery(
@@ -148,15 +153,14 @@ func (apf *ArchivePackageFile) ExtractByXMLquery(
 	payload := LinkPayload{
 		NodePath: "", // [0]
 		// NodePath: "/Radio Rundown", // [1]
-		Node:   node,
-		CSVrow: CSVrow{{1, "testF1", "valueF1"}},
+		Node: node,
+		// CSVrow: CSVrow{{1, "testF1", "valueF1"}},
 	}
 	startLV := 0
-	levels := 2
+	levels := 3
 	firstRow = firstRow.NextLinkAdd(payload)
 	for i := startLV; i < levels; i++ {
-		slog.Debug("extracting object", "number", i)
-		// firstRow = firstRow.NextLinkAdd(payload)
+		slog.Debug("extracting object", "number", i, "object", CSVproduction[i].OmObject)
 		firstRow = firstRow.ExtractOMobjectsFields(CSVproduction[i])
 		firstRow = *firstRow.Start
 		// firstRow = firstRow.ExtractOMobjectsFields(CSVproduction[1])
@@ -172,47 +176,45 @@ func (l *LinkedRow) ExtractOMobjectsFields(ext OMobjExtractor) *LinkedRow {
 		slog.Warn("querying nil node")
 		return l
 	}
-	if l.Payload.NodePath != ext.Path {
-		slog.Warn("skipping extraction", "ext", ext)
-		slog.Warn("skipping based on", "nodePath", l.Payload.NodePath, "extPath", ext.Path)
-	}
 	var index int
 	var lrows *LinkedRow
 	var nodes []*xmlquery.Node
 	var parentCsvRow CSVrow
-	curL := l
+	loopSequenceLink := l
 	query := fmt.Sprintf("//OM_OBJECT[@TemplateName='%s']", ext.OmObject)
+	// Maybe rewrite with appending resulting sequences to new sequence.
 	for {
 		index++
-		// Check the type of node
-		// if l.Payload.NodePath != ext.Path {
-		// slog.Warn("skipping extraction", "ext", ext)
-		// slog.Warn("skipping based on", "nodePath", l.Payload.NodePath, "extPath", ext.Path)
-		// goto checkNextLink
-		// }
+		if loopSequenceLink.Payload.NodePath != ext.Path {
+			// Check the type of node
+			slog.Warn("skipping extraction", "ext", ext)
+			slog.Warn("skipping based on", "nodePath", l.Payload.NodePath, "extPath", ext.Path)
+			goto checkNextLink
+		}
 		// Find objects
 		slog.Warn("extracting", "ext", ext)
-		nodes = xmlquery.Find(curL.Payload.Node, query)
-		parentCsvRow = curL.Payload.CSVrow
+		nodes = xmlquery.Find(loopSequenceLink.Payload.Node, query)
+		parentCsvRow = loopSequenceLink.Payload.CSVrow
+
 		if len(nodes) == 0 {
 			slog.Warn("subnodes not found")
 			goto checkNextLink
 		}
 		slog.Debug("subnodes found", "count", len(nodes))
 		lrows = NodesExtractFieldsToRows(parentCsvRow, nodes, ext)
-		curL = curL.ReplaceLinkWithLinkSequence(*lrows.End)
+		loopSequenceLink = loopSequenceLink.ReplaceLinkWithLinkSequence(*lrows.End)
 
 	checkNextLink:
 		// Checkout next link
 		slog.Debug("checking after index", "index", index)
-		check := curL.NextL
+		check := loopSequenceLink.NextL
 		if check == nil {
 			slog.Debug("breaking after index", "index", index)
 			break
 		}
-		curL = curL.NextL
+		loopSequenceLink = loopSequenceLink.NextL
 	}
-	return curL
+	return loopSequenceLink
 }
 
 func NodesExtractFieldsToRows(
@@ -236,6 +238,5 @@ func NodesExtractFieldsToRows(
 		nlr = nlr.NextLinkAdd(payload)
 		nlr.Payload.Index = i
 	}
-	// PrintLinks("" nlr)
-	return nlr
+	return nlr // Last link of sequence
 }
