@@ -4,9 +4,6 @@ import (
 	"archive/zip"
 	"encoding/xml"
 	"fmt"
-	"log/slog"
-
-	"github.com/antchfx/xmlquery"
 )
 
 type ObjectAttributes = map[string]string
@@ -72,10 +69,6 @@ func (omo *OMobjExtractor) MapFields() {
 	}
 }
 
-var FieldName = map[int]string{
-	8: "Název",
-}
-
 // "//OM_OBJECT[@TemplateName='%s']/%s/*", ext.OM_type, ext.Path,
 // FieldsPath: "/OM_HEADER/OM_FIELD",
 // FieldsPath: "/OM_RECORD/OM_FIELD",
@@ -112,48 +105,3 @@ var CSVproduction = []OMobjExtractor{
 
 type CSVrowsIntMap map[int]CSVrow
 type CSVrowsStringMap map[string]CSVrow
-
-func PrintRows(rows map[int]CSVrow) {
-	for i := 0; i < len(rows); i++ {
-		fmt.Println(i, rows[i])
-		fmt.Println()
-	}
-}
-
-func FindSubNodes(node *xmlquery.Node, ext OMobjExtractor) []*xmlquery.Node {
-	query := fmt.Sprintf("//OM_OBJECT[@TemplateName='%s']", ext.OmObject)
-	return xmlquery.Find(node, query)
-}
-
-func NodesToCSVrows(nodes []*xmlquery.Node, ext OMobjExtractor, rows CSVrowsIntMap) CSVrowsIntMap {
-	if len(rows) == 0 {
-		// rows = make(map[int]CSVrow, len(nodes))
-		rows = make(CSVrowsIntMap, len(nodes))
-	}
-	for i, node := range nodes {
-		row := NodeToCSVrow(node, ext)
-		rows[i] = append(rows[i], row...)
-	}
-	return rows
-}
-
-func NodeToCSVrow(node *xmlquery.Node, ext OMobjExtractor) CSVrow {
-	var csvrow CSVrow
-	// query := ext.FieldsPath + BuildFieldsQuery(ext.FieldIDs)
-	query := ext.FieldsPath + XMLbuildAttrQuery("FieldID", ext.FieldIDs)
-	fields := xmlquery.Find(node, query)
-	if len(fields) == 0 {
-		slog.Error("nothing found")
-		return csvrow
-	}
-	for _, f := range fields {
-		fieldID, _ := GetFieldValueByID(f.Attr, "FieldID")
-		field := CSVrowField{
-			FieldPosition: 0,
-			FieldID:       fieldID,
-			Value:         f.InnerText(),
-		}
-		csvrow = append(csvrow, field)
-	}
-	return csvrow
-}

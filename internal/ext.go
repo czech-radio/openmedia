@@ -152,12 +152,13 @@ func (apf *ArchivePackageFile) ExtractByXMLquery(
 		CSVrow: CSVrow{{1, "testF1", "valueF1"}},
 	}
 	startLV := 0
-	levels := 1
+	levels := 2
 	firstRow = firstRow.NextLinkAdd(payload)
-	for i := startLV; i <= levels; i++ {
+	for i := startLV; i < levels; i++ {
 		slog.Debug("extracting object", "number", i)
 		// firstRow = firstRow.NextLinkAdd(payload)
 		firstRow = firstRow.ExtractOMobjectsFields(CSVproduction[i])
+		firstRow = *firstRow.Start
 		// firstRow = firstRow.ExtractOMobjectsFields(CSVproduction[1])
 		// firstRow = firstRow.ExtractOMobjectsFields(CSVproduction[2])
 	}
@@ -181,7 +182,6 @@ func (l *LinkedRow) ExtractOMobjectsFields(ext OMobjExtractor) *LinkedRow {
 	var parentCsvRow CSVrow
 	curL := l
 	query := fmt.Sprintf("//OM_OBJECT[@TemplateName='%s']", ext.OmObject)
-	// var tak *LinkedRow
 	for {
 		index++
 		// Check the type of node
@@ -236,6 +236,6 @@ func NodesExtractFieldsToRows(
 		nlr = nlr.NextLinkAdd(payload)
 		nlr.Payload.Index = i
 	}
-	PrintLinks("SEX", nlr)
+	// PrintLinks("" nlr)
 	return nlr
 }
