@@ -81,8 +81,6 @@ var FieldName = map[int]string{
 // FieldsPath: "/OM_RECORD/OM_FIELD",
 var CSVproduction = []OMobjExtractor{
 	{
-		// OmObject:   "Radio Rundown",
-		// Path:       "Radio Rundown",
 		OmObject:   "Radio Rundown",
 		Path:       "",
 		FieldsPath: "/OM_HEADER/OM_FIELD",
@@ -98,7 +96,7 @@ var CSVproduction = []OMobjExtractor{
 	},
 	{
 		OmObject:   "Sub Rundown",
-		Path:       "Radio Rundown/Hourly Rundown",
+		Path:       "/Radio Rundown/Hourly Rundown",
 		FieldsPath: "/OM_HEADER/OM_FIELD",
 		FieldIDs:   []string{"8"},
 		Level:      1,
@@ -127,7 +125,6 @@ func FindSubNodes(node *xmlquery.Node, ext OMobjExtractor) []*xmlquery.Node {
 	return xmlquery.Find(node, query)
 }
 
-// func NodesToCSVrows(nodes []*xmlquery.Node, ext OMobjExtractor, rows []CSVrow) []CSVrow {
 func NodesToCSVrows(nodes []*xmlquery.Node, ext OMobjExtractor, rows CSVrowsIntMap) CSVrowsIntMap {
 	if len(rows) == 0 {
 		// rows = make(map[int]CSVrow, len(nodes))
