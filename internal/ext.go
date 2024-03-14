@@ -31,6 +31,7 @@ type LinkPayload struct {
 	Node     *xmlquery.Node
 	CSVrow   CSVrow
 	Index    int
+	IndexStr string
 }
 
 func (l *LinkedRow) GoToNextLink() (*LinkedRow, bool) {
@@ -67,6 +68,10 @@ func NewLinkSequence(payload LinkPayload) *LinkedRow {
 }
 
 func (l *LinkedRow) NextLinkAdd(payload LinkPayload) *LinkedRow {
+	if l == nil {
+		res := NewLinkSequence(payload)
+		return res
+	}
 	newRow := new(LinkedRow)
 	newRow.Start = l.Start
 	newRow.FirstL = l.FirstL
@@ -77,46 +82,6 @@ func (l *LinkedRow) NextLinkAdd(payload LinkPayload) *LinkedRow {
 	newRow.Payload = payload
 	return newRow
 }
-
-func (l *LinkedRow) NewNextLink(
-	payload LinkPayload) *LinkedRow {
-	newRow := new(LinkedRow)
-	if l == nil || !l.Initialized {
-		// if l == nil {
-		// Not initialized
-		slog.Debug("initializing first link in sequence")
-		newRow.FirstL = newRow
-		count := 1
-		newRow.RowsCount = &count
-		// newRow.Start = nil
-		// fmt.Println("krax", *newRow.Start)
-		// *newRow.Start = newRow
-		newRow.Start = &newRow
-		newRow.End = &newRow
-		newRow.Payload = payload
-	} else {
-		// Initialized
-		slog.Debug("initializing new link in sequence")
-		newRow.Start = l.Start
-		// *newRow.Start = *l.PrevL.Start
-		newRow.FirstL = l.FirstL
-		l.NextL = newRow
-		newRow.End = l.End
-		*l.End = newRow
-		newRow.PrevL = l
-	}
-	newRow.Payload = payload
-	newRow.Initialized = true
-	return newRow
-}
-
-// func KerujDebug() {
-// fmt.Println("keruj", newRow.Start, l.Start)
-// fmt.Println("keruj", *newRow.Start)
-// chkn := *newRow.Start
-// chkl := *l.Start
-// fmt.Println("keruj payload", chkn.Payload, chkl.Payload)
-// }
 
 func (l *LinkedRow) ReplaceLinkWithLinkSequence(
 	newLink *LinkedRow) *LinkedRow {
@@ -173,17 +138,20 @@ func (apf *ArchivePackageFile) ExtractByXMLquery(
 	}
 
 	// First link construct
-	firstRow := new(LinkedRow)
+	var firstRow *LinkedRow
+	// firstRow := new(LinkedRow)
 	payload := LinkPayload{
 		// NodePath: "", // [0]
 		NodePath: "/Radio Rundown", // [1]
 		Node:     node,
 		CSVrow:   CSVrow{{1, "testF1", "valueF1"}},
 	}
-	firstRow = firstRow.NewNextLink(payload)
-	chk := *firstRow.Start
-	fmt.Println("keruje", chk)
-	firstRow.Payload.CSVrow = []CSVrowField{{1, "testF1", "valueF1"}}
+	// firstRow = firstRow.NewNextLink(payload)
+	firstRow = firstRow.NextLinkAdd(payload)
+	// firstRow := NewLinkSequence(payload)
+	// chk := *firstRow.Start
+	// fmt.Println("keruje", chk)
+	// firstRow.Payload.CSVrow = []CSVrowField{{1, "testF1", "valueF1"}}
 
 	// Expand rows
 	// slog.Debug("fist object")
@@ -204,7 +172,7 @@ func (l *LinkedRow) ExtractOMobjectsFields(ext OMobjExtractor) *LinkedRow {
 	}
 	curL := l
 	var index int
-	var lrows []*LinkedRow
+	var lrows *LinkedRow
 	var nodes []*xmlquery.Node
 	var parentCsvRow CSVrow
 	for {
@@ -220,14 +188,17 @@ func (l *LinkedRow) ExtractOMobjectsFields(ext OMobjExtractor) *LinkedRow {
 		// Find objects
 		nodes = xmlquery.Find(curL.Payload.Node, query)
 		parentCsvRow = curL.Payload.CSVrow
-		lrows = NodesExtractFieldsToRows(parentCsvRow, nodes, ext)
-		slog.Debug("rows", "count", len(lrows))
-		if len(lrows) > 0 {
-			slog.Debug("replacing link", "count", len(lrows))
-			curL = curL.ReplaceLinkWithLinkSequence(lrows[0])
+		if len(nodes) == 0 {
+			slog.Warn("subnodes not found")
+			goto checkNextLink
 		}
-		// Checkout next link
+		slog.Debug("subnodes found", "count", len(nodes))
+		lrows = NodesExtractFieldsToRows(parentCsvRow, nodes, ext)
+		PrintLinks("KEXX", lrows)
+		curL = curL.ReplaceLinkWithLinkSequence(lrows)
+
 	checkNextLink:
+		// Checkout next link
 		slog.Debug("checking after index", "index", index)
 		check := curL.NextL
 		if check == nil {
@@ -241,8 +212,7 @@ func (l *LinkedRow) ExtractOMobjectsFields(ext OMobjExtractor) *LinkedRow {
 
 func NodesExtractFieldsToRows(
 	parentCsvRow CSVrow, nodes []*xmlquery.Node, ext OMobjExtractor,
-) []*LinkedRow {
-	lrows := make([]*LinkedRow, len(nodes))
+) *LinkedRow {
 	var nlr *LinkedRow
 	for i, node := range nodes {
 		// Object fields
@@ -253,16 +223,13 @@ func NodesExtractFieldsToRows(
 			NodePath: JoinObjectPath(ext.Path, ext.OmObject),
 			Node:     node,
 			CSVrow:   csvRowJoined,
+			Index:    i,
 		}
-		nlr = nlr.NewNextLink(payload)
+		nlr = nlr.NextLinkAdd(payload)
 		nlr.Payload.CSVrow = csvRowJoined
 		nlr.Payload.Index = i
-		lrows[i] = nlr
 	}
-
-	PrintLinks("FUCK", lrows[0])
-	PrintLinks("FUCK1", lrows[1])
-	return lrows
+	return nlr
 }
 
 func PrintLinks(name string, link *LinkedRow) {

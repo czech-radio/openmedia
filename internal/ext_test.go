@@ -1,8 +1,42 @@
 package internal
 
 import (
+	"fmt"
+	"log/slog"
 	"testing"
 )
+
+func (l *LinkedRow) NewNextLink(
+	payload LinkPayload) *LinkedRow {
+	newRow := new(LinkedRow)
+	if l == nil || !l.Initialized {
+		// if l == nil {
+		// Not initialized
+		slog.Debug("initializing first link in sequence")
+		newRow.FirstL = newRow
+		count := 1
+		newRow.RowsCount = &count
+		// newRow.Start = nil
+		// fmt.Println("krax", *newRow.Start)
+		// *newRow.Start = newRow
+		newRow.Start = &newRow
+		newRow.End = &newRow
+		newRow.Payload = payload
+	} else {
+		// Initialized
+		slog.Debug("initializing new link in sequence")
+		newRow.Start = l.Start
+		// *newRow.Start = *l.PrevL.Start
+		newRow.FirstL = l.FirstL
+		l.NextL = newRow
+		newRow.End = l.End
+		*l.End = newRow
+		newRow.PrevL = l
+	}
+	newRow.Payload = payload
+	newRow.Initialized = true
+	return newRow
+}
 
 func TestNewNextLink(t *testing.T) {
 	payload := LinkPayload{}
@@ -17,10 +51,12 @@ func TestNewNextLink(t *testing.T) {
 }
 
 func TestNewLinkSequence(t *testing.T) {
-	payload := LinkPayload{}
-	nlink := NewLinkSequence(payload)
+	// nlink := NewLinkSequence(payload)
+	var nlink *LinkedRow
 	for i := 0; i < 4; i++ {
-		payload.Index = i
+		payload := LinkPayload{}
+		// payload.Index = i
+		payload.IndexStr = fmt.Sprintf("%d_ahoj", i)
 		nlink = nlink.NextLinkAdd(payload)
 	}
 	PrintLinks("TEST2", nlink)
