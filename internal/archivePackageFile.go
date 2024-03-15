@@ -49,19 +49,6 @@ func (apf *ArchivePackageFile) ExtractByParser(
 	return nil
 }
 
-type OMobjExtractor struct {
-	OmObject        string
-	Path            string
-	FieldsPath      string
-	FieldIDs        []string
-	FieldIDsMap     map[string]bool
-	ReplacePrevious bool
-}
-
-type OMobjExtractors struct {
-	Extractors []OMobjExtractor
-}
-
 func JoinObjectPath(oldpath, newpath string) string {
 	return oldpath + "/" + newpath
 }
@@ -73,22 +60,34 @@ func (omo *OMobjExtractor) MapFields() {
 	}
 }
 
+type OMobjExtractor struct {
+	OmObject     string
+	Path         string
+	FieldsPath   string
+	FieldsPrefix string
+	// Internals
+	FieldIDs        []string
+	FieldIDsMap     map[string]bool
+	ReplacePrevious bool
+}
+
 // "//OM_OBJECT[@TemplateName='%s']/%s/*", ext.OM_type, ext.Path,
-// FieldsPath: "/OM_HEADER/OM_FIELD",
 // FieldsPath: "/OM_RECORD/OM_FIELD",
 var CSVproduction = []OMobjExtractor{
 	{
 		OmObject:        "Radio Rundown",
+		FieldsPrefix:    "RR",
 		Path:            "",
 		FieldsPath:      "/OM_HEADER/OM_FIELD",
 		FieldIDs:        []string{"1", "8"},
 		ReplacePrevious: true,
 	},
 	{
-		OmObject:        "Hourly Rundown",
-		Path:            "/Radio Rundown",
-		FieldsPath:      "/OM_HEADER/OM_FIELD",
-		FieldIDs:        []string{"1", "8", "9"},
+		OmObject:   "Hourly Rundown",
+		Path:       "/Radio Rundown",
+		FieldsPath: "/OM_HEADER/OM_FIELD",
+		FieldIDs:   []string{"1", "8", "9"},
+		// FieldIDs:        []string{"*"}, // ALL fields
 		ReplacePrevious: true,
 	},
 	{
@@ -98,6 +97,20 @@ var CSVproduction = []OMobjExtractor{
 		FieldIDs:        []string{"8"},
 		ReplacePrevious: false,
 	},
+	{
+		OmObject:        "Radio Story",
+		Path:            "/Radio Rundown/Hourly Rundown/Sub Rundown",
+		FieldsPath:      "/OM_HEADER/OM_FIELD",
+		FieldIDs:        []string{"8"},
+		ReplacePrevious: false,
+	},
+	// {
+	// OmObject:        "Sub Rundown",
+	// Path:            "/Radio Rundown/Hourly Rundown",
+	// FieldsPath:      "/OM_HEADER/OM_FIELD",
+	// FieldIDs:        []string{"8"},
+	// ReplacePrevious: false,
+	// },
 	// {
 	// OmObject:   "Sub Rundown",
 	// Path:       "Radio Rundown/Hourly Rundown/Sub Rundown",

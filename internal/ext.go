@@ -23,9 +23,10 @@ func (apf *ArchivePackageFile) ExtractByXMLquery(
 }
 
 type RowPayload struct {
-	OmObject string
-	NodePath string
-	Node     *xmlquery.Node
+	OmObject     string
+	FieldsPrefix string
+	NodePath     string
+	Node         *xmlquery.Node
 	CSVrow
 }
 
@@ -87,26 +88,33 @@ func ExtractNodeFields(
 ) *RowPayload {
 	csvrow := NodeToCSVrow(node, extr)
 	return &RowPayload{
-		OmObject: "",
-		NodePath: "",
-		Node:     node,
-		CSVrow:   append(parentRow, csvrow...),
+		OmObject:     extr.OmObject,
+		FieldsPrefix: extr.FieldsPrefix,
+		NodePath:     "",
+		Node:         node,
+		CSVrow:       append(parentRow, csvrow...),
 	}
 }
 
 func NodeToCSVrow(node *xmlquery.Node, ext OMobjExtractor) CSVrow {
 	var csvrow CSVrow
-	// query := ext.FieldsPath + BuildFieldsQuery(ext.FieldIDs)
-	query := ext.FieldsPath + XMLbuildAttrQuery("FieldID", ext.FieldIDs)
+	attrQuery := XMLbuildAttrQuery("FieldID", ext.FieldIDs)
+	if attrQuery == "" {
+		return csvrow
+	}
+	query := ext.FieldsPath + attrQuery
 	fields := xmlquery.Find(node, query)
+	if fields == nil {
+		return csvrow
+	}
 	if len(fields) == 0 {
 		slog.Error("nothing found")
 		return csvrow
 	}
-	for _, f := range fields {
-		fieldID, _ := GetFieldValueByID(f.Attr, "FieldID")
+	for pos, f := range fields {
+		fieldID, _ := GetFieldValueByName(f.Attr, "FieldID")
 		field := CSVrowField{
-			FieldPosition: 0,
+			FieldPosition: pos,
 			FieldID:       fieldID,
 			Value:         f.InnerText(),
 		}

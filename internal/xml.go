@@ -228,16 +228,22 @@ func XMLprint(node *xmlquery.Node) {
 	fmt.Println(ex)
 }
 
-func GetFieldValueByID(attrs []xmlquery.Attr, id string) (string, bool) {
+func GetFieldValueByName(attrs []xmlquery.Attr, id string) (string, bool) {
 	for _, i := range attrs {
 		if i.Name.Local == id {
 			return i.Value, true
 		}
 	}
-	return "", false
+	return "NO_VALUE", false
 }
 
 func XMLbuildAttrQuery(attrName string, ids []string) string {
+	if len(ids) == 0 {
+		return ""
+	}
+	if ids[0] == "*" {
+		return "/*"
+	}
 	var expr strings.Builder
 	attrQuery := "@" + attrName + "='"
 	expr.WriteString("[")
