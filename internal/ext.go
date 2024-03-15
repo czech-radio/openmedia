@@ -36,6 +36,14 @@ type LinkPayload struct {
 	ExtCount int
 }
 
+type RowPayload struct {
+	OmObject string
+	NodePath string
+	Node     *xmlquery.Node
+	// CSVrow   CSVrow
+	CSVrow
+}
+
 func (l *LinkedRow) GoToNextLink() (*LinkedRow, bool) {
 	if l.NextL == nil {
 		return l, false
@@ -116,6 +124,7 @@ func (l *LinkedRow) ReplaceLinkWithLinkSequence(
 	}
 
 	if l.PrevL == nil {
+		// SOLVED
 		slog.Warn("replacing the first link of the links sequence")
 		*l.Start = *newLink.Start    // Replace start link in all original links
 		l.NextL.PrevL = *newLink.End // Go to next current l-link and replace its previous link with last of newLink. (Effectively omiting current l-link)
@@ -126,22 +135,33 @@ func (l *LinkedRow) ReplaceLinkWithLinkSequence(
 
 	if l.NextL == nil {
 		slog.Debug("replacing the last link in sequence")
-		l.NextL = nlend
-		// PrintLinks("KUKD", newLink)
-		// PrintLinks("KUKCn", newLink)
+		*newLink.Start = *l.Start
+		*l.Start = *newLink.End
+		l.PrevL.NextL = nlend // Join currentLink.Previous a newLinkend links omit current l-link
+		nlend.PrevL = l.NextL
 		return nlend
 	}
 
 	slog.Debug("replacing link in the middle of links sequence")
+	Gloi++
+	if Gloi > 2 {
+		// fmt.Println("HALTING")
+		panic("pex")
+	}
+	// PrintLinks("KUKDn", newLink)
 	nlstart := *newLink.Start // go to start of newLink
 	nlstart.PrevL = l.PrevL   // Join and omit current l-link
 	nlend.NextL = l.NextL     // Join and omit current l-link
 	*newLink.Start = *l.Start
 	*newLink.End = *l.End
+	// PrintLinks("KUKDn", nlend)
+	// panic("e")
 	return nlend
 }
 
-func (apf *ArchivePackageFile) ExtractByXMLquery(
+var Gloi int
+
+func (apf *ArchivePackageFile) ExtractByXMLqueryB(
 	enc FileEncodingNumber, q *ArchiveFolderQuery) error {
 	dataReader, err := ZipXmlFileDecodeData(apf.Reader, enc)
 	if err != nil {
@@ -165,8 +185,8 @@ func (apf *ArchivePackageFile) ExtractByXMLquery(
 	firstRow = firstRow.NextLinkAdd(payload)
 	for i := startLV; i < levels; i++ {
 		slog.Debug("extracting object", "number", i, "object", CSVproduction[i].OmObject)
-		firstRow = firstRow.ExtractOMobjectsFields(CSVproduction[i])
 		firstRow = *firstRow.Start
+		firstRow = firstRow.ExtractOMobjectsFields(CSVproduction[i])
 		// firstRow = firstRow.ExtractOMobjectsFields(CSVproduction[1])
 		// firstRow = firstRow.ExtractOMobjectsFields(CSVproduction[2])
 	}
@@ -206,6 +226,7 @@ func (l *LinkedRow) ExtractOMobjectsFields(ext OMobjExtractor) *LinkedRow {
 		}
 		slog.Debug("subnodes found", "count", len(nodes))
 		lrows = NodesExtractFieldsToRows(parentCsvRow, nodes, ext)
+		fmt.Println("RAKU", lrows.Payload)
 		loopSequenceLink = loopSequenceLink.ReplaceLinkWithLinkSequence(*lrows.End)
 
 	checkNextLink:

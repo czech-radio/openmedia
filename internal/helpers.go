@@ -428,3 +428,12 @@ func ZipXmlFileDecodeData(zf *zip.File, enc FileEncodingNumber) (*bytes.Reader, 
 	}
 	return breader, err
 }
+
+func PrintRowPayloads(name string, pl []*RowPayload) {
+	if len(pl) == 0 {
+		fmt.Println(name, "NO PAYLOAD")
+	}
+	for i, p := range pl {
+		fmt.Println(name, i, p)
+	}
+}
