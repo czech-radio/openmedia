@@ -1,21 +1,9 @@
 package internal
 
 import (
-	"fmt"
 	"testing"
 	"time"
 )
-
-func TestNewLinkSequence(t *testing.T) {
-	var nlink *LinkedRow
-	for i := 0; i < 4; i++ {
-		payload := LinkPayload{}
-		payload.Index = i
-		payload.IndexStr = fmt.Sprintf("%d_ahoj", i)
-		nlink = nlink.NextLinkAdd(payload)
-	}
-	PrintLinks("TEST2", nlink)
-}
 
 func TestArchiveFolderExtract(t *testing.T) {
 	// workerTypes := []WorkerTypeCode{WorkerTypeZIPminified}

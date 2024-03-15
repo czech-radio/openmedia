@@ -7,261 +7,127 @@ import (
 	"github.com/antchfx/xmlquery"
 )
 
-type LinkedRow struct {
-	// Link internals
-	// ** Double pointer address of address of object. Shared accross all links
-	LinksCount **int
-	Start      **LinkedRow
-	End        **LinkedRow
-
-	// Local variables to one link
-	RowsCount   *int
-	FirstL      *LinkedRow
-	LastL       *LinkedRow
-	NextL       *LinkedRow
-	PrevL       *LinkedRow
-	Initialized bool
-
-	// Payload
-	Payload LinkPayload
-}
-
-type LinkPayload struct {
-	OmObject string
-	NodePath string
-	Node     *xmlquery.Node
-	CSVrow   CSVrow
-	Index    int
-	IndexStr string
-	ExtCount int
+func (apf *ArchivePackageFile) ExtractByXMLquery(
+	enc FileEncodingNumber, q *ArchiveFolderQuery) error {
+	dataReader, err := ZipXmlFileDecodeData(apf.Reader, enc)
+	if err != nil {
+		return err
+	}
+	baseNode, err := xmlquery.Parse(dataReader)
+	if err != nil {
+		return err
+	}
+	pay, err := ExtractFromBaseObject(baseNode, CSVproduction)
+	PrintRowPayloads("RESULT", pay)
+	return err
 }
 
 type RowPayload struct {
 	OmObject string
 	NodePath string
 	Node     *xmlquery.Node
-	// CSVrow   CSVrow
 	CSVrow
 }
 
-func (l *LinkedRow) GoToNextLink() (*LinkedRow, bool) {
-	if l.NextL == nil {
-		return l, false
+func ExtractFromBaseObject(baseNode *xmlquery.Node, extrs []OMobjExtractor) ([]*RowPayload, error) {
+	baseRow := &RowPayload{
+		OmObject: "",
+		NodePath: "",
+		Node:     baseNode,
+		CSVrow:   CSVrow{{1, "tF1", "vF1"}},
 	}
-	l = l.NextL
-	return l.NextL, true
+	rows := []*RowPayload{baseRow}
+	for _, e := range extrs {
+		rows = ExpandRows(rows, e)
+	}
+	return rows, nil
 }
 
-func (l *LinkedRow) GoToStartLink() *LinkedRow {
-	l = *l.Start
-	return *l.Start
-}
-
-func (l *LinkedRow) GoToEndLink() *LinkedRow {
-	l = *l.End
-	return *l.End
-}
-
-func (l *LinkedRow) ExportCurrentLinkToCSV() {
-}
-
-func (l *LinkedRow) ExportAllLinksToCSV() {
-}
-
-func NewLinkSequence(payload LinkPayload) *LinkedRow {
-	newRow := new(LinkedRow)
-	newRowE := new(LinkedRow) // Just for another random addr
-	newRow.Start = &newRow
-	newRow.End = &newRowE
-	newRow.Payload = payload
-	slog.Debug("new link sequence created")
-	return newRow
-}
-
-func (l *LinkedRow) NextLinkAdd(payload LinkPayload) *LinkedRow {
-	if l == nil {
-		res := NewLinkSequence(payload)
-		*res.End = res
-		return res
-	}
-	newRow := new(LinkedRow)
-	newRow.Start = l.Start
-	newRow.FirstL = l.FirstL
-	l.NextL = newRow
-	newRow.End = l.End
-	*l.End = newRow
-	newRow.PrevL = l
-	newRow.Payload = payload
-	slog.Debug("next link created in sequence")
-	return newRow
-}
-
-func JoinLinksSequences(A, B *LinkedRow) *LinkedRow {
-	A.NextL = *B.End
-	B.PrevL = *A.End
-	*A.End = *B.End
-	*B.Start = *A.Start
-	return nil
-}
-
-func CrossLinkSequences(A, B *LinkedRow) *LinkedRow {
-	// Must define intersection of links
-	return nil
-}
-
-func (l *LinkedRow) ReplaceLinkWithLinkSequence(
-	//NOTE: Maybe split it smalle functions
-	newLink *LinkedRow) *LinkedRow {
-	if l == nil {
-		slog.Warn("replacing nil link")
-		return newLink
-	}
-	nlend := *newLink.End
-
-	if l.PrevL == nil && l.NextL == nil {
-		slog.Warn("replacing one link")
-		return nlend
-	}
-
-	if l.PrevL == nil {
-		// SOLVED
-		slog.Warn("replacing the first link of the links sequence")
-		*l.Start = *newLink.Start    // Replace start link in all original links
-		l.NextL.PrevL = *newLink.End // Go to next current l-link and replace its previous link with last of newLink. (Effectively omiting current l-link)
-		*newLink.End = *l.End        // Rplace end link in all new links
-		nlend.NextL = l.NextL        // Join current l.link to the end of newLink
-		return nlend
-	}
-
-	if l.NextL == nil {
-		slog.Debug("replacing the last link in sequence")
-		*newLink.Start = *l.Start
-		*l.Start = *newLink.End
-		l.PrevL.NextL = nlend // Join currentLink.Previous a newLinkend links omit current l-link
-		nlend.PrevL = l.NextL
-		return nlend
-	}
-
-	slog.Debug("replacing link in the middle of links sequence")
-	Gloi++
-	if Gloi > 2 {
-		// fmt.Println("HALTING")
-		panic("pex")
-	}
-	// PrintLinks("KUKDn", newLink)
-	nlstart := *newLink.Start // go to start of newLink
-	nlstart.PrevL = l.PrevL   // Join and omit current l-link
-	nlend.NextL = l.NextL     // Join and omit current l-link
-	*newLink.Start = *l.Start
-	*newLink.End = *l.End
-	// PrintLinks("KUKDn", nlend)
-	// panic("e")
-	return nlend
-}
-
-var Gloi int
-
-func (apf *ArchivePackageFile) ExtractByXMLqueryB(
-	enc FileEncodingNumber, q *ArchiveFolderQuery) error {
-	dataReader, err := ZipXmlFileDecodeData(apf.Reader, enc)
-	if err != nil {
-		return err
-	}
-	node, err := xmlquery.Parse(dataReader)
-	if err != nil {
-		return err
-	}
-
-	// First link construct
-	var firstRow *LinkedRow
-	payload := LinkPayload{
-		NodePath: "", // [0]
-		// NodePath: "/Radio Rundown", // [1]
-		Node: node,
-		// CSVrow: CSVrow{{1, "testF1", "valueF1"}},
-	}
-	startLV := 0
-	levels := 3
-	firstRow = firstRow.NextLinkAdd(payload)
-	for i := startLV; i < levels; i++ {
-		slog.Debug("extracting object", "number", i, "object", CSVproduction[i].OmObject)
-		firstRow = *firstRow.Start
-		firstRow = firstRow.ExtractOMobjectsFields(CSVproduction[i])
-		// firstRow = firstRow.ExtractOMobjectsFields(CSVproduction[1])
-		// firstRow = firstRow.ExtractOMobjectsFields(CSVproduction[2])
-	}
-	PrintLinks("LAST RESULT", firstRow)
-	return nil
-}
-
-func (l *LinkedRow) ExtractOMobjectsFields(ext OMobjExtractor) *LinkedRow {
-	// Chekcs
-	if l == nil {
-		slog.Warn("querying nil node")
-		return l
-	}
-	var index int
-	var lrows *LinkedRow
-	var nodes []*xmlquery.Node
-	var parentCsvRow CSVrow
-	loopSequenceLink := l
-	query := fmt.Sprintf("//OM_OBJECT[@TemplateName='%s']", ext.OmObject)
-	// Maybe rewrite with appending resulting sequences to new sequence.
-	for {
-		index++
-		if loopSequenceLink.Payload.NodePath != ext.Path {
-			// Check the type of node
-			slog.Warn("skipping extraction", "ext", ext)
-			slog.Warn("skipping based on", "nodePath", l.Payload.NodePath, "extPath", ext.Path)
-			goto checkNextLink
+func ExpandRows(rps []*RowPayload, extr OMobjExtractor) []*RowPayload {
+	objquery := fmt.Sprintf("//OM_OBJECT[@TemplateName='%s']", extr.OmObject)
+	subRowsCount := len(rps)
+	var result []*RowPayload
+	for i := range rps {
+		subNodes := xmlquery.Find(rps[i].Node, objquery)
+		subNodesCount := len(subNodes)
+		if subNodesCount == 0 {
+			slog.Debug("no subnodes found")
 		}
-		// Find objects
-		slog.Warn("extracting", "ext", ext)
-		nodes = xmlquery.Find(loopSequenceLink.Payload.Node, query)
-		parentCsvRow = loopSequenceLink.Payload.CSVrow
+		slog.Debug("subnodes found", "count", subNodesCount)
+		subRows := ExtractNodesFields(subNodes, extr, rps[i].CSVrow)
+		subRowsCount += len(subRows)
 
-		if len(nodes) == 0 {
-			slog.Warn("subnodes not found")
-			goto checkNextLink
+		if extr.ReplacePrevious {
+			slog.Debug("replacing previous row")
+			result = append(result, subRows...)
 		}
-		slog.Debug("subnodes found", "count", len(nodes))
-		lrows = NodesExtractFieldsToRows(parentCsvRow, nodes, ext)
-		fmt.Println("RAKU", lrows.Payload)
-		loopSequenceLink = loopSequenceLink.ReplaceLinkWithLinkSequence(*lrows.End)
-
-	checkNextLink:
-		// Checkout next link
-		slog.Debug("checking after index", "index", index)
-		check := loopSequenceLink.NextL
-		if check == nil {
-			slog.Debug("breaking after index", "index", index)
-			break
+		if !extr.ReplacePrevious {
+			slog.Debug("appending to previos row")
+			result = append(result, subRows...)
+			// also append the previous row
+			result = append(result, rps[i])
 		}
-		loopSequenceLink = loopSequenceLink.NextL
 	}
-	return loopSequenceLink
+	return result
 }
 
-func NodesExtractFieldsToRows(
-	parentCsvRow CSVrow, nodes []*xmlquery.Node, ext OMobjExtractor,
-) *LinkedRow {
-	var nlr *LinkedRow
-	slog.Debug("finding fields for obj", "count", len(nodes))
+func ExtractNodesFields(
+	nodes []*xmlquery.Node, extr OMobjExtractor, parentRow CSVrow,
+) []*RowPayload {
+	var nodeRows []*RowPayload
+	for _, n := range nodes {
+		row := ExtractNodeFields(n, extr, parentRow)
+		nodeRows = append(nodeRows, row)
+	}
+	return nodeRows
+}
+
+func ExtractNodeFields(
+	node *xmlquery.Node, extr OMobjExtractor, parentRow CSVrow,
+) *RowPayload {
+	csvrow := NodeToCSVrow(node, extr)
+	return &RowPayload{
+		OmObject: "",
+		NodePath: "",
+		Node:     node,
+		CSVrow:   append(parentRow, csvrow...),
+	}
+}
+
+func NodeToCSVrow(node *xmlquery.Node, ext OMobjExtractor) CSVrow {
+	var csvrow CSVrow
+	// query := ext.FieldsPath + BuildFieldsQuery(ext.FieldIDs)
+	query := ext.FieldsPath + XMLbuildAttrQuery("FieldID", ext.FieldIDs)
+	fields := xmlquery.Find(node, query)
+	if len(fields) == 0 {
+		slog.Error("nothing found")
+		return csvrow
+	}
+	for _, f := range fields {
+		fieldID, _ := GetFieldValueByID(f.Attr, "FieldID")
+		field := CSVrowField{
+			FieldPosition: 0,
+			FieldID:       fieldID,
+			Value:         f.InnerText(),
+		}
+		csvrow = append(csvrow, field)
+	}
+	return csvrow
+}
+
+func NodesToCSVrows(nodes []*xmlquery.Node, ext OMobjExtractor, rows CSVrowsIntMap) CSVrowsIntMap {
+	if len(rows) == 0 {
+		// rows = make(map[int]CSVrow, len(nodes))
+		rows = make(CSVrowsIntMap, len(nodes))
+	}
 	for i, node := range nodes {
-		// Object fields
-		csvrow := NodeToCSVrow(node, ext)
-
-		csvRowJoined := append(parentCsvRow, csvrow...)
-		payload := LinkPayload{
-			OmObject: ext.OmObject,
-			NodePath: JoinObjectPath(ext.Path, ext.OmObject),
-			Node:     node,
-			CSVrow:   csvRowJoined,
-			Index:    i,
-			ExtCount: len(nodes),
-		}
-		nlr = nlr.NextLinkAdd(payload)
-		nlr.Payload.Index = i
+		row := NodeToCSVrow(node, ext)
+		rows[i] = append(rows[i], row...)
 	}
-	return nlr // Last link of sequence
+	return rows
+}
+
+func FindSubNodes(node *xmlquery.Node, ext OMobjExtractor) []*xmlquery.Node {
+	query := fmt.Sprintf("//OM_OBJECT[@TemplateName='%s']", ext.OmObject)
+	return xmlquery.Find(node, query)
 }

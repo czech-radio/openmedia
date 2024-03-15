@@ -91,12 +91,13 @@ var CSVproduction = []OMobjExtractor{
 		FieldIDs:        []string{"1", "8", "9"},
 		ReplacePrevious: true,
 	},
-	// {
-	// OmObject:   "Sub Rundown",
-	// Path:       "/Radio Rundown/Hourly Rundown",
-	// FieldsPath: "/OM_HEADER/OM_FIELD",
-	// FieldIDs:   []string{"8"},
-	// },
+	{
+		OmObject:        "Sub Rundown",
+		Path:            "/Radio Rundown/Hourly Rundown",
+		FieldsPath:      "/OM_HEADER/OM_FIELD",
+		FieldIDs:        []string{"8"},
+		ReplacePrevious: false,
+	},
 	// {
 	// OmObject:   "Sub Rundown",
 	// Path:       "Radio Rundown/Hourly Rundown/Sub Rundown",

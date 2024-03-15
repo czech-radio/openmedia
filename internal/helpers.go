@@ -437,3 +437,10 @@ func PrintRowPayloads(name string, pl []*RowPayload) {
 		fmt.Println(name, i, p)
 	}
 }
+
+func PrintRows(rows map[int]CSVrow) {
+	for i := 0; i < len(rows); i++ {
+		fmt.Println(i, rows[i])
+		fmt.Println()
+	}
+}
