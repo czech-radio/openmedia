@@ -27,11 +27,11 @@ func (row CSVrow) PrintToCSV(
 	partsPos []string, partsFieldsPos CSVrowPartsFieldsPositions,
 	delim string) string {
 	for _, pos := range partsPos {
-		fmt.Println(pos)
+		// fmt.Println(pos)
 		fieldsPos := partsFieldsPos[pos]
-		fmt.Println("fieldsPos", fieldsPos)
+		// fmt.Println("fieldsPos", fieldsPos)
 		part := row[pos]
-		fmt.Println("part", part)
+		// fmt.Println("part", part)
 		part.PrintToCSV(builder, fieldsPos, delim)
 	}
 	return builder.String()

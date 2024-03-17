@@ -49,3 +49,6 @@ func TestRowPrintToCSV(t *testing.T) {
 	res := row.PrintToCSV(&builder, partsPos, partsFieldsPos, CSVdelim)
 	fmt.Println(res)
 }
+
+func TestRowPrintTableToCSV(t *testing.T) {
+}

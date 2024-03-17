@@ -30,6 +30,36 @@ type OMobjExtractor struct {
 
 type OMobjExtractors []OMobjExtractor
 
+type Extractor struct {
+	OMobjExtractors
+	CSVrowPartsPositions
+	CSVrowPartsFieldsPositions
+}
+
+func (e *Extractor) Init(omextractors OMobjExtractors) {
+	e.OMobjExtractors = omextractors
+	e.MapRowParts()
+	e.MapRowPartsFieldsPositions()
+}
+
+func (e *Extractor) MapRowParts() {
+	extCount := len(e.OMobjExtractors)
+	partsPos := make(CSVrowPartsPositions, extCount)
+	for i, extr := range e.OMobjExtractors {
+		partsPos[i] = extr.FieldsPrefix
+	}
+	e.CSVrowPartsPositions = partsPos
+}
+
+func (e *Extractor) MapRowPartsFieldsPositions() {
+	extCount := len(e.OMobjExtractors)
+	partsPos := make(CSVrowPartsFieldsPositions, extCount)
+	for _, extr := range e.OMobjExtractors {
+		partsPos[extr.FieldsPrefix] = extr.FieldIDs
+	}
+	e.CSVrowPartsFieldsPositions = partsPos
+}
+
 type XMLomTagStructure struct {
 	XMLtagName   string
 	SelectorAttr string
@@ -74,6 +104,10 @@ func (omoes OMobjExtractors) ReplaceParentRowTrueChecker() {
 			continue
 		}
 	}
+}
+
+func (omoes OMobjExtractors) GetRowParts() {
+	// for currentIndex, currentExt := range omoes {
 }
 
 func GetLastPartOfObjectPath(path string) string {
