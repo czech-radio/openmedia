@@ -1,10 +1,42 @@
 package internal
 
 import (
+	"fmt"
 	"path/filepath"
 	"testing"
 	"time"
 )
+
+func TestQueryFields(t *testing.T) {
+	ids := []string{"1", "2"}
+	res := QueryFields("/OM_HEADER/OM_FIELD", ids)
+	fmt.Println(res)
+}
+
+func TestQueryObject(t *testing.T) {
+	// ids := []string{"Rundown Name"}
+	name := "Hourly Rundown"
+	res, err := QueryObject(name)
+	if err != nil {
+		t.Error(err)
+	}
+	fmt.Println(res)
+}
+
+// func TestExtractObjectsQuery(t *testing.T) {
+// testCases := []struct {
+// input    string
+// expected string
+// }{
+// {"/Radio Rundown", "Radio Rundown"},
+// {"/Radio Rundown/Hourly Rundown", "Hourly Rundown"},
+// {"", "."},
+// }
+// res, err := ExtractObjectsQuery("Radio Rundown")
+// if err != nil {
+// }
+// fmt.Println(res)
+// }
 
 func TestGetLastPartOfObjectPath(t *testing.T) {
 	// Define test cases

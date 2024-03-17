@@ -3,6 +3,7 @@ package internal
 import (
 	"fmt"
 	"log/slog"
+	"strings"
 
 	"github.com/antchfx/xmlquery"
 )
@@ -18,21 +19,71 @@ type ObjectRow struct {
 func ExtractBaseObjectRows(baseNode *xmlquery.Node, extrs OMobjExtractors) ([]*ObjectRow, error) {
 	// Main extract
 	baseRow := &ObjectRow{
-		OmObject:     "",
-		NodePath:     "",
-		Node:         baseNode,
-		CSVrowFields: CSVrowFields{{1, "tF1", "vF1"}},
+		OmObject: "",
+		NodePath: "",
+		Node:     baseNode,
+		// CSVrowFields: CSVrowFields{{1, "tF1", "vF1"}},
 	}
+	var err error
 	rows := []*ObjectRow{baseRow}
 	extrs.ReplaceParentRowTrueChecker()
-	for _, e := range extrs {
-		rows = ExpandObjectRows(rows, e)
+	for i, extr := range extrs {
+		rows, err = ExpandObjectRows(rows, extr) // : maybe wrong
+		if err != nil {
+			return rows, err
+		}
+		if i > 0 {
+			slog.Debug("break", "at", i)
+			break
+		}
 	}
 	return rows, nil
 }
 
-func ExpandObjectRows(rps []*ObjectRow, extr OMobjExtractor) []*ObjectRow {
-	objquery := fmt.Sprintf("//OM_OBJECT[@TemplateName='%s']", extr.OmObject)
+func ConstructObjectQuery(extr OMobjExtractor) string {
+	var objquery string
+	if len(extr.ObjectSelector) == 0 {
+		objectType := GetLastPartOfObjectPath(extr.ObjectPath)
+		objquery = fmt.Sprintf(extr.ObjectSelector, objectType)
+	} else {
+		objquery = fmt.Sprintf(extr.ObjectSelector, extr.SelectorName)
+	}
+	slog.Debug("subnodes query", "query", objquery)
+	return objquery
+}
+
+func QueryObject(objectName string) (string, error) {
+	var attrName string
+	var ok bool
+	notOMobjectTemplateName := strings.HasPrefix(objectName, "<")
+	if notOMobjectTemplateName {
+		attrName, ok = ObjectXMLnameMap[objectName]
+		if !ok {
+			return "", fmt.Errorf("unknown object")
+		}
+	}
+	if !notOMobjectTemplateName {
+		attrName = "TemplateName"
+	}
+	attrquery := XMLbuildAttrQuery(attrName, []string{objectName})
+	objquery := "//OM_OBJECT" + attrquery
+	return objquery, nil
+}
+
+func QueryFields(fieldsPath string, IDs []string) string {
+	attrQuery := XMLbuildAttrQuery("FieldID", IDs)
+	return fieldsPath + attrQuery
+}
+
+func ExpandObjectRows(rps []*ObjectRow, extr OMobjExtractor) ([]*ObjectRow, error) {
+	objectType := GetLastPartOfObjectPath(extr.ObjectPath)
+	objquery, err := QueryObject(objectType)
+	if err != nil {
+		return nil, err
+	}
+	// objectType := GetLastPartOfObjectPath(extr.ObjectPath)
+	// objquery := fmt.Sprintf(extr.ObjectSelector, objectType)
+	slog.Debug("object query", "query", objquery)
 	subRowsCount := len(rps)
 	var result []*ObjectRow
 	for i := range rps {
@@ -43,20 +94,21 @@ func ExpandObjectRows(rps []*ObjectRow, extr OMobjExtractor) []*ObjectRow {
 		}
 		slog.Debug("subnodes found", "count", subNodesCount)
 		subRows := ExtractNodesFields(subNodes, extr, rps[i].CSVrowFields)
+		slog.Debug("sub rows", "count", len(subRows))
 		subRowsCount += len(subRows)
 
-		if extr.DontReplaceParentObjectRow {
+		if !extr.DontReplaceParentObjectRow {
 			slog.Debug("replacing previous row")
 			result = append(result, subRows...)
 		}
-		if !extr.DontReplaceParentObjectRow {
+		if extr.DontReplaceParentObjectRow {
 			slog.Debug("appending after previos row")
 			result = append(result, subRows...)
 			// also append the previous row
 			result = append(result, rps[i])
 		}
 	}
-	return result
+	return result, nil
 }
 
 func ExtractNodesFields(
@@ -75,7 +127,6 @@ func ExtractNodeFields(
 ) *ObjectRow {
 	csvrow := NodeToCSVrow(node, extr)
 	return &ObjectRow{
-		OmObject:     extr.OmObject,
 		FieldsPrefix: extr.FieldsPrefix,
 		NodePath:     "",
 		Node:         node,
@@ -90,6 +141,7 @@ func NodeToCSVrow(node *xmlquery.Node, ext OMobjExtractor) CSVrowFields {
 		return csvrow //empty row
 	}
 	query := ext.FieldsPath + attrQuery
+	slog.Debug("query fields", "query", query)
 	fields := xmlquery.Find(node, query)
 	if fields == nil {
 		return csvrow
@@ -120,9 +172,4 @@ func NodesToCSVrows(nodes []*xmlquery.Node, ext OMobjExtractor, rows CSVrowsIntM
 		rows[i] = append(rows[i], row...)
 	}
 	return rows
-}
-
-func FindSubNodes(node *xmlquery.Node, ext OMobjExtractor) []*xmlquery.Node {
-	query := fmt.Sprintf("//OM_OBJECT[@TemplateName='%s']", ext.OmObject)
-	return xmlquery.Find(node, query)
 }
