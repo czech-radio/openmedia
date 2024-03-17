@@ -200,11 +200,13 @@ func (apf *ArchivePackageFile) ExtractByParser(
 
 func (apf *ArchivePackageFile) ExtractByXMLquery(
 	enc FileEncodingNumber, q *ArchiveFolderQuery) error {
-	// var result []*ObjectRow
+	var err error
+	// Extract file from zip
 	dataReader, err := ZipXmlFileDecodeData(apf.Reader, enc)
 	if err != nil {
 		return err
 	}
+	// Parse base xml node
 	baseNode, err := xmlquery.Parse(dataReader)
 	if err != nil {
 		return err
@@ -212,9 +214,20 @@ func (apf *ArchivePackageFile) ExtractByXMLquery(
 	openMedia := xmlquery.Find(baseNode, "/OPENMEDIA")
 	if len(openMedia) != 1 {
 		return fmt.Errorf(
-			"unknown opendmedia file, nodes found count: %d", len(openMedia))
+			"unknown opendmedia file, nodes found count: %d, should be 1", len(openMedia))
 	}
-	result, err := ExtractBaseObjectRows(openMedia[0], EXTproduction)
-	PrintRowPayloads("RESULT", result)
+
+	// Extract specfied object fields
+	var extractor Extractor
+	csvDelim := "\t"
+	extractor.Init(openMedia[0], EXTproduction, csvDelim)
+	err = extractor.ExtractRows()
+	if err != nil {
+		return err
+	}
+	extractor.PrintRowsToCSV(true, csvDelim)
+	// result, err := ExtractBaseObjectRows(openMedia[0], EXTproduction)
+	// PrintRowPayloads("RESULT", result)
+	PrintRowPayloads("RESULT", extractor.Rows)
 	return nil
 }

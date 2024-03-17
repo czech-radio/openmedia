@@ -83,3 +83,19 @@ func (omh *OM_HEADER) ExtractFieldsByFieldID(ids []int) CSVrowFields {
 	// }
 	return row
 }
+
+type XMLomTagStructure struct {
+	XMLtagName   string
+	SelectorAttr string
+}
+
+var OmTagStructureMap = map[string]XMLomTagStructure{
+	"<OM_OBJCET>": {"OM_OBJECT", "TemplateName"},
+	"<OM_RECORD>": {"OM_RECORD", "RecorddID"},
+}
+
+var ObjectXMLnameMap = map[string]string{
+	"OM_OBJECT": "TemplateName",
+	"OM_RECORD": "RecordID",
+	"OM_FIELD":  "FieldID",
+}

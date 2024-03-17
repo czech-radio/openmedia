@@ -1,9 +1,10 @@
 package internal
 
 import (
-	"fmt"
+	"log/slog"
 	"path/filepath"
-	"strings"
+
+	"github.com/antchfx/xmlquery"
 )
 
 type ObjectAttributes = map[string]string
@@ -38,15 +39,24 @@ type Extractor struct {
 	CSVrowPartsFieldsPositions
 	CSVrowHeader string
 	CSVdelim     string
+	BaseNode     *xmlquery.Node
+	Rows         []*ObjectRow
 }
 
 func (e *Extractor) Init(
-	omextractors OMobjExtractors, CSVdelim string) {
+	baseNode *xmlquery.Node,
+	omextractors OMobjExtractors,
+	CSVdelim string) {
 	e.OMobjExtractors = omextractors
 	e.CSVdelim = CSVdelim
+	e.BaseNode = baseNode
 	e.MapRowParts()
 	e.MapRowPartsFieldsPositions()
-	e.CreateHeader(CSVdelim)
+	e.CSVheaderCreate(CSVdelim)
+	e.OMobjExtractors.ReplaceParentRowTrueChecker()
+	baseRow := &ObjectRow{}
+	baseRow.Node = baseNode
+	e.Rows = []*ObjectRow{baseRow}
 }
 
 func (e *Extractor) MapRowParts() {
@@ -68,15 +78,15 @@ func (e *Extractor) MapRowPartsFieldsPositions() {
 	e.CSVrowPartsFieldsPositions = partsPos
 }
 
-func (e *Extractor) CreateHeader(delim string) {
-	var builder strings.Builder
-	for _, i := range e.CSVrowPartsPositions {
-		pfp := e.CSVrowPartsFieldsPositions[i]
-		for _, j := range pfp {
-			fmt.Fprintf(&builder, "%s_%s%s", j.FieldPrefix, j.FieldID, delim)
+func (e *Extractor) ExtractRows() error {
+	for _, extr := range e.OMobjExtractors {
+		rows, err := ExpandObjectRows(e.Rows, extr) // : maybe wrong
+		if err != nil {
+			return err
 		}
+		e.Rows = rows
 	}
-	e.CSVrowHeader = builder.String()
+	return nil
 }
 
 func GetPartFieldsPositions(extr OMobjExtractor) CSVrowPartFieldsPositions {
@@ -90,22 +100,6 @@ func GetPartFieldsPositions(extr OMobjExtractor) CSVrowPartFieldsPositions {
 		fieldsPositions = append(fieldsPositions, fp)
 	}
 	return fieldsPositions
-}
-
-type XMLomTagStructure struct {
-	XMLtagName   string
-	SelectorAttr string
-}
-
-var OmTagStructureMap = map[string]XMLomTagStructure{
-	"<OM_OBJCET>": {"OM_OBJECT", "TemplateName"},
-	"<OM_RECORD>": {"OM_RECORD", "RecorddID"},
-}
-
-var ObjectXMLnameMap = map[string]string{
-	"OM_OBJECT": "TemplateName",
-	"OM_RECORD": "RecordID",
-	"OM_FIELD":  "FieldID",
 }
 
 func (omo *OMobjExtractor) MapFields() {
@@ -131,6 +125,7 @@ func (omoes OMobjExtractors) ReplaceParentRowTrueChecker() {
 			followingParent := filepath.Dir(omoes[followingIndex].ObjectPath)
 			// fmt.Println("EF", currentIndex, currentExt.ObjectPath, currentParent, followingParent)
 			if currentParent == followingParent {
+				slog.Debug("wont be replaced", "extractor", currentExt.ObjectPath)
 				omoes[currentIndex].DontReplaceParentObjectRow = true
 			}
 			continue

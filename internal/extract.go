@@ -15,30 +15,6 @@ type ObjectRow struct {
 	CSVrowFields
 }
 
-func ExtractBaseObjectRows(baseNode *xmlquery.Node, extrs OMobjExtractors) ([]*ObjectRow, error) {
-	// Main extract
-	baseRow := &ObjectRow{
-		OmObject: "",
-		NodePath: "",
-		Node:     baseNode,
-		// CSVrowFields: CSVrowFields{{1, "tF1", "vF1"}},
-	}
-	var err error
-	rows := []*ObjectRow{baseRow}
-	extrs.ReplaceParentRowTrueChecker()
-	for _, extr := range extrs {
-		rows, err = ExpandObjectRows(rows, extr) // : maybe wrong
-		if err != nil {
-			return rows, err
-		}
-		// if i > 1 {
-		// slog.Debug("break", "at", i)
-		// break
-		// }
-	}
-	return rows, nil
-}
-
 func QueryObject(objectName string) (string, error) {
 	var XMLattrName string
 	var XMLobjectName string

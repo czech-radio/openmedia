@@ -1,7 +1,5 @@
 package internal
 
-var CSVdelim = "\t"
-
 // func TestPartPrintToCSV(t *testing.T) {
 // 	var builder strings.Builder
 // 	rowPart := CSVrowPart{

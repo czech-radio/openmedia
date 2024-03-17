@@ -23,21 +23,6 @@ func TestQueryObject(t *testing.T) {
 	fmt.Println(res)
 }
 
-// func TestExtractObjectsQuery(t *testing.T) {
-// testCases := []struct {
-// input    string
-// expected string
-// }{
-// {"/Radio Rundown", "Radio Rundown"},
-// {"/Radio Rundown/Hourly Rundown", "Hourly Rundown"},
-// {"", "."},
-// }
-// res, err := ExtractObjectsQuery("Radio Rundown")
-// if err != nil {
-// }
-// fmt.Println(res)
-// }
-
 func TestGetLastPartOfObjectPath(t *testing.T) {
 	// Define test cases
 	testCases := []struct {
