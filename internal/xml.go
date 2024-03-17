@@ -244,6 +244,9 @@ func XMLbuildAttrQuery(attrName string, ids []string) string {
 	if ids[0] == "*" {
 		return "/*"
 	}
+	// if ids[0] == "" {
+	// return attrName
+	// }
 	var expr strings.Builder
 	attrQuery := "@" + attrName + "='"
 	expr.WriteString("[")

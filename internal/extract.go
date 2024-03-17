@@ -3,7 +3,6 @@ package internal
 import (
 	"fmt"
 	"log/slog"
-	"strings"
 
 	"github.com/antchfx/xmlquery"
 )
@@ -27,46 +26,41 @@ func ExtractBaseObjectRows(baseNode *xmlquery.Node, extrs OMobjExtractors) ([]*O
 	var err error
 	rows := []*ObjectRow{baseRow}
 	extrs.ReplaceParentRowTrueChecker()
-	for i, extr := range extrs {
+	for _, extr := range extrs {
 		rows, err = ExpandObjectRows(rows, extr) // : maybe wrong
 		if err != nil {
 			return rows, err
 		}
-		if i > 0 {
-			slog.Debug("break", "at", i)
-			break
-		}
+		// if i > 1 {
+		// slog.Debug("break", "at", i)
+		// break
+		// }
 	}
 	return rows, nil
 }
 
-func ConstructObjectQuery(extr OMobjExtractor) string {
-	var objquery string
-	if len(extr.ObjectSelector) == 0 {
-		objectType := GetLastPartOfObjectPath(extr.ObjectPath)
-		objquery = fmt.Sprintf(extr.ObjectSelector, objectType)
-	} else {
-		objquery = fmt.Sprintf(extr.ObjectSelector, extr.SelectorName)
-	}
-	slog.Debug("subnodes query", "query", objquery)
-	return objquery
-}
-
 func QueryObject(objectName string) (string, error) {
-	var attrName string
-	var ok bool
-	notOMobjectTemplateName := strings.HasPrefix(objectName, "<")
-	if notOMobjectTemplateName {
-		attrName, ok = ObjectXMLnameMap[objectName]
-		if !ok {
-			return "", fmt.Errorf("unknown object")
+	var XMLattrName string
+	var XMLobjectName string
+	var XMLattrValue string
+	var attrquery string
+	xmlTag, notObjTemplate := OmTagStructureMap[objectName]
+	if notObjTemplate {
+		XMLobjectName = xmlTag.XMLtagName
+		XMLattrName = xmlTag.SelectorAttr
+		if !notObjTemplate {
+			return "", fmt.Errorf("unknown object: %s", objectName)
 		}
+		XMLattrValue = ""
 	}
-	if !notOMobjectTemplateName {
-		attrName = "TemplateName"
+	if !notObjTemplate {
+		XMLobjectName = "OM_OBJECT"
+		XMLattrName = "TemplateName"
+		XMLattrValue = objectName
+		attrquery = XMLbuildAttrQuery(XMLattrName, []string{XMLattrValue})
 	}
-	attrquery := XMLbuildAttrQuery(attrName, []string{objectName})
-	objquery := "//OM_OBJECT" + attrquery
+	fmt.Println("doprdlel", XMLobjectName, XMLattrName, XMLattrValue)
+	objquery := "/" + XMLobjectName + attrquery
 	return objquery, nil
 }
 
@@ -81,8 +75,6 @@ func ExpandObjectRows(rps []*ObjectRow, extr OMobjExtractor) ([]*ObjectRow, erro
 	if err != nil {
 		return nil, err
 	}
-	// objectType := GetLastPartOfObjectPath(extr.ObjectPath)
-	// objquery := fmt.Sprintf(extr.ObjectSelector, objectType)
 	slog.Debug("object query", "query", objquery)
 	subRowsCount := len(rps)
 	var result []*ObjectRow
