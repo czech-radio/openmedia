@@ -37,12 +37,16 @@ type Extractor struct {
 	CSVrowPartsPositions
 	CSVrowPartsFieldsPositions
 	CSVrowHeader string
+	CSVdelim     string
 }
 
-func (e *Extractor) Init(omextractors OMobjExtractors) {
+func (e *Extractor) Init(
+	omextractors OMobjExtractors, CSVdelim string) {
 	e.OMobjExtractors = omextractors
+	e.CSVdelim = CSVdelim
 	e.MapRowParts()
 	e.MapRowPartsFieldsPositions()
+	e.CreateHeader(CSVdelim)
 }
 
 func (e *Extractor) MapRowParts() {
@@ -68,7 +72,6 @@ func (e *Extractor) CreateHeader(delim string) {
 	var builder strings.Builder
 	for _, i := range e.CSVrowPartsPositions {
 		pfp := e.CSVrowPartsFieldsPositions[i]
-		fmt.Println(pfp)
 		for _, j := range pfp {
 			fmt.Fprintf(&builder, "%s_%s%s", j.FieldPrefix, j.FieldID, delim)
 		}
@@ -133,10 +136,6 @@ func (omoes OMobjExtractors) ReplaceParentRowTrueChecker() {
 			continue
 		}
 	}
-}
-
-func (omoes OMobjExtractors) GetRowParts() {
-	// for currentIndex, currentExt := range omoes {
 }
 
 func GetLastPartOfObjectPath(path string) string {
