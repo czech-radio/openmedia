@@ -1,7 +1,9 @@
 package internal
 
 import (
+	"fmt"
 	"path/filepath"
+	"strings"
 )
 
 type ObjectAttributes = map[string]string
@@ -34,6 +36,7 @@ type Extractor struct {
 	OMobjExtractors
 	CSVrowPartsPositions
 	CSVrowPartsFieldsPositions
+	CSVrowHeader string
 }
 
 func (e *Extractor) Init(omextractors OMobjExtractors) {
@@ -55,9 +58,35 @@ func (e *Extractor) MapRowPartsFieldsPositions() {
 	extCount := len(e.OMobjExtractors)
 	partsPos := make(CSVrowPartsFieldsPositions, extCount)
 	for _, extr := range e.OMobjExtractors {
-		partsPos[extr.FieldsPrefix] = extr.FieldIDs
+		fp := GetPartFieldsPositions(extr)
+		partsPos[extr.FieldsPrefix] = fp
 	}
 	e.CSVrowPartsFieldsPositions = partsPos
+}
+
+func (e *Extractor) CreateHeader(delim string) {
+	var builder strings.Builder
+	for _, i := range e.CSVrowPartsPositions {
+		pfp := e.CSVrowPartsFieldsPositions[i]
+		fmt.Println(pfp)
+		for _, j := range pfp {
+			fmt.Fprintf(&builder, "%s_%s%s", j.FieldPrefix, j.FieldID, delim)
+		}
+	}
+	e.CSVrowHeader = builder.String()
+}
+
+func GetPartFieldsPositions(extr OMobjExtractor) CSVrowPartFieldsPositions {
+	fieldsPositions := make(CSVrowPartFieldsPositions, 0, len(extr.FieldIDs))
+	for _, fi := range extr.FieldIDs {
+		fp := FieldPosition{
+			FieldPrefix: extr.FieldsPrefix,
+			FieldID:     fi,
+			FieldName:   "",
+		}
+		fieldsPositions = append(fieldsPositions, fp)
+	}
+	return fieldsPositions
 }
 
 type XMLomTagStructure struct {
