@@ -214,7 +214,7 @@ func (ft *Filter) CSVheaderWrite() {
 	// for _, h := range f.ObjectHeader {
 	// fmt.Fprintf(&headerNamed, "%s%s", h, f.Options.CSVdelim)
 	// }
-	// 2.) Wrtir object header names
+	// 2.) Write object header names
 	// for _, h := range f.ObjectHeader {
 	// fmt.Fprintf(&headerIDs, "%s%s", h, f.Options.CSVdelim)
 	// }

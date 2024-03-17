@@ -7,47 +7,34 @@ import (
 	"github.com/antchfx/xmlquery"
 )
 
-func (apf *ArchivePackageFile) ExtractByXMLquery(
-	enc FileEncodingNumber, q *ArchiveFolderQuery) error {
-	dataReader, err := ZipXmlFileDecodeData(apf.Reader, enc)
-	if err != nil {
-		return err
-	}
-	baseNode, err := xmlquery.Parse(dataReader)
-	if err != nil {
-		return err
-	}
-	pay, err := ExtractFromBaseObject(baseNode, CSVproduction)
-	PrintRowPayloads("RESULT", pay)
-	return err
-}
-
-type RowPayload struct {
+type ObjectRow struct {
 	OmObject     string
 	FieldsPrefix string
 	NodePath     string
 	Node         *xmlquery.Node
-	CSVrow
+	CSVrowFields
 }
 
-func ExtractFromBaseObject(baseNode *xmlquery.Node, extrs []OMobjExtractor) ([]*RowPayload, error) {
-	baseRow := &RowPayload{
-		OmObject: "",
-		NodePath: "",
-		Node:     baseNode,
-		CSVrow:   CSVrow{{1, "tF1", "vF1"}},
+func ExtractBaseObjectRows(baseNode *xmlquery.Node, extrs OMobjExtractors) ([]*ObjectRow, error) {
+	// Main extract
+	baseRow := &ObjectRow{
+		OmObject:     "",
+		NodePath:     "",
+		Node:         baseNode,
+		CSVrowFields: CSVrowFields{{1, "tF1", "vF1"}},
 	}
-	rows := []*RowPayload{baseRow}
+	rows := []*ObjectRow{baseRow}
+	extrs.ReplaceParentRowTrueChecker()
 	for _, e := range extrs {
-		rows = ExpandRows(rows, e)
+		rows = ExpandObjectRows(rows, e)
 	}
 	return rows, nil
 }
 
-func ExpandRows(rps []*RowPayload, extr OMobjExtractor) []*RowPayload {
+func ExpandObjectRows(rps []*ObjectRow, extr OMobjExtractor) []*ObjectRow {
 	objquery := fmt.Sprintf("//OM_OBJECT[@TemplateName='%s']", extr.OmObject)
 	subRowsCount := len(rps)
-	var result []*RowPayload
+	var result []*ObjectRow
 	for i := range rps {
 		subNodes := xmlquery.Find(rps[i].Node, objquery)
 		subNodesCount := len(subNodes)
@@ -55,15 +42,15 @@ func ExpandRows(rps []*RowPayload, extr OMobjExtractor) []*RowPayload {
 			slog.Debug("no subnodes found")
 		}
 		slog.Debug("subnodes found", "count", subNodesCount)
-		subRows := ExtractNodesFields(subNodes, extr, rps[i].CSVrow)
+		subRows := ExtractNodesFields(subNodes, extr, rps[i].CSVrowFields)
 		subRowsCount += len(subRows)
 
-		if extr.ReplacePrevious {
+		if extr.DontReplaceParentObjectRow {
 			slog.Debug("replacing previous row")
 			result = append(result, subRows...)
 		}
-		if !extr.ReplacePrevious {
-			slog.Debug("appending to previos row")
+		if !extr.DontReplaceParentObjectRow {
+			slog.Debug("appending after previos row")
 			result = append(result, subRows...)
 			// also append the previous row
 			result = append(result, rps[i])
@@ -73,9 +60,9 @@ func ExpandRows(rps []*RowPayload, extr OMobjExtractor) []*RowPayload {
 }
 
 func ExtractNodesFields(
-	nodes []*xmlquery.Node, extr OMobjExtractor, parentRow CSVrow,
-) []*RowPayload {
-	var nodeRows []*RowPayload
+	nodes []*xmlquery.Node, extr OMobjExtractor, parentRow CSVrowFields,
+) []*ObjectRow {
+	var nodeRows []*ObjectRow
 	for _, n := range nodes {
 		row := ExtractNodeFields(n, extr, parentRow)
 		nodeRows = append(nodeRows, row)
@@ -84,23 +71,23 @@ func ExtractNodesFields(
 }
 
 func ExtractNodeFields(
-	node *xmlquery.Node, extr OMobjExtractor, parentRow CSVrow,
-) *RowPayload {
+	node *xmlquery.Node, extr OMobjExtractor, parentRow CSVrowFields,
+) *ObjectRow {
 	csvrow := NodeToCSVrow(node, extr)
-	return &RowPayload{
+	return &ObjectRow{
 		OmObject:     extr.OmObject,
 		FieldsPrefix: extr.FieldsPrefix,
 		NodePath:     "",
 		Node:         node,
-		CSVrow:       append(parentRow, csvrow...),
+		CSVrowFields: append(parentRow, csvrow...),
 	}
 }
 
-func NodeToCSVrow(node *xmlquery.Node, ext OMobjExtractor) CSVrow {
-	var csvrow CSVrow
+func NodeToCSVrow(node *xmlquery.Node, ext OMobjExtractor) CSVrowFields {
+	var csvrow CSVrowFields
 	attrQuery := XMLbuildAttrQuery("FieldID", ext.FieldIDs)
 	if attrQuery == "" {
-		return csvrow
+		return csvrow //empty row
 	}
 	query := ext.FieldsPath + attrQuery
 	fields := xmlquery.Find(node, query)

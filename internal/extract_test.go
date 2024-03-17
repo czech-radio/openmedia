@@ -5,6 +5,11 @@ import (
 	"time"
 )
 
+func TestReplaceParentRowTrue(t *testing.T) {
+	EXTproduction.ReplaceParentRowTrueChecker()
+	PrintObjJson("FEK", EXTproduction)
+}
+
 func TestArchiveFolderExtract(t *testing.T) {
 	// workerTypes := []WorkerTypeCode{WorkerTypeZIPminified}
 	workerTypes := []WorkerTypeCode{WorkerTypeZIPoriginal}

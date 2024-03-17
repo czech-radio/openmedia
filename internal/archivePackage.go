@@ -2,6 +2,7 @@ package internal
 
 import (
 	"archive/zip"
+	"encoding/xml"
 	"fmt"
 	"log/slog"
 	"regexp"
@@ -9,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/antchfx/xmlquery"
 	"github.com/ncruces/go-strftime"
 	"github.com/snabb/isoweek"
 )
@@ -170,4 +172,43 @@ func PackageMap(packageName PackageName, q *ArchiveFolderQuery) (*ArchivePackage
 		ap.PackageFiles[fr.Name] = &apf
 	}
 	return &ap, nil
+}
+
+type ArchivePackageFile struct {
+	Reader *zip.File
+	Tables map[WorkerTypeCode]CSVtable
+}
+
+func (apf *ArchivePackageFile) ExtractByParser(
+	enc FileEncodingNumber, q *ArchiveFolderQuery) error {
+	dr, err := ZipXmlFileDecodeData(apf.Reader, enc)
+	if err != nil {
+		return err
+	}
+	var OM OPENMEDIA
+	err = xml.NewDecoder(dr).Decode(&OM)
+	if err != nil {
+		return err
+	}
+	// var produkce CSVtable
+	for _, i := range OM.OM_OBJECT.OM_RECORDS {
+		// var row CSVrow
+		fmt.Println(i.OM_OBJECTS.OM_HEADER)
+	}
+	return nil
+}
+
+func (apf *ArchivePackageFile) ExtractByXMLquery(
+	enc FileEncodingNumber, q *ArchiveFolderQuery) error {
+	dataReader, err := ZipXmlFileDecodeData(apf.Reader, enc)
+	if err != nil {
+		return err
+	}
+	baseNode, err := xmlquery.Parse(dataReader)
+	if err != nil {
+		return err
+	}
+	pay, err := ExtractBaseObjectRows(baseNode, CSVproduction)
+	PrintRowPayloads("RESULT", pay)
+	return err
 }

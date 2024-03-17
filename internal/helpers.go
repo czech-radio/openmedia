@@ -4,6 +4,7 @@ import (
 	"archive/zip"
 	"bufio"
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -66,6 +67,15 @@ func SetLogLevel(level string, logType ...string) {
 		logger = slog.New(thandle)
 	}
 	slog.SetDefault(logger)
+}
+
+func PrintObjJson(mark string, input any) {
+	res, err := json.MarshalIndent(input, "", "\t")
+	if err != nil {
+		slog.Error("cannot marshal structure", "mark", mark, "input", input, "err", err.Error())
+		return
+	}
+	fmt.Println(mark, string(res))
 }
 
 // Sleeper sleeps for specified durration
@@ -429,7 +439,7 @@ func ZipXmlFileDecodeData(zf *zip.File, enc FileEncodingNumber) (*bytes.Reader, 
 	return breader, err
 }
 
-func PrintRowPayloads(name string, pl []*RowPayload) {
+func PrintRowPayloads(name string, pl []*ObjectRow) {
 	if len(pl) == 0 {
 		fmt.Println(name, "NO PAYLOAD")
 	}
@@ -438,9 +448,13 @@ func PrintRowPayloads(name string, pl []*RowPayload) {
 	}
 }
 
-func PrintRows(rows map[int]CSVrow) {
+func PrintRows(rows map[int]CSVrowFields) {
 	for i := 0; i < len(rows); i++ {
 		fmt.Println(i, rows[i])
 		fmt.Println()
 	}
+}
+
+func JoinObjectPath(oldpath, newpath string) string {
+	return oldpath + "/" + newpath
 }

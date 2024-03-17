@@ -75,8 +75,8 @@ func (omf *OM_FIELD) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 	return e.EncodeElement(*omf, start)
 }
 
-func (omh *OM_HEADER) ExtractFieldsByFieldID(ids []int) CSVrow {
-	var row CSVrow
+func (omh *OM_HEADER) ExtractFieldsByFieldID(ids []int) CSVrowFields {
+	var row CSVrowFields
 	// for _, field := range omh.Fields {
 	// field.OM
 	// row[field.]
