@@ -1,9 +1,32 @@
 package internal
 
 import (
+	"path/filepath"
 	"testing"
 	"time"
 )
+
+func TestGetLastPartOfObjectPath(t *testing.T) {
+	// Define test cases
+	testCases := []struct {
+		input    string
+		expected string
+	}{
+		{"/Radio Rundown", "Radio Rundown"},
+		{"/Radio Rundown/Hourly Rundown", "Hourly Rundown"},
+		{"", "."},
+	}
+
+	for _, tc := range testCases {
+		// Call filepath.Base function
+		result := filepath.Base(tc.input)
+
+		// Check if result matches the expected output
+		if result != tc.expected {
+			t.Errorf("Expected Base(%q) to be %q, but got %q instead", tc.input, tc.expected, result)
+		}
+	}
+}
 
 func TestReplaceParentRowTrue(t *testing.T) {
 	EXTproduction.ReplaceParentRowTrueChecker()

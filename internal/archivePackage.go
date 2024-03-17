@@ -208,7 +208,7 @@ func (apf *ArchivePackageFile) ExtractByXMLquery(
 	if err != nil {
 		return err
 	}
-	pay, err := ExtractBaseObjectRows(baseNode, CSVproduction)
+	pay, err := ExtractBaseObjectRows(baseNode, EXTproduction)
 	PrintRowPayloads("RESULT", pay)
 	return err
 }
