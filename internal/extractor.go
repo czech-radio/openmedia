@@ -17,25 +17,19 @@ type CSVrowField struct {
 type CSVrowsIntMap map[int]CSVrowFields
 type CSVrowFields = []CSVrowField
 
-// NEW STRUCTURE
-type CSVrowPart map[string]CSVrowField // ObjectPrefix:CSVrowField
-type CSVrowParts map[string]CSVrowPart // Whole CSV line
-type CSVrow []*CSVrowParts
-type CSVtable []*CSVrow
-type CSVtables map[string]*CSVtable
-
 type OMobjExtractor struct {
-	ObjectPath string
-	FieldsPath string
-	FieldIDs   []string
+	ObjectPath   string
+	FieldsPath   string
+	FieldIDs     []string
+	FieldsPrefix string
 
 	// Internals
-	FieldsPrefix               string
 	DontReplaceParentObjectRow bool
 	FieldIDsMap                map[string]bool
 }
 
 type OMobjExtractors []OMobjExtractor
+
 type XMLomTagStructure struct {
 	XMLtagName   string
 	SelectorAttr string
