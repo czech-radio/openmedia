@@ -281,7 +281,6 @@ func QueryObject(objectName string) (string, error) {
 		XMLattrValue = objectName
 		attrquery = XMLbuildAttrQuery(XMLattrName, []string{XMLattrValue})
 	}
-	fmt.Println("doprdlel", XMLobjectName, XMLattrName, XMLattrValue)
 	objquery := "/" + XMLobjectName + attrquery
 	return objquery, nil
 }

@@ -7,7 +7,13 @@ import (
 	"time"
 )
 
-func TestQueryFields(t *testing.T) {
+func TestXmlQueryFields(t *testing.T) {
+	ids := []string{"1", "2"}
+	res := QueryFields("/OM_HEADER/OM_FIELD", ids)
+	fmt.Println(res)
+}
+
+func TestXmlQuery(t *testing.T) {
 	ids := []string{"1", "2"}
 	res := QueryFields("/OM_HEADER/OM_FIELD", ids)
 	fmt.Println(res)

@@ -16,7 +16,7 @@ type ObjectRow struct {
 
 func (e *Extractor) ExtractRowsB() error {
 	for _, extr := range e.OMobjExtractors {
-		rows, err := ExpandObjectRows(e.Rows, extr) // : maybe wrong
+		rows, err := ExpandObjectRowsB(e.Rows, extr) // : maybe wrong
 		if err != nil {
 			return err
 		}
@@ -25,7 +25,7 @@ func (e *Extractor) ExtractRowsB() error {
 	return nil
 }
 
-func ExpandObjectRows(rps []*ObjectRow, extr OMobjExtractor) ([]*ObjectRow, error) {
+func ExpandObjectRowsB(rps []*ObjectRow, extr OMobjExtractor) ([]*ObjectRow, error) {
 	objectType := GetLastPartOfObjectPath(extr.ObjectPath)
 	objquery, err := QueryObject(objectType)
 	if err != nil {
@@ -41,7 +41,7 @@ func ExpandObjectRows(rps []*ObjectRow, extr OMobjExtractor) ([]*ObjectRow, erro
 			slog.Debug("no subnodes found")
 		}
 		slog.Debug("subnodes found", "count", subNodesCount)
-		subRows := ExtractNodesFields(subNodes, extr, rps[i].CSVrowFields)
+		subRows := ExtractNodesFieldsB(subNodes, extr, rps[i].CSVrowFields)
 		slog.Debug("sub rows", "count", len(subRows))
 		subRowsCount += len(subRows)
 
@@ -59,7 +59,30 @@ func ExpandObjectRows(rps []*ObjectRow, extr OMobjExtractor) ([]*ObjectRow, erro
 	return result, nil
 }
 
-func NodeToCSVrow(node *xmlquery.Node, ext OMobjExtractor) CSVrowFields {
+func ExtractNodesFieldsB(
+	nodes []*xmlquery.Node, extr OMobjExtractor, parentRow CSVrowFields,
+) []*ObjectRow {
+	var nodeRows []*ObjectRow
+	for _, n := range nodes {
+		row := ExtractNodeFieldsB(n, extr, parentRow)
+		nodeRows = append(nodeRows, row)
+	}
+	return nodeRows
+}
+
+func ExtractNodeFieldsB(
+	node *xmlquery.Node, extr OMobjExtractor, parentRow CSVrowFields,
+) *ObjectRow {
+	csvrow := NodeToCSVrowB(node, extr)
+	return &ObjectRow{
+		FieldsPrefix: extr.FieldsPrefix,
+		NodePath:     "",
+		Node:         node,
+		CSVrowFields: append(parentRow, csvrow...),
+	}
+}
+
+func NodeToCSVrowB(node *xmlquery.Node, ext OMobjExtractor) CSVrowFields {
 	var csvrow CSVrowFields
 	attrQuery := XMLbuildAttrQuery("FieldID", ext.FieldIDs)
 	if attrQuery == "" {
@@ -85,29 +108,6 @@ func NodeToCSVrow(node *xmlquery.Node, ext OMobjExtractor) CSVrowFields {
 		csvrow = append(csvrow, field)
 	}
 	return csvrow
-}
-
-func ExtractNodesFields(
-	nodes []*xmlquery.Node, extr OMobjExtractor, parentRow CSVrowFields,
-) []*ObjectRow {
-	var nodeRows []*ObjectRow
-	for _, n := range nodes {
-		row := ExtractNodeFields(n, extr, parentRow)
-		nodeRows = append(nodeRows, row)
-	}
-	return nodeRows
-}
-
-func ExtractNodeFields(
-	node *xmlquery.Node, extr OMobjExtractor, parentRow CSVrowFields,
-) *ObjectRow {
-	csvrow := NodeToCSVrow(node, extr)
-	return &ObjectRow{
-		FieldsPrefix: extr.FieldsPrefix,
-		NodePath:     "",
-		Node:         node,
-		CSVrowFields: append(parentRow, csvrow...),
-	}
 }
 
 // func NodesToCSVrows(nodes []*xmlquery.Node, ext OMobjExtractor, rows CSVrowsIntMap) CSVrowsIntMap {

@@ -13,6 +13,8 @@ func ExpandTableRows(table CSVtable, extr OMobjExtractor) (CSVtable, error) {
 		return nil, err
 	}
 	slog.Debug("object query", "query", objquery)
+	// rowsCount := len(table)
+	var result CSVtable
 	for i := range table {
 		subNodes := xmlquery.Find(table[i].Node, objquery)
 		subNodesCount := len(subNodes)
@@ -20,21 +22,36 @@ func ExpandTableRows(table CSVtable, extr OMobjExtractor) (CSVtable, error) {
 			slog.Debug("no subnodes found")
 		}
 		slog.Debug("subnodes found", "count", subNodesCount)
-		// subRows := ExtractNodeFields()
+		parentRow := table[i].CSVrow // Consider to use deep copy
+		subRows := ExtractNodesFields(parentRow, subNodes, extr)
+		if !extr.DontReplaceParentObjectRow {
+			slog.Debug("replacing previous row")
+			result = append(result, subRows...)
+		}
+		if extr.DontReplaceParentObjectRow {
+			slog.Debug("appending after previos row")
+			result = append(result, subRows...)
+			// also append the previous row
+			result = append(result, table[i])
+		}
 	}
-	return table, nil
+	return result, nil
 }
 
-// func ExtractRowNodesFields(nodes []*xmlquery.Node, extr OMobjExtractor) CSVrowFields {
-func ExtractRowNodesFields(nodes []*xmlquery.Node, extr OMobjExtractor) CSVtable {
+func ExtractNodesFields(
+	parentRow CSVrow,
+	subNodes []*xmlquery.Node,
+	extr OMobjExtractor,
+) CSVtable {
 	var table CSVtable
-	//"TODO
-	// var nodeRows []*ObjectRow
-	// for _, n := range nodes {
-	// row := ExtractNodeFields(n, extr, parentRow)
-	// nodeRows = append(nodeRows, row)
-	// }
-	// return nodeRows
+	for _, subNode := range subNodes {
+		part := NodeToCSVrowPart(subNode, extr)
+		rowNode := CSVrowNode{}
+		rowNode.Node = subNode
+		rowNode.CSVrow = parentRow
+		rowNode.CSVrow[extr.FieldsPrefix] = part
+		table = append(table, &rowNode)
+	}
 	return table
 }
 
