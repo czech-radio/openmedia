@@ -5,6 +5,33 @@ var EXTproduction = OMobjExtractors{
 		ObjectPath:   "/Radio Rundown",
 		FieldsPath:   "/OM_HEADER/OM_FIELD",
 		FieldIDs:     []string{"1", "8"},
+		FieldsPrefix: "RR-HED",
+	},
+	{
+		ObjectPath:   "/Radio Rundown/<OM_RECORD>",
+		FieldsPath:   "/OM_FIELD",
+		FieldIDs:     []string{"8"},
+		FieldsPrefix: "HR-REC",
+	},
+	{
+		ObjectPath:   "/Radio Rundown/<OM_RECORD>/Hourly Rundown",
+		FieldsPath:   "/OM_HEADER/OM_FIELD",
+		FieldIDs:     []string{"1", "8"},
+		FieldsPrefix: "HR-HED",
+	},
+	{
+		ObjectPath:   "/Radio Rundown/<OM_RECORD>/Hourly Rundown/<OM_RECORD>",
+		FieldsPath:   "/OM_FIELD",
+		FieldIDs:     []string{"1", "8"},
+		FieldsPrefix: "HR-REC",
+	},
+}
+
+var EXTproductionWorks = OMobjExtractors{
+	{
+		ObjectPath:   "/Radio Rundown",
+		FieldsPath:   "/OM_HEADER/OM_FIELD",
+		FieldIDs:     []string{"1", "8"},
 		FieldsPrefix: "RR-He",
 	},
 	{

@@ -2,6 +2,7 @@ package internal
 
 import (
 	"log/slog"
+	"maps"
 
 	"github.com/antchfx/xmlquery"
 )
@@ -22,7 +23,9 @@ func ExpandTableRows(table CSVtable, extr OMobjExtractor) (CSVtable, error) {
 			slog.Debug("no subnodes found")
 		}
 		slog.Debug("subnodes found", "count", subNodesCount)
-		parentRow := table[i].CSVrow // Consider to use deep copy
+		parentRow := CSVrow{}
+		maps.Copy(parentRow, table[i].CSVrow) // Deep copy must be used here or at least in function which takes it as parameter and wants to modify.
+		// parentRow := table[i].CSVrow
 		subRows := ExtractNodesFields(parentRow, subNodes, extr)
 		if !extr.DontReplaceParentObjectRow {
 			slog.Debug("replacing previous row")
@@ -45,10 +48,12 @@ func ExtractNodesFields(
 ) CSVtable {
 	var table CSVtable
 	for _, subNode := range subNodes {
+		parentRowCopy := CSVrow{}
+		maps.Copy(parentRowCopy, parentRow)
 		part := NodeToCSVrowPart(subNode, extr)
 		rowNode := CSVrowNode{}
 		rowNode.Node = subNode
-		rowNode.CSVrow = parentRow
+		rowNode.CSVrow = parentRowCopy
 		rowNode.CSVrow[extr.FieldsPrefix] = part
 		table = append(table, &rowNode)
 	}

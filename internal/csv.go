@@ -43,14 +43,6 @@ type CSVrowNode struct {
 	CSVrow
 }
 
-type CSVrow2 struct {
-	CurrentNode  *xmlquery.Node
-	RowNodePath  string
-	FieldsPrefix string
-	RowParts     map[string]CSVrowPart
-}
-
-type CSVtableOrig []*CSVrow
 type CSVtable []*CSVrowNode
 type CSVtables map[string]*CSVtable
 
@@ -80,14 +72,15 @@ func (e *Extractor) PrintTableToCSV(header bool, delim string) {
 	if header {
 		fmt.Println(e.CSVrowHeader)
 	}
-	// var builder strings.Builder
-	for i, row := range e.CSVtable {
-		fmt.Println(i, row)
+	var sb strings.Builder
+	for _, row := range e.CSVtable {
+		row.PrintToCSV(
+			&sb, e.CSVrowPartsPositions,
+			e.CSVrowPartsFieldsPositions,
+			delim,
+		)
 	}
-	// for i, row := range e.Rows {
-	// fmt.Println(i, row.NodePath)
-	// row.PrintToCSV()
-	// }
+	fmt.Println(sb.String())
 }
 
 func (row CSVrow) PrintToCSV(
@@ -101,6 +94,7 @@ func (row CSVrow) PrintToCSV(
 		part := row[pos]
 		part.PrintToCSV(builder, fieldsPos, delim)
 	}
+	fmt.Fprintf(builder, "%s", "\n")
 }
 
 func (part CSVrowPart) PrintToCSV(
@@ -110,7 +104,7 @@ func (part CSVrowPart) PrintToCSV(
 	for _, pos := range fieldsPosition {
 		field, ok := part[pos.FieldID]
 		if !ok {
-			value = "NO_VALUE"
+			value = "FID NOT FOUND"
 		} else {
 			value = field.Value
 		}
