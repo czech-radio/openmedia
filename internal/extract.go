@@ -6,22 +6,29 @@ import (
 	"github.com/antchfx/xmlquery"
 )
 
-type ObjectRow struct {
-	OmObject     string
-	FieldsPrefix string
-	NodePath     string
-	Node         *xmlquery.Node
-	CSVrowFields
-}
-
 func ExpandTableRows(table CSVtable, extr OMobjExtractor) (CSVtable, error) {
-	//"TODO
+	objectType := GetLastPartOfObjectPath(extr.ObjectPath)
+	objquery, err := QueryObject(objectType)
+	if err != nil {
+		return nil, err
+	}
+	slog.Debug("object query", "query", objquery)
+	for i := range table {
+		subNodes := xmlquery.Find(table[i].Node, objquery)
+		subNodesCount := len(subNodes)
+		if subNodesCount == 0 {
+			slog.Debug("no subnodes found")
+		}
+		slog.Debug("subnodes found", "count", subNodesCount)
+		// subRows := ExtractNodeFields()
+	}
 	return table, nil
 }
 
 // func ExtractRowNodesFields(nodes []*xmlquery.Node, extr OMobjExtractor) CSVrowFields {
 func ExtractRowNodesFields(nodes []*xmlquery.Node, extr OMobjExtractor) CSVtable {
 	var table CSVtable
+	//"TODO
 	// var nodeRows []*ObjectRow
 	// for _, n := range nodes {
 	// row := ExtractNodeFields(n, extr, parentRow)
@@ -31,103 +38,33 @@ func ExtractRowNodesFields(nodes []*xmlquery.Node, extr OMobjExtractor) CSVtable
 	return table
 }
 
-func ExpandObjectRows(rps []*ObjectRow, extr OMobjExtractor) ([]*ObjectRow, error) {
-	objectType := GetLastPartOfObjectPath(extr.ObjectPath)
-	objquery, err := QueryObject(objectType)
-	if err != nil {
-		return nil, err
-	}
-	slog.Debug("object query", "query", objquery)
-	subRowsCount := len(rps)
-	var result []*ObjectRow
-	for i := range rps {
-		subNodes := xmlquery.Find(rps[i].Node, objquery)
-		subNodesCount := len(subNodes)
-		if subNodesCount == 0 {
-			slog.Debug("no subnodes found")
-		}
-		slog.Debug("subnodes found", "count", subNodesCount)
-		subRows := ExtractNodesFields(subNodes, extr, rps[i].CSVrowFields)
-		slog.Debug("sub rows", "count", len(subRows))
-		subRowsCount += len(subRows)
-
-		if !extr.DontReplaceParentObjectRow {
-			slog.Debug("replacing previous row")
-			result = append(result, subRows...)
-		}
-		if extr.DontReplaceParentObjectRow {
-			slog.Debug("appending after previos row")
-			result = append(result, subRows...)
-			// also append the previous row
-			result = append(result, rps[i])
-		}
-	}
-	return result, nil
-}
-
-func ExtractNodesFields(
-	nodes []*xmlquery.Node, extr OMobjExtractor, parentRow CSVrowFields,
-) []*ObjectRow {
-	var nodeRows []*ObjectRow
-	for _, n := range nodes {
-		row := ExtractNodeFields(n, extr, parentRow)
-		nodeRows = append(nodeRows, row)
-	}
-	return nodeRows
-}
-
-func ExtractNodeFields(
-	node *xmlquery.Node, extr OMobjExtractor, parentRow CSVrowFields,
-) *ObjectRow {
-	csvrow := NodeToCSVrow(node, extr)
-	return &ObjectRow{
-		FieldsPrefix: extr.FieldsPrefix,
-		NodePath:     "",
-		Node:         node,
-		CSVrowFields: append(parentRow, csvrow...),
-	}
-}
-
-func NodeToCSVrowPart(node *xmlquery.Node, ext OMobjExtractor) CSVrowPartFieldsPositions {
-	var part CSVrowPartFieldsPositions
-	return part
-}
-
-func NodeToCSVrow(node *xmlquery.Node, ext OMobjExtractor) CSVrowFields {
-	var csvrow CSVrowFields
+func NodeToCSVrowPart(node *xmlquery.Node, ext OMobjExtractor) CSVrowPart {
+	var part CSVrowPart
 	attrQuery := XMLbuildAttrQuery("FieldID", ext.FieldIDs)
 	if attrQuery == "" {
-		return csvrow //empty row
+		return part //empty row
 	}
 	query := ext.FieldsPath + attrQuery
 	slog.Debug("query fields", "query", query)
 	fields := xmlquery.Find(node, query)
 	if fields == nil {
-		return csvrow
+		slog.Error("fields is nil")
+		return part
 	}
 	if len(fields) == 0 {
-		slog.Error("nothing found")
-		return csvrow
+		slog.Error("no fields found")
+		return part
 	}
-	for pos, f := range fields {
+	part = make(CSVrowPart, len(fields))
+	for _, f := range fields {
 		fieldID, _ := GetFieldValueByName(f.Attr, "FieldID")
+		fieldName, _ := GetFieldValueByName(f.Attr, "FieldID")
 		field := CSVrowField{
-			FieldPosition: pos,
-			FieldID:       fieldID,
-			Value:         f.InnerText(),
+			FieldID:   fieldID,
+			FieldName: fieldName, // or send it to map[Prefix]map[FieldID]FieldName
+			Value:     f.InnerText(),
 		}
-		csvrow = append(csvrow, field)
+		part[fieldID] = field
 	}
-	return csvrow
+	return part
 }
-
-// func NodesToCSVrows(nodes []*xmlquery.Node, ext OMobjExtractor, rows CSVrowsIntMap) CSVrowsIntMap {
-// if len(rows) == 0 {
-// rows = make(CSVrowsIntMap, len(nodes))
-// }
-// for i, node := range nodes {
-// row := NodeToCSVrow(node, ext)
-// rows[i] = append(rows[i], row...)
-// }
-// return rows
-// }

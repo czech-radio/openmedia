@@ -11,12 +11,6 @@ type ObjectAttributes = map[string]string
 type Fields = map[int]string       // FieldID/FieldName vs value
 type UniqueValues = map[string]int // value vs count
 
-type CSVrowField struct {
-	FieldPosition int
-	FieldID       string
-	Value         string
-}
-
 type CSVrowsIntMap map[int]CSVrowFields
 type CSVrowFields = []CSVrowField
 
@@ -55,6 +49,7 @@ func (e *Extractor) Init(
 	e.MapRowPartsFieldsPositions()
 	e.CSVheaderCreate(CSVdelim)
 	e.OMobjExtractors.ReplaceParentRowTrueChecker()
+	e.CSVtable = []*CSVrowNode{{baseNode, CSVrow{}}}
 	baseRow := &ObjectRow{}
 	baseRow.Node = baseNode
 	e.Rows = []*ObjectRow{baseRow}
@@ -79,13 +74,13 @@ func (e *Extractor) MapRowPartsFieldsPositions() {
 	e.CSVrowPartsFieldsPositions = partsPos
 }
 
-func (e *Extractor) ExtractRows() error {
+func (e *Extractor) ExtractTable() error {
 	for _, extr := range e.OMobjExtractors {
-		rows, err := ExpandObjectRows(e.Rows, extr) // : maybe wrong
+		rows, err := ExpandTableRows(e.CSVtable, extr) // : maybe wrong
 		if err != nil {
 			return err
 		}
-		e.Rows = rows
+		e.CSVtable = rows
 	}
 	return nil
 }

@@ -215,18 +215,20 @@ func (apf *ArchivePackageFile) ExtractByXMLquery(
 	openMedia := xmlquery.Find(baseNode, "/OPENMEDIA")
 	if len(openMedia) != 1 {
 		return fmt.Errorf(
-			"unknown opendmedia file, nodes found count: %d, should be 1", len(openMedia))
+			"unknown opendmedia file, nodes found count: %d,should be 1",
+			len(openMedia),
+		)
 	}
 
 	// Extract specfied object fields
 	var extractor Extractor
 	csvDelim := "\t"
 	extractor.Init(openMedia[0], EXTproduction, csvDelim)
-	err = extractor.ExtractRows()
+	err = extractor.ExtractTable()
 	if err != nil {
 		return err
 	}
 	extractor.PrintTableToCSV(true, csvDelim)
-	PrintRowPayloads("RESULT", extractor.Rows)
+	// PrintRowPayloads("RESULT", extractor.Rows)
 	return nil
 }

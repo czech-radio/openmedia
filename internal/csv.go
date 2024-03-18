@@ -3,28 +3,55 @@ package internal
 import (
 	"fmt"
 	"strings"
+
+	"github.com/antchfx/xmlquery"
 )
 
+// Table fields positions
 type FieldPosition struct {
 	FieldPrefix string
 	FieldID     string
 	FieldName   string
 }
 
-// Table fields positions
 // type CSVrowPartFieldsPositions []string // Field
 type CSVrowPartFieldsPositions []FieldPosition // Field
 // type CSVrowPartFieldsPositions map[string]FieldPosition // Field
 type CSVrowPartsPositions []string // Part
 // type CSVrowPartsFieldsPositions map[string][]string // Row: partname vs partFieldsPositions
 type CSVrowPartsFieldsPositions map[string]CSVrowPartFieldsPositions // Row: partname vs partFieldsPositions
-// type CSVrowsFieldIDheader []string                  // FieldID header
-// type CSVrowsNameheader []string                     // FieldID header
+
+type CSVrowField struct {
+	// FieldPosition int
+	FieldID   string
+	FieldName string // Maybe not needed here. Must construct general list of fieldPrefix:fieldIDs vs FieldName
+	Value     string
+}
 
 // Table fields values
-type CSVrowPart map[string]CSVrowField // ObjectPrefix:CSVrowField
-type CSVrow map[string]CSVrowPart      // Whole CSV line
-type CSVtable []*CSVrow
+type CSVrowPart map[string]CSVrowField // FieldID:CSVrowField
+
+// type CSVrowPartNode struct {
+// Node *xmlquery.Node
+// CSVrowPart
+// }
+
+type CSVrow map[string]CSVrowPart // Whole CSV line PartPrefix:RowPart
+
+type CSVrowNode struct {
+	Node *xmlquery.Node
+	CSVrow
+}
+
+type CSVrow2 struct {
+	CurrentNode  *xmlquery.Node
+	RowNodePath  string
+	FieldsPrefix string
+	RowParts     map[string]CSVrowPart
+}
+
+type CSVtableOrig []*CSVrow
+type CSVtable []*CSVrowNode
 type CSVtables map[string]*CSVtable
 
 func (e *Extractor) PrintRows() error {
