@@ -31,6 +31,45 @@ var EXTproduction = OMobjExtractors{
 		FieldIDs:     []string{"1", "8"},
 		FieldsPrefix: "S-He",
 	},
+	// {
+	// ObjectPath:   "/Radio Rundown/<OM_RECORD>/Hourly Rundown/<OM_RECORD>/Sub Rundown/<OM_RECORD>",
+	// FieldsPath:   "OM_FIELD",
+	// FieldIDs:     []string{"1", "8"},
+	// FieldsPrefix: "S-He",
+	// },
+
+	// VAR1
+	// {
+	// ObjectPath:   "/Radio Rundown/<OM_RECORD>/Hourly Rundown/<OM_RECORD>/Sub Rundown/<OM_RECORD>/Radio Story",
+	// FieldsPath:   "OM_HEADER/OM_FIELD",
+	// FieldIDs:     []string{"1", "8"},
+	// FieldsPrefix: "S-He",
+	// },
+
+	// VAR2
+	// {
+	// ObjectPath:   "/Radio Story",
+	// FieldsPath:   "OM_HEADER/OM_FIELD",
+	// FieldIDs:     []string{"1", "8"},
+	// FieldsPrefix: "S-He",
+	// },
+	// {
+	// ObjectPath:   "/Radio Story/<OM_RECORD>",
+	// FieldsPath:   "OM_HEADER/OM_FIELD",
+	// FieldIDs:     []string{"1", "8"},
+	// FieldsPrefix: "S-He",
+	// },
+	// {
+	// ObjectPath:   "/Radio Story/<OM_RECORD>/Contact Item",
+	// FieldsPath:   "OM_HEADER/OM_FIELD",
+	// FieldIDs:     []string{"1", "8"},
+	// FieldsPrefix: "S-He",
+	// },
+	// ObjectPath:   "/Radio Story/<OM_RECORD>/AudioClip",
+	// FieldsPath:   "OM_HEADER/OM_FIELD",
+	// FieldIDs:     []string{"1", "8"},
+	// FieldsPrefix: "S-He",
+	// },
 }
 
 // OmObject:   "Radio Story",

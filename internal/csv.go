@@ -49,40 +49,44 @@ func (e *Extractor) CSVheaderPrint() {
 	fmt.Println(e.CSVrowHeader)
 }
 
-func (e *Extractor) PrintRowsToCSV(header bool, delim string) {
+func (e *Extractor) PrintTableToCSV(header bool, delim string) {
 	if header {
 		fmt.Println(e.CSVrowHeader)
 	}
-	// for row := range table {
+	// var builder strings.Builder
+	for i, row := range e.CSVtable {
+		fmt.Println(i, row)
+	}
+	// for i, row := range e.Rows {
+	// fmt.Println(i, row.NodePath)
+	// row.PrintToCSV()
 	// }
 }
 
-// func (row CSVrow) PrintToCSV(
-// 	builder *strings.Builder,
-// 	partsPos CSVrowPartFieldsPositions, partsFieldsPos CSVrowPartsFieldsPositions,
-// 	delim string) string {
-// 	for _, pos := range partsPos {
-// 		// fmt.Println(pos)
-// 		fieldsPos := partsFieldsPos[pos.FieldID]
-// 		// fmt.Println("fieldsPos", fieldsPos)
-// 		part := row[pos.FieldID]
-// 		// fmt.Println("part", part)
-// 		part.PrintToCSV(builder, fieldsPos, delim)
-// 	}
-// 	return builder.String()
-// }
+func (row CSVrow) PrintToCSV(
+	builder *strings.Builder,
+	partsPos CSVrowPartsPositions,
+	partsFieldsPos CSVrowPartsFieldsPositions,
+	delim string,
+) {
+	for _, pos := range partsPos {
+		fieldsPos := partsFieldsPos[pos]
+		part := row[pos]
+		part.PrintToCSV(builder, fieldsPos, delim)
+	}
+}
 
-// func (part CSVrowPart) PrintToCSV(
-// 	builder *strings.Builder, fieldsPosition CSVrowPartFieldsPositions, delim string,
-// ) {
-// 	var value string
-// 	for _, pos := range fieldsPosition {
-// 		field, ok := part[pos]
-// 		if !ok {
-// 			value = "NO_VALUE"
-// 		} else {
-// 			value = field.Value
-// 		}
-// 		fmt.Fprintf(builder, "%s%s", value, delim)
-// 	}
-// }
+func (part CSVrowPart) PrintToCSV(
+	builder *strings.Builder, fieldsPosition CSVrowPartFieldsPositions, delim string,
+) {
+	var value string
+	for _, pos := range fieldsPosition {
+		field, ok := part[pos.FieldID]
+		if !ok {
+			value = "NO_VALUE"
+		} else {
+			value = field.Value
+		}
+		fmt.Fprintf(builder, "%s%s", value, delim)
+	}
+}

@@ -41,6 +41,7 @@ type Extractor struct {
 	CSVdelim     string
 	BaseNode     *xmlquery.Node
 	Rows         []*ObjectRow
+	CSVtable
 }
 
 func (e *Extractor) Init(

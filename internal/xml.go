@@ -260,3 +260,33 @@ func XMLbuildAttrQuery(attrName string, ids []string) string {
 	}
 	return expr.String()
 }
+
+func QueryObject(objectName string) (string, error) {
+	var XMLattrName string
+	var XMLobjectName string
+	var XMLattrValue string
+	var attrquery string
+	xmlTag, notObjTemplate := OmTagStructureMap[objectName]
+	if notObjTemplate {
+		XMLobjectName = xmlTag.XMLtagName
+		XMLattrName = xmlTag.SelectorAttr
+		if !notObjTemplate {
+			return "", fmt.Errorf("unknown object: %s", objectName)
+		}
+		XMLattrValue = ""
+	}
+	if !notObjTemplate {
+		XMLobjectName = "OM_OBJECT"
+		XMLattrName = "TemplateName"
+		XMLattrValue = objectName
+		attrquery = XMLbuildAttrQuery(XMLattrName, []string{XMLattrValue})
+	}
+	fmt.Println("doprdlel", XMLobjectName, XMLattrName, XMLattrValue)
+	objquery := "/" + XMLobjectName + attrquery
+	return objquery, nil
+}
+
+func QueryFields(fieldsPath string, IDs []string) string {
+	attrQuery := XMLbuildAttrQuery("FieldID", IDs)
+	return fieldsPath + attrQuery
+}

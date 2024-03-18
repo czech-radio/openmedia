@@ -193,6 +193,7 @@ func (apf *ArchivePackageFile) ExtractByParser(
 	// var produkce CSVtable
 	for _, i := range OM.OM_OBJECT.OM_RECORDS {
 		// var row CSVrow
+		// NOTE: REMAINING NOT IMPLEMENTED
 		fmt.Println(i.OM_OBJECTS.OM_HEADER)
 	}
 	return nil
@@ -225,9 +226,7 @@ func (apf *ArchivePackageFile) ExtractByXMLquery(
 	if err != nil {
 		return err
 	}
-	extractor.PrintRowsToCSV(true, csvDelim)
-	// result, err := ExtractBaseObjectRows(openMedia[0], EXTproduction)
-	// PrintRowPayloads("RESULT", result)
+	extractor.PrintTableToCSV(true, csvDelim)
 	PrintRowPayloads("RESULT", extractor.Rows)
 	return nil
 }

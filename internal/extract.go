@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"fmt"
 	"log/slog"
 
 	"github.com/antchfx/xmlquery"
@@ -15,34 +14,21 @@ type ObjectRow struct {
 	CSVrowFields
 }
 
-func QueryObject(objectName string) (string, error) {
-	var XMLattrName string
-	var XMLobjectName string
-	var XMLattrValue string
-	var attrquery string
-	xmlTag, notObjTemplate := OmTagStructureMap[objectName]
-	if notObjTemplate {
-		XMLobjectName = xmlTag.XMLtagName
-		XMLattrName = xmlTag.SelectorAttr
-		if !notObjTemplate {
-			return "", fmt.Errorf("unknown object: %s", objectName)
-		}
-		XMLattrValue = ""
-	}
-	if !notObjTemplate {
-		XMLobjectName = "OM_OBJECT"
-		XMLattrName = "TemplateName"
-		XMLattrValue = objectName
-		attrquery = XMLbuildAttrQuery(XMLattrName, []string{XMLattrValue})
-	}
-	fmt.Println("doprdlel", XMLobjectName, XMLattrName, XMLattrValue)
-	objquery := "/" + XMLobjectName + attrquery
-	return objquery, nil
+func ExpandTableRows(table CSVtable, extr OMobjExtractor) (CSVtable, error) {
+	//"TODO
+	return table, nil
 }
 
-func QueryFields(fieldsPath string, IDs []string) string {
-	attrQuery := XMLbuildAttrQuery("FieldID", IDs)
-	return fieldsPath + attrQuery
+// func ExtractRowNodesFields(nodes []*xmlquery.Node, extr OMobjExtractor) CSVrowFields {
+func ExtractRowNodesFields(nodes []*xmlquery.Node, extr OMobjExtractor) CSVtable {
+	var table CSVtable
+	// var nodeRows []*ObjectRow
+	// for _, n := range nodes {
+	// row := ExtractNodeFields(n, extr, parentRow)
+	// nodeRows = append(nodeRows, row)
+	// }
+	// return nodeRows
+	return table
 }
 
 func ExpandObjectRows(rps []*ObjectRow, extr OMobjExtractor) ([]*ObjectRow, error) {
@@ -102,6 +88,11 @@ func ExtractNodeFields(
 	}
 }
 
+func NodeToCSVrowPart(node *xmlquery.Node, ext OMobjExtractor) CSVrowPartFieldsPositions {
+	var part CSVrowPartFieldsPositions
+	return part
+}
+
 func NodeToCSVrow(node *xmlquery.Node, ext OMobjExtractor) CSVrowFields {
 	var csvrow CSVrowFields
 	attrQuery := XMLbuildAttrQuery("FieldID", ext.FieldIDs)
@@ -130,14 +121,13 @@ func NodeToCSVrow(node *xmlquery.Node, ext OMobjExtractor) CSVrowFields {
 	return csvrow
 }
 
-func NodesToCSVrows(nodes []*xmlquery.Node, ext OMobjExtractor, rows CSVrowsIntMap) CSVrowsIntMap {
-	if len(rows) == 0 {
-		// rows = make(map[int]CSVrow, len(nodes))
-		rows = make(CSVrowsIntMap, len(nodes))
-	}
-	for i, node := range nodes {
-		row := NodeToCSVrow(node, ext)
-		rows[i] = append(rows[i], row...)
-	}
-	return rows
-}
+// func NodesToCSVrows(nodes []*xmlquery.Node, ext OMobjExtractor, rows CSVrowsIntMap) CSVrowsIntMap {
+// if len(rows) == 0 {
+// rows = make(CSVrowsIntMap, len(nodes))
+// }
+// for i, node := range nodes {
+// row := NodeToCSVrow(node, ext)
+// rows[i] = append(rows[i], row...)
+// }
+// return rows
+// }
