@@ -8,13 +8,11 @@ import (
 )
 
 type ObjectAttributes = map[string]string
-type Fields = map[int]string       // FieldID/FieldName vs value
 type UniqueValues = map[string]int // value vs count
 
-type CSVrowsIntMap map[int]CSVrowFields
 type CSVrowFields = []CSVrowField
 
-type OMobjExtractor struct {
+type OMextractor struct {
 	ObjectPath   string
 	FieldsPath   string
 	FieldIDs     []string
@@ -25,10 +23,10 @@ type OMobjExtractor struct {
 	FieldIDsMap                map[string]bool
 }
 
-type OMobjExtractors []OMobjExtractor
+type OMextractors []OMextractor
 
 type Extractor struct {
-	OMobjExtractors
+	OMextractors
 	CSVrowPartsPositions
 	CSVrowPartsFieldsPositions
 	CSVrowHeader string
@@ -39,31 +37,31 @@ type Extractor struct {
 
 func (e *Extractor) Init(
 	baseNode *xmlquery.Node,
-	omextractors OMobjExtractors,
+	omextractors OMextractors,
 	CSVdelim string) {
-	e.OMobjExtractors = omextractors
+	e.OMextractors = omextractors
 	e.CSVdelim = CSVdelim
 	e.BaseNode = baseNode
 	e.MapRowParts()
 	e.MapRowPartsFieldsPositions()
 	e.CSVheaderCreate(CSVdelim)
-	e.OMobjExtractors.ReplaceParentRowTrueChecker()
+	e.OMextractors.ReplaceParentRowTrueChecker()
 	e.CSVtable = []*CSVrowNode{{baseNode, CSVrow{}}}
 }
 
 func (e *Extractor) MapRowParts() {
-	extCount := len(e.OMobjExtractors)
+	extCount := len(e.OMextractors)
 	partsPos := make(CSVrowPartsPositions, extCount)
-	for i, extr := range e.OMobjExtractors {
+	for i, extr := range e.OMextractors {
 		partsPos[i] = extr.FieldsPrefix
 	}
 	e.CSVrowPartsPositions = partsPos
 }
 
 func (e *Extractor) MapRowPartsFieldsPositions() {
-	extCount := len(e.OMobjExtractors)
+	extCount := len(e.OMextractors)
 	partsPos := make(CSVrowPartsFieldsPositions, extCount)
-	for _, extr := range e.OMobjExtractors {
+	for _, extr := range e.OMextractors {
 		fp := GetPartFieldsPositions(extr)
 		partsPos[extr.FieldsPrefix] = fp
 	}
@@ -71,7 +69,7 @@ func (e *Extractor) MapRowPartsFieldsPositions() {
 }
 
 func (e *Extractor) ExtractTable() error {
-	for _, extr := range e.OMobjExtractors {
+	for _, extr := range e.OMextractors {
 		rows, err := ExpandTableRows(e.CSVtable, extr) // : maybe wrong
 		if err != nil {
 			return err
@@ -81,7 +79,7 @@ func (e *Extractor) ExtractTable() error {
 	return nil
 }
 
-func GetPartFieldsPositions(extr OMobjExtractor) CSVrowPartFieldsPositions {
+func GetPartFieldsPositions(extr OMextractor) CSVrowPartFieldsPositions {
 	fieldsPositions := make(CSVrowPartFieldsPositions, 0, len(extr.FieldIDs))
 	for _, fi := range extr.FieldIDs {
 		fp := FieldPosition{
@@ -94,14 +92,14 @@ func GetPartFieldsPositions(extr OMobjExtractor) CSVrowPartFieldsPositions {
 	return fieldsPositions
 }
 
-func (omo *OMobjExtractor) MapFields() {
+func (omo *OMextractor) MapFields() {
 	omo.FieldIDsMap = make(map[string]bool, len(omo.FieldIDs))
 	for _, id := range omo.FieldIDs {
 		omo.FieldIDsMap[id] = true
 	}
 }
 
-func (omoes OMobjExtractors) ReplaceParentRowTrueChecker() {
+func (omoes OMextractors) ReplaceParentRowTrueChecker() {
 	// Check if there is following extractor referencing same object as current extractor
 	lomoes := len(omoes)
 	if lomoes == 1 {

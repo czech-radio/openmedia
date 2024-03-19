@@ -13,7 +13,7 @@ func TestExtractorInit(t *testing.T) {
 	fmt.Println("partsPos", ex.CSVrowPartsPositions)
 	fmt.Println("partsFieldsPos", ex.CSVrowPartsFieldsPositions)
 	fmt.Println("fieldsHeader", ex.CSVrowHeader)
-	fmt.Println("extractores", ex.OMobjExtractors)
+	fmt.Println("extractores", ex.OMextractors)
 }
 
 func TestPrintTable(t *testing.T) {

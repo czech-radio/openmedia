@@ -40,6 +40,43 @@ func PipeUTF16leToUTF8(r io.Reader) *io.PipeReader {
 	return pr
 }
 
+func XmlFindBaseOpenMediaNode(breader *bytes.Reader,
+) (*xmlquery.Node, error) {
+	// Parse base xml node
+	baseNode, err := xmlquery.Parse(breader)
+	if err != nil {
+		return nil, err
+	}
+	nodes := xmlquery.Find(baseNode, "/OPENMEDIA")
+	if len(nodes) != 1 {
+		return nil, fmt.Errorf(
+			"unknown opendmedia file, nodes found count: %d,should be 1",
+			len(nodes),
+		)
+	}
+	return nodes[0], nil
+}
+
+func XmlAmendUTF16header(breader *bytes.Reader) (*bytes.Reader, error) {
+	var buf bytes.Buffer
+	var err error
+	replace := "encoding=\"UTF-16\""
+	scanner := bufio.NewScanner(breader)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if strings.Contains(line, replace) {
+			line = strings.Replace(line, replace, "encoding=\"UTF-8\"", 1)
+			_, err = fmt.Fprintln(&buf, line)
+		} else {
+			_, err = fmt.Fprintln(&buf, line)
+		}
+		if err != nil {
+			return nil, err
+		}
+	}
+	return bytes.NewReader(buf.Bytes()), nil
+}
+
 func PipeRundownHeaderAmmend(input_reader io.Reader) *io.PipeReader {
 	var err error
 	pr, pw := io.Pipe()

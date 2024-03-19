@@ -41,15 +41,15 @@ func RunExtract(rootCfg *ConfigRoot, filterCfg *ConfigExtract) {
 	arf := internal.ArchiveFolder{
 		PackageTypes: workerTypes,
 	}
-	dateFrom := time.Date(2020, 2, 1, 0, 0, 0, 0, internal.ArchiveTimeZone)
-	dateTo := time.Date(2020, 2, 1, 3, 0, 0, 0, internal.ArchiveTimeZone)
+	dateFrom := time.Date(2024, 2, 1, 13, 0, 0, 1, internal.ArchiveTimeZone)
+	dateTo := time.Date(2024, 2, 1, 14, 0, 0, 0, internal.ArchiveTimeZone)
 	filterRange := [2]time.Time{dateFrom, dateTo}
 	query := internal.ArchiveFolderQuery{
-		DateRange: filterRange,
 		RadioNames: map[string]bool{
-			// "Vltava": true,
 			"Radiožurnál": true,
 		},
+		DateRange:  filterRange,
+		Extractors: internal.EXTproduction,
 	}
 	srcFolder := "/home/jk/CRO/CRO_BASE/openmedia-archive_backup/Archive/"
 	err := arf.FolderMap(srcFolder, true, &query)

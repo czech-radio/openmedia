@@ -32,6 +32,7 @@ type ArchiveFolderQuery struct {
 	IsoWeeks   map[int]bool
 	Months     map[int]bool
 	WeekDays   map[time.Weekday]bool
+	Extractors OMextractors
 }
 
 func (af *ArchiveFolder) FolderListing(

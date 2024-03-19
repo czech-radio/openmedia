@@ -17,7 +17,7 @@ type Filter struct {
 	HeaderFieldsIDsSubset map[int]bool
 	FieldsUniqueValues    map[int]UniqueValues // FiledID vs UniqueValues
 	MaxUniqueCount        int                  // Field which has the highest unique values count - servers. Used when transforming rows to columns
-	Rows                  []Fields
+	// Rows                  []Fields
 }
 
 type FilterOptions struct {

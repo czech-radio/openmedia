@@ -1,6 +1,33 @@
 package internal
 
-var EXTproduction = OMobjExtractors{
+var EXTproduction = OMextractors{
+	{
+		ObjectPath:   "/Radio Rundown",
+		FieldsPath:   "/OM_HEADER/OM_FIELD",
+		FieldIDs:     []string{},
+		FieldsPrefix: "RadioR-HED",
+	},
+	{
+		ObjectPath:   "/Radio Rundown/<OM_RECORD>",
+		FieldsPath:   "/OM_FIELD",
+		FieldIDs:     []string{},
+		FieldsPrefix: "RadioR-REC",
+	},
+	{
+		ObjectPath:   "/Radio Rundown/<OM_RECORD>/Hourly Rundown",
+		FieldsPath:   "/OM_HEADER/OM_FIELD",
+		FieldIDs:     []string{},
+		FieldsPrefix: "HourlyR-HED",
+	},
+	{
+		ObjectPath:   "/Radio Rundown/<OM_RECORD>/Hourly Rundown/<OM_RECORD>",
+		FieldsPath:   "/OM_FIELD",
+		FieldIDs:     []string{"8"},
+		FieldsPrefix: "HourlyR-REC",
+	},
+}
+
+var EXTproductionRECandHED = OMextractors{
 	{
 		ObjectPath:   "/Radio Rundown",
 		FieldsPath:   "/OM_HEADER/OM_FIELD",
@@ -66,7 +93,8 @@ var EXTproduction = OMobjExtractors{
 	// FieldsPrefix: "CI-HED",
 	// },
 }
-var EXTproductionTest = OMobjExtractors{
+
+var EXTproductionTest = OMextractors{
 	{
 		ObjectPath:   "/Radio Rundown",
 		FieldsPath:   "/OM_HEADER/OM_FIELD",
@@ -129,7 +157,7 @@ var EXTproductionTest = OMobjExtractors{
 	// },
 }
 
-var EXTproductionWorks = OMobjExtractors{
+var EXTproductionWorks = OMextractors{
 	{
 		ObjectPath:   "/Radio Rundown",
 		FieldsPath:   "/OM_HEADER/OM_FIELD",
@@ -163,7 +191,7 @@ var EXTproductionWorks = OMobjExtractors{
 	// },
 }
 
-var EXTall = OMobjExtractors{
+var EXTall = OMextractors{
 	{
 		ObjectPath:   "/Radio Rundown",
 		FieldsPath:   "/OM_HEADER/OM_FIELD",

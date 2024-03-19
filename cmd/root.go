@@ -61,7 +61,7 @@ func RunRoot() {
 	case "extractFile":
 		cmdCfg := &ConfigExtract{}
 		internal.SetupSubFlags(cmdCfg)
-		RunExtract(rcfg, cmdCfg)
+		RunExtractFile(rcfg, cmdCfg)
 	default:
 		slog.Error("unknown command", "command", subcmd)
 	}

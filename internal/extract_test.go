@@ -98,6 +98,5 @@ func TestArchiveFolderExtractProdukce(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	// arf.FolderExtract(&query)
-	// fmt.Println(dateFrom.ISOWeek())
+	arf.FolderExtract(&query)
 }

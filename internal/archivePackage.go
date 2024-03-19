@@ -158,7 +158,6 @@ func PackageMap(packageName PackageName, q *ArchiveFolderQuery) (
 		return nil, count, err
 	}
 	var ap ArchivePackage
-	// ap.PackageFiles = make(map[string]*zip.File)
 	ap.PackageFiles = make(map[string]*ArchivePackageFile)
 	for _, fr := range zipr.File {
 		ok, err := ArchivePackageFileMatch(fr.Name, q)

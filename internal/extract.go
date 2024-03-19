@@ -7,7 +7,7 @@ import (
 	"github.com/antchfx/xmlquery"
 )
 
-func ExpandTableRows(table CSVtable, extr OMobjExtractor) (CSVtable, error) {
+func ExpandTableRows(table CSVtable, extr OMextractor) (CSVtable, error) {
 	objectType := GetLastPartOfObjectPath(extr.ObjectPath)
 	objquery, err := QueryObject(objectType)
 	if err != nil {
@@ -44,7 +44,7 @@ func ExpandTableRows(table CSVtable, extr OMobjExtractor) (CSVtable, error) {
 func ExtractNodesFields(
 	parentRow CSVrow,
 	subNodes []*xmlquery.Node,
-	extr OMobjExtractor,
+	extr OMextractor,
 ) CSVtable {
 	var table CSVtable
 	for _, subNode := range subNodes {
@@ -60,7 +60,7 @@ func ExtractNodesFields(
 	return table
 }
 
-func NodeToCSVrowPart(node *xmlquery.Node, ext OMobjExtractor) CSVrowPart {
+func NodeToCSVrowPart(node *xmlquery.Node, ext OMextractor) CSVrowPart {
 	var part CSVrowPart
 	attrQuery := XMLbuildAttrQuery("FieldID", ext.FieldIDs)
 	if attrQuery == "" {

@@ -2,7 +2,6 @@ package internal
 
 import (
 	"archive/zip"
-	"bufio"
 	"bytes"
 	"encoding/json"
 	"errors"
@@ -415,24 +414,10 @@ func ZipXmlFileDecodeData(zf *zip.File, enc FileEncodingNumber) (*bytes.Reader, 
 	switch enc {
 	case UTF8:
 	case UTF16le:
-		var buf bytes.Buffer
-		replace := "encoding=\"UTF-16\""
-		scanner := bufio.NewScanner(breader)
-		for scanner.Scan() {
-			line := scanner.Text()
-			if strings.Contains(line, replace) {
-				line = strings.Replace(line, replace, "encoding=\"UTF-8\"", 1)
-				_, err = fmt.Fprintln(&buf, line)
-				// _, err = buf.WriteString(line + "\n")
-			} else {
-				_, err = fmt.Fprintln(&buf, line)
-				// _, err = buf.WriteString(line + "\n")
-			}
-			if err != nil {
-				return nil, err
-			}
+		breader, err = XmlAmendUTF16header(breader)
+		if err != nil {
+			return nil, err
 		}
-		breader = bytes.NewReader(buf.Bytes())
 	default:
 		err = fmt.Errorf("unknown encoding")
 	}

@@ -2,20 +2,19 @@ package internal
 
 import (
 	"archive/zip"
+	"bytes"
 	"encoding/xml"
 	"fmt"
 	"io"
 	"os"
 	"strings"
 
-	"github.com/antchfx/xmlquery"
 	enc_unicode "golang.org/x/text/encoding/unicode"
 )
 
 type ArchiveFile struct {
-	Reader      *io.Reader
+	Reader      *bytes.Reader
 	Tables      map[WorkerTypeCode]CSVtable
-	Data        []byte
 	Encoding    string
 	RundownType string
 	FilePath    string
@@ -31,14 +30,18 @@ func (af *ArchiveFile) Init(wt WorkerTypeCode, filePath string) error {
 	if err != nil {
 		return err
 	}
-	// switch
+	// switch file encoding type
 	utf8reader := enc_unicode.UTF16(enc_unicode.LittleEndian, enc_unicode.IgnoreBOM).NewDecoder().Reader(fileHandle)
 	data, err := io.ReadAll(utf8reader)
 	if err != nil {
 		return err
 	}
-	af.Data = data
-	fmt.Println(data)
+	breader := bytes.NewReader(data)
+	breader, err = XmlAmendUTF16header(breader)
+	if err != nil {
+		return err
+	}
+	af.Reader = breader
 	return nil
 }
 
@@ -67,6 +70,23 @@ func (apf *ArchivePackageFile) ExtractByParser(
 	return nil
 }
 
+func (af *ArchiveFile) ExtractByXMLquery(extr Extractor) error {
+	// Extract specfied object fields
+	var extractor Extractor
+	csvDelim := "\t"
+	openMedia, err := XmlFindBaseOpenMediaNode(af.Reader)
+	if err != nil {
+		return err
+	}
+	extractor.Init(openMedia, EXTproduction, csvDelim)
+	err = extractor.ExtractTable()
+	if err != nil {
+		return err
+	}
+	extractor.PrintTableToCSV(true, csvDelim)
+	return nil
+}
+
 func (apf *ArchivePackageFile) ExtractByXMLquery(
 	enc FileEncodingNumber, q *ArchiveFolderQuery) error {
 	var err error
@@ -76,22 +96,14 @@ func (apf *ArchivePackageFile) ExtractByXMLquery(
 		return err
 	}
 	// Parse base xml node
-	baseNode, err := xmlquery.Parse(dataReader)
+	openMedia, err := XmlFindBaseOpenMediaNode(dataReader)
 	if err != nil {
 		return err
 	}
-	openMedia := xmlquery.Find(baseNode, "/OPENMEDIA")
-	if len(openMedia) != 1 {
-		return fmt.Errorf(
-			"unknown opendmedia file, nodes found count: %d,should be 1",
-			len(openMedia),
-		)
-	}
-
 	// Extract specfied object fields
 	var extractor Extractor
 	csvDelim := "\t"
-	extractor.Init(openMedia[0], EXTproduction, csvDelim)
+	extractor.Init(openMedia, EXTproduction, csvDelim)
 	err = extractor.ExtractTable()
 	if err != nil {
 		return err
