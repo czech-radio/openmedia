@@ -46,13 +46,6 @@ type CSVrowNode struct {
 type CSVtable []*CSVrowNode
 type CSVtables map[string]*CSVtable
 
-func (e *Extractor) PrintRows() error {
-	for i, row := range e.Rows {
-		fmt.Println(i, row)
-	}
-	return nil
-}
-
 func (e *Extractor) CSVheaderCreate(delim string) {
 	var builder strings.Builder
 	for _, i := range e.CSVrowPartsPositions {
@@ -106,7 +99,7 @@ func (part CSVrowPart) PrintToCSV(
 		if !ok {
 			value = "FID NOT FOUND"
 		} else {
-			value = field.Value
+			value = EscapeCSVdelim(field.Value)
 		}
 		fmt.Fprintf(builder, "%s%s", value, delim)
 	}

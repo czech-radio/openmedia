@@ -2,7 +2,6 @@ package internal
 
 import (
 	"archive/zip"
-	"encoding/xml"
 	"fmt"
 	"log/slog"
 	"regexp"
@@ -10,7 +9,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/antchfx/xmlquery"
 	"github.com/ncruces/go-strftime"
 	"github.com/snabb/isoweek"
 )
@@ -147,10 +145,12 @@ func ArchivePackageFileMatch(nestedFileName string, q *ArchiveFolderQuery) (bool
 	return true, nil
 }
 
-func PackageMap(packageName PackageName, q *ArchiveFolderQuery) (*ArchivePackage, error) {
+func PackageMap(packageName PackageName, q *ArchiveFolderQuery) (
+	*ArchivePackage, int, error) {
 	zipr, err := zip.OpenReader(string(packageName))
+	var count int
 	if err != nil {
-		return nil, err
+		return nil, count, err
 	}
 	var ap ArchivePackage
 	// ap.PackageFiles = make(map[string]*zip.File)
@@ -158,7 +158,7 @@ func PackageMap(packageName PackageName, q *ArchiveFolderQuery) (*ArchivePackage
 	for _, fr := range zipr.File {
 		ok, err := ArchivePackageFileMatch(fr.Name, q)
 		if err != nil {
-			return nil, err
+			return nil, count, err
 		}
 		if !ok {
 			slog.Debug("package file does not match", "package", packageName, "file", fr.Name, "query", q.DateRange)
@@ -170,65 +170,11 @@ func PackageMap(packageName PackageName, q *ArchiveFolderQuery) (*ArchivePackage
 		apf := ArchivePackageFile{}
 		apf.Reader = fr
 		ap.PackageFiles[fr.Name] = &apf
-	}
-	return &ap, nil
-}
-
-type ArchivePackageFile struct {
-	Reader *zip.File
-	Tables map[WorkerTypeCode]CSVtable
-}
-
-func (apf *ArchivePackageFile) ExtractByParser(
-	enc FileEncodingNumber, q *ArchiveFolderQuery) error {
-	dr, err := ZipXmlFileDecodeData(apf.Reader, enc)
-	if err != nil {
-		return err
-	}
-	var OM OPENMEDIA
-	err = xml.NewDecoder(dr).Decode(&OM)
-	if err != nil {
-		return err
-	}
-	// var produkce CSVtable
-	for _, i := range OM.OM_OBJECT.OM_RECORDS {
-		// var row CSVrow
-		// NOTE: REMAINING NOT IMPLEMENTED
-		fmt.Println(i.OM_OBJECTS.OM_HEADER)
-	}
-	return nil
-}
-
-func (apf *ArchivePackageFile) ExtractByXMLquery(
-	enc FileEncodingNumber, q *ArchiveFolderQuery) error {
-	var err error
-	// Extract file from zip
-	dataReader, err := ZipXmlFileDecodeData(apf.Reader, enc)
-	if err != nil {
-		return err
-	}
-	// Parse base xml node
-	baseNode, err := xmlquery.Parse(dataReader)
-	if err != nil {
-		return err
-	}
-	openMedia := xmlquery.Find(baseNode, "/OPENMEDIA")
-	if len(openMedia) != 1 {
-		return fmt.Errorf(
-			"unknown opendmedia file, nodes found count: %d,should be 1",
-			len(openMedia),
+		count += len(ap.PackageFiles)
+		slog.Warn(
+			"fiels matched inside package", "package", packageName,
+			"count", count,
 		)
 	}
-
-	// Extract specfied object fields
-	var extractor Extractor
-	csvDelim := "\t"
-	extractor.Init(openMedia[0], EXTproduction, csvDelim)
-	err = extractor.ExtractTable()
-	if err != nil {
-		return err
-	}
-	extractor.PrintTableToCSV(true, csvDelim)
-	// PrintRowPayloads("RESULT", extractor.Rows)
-	return nil
+	return &ap, count, nil
 }

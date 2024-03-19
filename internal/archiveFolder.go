@@ -13,8 +13,10 @@ type ArchiveFolder struct {
 	XMLencoding   FileEncodingNumber
 	PackagesNames []PackageName
 	Packages      map[PackageName]*ArchivePackage
+	Files         []string
 }
 
+type FileName string
 type PackageName string
 
 type ArchivePackage struct {
@@ -91,15 +93,19 @@ func (af *ArchiveFolder) FolderMap(
 	if af.Packages == nil {
 		af.Packages = make(map[PackageName]*ArchivePackage)
 	}
+	filesCount := 0
 	for _, packageName := range af.PackagesNames {
-		archivePackage, err := PackageMap(packageName, q)
+		archivePackage, count, err := PackageMap(packageName, q)
 		if err != nil {
 			return err
 		}
+		filesCount = filesCount + count
 		if len(archivePackage.PackageFiles) > 0 {
 			af.Packages[packageName] = archivePackage
 		}
 	}
+	slog.Warn("packages matched", "count", len(af.Packages))
+	slog.Warn("files inside packages matched", "count", filesCount)
 	return nil
 }
 

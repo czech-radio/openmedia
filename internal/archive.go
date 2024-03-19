@@ -20,6 +20,8 @@ type WorkerTypeCode int
 const (
 	WorkerTypeZIPoriginal WorkerTypeCode = iota
 	WorkerTypeZIPminified
+	WorkerTypeRundownXMLutf8
+	WorkerTypeRundownXMLutf16le
 	WorkerTypeCSVcontactsFields
 	WorkerTypeCSVcontactsUniqueFields
 	WorkerTypeCSVprodukce
@@ -28,6 +30,8 @@ const (
 var WorkerTypeMap = map[WorkerTypeCode]string{
 	WorkerTypeZIPoriginal:             "ORIGINAL.zip",
 	WorkerTypeZIPminified:             "MINIFIED.zip",
+	WorkerTypeRundownXMLutf8:          "RD_utf8_xml",
+	WorkerTypeRundownXMLutf16le:       "RD_utf16le_xml",
 	WorkerTypeCSVcontactsFields:       "CONTACT_FIELDS.csv",
 	WorkerTypeCSVcontactsUniqueFields: "CONTACT_FIELDS_UNIQUE.csv",
 	WorkerTypeCSVprodukce:             "PRODUKCE.csv",

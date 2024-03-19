@@ -4,27 +4,129 @@ var EXTproduction = OMobjExtractors{
 	{
 		ObjectPath:   "/Radio Rundown",
 		FieldsPath:   "/OM_HEADER/OM_FIELD",
-		FieldIDs:     []string{"1", "8"},
-		FieldsPrefix: "RR-HED",
+		FieldIDs:     []string{"5081", "1", "8", "1003", "1004"},
+		FieldsPrefix: "RadioR-HED",
 	},
 	{
 		ObjectPath:   "/Radio Rundown/<OM_RECORD>",
 		FieldsPath:   "/OM_FIELD",
-		FieldIDs:     []string{"8"},
-		FieldsPrefix: "HR-REC",
+		FieldIDs:     []string{"1", "8"},
+		FieldsPrefix: "RadioR-REC",
 	},
 	{
 		ObjectPath:   "/Radio Rundown/<OM_RECORD>/Hourly Rundown",
 		FieldsPath:   "/OM_HEADER/OM_FIELD",
 		FieldIDs:     []string{"1", "8"},
-		FieldsPrefix: "HR-HED",
+		FieldsPrefix: "HourlyR-HED",
 	},
 	{
 		ObjectPath:   "/Radio Rundown/<OM_RECORD>/Hourly Rundown/<OM_RECORD>",
 		FieldsPath:   "/OM_FIELD",
-		FieldIDs:     []string{"1", "8"},
-		FieldsPrefix: "HR-REC",
+		FieldIDs:     []string{"8"},
+		FieldsPrefix: "HourlyR-REC",
 	},
+	{
+		ObjectPath: "/Radio Rundown/<OM_RECORD>/Hourly Rundown/<OM_RECORD>/Sub Rundown",
+		FieldsPath: "/OM_HEADER/OM_FIELD",
+		FieldIDs: []string{
+			"5001", "8", "1004", "1003", "1005", "321", "5079"},
+		FieldsPrefix: "SubR-HED",
+	},
+	{
+		ObjectPath: "/Radio Rundown/<OM_RECORD>/Hourly Rundown/<OM_RECORD>/Sub Rundown/<OM_RECORD>",
+		FieldsPath: "/OM_FIELD",
+		FieldIDs: []string{
+			"5001", "8", "1004", "1003", "1005", "321", "5079"},
+		FieldsPrefix: "Sub-REC",
+	},
+	{
+		ObjectPath: "/Radio Rundown/<OM_RECORD>/Hourly Rundown/<OM_RECORD>/Sub Rundown/<OM_RECORD>/Radio Story",
+		FieldsPath: "/OM_HEADER/OM_FIELD",
+		FieldIDs: []string{
+			"5001", "8", "5081", "1004", "1003", "1005", "1036", "1029", "1010", "1002", "321", "5079", "16", "5082", "5072", "5016", "5", "6", "12", "5071", "5070"},
+		FieldsPrefix: "RStory-HED",
+	},
+	{
+		ObjectPath: "/Radio Rundown/<OM_RECORD>/Hourly Rundown/<OM_RECORD>/Sub Rundown/<OM_RECORD>/Radio Story/<OM_RECORD>",
+		FieldsPath: "/OM_FIELD",
+		FieldIDs: []string{
+			"5001", "8", "5081", "1004", "1003", "1005", "1036", "1029", "1010", "1002", "321", "5079", "16", "5082", "5072", "5016", "5", "6", "12", "5071", "5070"},
+		FieldsPrefix: "RStory-REC",
+	},
+	// {
+	// ObjectPath:   "/Radio Rundown/<OM_RECORD>/Hourly Rundown/<OM_RECORD>/Sub Rundown/<OM_RECORD>/Radio Story",
+	// FieldsPath:   "/OM_HEADER/OM_FIELD",
+	// FieldIDs:     []string{"8"},
+	// FieldsPrefix: "RStory-HED",
+	// },
+	// {
+	// ObjectPath:   "/Radio Rundown/<OM_RECORD>/Hourly Rundown/<OM_RECORD>/Radio Story/Contact Item",
+	// FieldsPath:   "/OM_HEADER/OM_FIELD",
+	// FieldIDs:     []string{"8", "10"},
+	// FieldsPrefix: "CI-HED",
+	// },
+}
+var EXTproductionTest = OMobjExtractors{
+	{
+		ObjectPath:   "/Radio Rundown",
+		FieldsPath:   "/OM_HEADER/OM_FIELD",
+		FieldIDs:     []string{"5081", "1", "8", "1003", "1004"},
+		FieldsPrefix: "RadioR-HED",
+	},
+	{
+		ObjectPath:   "/Radio Rundown/<OM_RECORD>",
+		FieldsPath:   "/OM_FIELD",
+		FieldIDs:     []string{"1", "8"},
+		FieldsPrefix: "RadioR-REC",
+	},
+	{
+		ObjectPath:   "/Radio Rundown/<OM_RECORD>/Hourly Rundown",
+		FieldsPath:   "/OM_HEADER/OM_FIELD",
+		FieldIDs:     []string{"1", "8"},
+		FieldsPrefix: "HourlyR-HED",
+	},
+	{
+		ObjectPath:   "/Radio Rundown/<OM_RECORD>/Hourly Rundown/<OM_RECORD>",
+		FieldsPath:   "/OM_FIELD",
+		FieldIDs:     []string{"8"},
+		FieldsPrefix: "HourlyR-REC",
+	},
+	{
+		ObjectPath:   "/Radio Rundown/<OM_RECORD>/Hourly Rundown/<OM_RECORD>/Sub Rundown",
+		FieldsPath:   "/OM_HEADER/OM_FIELD",
+		FieldIDs:     []string{"5001", "8", "1004", "1003", "1005", "321", "5079"},
+		FieldsPrefix: "SubR-HED",
+	},
+	{
+		ObjectPath:   "/Radio Rundown/<OM_RECORD>/Hourly Rundown/<OM_RECORD>/Sub Rundown/<OM_RECORD>",
+		FieldsPath:   "/OM_FIELD",
+		FieldIDs:     []string{"5001", "8", "1004", "1003", "1005", "321", "5079"},
+		FieldsPrefix: "Sub-REC",
+	},
+	{
+		ObjectPath:   "/Radio Rundown/<OM_RECORD>/Hourly Rundown/<OM_RECORD>/Sub Rundown/<OM_RECORD>/Radio Story",
+		FieldsPath:   "/OM_HEADER/OM_FIELD",
+		FieldIDs:     []string{"5001", "8", "5081", "1004", "1003", "1005", "1036", "1029", "1010", "1002", "321", "5079", "16", "5082", "5072", "5016", "5", "6", "12", "5071", "5070"},
+		FieldsPrefix: "RStory-HED",
+	},
+	{
+		ObjectPath:   "/Radio Rundown/<OM_RECORD>/Hourly Rundown/<OM_RECORD>/Sub Rundown/<OM_RECORD>/Radio Story/<OM_RECORD>",
+		FieldsPath:   "/OM_FIELD",
+		FieldIDs:     []string{"5001", "8", "5081", "1004", "1003", "1005", "1036", "1029", "1010", "1002", "321", "5079", "16", "5082", "5072", "5016", "5", "6", "12", "5071", "5070"},
+		FieldsPrefix: "RStory-REC",
+	},
+	// {
+	// ObjectPath:   "/Radio Rundown/<OM_RECORD>/Hourly Rundown/<OM_RECORD>/Sub Rundown/<OM_RECORD>/Radio Story",
+	// FieldsPath:   "/OM_HEADER/OM_FIELD",
+	// FieldIDs:     []string{"8"},
+	// FieldsPrefix: "RStory-HED",
+	// },
+	// {
+	// ObjectPath:   "/Radio Rundown/<OM_RECORD>/Hourly Rundown/<OM_RECORD>/Radio Story/Contact Item",
+	// FieldsPath:   "/OM_HEADER/OM_FIELD",
+	// FieldIDs:     []string{"8", "10"},
+	// FieldsPrefix: "CI-HED",
+	// },
 }
 
 var EXTproductionWorks = OMobjExtractors{

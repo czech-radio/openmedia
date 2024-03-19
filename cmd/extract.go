@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"github/czech-radio/openmedia-archive/internal"
-	"log/slog"
+	"time"
 )
 
 type ConfigExtract struct {
@@ -22,17 +22,39 @@ type ConfigExtract struct {
 }
 
 func RunExtract(rootCfg *ConfigRoot, filterCfg *ConfigExtract) {
-	options := internal.FilterOptions{}
-	internal.CopyFields(filterCfg, &options)
-	options.FilterType = internal.WorkerTypeCode(filterCfg.FilterTypeNumber)
-	slog.Info("effective subcommand options", "options", options)
-	if rootCfg.DebugConfig {
-		return
+	// options := internal.FilterOptions{}
+	// internal.CopyFields(filterCfg, &options)
+	// options.FilterType = internal.WorkerTypeCode(filterCfg.FilterTypeNumber)
+	// slog.Info("effective subcommand options", "options", options)
+	// if rootCfg.DebugConfig {
+	// return
+	// }
+	// internal.DirectoryIsReadableOrPanic(options.SourceDirectory)
+	// ORIG:
+	// filter := internal.Filter{Options: options}
+	// err := filter.Folder()
+	// if err != nil {
+	// internal.Errors.ExitWithCode(err)
+	// }
+
+	workerTypes := []internal.WorkerTypeCode{internal.WorkerTypeZIPoriginal}
+	arf := internal.ArchiveFolder{
+		PackageTypes: workerTypes,
 	}
-	internal.DirectoryIsReadableOrPanic(options.SourceDirectory)
-	filter := internal.Filter{Options: options}
-	err := filter.Folder()
+	dateFrom := time.Date(2020, 2, 1, 0, 0, 0, 0, internal.ArchiveTimeZone)
+	dateTo := time.Date(2020, 2, 1, 3, 0, 0, 0, internal.ArchiveTimeZone)
+	filterRange := [2]time.Time{dateFrom, dateTo}
+	query := internal.ArchiveFolderQuery{
+		DateRange: filterRange,
+		RadioNames: map[string]bool{
+			// "Vltava": true,
+			"Radiožurnál": true,
+		},
+	}
+	srcFolder := "/home/jk/CRO/CRO_BASE/openmedia-archive_backup/Archive/"
+	err := arf.FolderMap(srcFolder, true, &query)
 	if err != nil {
 		internal.Errors.ExitWithCode(err)
 	}
+	arf.FolderExtract(&query)
 }

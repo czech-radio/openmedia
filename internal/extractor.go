@@ -34,7 +34,6 @@ type Extractor struct {
 	CSVrowHeader string
 	CSVdelim     string
 	BaseNode     *xmlquery.Node
-	Rows         []*ObjectRow
 	CSVtable
 }
 
@@ -50,9 +49,6 @@ func (e *Extractor) Init(
 	e.CSVheaderCreate(CSVdelim)
 	e.OMobjExtractors.ReplaceParentRowTrueChecker()
 	e.CSVtable = []*CSVrowNode{{baseNode, CSVrow{}}}
-	baseRow := &ObjectRow{}
-	baseRow.Node = baseNode
-	e.Rows = []*ObjectRow{baseRow}
 }
 
 func (e *Extractor) MapRowParts() {

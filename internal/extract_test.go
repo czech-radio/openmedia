@@ -78,3 +78,25 @@ func TestArchiveFolderExtract(t *testing.T) {
 	}
 	arf.FolderExtract(&query)
 }
+
+func TestArchiveFolderExtractProdukce(t *testing.T) {
+	// workerTypes := []WorkerTypeCode{WorkerTypeZIPminified}
+	workerTypes := []WorkerTypeCode{WorkerTypeZIPoriginal}
+	arf := ArchiveFolder{
+		PackageTypes: workerTypes,
+	}
+	dateFrom := time.Date(2024, 1, 0, 0, 0, 0, 0, ArchiveTimeZone)
+	dateTo := time.Date(2024, 3, 0, 0, 0, 0, 0, ArchiveTimeZone)
+	filterRange := [2]time.Time{dateFrom, dateTo}
+	query := ArchiveFolderQuery{
+		DateRange: filterRange,
+		RadioNames: map[string]bool{
+			"Plus": true,
+		},
+	}
+	err := arf.FolderMap(srcFolder, true, &query)
+	if err != nil {
+		t.Error(err)
+	}
+	arf.FolderExtract(&query)
+}

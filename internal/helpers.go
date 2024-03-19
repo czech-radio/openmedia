@@ -439,15 +439,6 @@ func ZipXmlFileDecodeData(zf *zip.File, enc FileEncodingNumber) (*bytes.Reader, 
 	return breader, err
 }
 
-func PrintRowPayloads(name string, pl []*ObjectRow) {
-	if len(pl) == 0 {
-		fmt.Println(name, "NO PAYLOAD")
-	}
-	for i, p := range pl {
-		fmt.Println(name, i, p)
-	}
-}
-
 func PrintRows(rows map[int]CSVrowFields) {
 	for i := 0; i < len(rows); i++ {
 		fmt.Println(i, rows[i])
