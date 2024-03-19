@@ -9,6 +9,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/antchfx/xmlquery"
@@ -298,27 +299,39 @@ func XMLbuildAttrQuery(attrName string, ids []string) string {
 	return expr.String()
 }
 
+func GetPathGlobPrefix(objectName string) (string, string) {
+	pathPrefix := "/"
+	pattern := "^\\*"
+	regex := regexp.MustCompile(pattern)
+	parts := regex.Split(objectName, -1)
+	if len(parts) > 1 {
+		objectName = parts[1]
+		pathPrefix = "//"
+	}
+	return objectName, pathPrefix
+}
+
 func QueryObject(objectName string) (string, error) {
-	var XMLattrName string
+	//ObjectName: <OM_RECORD>, "Radio Rundow"
 	var XMLobjectName string
 	var XMLattrValue string
 	var attrquery string
-	xmlTag, notObjTemplate := OmTagStructureMap[objectName]
-	if notObjTemplate {
+	var pathPrefix string
+
+	// Check glob path
+	objectName, pathPrefix = GetPathGlobPrefix(objectName)
+	xmlTag, ok := OmTagStructureMap[objectName]
+	if ok {
 		XMLobjectName = xmlTag.XMLtagName
-		XMLattrName = xmlTag.SelectorAttr
-		if !notObjTemplate {
-			return "", fmt.Errorf("unknown object: %s", objectName)
-		}
-		XMLattrValue = ""
 	}
-	if !notObjTemplate {
+	if !ok {
 		XMLobjectName = "OM_OBJECT"
-		XMLattrName = "TemplateName"
+		XMLattrName := "TemplateName"
 		XMLattrValue = objectName
-		attrquery = XMLbuildAttrQuery(XMLattrName, []string{XMLattrValue})
+		attrquery = XMLbuildAttrQuery(
+			XMLattrName, []string{XMLattrValue})
 	}
-	objquery := "/" + XMLobjectName + attrquery
+	objquery := pathPrefix + XMLobjectName + attrquery
 	return objquery, nil
 }
 

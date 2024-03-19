@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"fmt"
 	"log/slog"
 	"path/filepath"
 
@@ -101,22 +102,21 @@ func (omo *OMextractor) MapFields() {
 
 func (omoes OMextractors) ReplaceParentRowTrueChecker() {
 	// Check if there is following extractor referencing same object as current extractor
-	lomoes := len(omoes)
-	if lomoes == 1 {
+	count := len(omoes)
+	if count == 1 {
 		return
 	}
-	for currentIndex, currentExt := range omoes {
-	extractor:
-		for followingIndex := currentIndex + 1; followingIndex < lomoes; followingIndex++ {
-			if followingIndex > lomoes {
-				break extractor
-			}
-			currentParent := filepath.Dir(currentExt.ObjectPath)
-			followingParent := filepath.Dir(omoes[followingIndex].ObjectPath)
-			// fmt.Println("EF", currentIndex, currentExt.ObjectPath, currentParent, followingParent)
+	for current, currentExtractor := range omoes {
+		if current+1 > count {
+			continue
+		}
+		for next := current + 1; next < count; next++ {
+			currentParent := filepath.Dir(currentExtractor.ObjectPath)
+			followingParent := filepath.Dir(omoes[next].ObjectPath)
+			fmt.Println("EF", current, currentExtractor.ObjectPath, currentParent, followingParent)
 			if currentParent == followingParent {
-				slog.Debug("wont be replaced", "extractor", currentExt.ObjectPath)
-				omoes[currentIndex].DontReplaceParentObjectRow = true
+				slog.Debug("wont be replaced", "extractor", currentExtractor.ObjectPath)
+				omoes[current].DontReplaceParentObjectRow = true
 			}
 			continue
 		}

@@ -9,6 +9,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/antchfx/xmlquery"
 	enc_unicode "golang.org/x/text/encoding/unicode"
 )
 
@@ -18,6 +19,7 @@ type ArchiveFile struct {
 	Encoding    string
 	RundownType string
 	FilePath    string
+	BaseNode    *xmlquery.Node
 }
 
 func (af *ArchiveFile) Init(wt WorkerTypeCode, filePath string) error {
@@ -42,6 +44,12 @@ func (af *ArchiveFile) Init(wt WorkerTypeCode, filePath string) error {
 		return err
 	}
 	af.Reader = breader
+
+	openMedia, err := XmlFindBaseOpenMediaNode(af.Reader)
+	if err != nil {
+		return err
+	}
+	af.BaseNode = openMedia
 	return nil
 }
 
@@ -70,16 +78,12 @@ func (apf *ArchivePackageFile) ExtractByParser(
 	return nil
 }
 
-func (af *ArchiveFile) ExtractByXMLquery(extr Extractor) error {
+func (af *ArchiveFile) ExtractByXMLquery(extrs OMextractors) error {
 	// Extract specfied object fields
 	var extractor Extractor
 	csvDelim := "\t"
-	openMedia, err := XmlFindBaseOpenMediaNode(af.Reader)
-	if err != nil {
-		return err
-	}
-	extractor.Init(openMedia, EXTproduction, csvDelim)
-	err = extractor.ExtractTable()
+	extractor.Init(af.BaseNode, extrs, csvDelim)
+	err := extractor.ExtractTable()
 	if err != nil {
 		return err
 	}
