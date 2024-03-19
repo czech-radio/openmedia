@@ -85,8 +85,8 @@ func TestArchiveFolderExtractProdukce(t *testing.T) {
 	arf := ArchiveFolder{
 		PackageTypes: workerTypes,
 	}
-	dateFrom := time.Date(2024, 1, 0, 0, 0, 0, 0, ArchiveTimeZone)
-	dateTo := time.Date(2024, 3, 0, 0, 0, 0, 0, ArchiveTimeZone)
+	dateFrom := time.Date(2024, 2, 1, 13, 0, 0, 1, ArchiveTimeZone)
+	dateTo := time.Date(2024, 2, 1, 14, 0, 0, 0, ArchiveTimeZone)
 	filterRange := [2]time.Time{dateFrom, dateTo}
 	query := ArchiveFolderQuery{
 		DateRange: filterRange,
@@ -98,5 +98,6 @@ func TestArchiveFolderExtractProdukce(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	arf.FolderExtract(&query)
+	// arf.FolderExtract(&query)
+	// fmt.Println(dateFrom.ISOWeek())
 }

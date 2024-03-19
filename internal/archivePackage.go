@@ -126,19 +126,24 @@ func ArchivePackageFileMatch(nestedFileName string, q *ArchiveFolderQuery) (bool
 	}
 	meta, err := ArchivePackageFilenameParse(nestedFileName)
 	if err != nil {
+		slog.Debug(
+			"filename match filename", "filename", nestedFileName, "matched", false)
 		return false, err
 	}
 	if len(q.RadioNames) > 0 && !q.RadioNames[meta.RadioName] {
-		slog.Debug("not matched radioname", "filename", nestedFileName)
+		slog.Debug(
+			"filename match radioname", "filename", nestedFileName, "matched", false)
 		return false, nil
 	}
 	if len(q.WeekDays) > 0 && !q.WeekDays[meta.WeekDay] {
-		slog.Debug("no matched weekdays", "filename", nestedFileName)
+		slog.Debug(
+			"filename match weekdays", "filename", nestedFileName, "matched", false)
 		return false, nil
 	}
 	_, ok := DateRangesIntersection(q.DateRange, meta.DateRange)
 	if !ok {
-		slog.Debug("not matched daterange", "filename", nestedFileName)
+		slog.Debug(
+			"filename match daterange", "filename", nestedFileName, "matched", false)
 		return false, nil
 	}
 
@@ -161,20 +166,20 @@ func PackageMap(packageName PackageName, q *ArchiveFolderQuery) (
 			return nil, count, err
 		}
 		if !ok {
-			slog.Debug("package file does not match", "package", packageName, "file", fr.Name, "query", q.DateRange)
+			slog.Debug(
+				"package match", "package", packageName, "file", fr.Name, "query", q.DateRange, "matched", false)
 			continue
 		}
-		slog.Debug("package file matches", "package", packageName, "file", fr.Name, "query", q.DateRange)
+		slog.Debug(
+			"package matched", "package", packageName, "file", fr.Name, "query", q.DateRange, "matched", true)
 		ap.PackageName = packageName
 		ap.PackageReader = zipr
 		apf := ArchivePackageFile{}
 		apf.Reader = fr
 		ap.PackageFiles[fr.Name] = &apf
-		count += len(ap.PackageFiles)
-		slog.Warn(
-			"fiels matched inside package", "package", packageName,
-			"count", count,
-		)
 	}
+	count += len(ap.PackageFiles)
+	slog.Warn(
+		"filenames in all packages", "count", count, "matched", true)
 	return &ap, count, nil
 }
