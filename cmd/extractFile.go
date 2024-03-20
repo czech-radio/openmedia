@@ -15,7 +15,7 @@ func RunExtractFile(rootCfg *ConfigRoot, filterCfg *ConfigExtract) {
 	if err != nil {
 		internal.Errors.ExitWithCode(err)
 	}
-	err = af.ExtractByXMLquery()
+	err = af.ExtractByXMLquery(internal.EXTproduction)
 	if err != nil {
 		internal.Errors.ExitWithCode(err)
 	}

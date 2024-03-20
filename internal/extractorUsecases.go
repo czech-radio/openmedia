@@ -2,7 +2,7 @@ package internal
 
 var EXTproduction = OMextractors{
 	{
-		ObjectPath:   "/*Hourly Rundown",
+		ObjectPath:   "*Hourly Rundown",
 		FieldsPath:   "/OM_HEADER/OM_FIELD",
 		FieldIDs:     []string{"8"},
 		FieldsPrefix: "HourlyR-HED",
@@ -10,17 +10,39 @@ var EXTproduction = OMextractors{
 	{
 		ObjectPath:   "*Sub Rundown",
 		FieldsPath:   "/OM_HEADER/OM_FIELD",
-		FieldIDs:     []string{"5001", "8", "1004", "1003", "1005", "321"},
+		FieldIDs:     []string{"8", "1004", "1003", "1005", "321"},
 		FieldsPrefix: "SubR-HED",
 	},
-	{
-		ObjectPath:   "*Radio Story",
-		FieldsPath:   "/OM_HEADER/OM_FIELD",
-		FieldIDs:     []string{"8"},
-		FieldsPrefix: "Story-HED",
-	},
+	// {
+	// ObjectPath:   "/*Radio Story",
+	// FieldsPath:   "/OM_HEADER/OM_FIELD",
+	// FieldIDs:     []string{"8", "1004", "1003", "1005", "321"},
+	// FieldsPrefix: "Radio",
+	// },
+
 	// {
 	// ObjectPath:   "/*Sub Rundown",
+	// FieldsPath:   "/OM_HEADER/OM_FIELD",
+	// FieldIDs:     []string{"8", "1004", "1003", "1005", "321"},
+	// FieldsPrefix: "SubR-HED",
+	// },
+	// {
+	// ObjectPath: "<OM_RECORD>/Radio Story",
+	// FieldsPath: "OM_HEADER",
+	// FieldIDs: []string{
+	// "8", "5081", "1004", "1004", "1003", "1005", "1035", "1036",
+	// "1029", "1010", "1002", "321", "5079", "16", "5082", "5072", "5016"
+	// },
+	// FieldsPrefix: "Story-HED",
+	// },
+	// {
+	// ObjectPath:   "<OM_RECORD>/Contact Item",
+	// FieldsPath:   "/OM_HEADER/OM_FIELD",
+	// FieldIDs:     []string{"8"},
+	// FieldsPrefix: "Contact-HED",
+	// },
+	// {
+	// ObjectPath:   "*AudioClip",
 	// FieldsPath:   "/OM_HEADER/OM_FIELD",
 	// FieldIDs:     []string{"8"},
 	// FieldsPrefix: "SubR-HED",

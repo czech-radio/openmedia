@@ -70,12 +70,14 @@ func (e *Extractor) MapRowPartsFieldsPositions() {
 }
 
 func (e *Extractor) ExtractTable() error {
-	for _, extr := range e.OMextractors {
+	for i, extr := range e.OMextractors {
 		rows, err := ExpandTableRows(e.CSVtable, extr) // : maybe wrong
+		e.CSVtable = rows
 		if err != nil {
 			return err
 		}
-		e.CSVtable = rows
+		fmt.Printf("\nextr: %d: %s\n", i, extr.ObjectPath)
+		e.PrintTableToCSV(true, "\t")
 	}
 	return nil
 }
@@ -113,7 +115,7 @@ func (omoes OMextractors) ReplaceParentRowTrueChecker() {
 		for next := current + 1; next < count; next++ {
 			currentParent := filepath.Dir(currentExtractor.ObjectPath)
 			followingParent := filepath.Dir(omoes[next].ObjectPath)
-			fmt.Println("EF", current, currentExtractor.ObjectPath, currentParent, followingParent)
+			// fmt.Println("EF", current, currentExtractor.ObjectPath, currentParent, followingParent)
 			if currentParent == followingParent {
 				slog.Debug("wont be replaced", "extractor", currentExtractor.ObjectPath)
 				omoes[current].DontReplaceParentObjectRow = true
