@@ -52,7 +52,7 @@ func TestGetLastPartOfObjectPath(t *testing.T) {
 }
 
 func TestReplaceParentRowTrue(t *testing.T) {
-	EXTproduction.ReplaceParentRowTrueChecker()
+	EXTproduction.KeepInputRowsChecker()
 	PrintObjJson("FEK", EXTproduction)
 }
 

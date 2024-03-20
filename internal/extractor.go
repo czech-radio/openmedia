@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"fmt"
 	"log/slog"
 	"path/filepath"
 
@@ -20,8 +19,9 @@ type OMextractor struct {
 	FieldsPrefix string
 
 	// Internals
-	DontReplaceParentObjectRow bool
-	FieldIDsMap                map[string]bool
+	// KeepInputRows bool
+	KeepInputRows bool
+	FieldIDsMap   map[string]bool
 }
 
 type OMextractors []OMextractor
@@ -46,7 +46,7 @@ func (e *Extractor) Init(
 	e.MapRowParts()
 	e.MapRowPartsFieldsPositions()
 	e.CSVheaderCreate(CSVdelim)
-	e.OMextractors.ReplaceParentRowTrueChecker()
+	e.OMextractors.KeepInputRowsChecker()
 	e.CSVtable = []*CSVrowNode{{baseNode, CSVrow{}}}
 }
 
@@ -76,8 +76,8 @@ func (e *Extractor) ExtractTable() error {
 		if err != nil {
 			return err
 		}
-		fmt.Printf("\nextr: %d: %s\n", i, extr.ObjectPath)
-		e.PrintTableToCSV(true, "\t")
+		slog.Debug("extractor", "position", i, "objectPath", extr)
+		// e.PrintTableToCSV(true, "\t")
 	}
 	return nil
 }
@@ -95,35 +95,49 @@ func GetPartFieldsPositions(extr OMextractor) CSVrowPartFieldsPositions {
 	return fieldsPositions
 }
 
-func (omo *OMextractor) MapFields() {
-	omo.FieldIDsMap = make(map[string]bool, len(omo.FieldIDs))
-	for _, id := range omo.FieldIDs {
-		omo.FieldIDsMap[id] = true
+func (extr *OMextractor) MapFields() {
+	extr.FieldIDsMap = make(map[string]bool, len(extr.FieldIDs))
+	for _, id := range extr.FieldIDs {
+		extr.FieldIDsMap[id] = true
 	}
 }
 
-func (omoes OMextractors) ReplaceParentRowTrueChecker() {
+func (extrs OMextractors) KeepInputRowsChecker() {
 	// Check if there is following extractor referencing same object as current extractor
-	count := len(omoes)
-	if count == 1 {
-		return
-	}
-	for current, currentExtractor := range omoes {
-		if current+1 > count {
+	eCount := len(extrs)
+	for eCurrent := 0; eCurrent < eCount; eCurrent++ {
+		extr := extrs[eCurrent]
+		if extr.KeepInputRows {
 			continue
 		}
-		for next := current + 1; next < count; next++ {
-			currentParent := filepath.Dir(currentExtractor.ObjectPath)
-			followingParent := filepath.Dir(omoes[next].ObjectPath)
-			// fmt.Println("EF", current, currentExtractor.ObjectPath, currentParent, followingParent)
-			if currentParent == followingParent {
-				slog.Debug("wont be replaced", "extractor", currentExtractor.ObjectPath)
-				omoes[current].DontReplaceParentObjectRow = true
-			}
-			continue
+		if eCurrent == eCount {
+			// maybe not needed, also without allow the extr position to be independent insted to process sequentially
+			extr.KeepInputRows = false
+			break
+		}
+		eNext := eCurrent + 1
+		for next := eNext; next < eCount; next++ {
+			//TODO: Without it depends on manual input alone
+			// fmt.Println("fek", eCurrent, next)
 		}
 	}
 }
+
+// for current, currentExtractor := range omoes {
+// 	if current+1 > extractorsCount {
+// 		continue
+// 	}
+// 	for next := current + 1; next < extractorsCount; next++ {
+// 		currentParent := filepath.Dir(currentExtractor.ObjectPath)
+// 		followingParent := filepath.Dir(omoes[next].ObjectPath)
+// 		// fmt.Println("EF", current, currentExtractor.ObjectPath, currentParent, followingParent)
+// 		if currentParent == followingParent {
+// 			slog.Debug("wont be replaced", "extractor", currentExtractor.ObjectPath)
+// 			omoes[current].KeepInputRows = true
+// 		}
+// 		continue
+// 	}
+// }
 
 func GetLastPartOfObjectPath(path string) string {
 	return filepath.Base(path)

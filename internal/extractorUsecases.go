@@ -2,22 +2,42 @@ package internal
 
 var EXTproduction = OMextractors{
 	{
-		ObjectPath:   "*Hourly Rundown",
-		FieldsPath:   "/OM_HEADER/OM_FIELD",
-		FieldIDs:     []string{"8"},
-		FieldsPrefix: "HourlyR-HED",
+		ObjectPath:    "*Hourly Rundown",
+		FieldsPath:    "/OM_HEADER/OM_FIELD",
+		FieldIDs:      []string{"8"},
+		FieldsPrefix:  "HourlyR-HED",
+		KeepInputRows: false,
 	},
 	{
-		ObjectPath:   "*Sub Rundown",
-		FieldsPath:   "/OM_HEADER/OM_FIELD",
-		FieldIDs:     []string{"8", "1004", "1003", "1005", "321"},
-		FieldsPrefix: "SubR-HED",
+		ObjectPath:    "*Sub Rundown",
+		FieldsPath:    "/OM_HEADER/OM_FIELD",
+		FieldIDs:      []string{"8", "1004", "1003", "1005", "321"},
+		FieldsPrefix:  "SubR-HED",
+		KeepInputRows: true,
+		// KeepInputRows: false,
+	},
+	{
+		ObjectPath:    "*Radio Story",
+		FieldsPath:    "/OM_HEADER/OM_FIELD",
+		FieldIDs:      []string{"8", "1004", "1003", "1005", "321"},
+		FieldsPrefix:  "RStory-HED",
+		KeepInputRows: false,
 	},
 	// {
-	// ObjectPath:   "/*Radio Story",
+	// ObjectPath:   "Audioclip",
 	// FieldsPath:   "/OM_HEADER/OM_FIELD",
-	// FieldIDs:     []string{"8", "1004", "1003", "1005", "321"},
-	// FieldsPrefix: "Radio",
+	// FieldIDs:     []string{"8", "1005", "5082"},
+	// FieldsPrefix: "Aud-HED",
+	// KeepInputRows: true,
+	// KeepInputRows: false,
+	// },
+	// {
+	// ObjectPath: "/*Contact Item",
+	// FieldsPath: "/OM_HEADER/OM_FIELD",
+	// FieldIDs: []string{
+	// "421", "422", "423", "424", "5015", "5016", "5087", "5088"},
+	// FieldsPrefix:  "Contact-HED",
+	// KeepInputRows: false,
 	// },
 
 	// {
@@ -34,18 +54,6 @@ var EXTproduction = OMextractors{
 	// "1029", "1010", "1002", "321", "5079", "16", "5082", "5072", "5016"
 	// },
 	// FieldsPrefix: "Story-HED",
-	// },
-	// {
-	// ObjectPath:   "<OM_RECORD>/Contact Item",
-	// FieldsPath:   "/OM_HEADER/OM_FIELD",
-	// FieldIDs:     []string{"8"},
-	// FieldsPrefix: "Contact-HED",
-	// },
-	// {
-	// ObjectPath:   "*AudioClip",
-	// FieldsPath:   "/OM_HEADER/OM_FIELD",
-	// FieldIDs:     []string{"8"},
-	// FieldsPrefix: "SubR-HED",
 	// },
 }
 

@@ -17,36 +17,31 @@ func ExpandTableRows(table CSVtable, extr OMextractor) (CSVtable, error) {
 
 	var result CSVtable
 	// for i, parentRow := range table {
-	// table.
 	for i := range table {
 		slog.Debug("table length", "count", len(table))
 		subNodes := xmlquery.Find(table[i].Node, objquery)
-		// subNodes := xmlquery.Find(parentRow.Node, objquery)
 		subNodesCount := len(subNodes)
+
 		if subNodesCount == 0 {
-			// slog.Debug("no subnodes found", "row", i, "parentRow", parentRow.CSVrow)
 			slog.Debug("no subnodes found", "row", i, "parentRow", table[i].CSVrow)
-			// result = append(result, parentRow)
-			// result = append(result, table[i])
-			// fmt.Println("fek", result[0])
-			// continue
-			// return table, nil
+			continue
 		}
+
 		slog.Debug("subnodes found", "count", subNodesCount)
 		parentRowCopy := CSVrow{}
-		// maps.Copy(parentRowCopy, parentRow.CSVrow) // Deep copy must be used here or at least in function which takes it as parameter and wants to modify it.
-		maps.Copy(parentRowCopy, table[i].CSVrow) // Deep copy must be used here or at least in function which takes it as parameter and wants to modify it.
+		maps.Copy(parentRowCopy, table[i].CSVrow)
+		// Deep copy must be used here or at least in function which takes it as parameter and wants to modify it.
 		subRows := ExtractNodesFields(parentRowCopy, subNodes, extr)
-		if !extr.DontReplaceParentObjectRow {
-			slog.Debug("replacing previous row")
+
+		if extr.KeepInputRows {
 			result = append(result, subRows...)
-		}
-		if extr.DontReplaceParentObjectRow {
-			slog.Debug("appending after previos row")
-			result = append(result, subRows...)
-			// also append the previous row
+			slog.Debug("appendig also input row")
 			result = append(result, table[i])
-			// result = append(result, parentRow)
+		}
+
+		if !extr.KeepInputRows {
+			slog.Debug("replacing input row")
+			result = append(result, subRows...)
 		}
 	}
 	return result, nil

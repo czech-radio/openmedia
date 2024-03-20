@@ -2,6 +2,7 @@ package internal
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/antchfx/xmlquery"
@@ -68,12 +69,32 @@ func (row CSVrow) PrintToCSV(
 	partsFieldsPos CSVrowPartsFieldsPositions,
 	delim string,
 ) {
+	ok := FilterByHours(row)
+	if !ok {
+		return
+	}
 	for _, pos := range partsPos {
 		fieldsPos := partsFieldsPos[pos]
 		part := row[pos]
 		part.PrintToCSV(builder, fieldsPos, delim)
 	}
 	fmt.Fprintf(builder, "%s", "\n")
+}
+
+var hoursRegex = regexp.MustCompile("^13:00-14:00")
+
+func FilterByHours(row CSVrow) bool {
+	pos := "HourlyR-HED"
+	part, ok := row[pos]
+	if !ok {
+		return true
+	}
+	hours, ok := part["8"]
+	if !ok {
+		return true
+	}
+	ok = hoursRegex.MatchString(hours.Value)
+	return ok
 }
 
 func (part CSVrowPart) PrintToCSV(
