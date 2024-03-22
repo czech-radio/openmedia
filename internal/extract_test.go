@@ -19,16 +19,6 @@ func TestXmlQuery(t *testing.T) {
 	fmt.Println(res)
 }
 
-func TestQueryObject(t *testing.T) {
-	// ids := []string{"Rundown Name"}
-	name := "Hourly Rundown"
-	res, err := QueryObject(name)
-	if err != nil {
-		t.Error(err)
-	}
-	fmt.Println(res)
-}
-
 func TestGetLastPartOfObjectPath(t *testing.T) {
 	// Define test cases
 	testCases := []struct {

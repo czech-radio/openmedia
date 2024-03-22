@@ -9,11 +9,12 @@ var EXTproduction = OMextractors{
 		KeepInputRows:  false,
 	},
 	{
-		ObjectPath: "/*Sub Rundown",
-		FieldsPath: "/OM_HEADER/OM_FIELD",
+		ObjectPath:       "/*Sub Rundown",
+		ObjectAttrsNames: []string{"TemplateName"},
+		FieldsPath:       "/OM_HEADER/OM_FIELD",
 		FieldIDs: []string{
 			"8", "1004", "1003", "1005", "321"},
-		PartPrefixCode: FieldPrefix_Subhead,
+		PartPrefixCode: FieldPrefix_SubHead,
 		KeepInputRows:  true,
 	},
 	// {

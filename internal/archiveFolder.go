@@ -22,8 +22,7 @@ type PackageName string
 type ArchivePackage struct {
 	PackageName   PackageName
 	PackageReader *zip.ReadCloser
-	// PackageFiles  map[string]*zip.File
-	PackageFiles map[string]*ArchivePackageFile
+	PackageFiles  map[string]*ArchivePackageFile
 }
 
 type ArchiveFolderQuery struct {
@@ -36,7 +35,8 @@ type ArchiveFolderQuery struct {
 }
 
 func (af *ArchiveFolder) FolderListing(
-	rootDir string, recursive bool, filterRange [2]time.Time) error {
+	rootDir string, recursive bool,
+	filterRange [2]time.Time) error {
 	dirWalker := func(filePath string, file fs.DirEntry, err error) error {
 		slog.Info(filePath)
 		if err != nil {
@@ -57,11 +57,13 @@ func (af *ArchiveFolder) FolderListing(
 				af.InferEncoding(wtc)
 				ok, _ := ArchivePackageMatch(filePath, wtc, filterRange)
 				if !ok {
-					slog.Debug("package omitted", "package", filePath)
+					slog.Debug(
+						"package omitted", "package", filePath)
 					return nil
 				}
 				if ok {
-					slog.Debug("package matched", "package", filePath)
+					slog.Debug(
+						"package matched", "package", filePath)
 					packageName := PackageName(filePath)
 					af.PackagesNames = append(af.PackagesNames, packageName)
 				}
@@ -122,43 +124,3 @@ func (af *ArchiveFolder) FolderExtract(query *ArchiveFolderQuery) {
 		}
 	}
 }
-
-// func (af *ArchiveFolder) PackageFileExtractByParser(apf *ArchivePackageFile) error {
-// 	dr, err := ZipXmlFileDecodeData(apf.Reader, af.XMLencoding)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	var OM OPENMEDIA
-// 	err = xml.NewDecoder(dr).Decode(&OM)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	for _, i := range OM.OM_OBJECT.OM_RECORDS {
-// 		fmt.Println(i.OM_OBJECTS.Attrs)
-// 	}
-
-// 	return nil
-// }
-
-// func (af *ArchiveFolder) PackageFileExtractByXMLquery(zf *zip.File) error {
-// 	dataReader, err := ZipXmlFileDecodeData(zf, af.XMLencoding)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	node, err := xmlquery.Parse(dataReader)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	fmt.Println(node.Attr)
-// 	// templateName := "Radio Rundown"
-// 	// slog.Debug("filtering", "file", zf.Name)
-// 	// templateName := "Hourly Rundown"
-// 	// templateQuery := fmt.Sprintf("//OM_OBJECT[@TemplateName='%s']", templateName)
-// 	// templates := xmlquery.Find(node, templateQuery)
-// 	// fmt.Println(len(templates))
-// 	// err = ft.FilterObjectByTemplateName(doc, "Contact Item")
-// 	// if err != nil {
-// 	// return err
-// 	// }
-// 	return nil
-// }

@@ -8,8 +8,6 @@ import (
 )
 
 func ExpandTableRows(table CSVtable, extr OMextractor) (CSVtable, error) {
-	// objectType := GetLastPartOfObjectPath(extr.ObjectPath)
-	// objquery, err := QueryObject(objectType)
 	objquery := XMLqueryFromPath(extr.ObjectPath)
 	slog.Debug("object query", "query", objquery)
 
@@ -65,7 +63,32 @@ func ExtractNodesFields(
 }
 
 func NodeToCSVrowPart(node *xmlquery.Node, ext OMextractor) CSVrowPart {
-	var part CSVrowPart
+	fieldCount := len(ext.ObjectAttrsNames) + len(ext.FieldIDs)
+	part := make(CSVrowPart, fieldCount)
+	// Object attibutes
+	part = NodeGetAttributes(node, part, ext)
+	// Object FieldIDs
+	part = NodeGetFields(node, part, ext)
+	return part
+}
+
+func NodeGetAttributes(
+	node *xmlquery.Node, part CSVrowPart, ext OMextractor) CSVrowPart {
+	for _, attrName := range ext.ObjectAttrsNames {
+		attrVal, _ := GetFieldValueByName(node.Attr, attrName)
+		field := CSVrowField{
+			FieldID: attrName,
+			// FieldName: fieldName, // or send it to map[Prefix]map[FieldID]FieldName
+			Value: attrVal,
+		}
+		part[attrName] = field
+	}
+	return part
+}
+
+func NodeGetFields(
+	node *xmlquery.Node, part CSVrowPart, ext OMextractor) CSVrowPart {
+	// Object FieldIDs
 	attrQuery := XMLbuildAttrQuery("FieldID", ext.FieldIDs)
 	if attrQuery == "" {
 		return part //empty row
@@ -81,14 +104,13 @@ func NodeToCSVrowPart(node *xmlquery.Node, ext OMextractor) CSVrowPart {
 		slog.Error("no fields found")
 		return part
 	}
-	part = make(CSVrowPart, len(fields))
 	for _, f := range fields {
 		fieldID, _ := GetFieldValueByName(f.Attr, "FieldID")
-		fieldName, _ := GetFieldValueByName(f.Attr, "FieldID")
+		// fieldName, _ := GetFieldValueByName(f.Attr, "FieldID")
 		field := CSVrowField{
-			FieldID:   fieldID,
-			FieldName: fieldName, // or send it to map[Prefix]map[FieldID]FieldName
-			Value:     f.InnerText(),
+			FieldID: fieldID,
+			// FieldName: fieldName, // or send it to map[Prefix]map[FieldID]FieldName
+			Value: f.InnerText(),
 		}
 		part[fieldID] = field
 	}

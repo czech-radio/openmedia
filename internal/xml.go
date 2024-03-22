@@ -282,9 +282,6 @@ func XMLbuildAttrQuery(attrName string, ids []string) string {
 	if ids[0] == "*" {
 		return "/*"
 	}
-	// if ids[0] == "" {
-	// return attrName
-	// }
 	var expr strings.Builder
 	attrQuery := "@" + attrName + "='"
 	expr.WriteString("[")
@@ -311,9 +308,8 @@ func GetPathGlobPrefix(objectName string) (string, string) {
 	return objectName, pathPrefix
 }
 
-// /Radio Rundown/<OM_RECORD>/Hourly Rundown"
-
 func XMLqueryFromPath(path string) string {
+	// path: /Radio Rundown/<OM_RECORD>/Hourly Rundown"
 	var out strings.Builder
 	parts := strings.Split(path, "/")
 	for _, part := range parts {
@@ -333,30 +329,6 @@ func XMLqueryFromPath(path string) string {
 			&out, "%sOM_OBJECT%s", globPrefix, attrQuery)
 	}
 	return out.String()
-}
-
-func QueryObject(objectName string) (string, error) {
-	//ObjectName: <OM_RECORD>, "Radio Rundow"
-	var XMLobjectName string
-	var XMLattrValue string
-	var attrquery string
-	var pathPrefix string
-
-	// Check glob path
-	objectName, pathPrefix = GetPathGlobPrefix(objectName)
-	xmlTag, ok := OmTagStructureMap[objectName]
-	if ok {
-		XMLobjectName = xmlTag.XMLtagName
-	}
-	if !ok {
-		XMLobjectName = "OM_OBJECT"
-		XMLattrName := "TemplateName"
-		XMLattrValue = objectName
-		attrquery = XMLbuildAttrQuery(
-			XMLattrName, []string{XMLattrValue})
-	}
-	objquery := pathPrefix + XMLobjectName + attrquery
-	return objquery, nil
 }
 
 func XMLqueryFields(fieldsPath string, IDs []string) string {

@@ -13,11 +13,12 @@ type UniqueValues = map[string]int // value vs count
 type CSVrowFields = []CSVrowField
 
 type OMextractor struct {
-	ObjectPath     string
-	FieldsPath     string
-	FieldIDs       []string
-	PartPrefixCode PartPrefixCode
-	FieldsPrefix   string
+	ObjectPath       string
+	ObjectAttrsNames []string
+	FieldsPath       string
+	FieldIDs         []string
+	PartPrefixCode   PartPrefixCode
+	FieldsPrefix     string
 
 	// Internals
 	KeepInputRows bool
@@ -82,7 +83,6 @@ func (e *Extractor) ExtractTable() error {
 			return err
 		}
 		slog.Debug("extractor", "position", i, "objectPath", extr)
-		// e.PrintTableToCSV(true, "\t")
 	}
 	return nil
 }
@@ -90,6 +90,16 @@ func (e *Extractor) ExtractTable() error {
 func GetPartFieldsPositions(extr OMextractor) CSVrowPartFieldsPositions {
 	fieldsPositions := make(CSVrowPartFieldsPositions, 0, len(extr.FieldIDs))
 	prefix := PartsPrefixMapProduction[extr.PartPrefixCode].Internal
+	// Object Attributes
+	for _, attr := range extr.ObjectAttrsNames {
+		fp := FieldPosition{
+			FieldPrefix: prefix,
+			FieldID:     attr,
+			FieldName:   "",
+		}
+		fieldsPositions = append(fieldsPositions, fp)
+	}
+	// Object FieldsID
 	for _, fi := range extr.FieldIDs {
 		fp := FieldPosition{
 			FieldPrefix: prefix,
