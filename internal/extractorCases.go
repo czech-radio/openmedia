@@ -52,14 +52,14 @@ var EXTproduction = OMextractors{
 		// KeepInputRows:    false,
 		KeepInputRows: true,
 	},
-	// {
-	// ObjectPath:       "/*Radio Story",
-	// ObjectAttrsNames: []string{"TemplateName"},
-	// FieldsPath:       HeaderFieldPath,
-	// FieldIDs:         ProductionFieldsRadioStory,
-	// PartPrefixCode:   FieldPrefix_StoryHead,
-	// KeepInputRows:    false,
-	// },
+	{
+		ObjectPath:       "/<OM_RECORD>/Radio Story",
+		ObjectAttrsNames: []string{"TemplateName"},
+		FieldsPath:       HeaderFieldPath,
+		FieldIDs:         ProductionFieldsRadioStory,
+		PartPrefixCode:   FieldPrefix_StoryHead,
+		KeepInputRows:    false,
+	},
 	// {
 	// ObjectPath: "/*Audioclip",
 	// ObjectPath:    "/<OM_RECORD>/Contact Item",
