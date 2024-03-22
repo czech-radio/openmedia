@@ -11,7 +11,8 @@ Go_test_debug(){
   local path="${SCRIPT_DIR}/../${path}/..."
   local test_pattern
   test_pattern="${2:-''}"
-  GO_TEST_TYPE="manual" GOLOGLEVEL=-4 go test -v "$path" -run "$test_pattern"
+  test_opts="${3}"
+  GO_TEST_TYPE="manual" GOLOGLEVEL=-4 go test -v "$path" -run "$test_pattern" "${test_opts}"
 }
 
 Go_test_run(){

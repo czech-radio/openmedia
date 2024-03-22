@@ -5,8 +5,8 @@ import (
 	"regexp"
 )
 
-// var hoursRegex = regexp.MustCompile("^13:00-14:00")
-func (e *Extractor) FilterByPartAndFieldID(partCode PartPrefixCode, fieldID string, fieldValuePatern string) []int {
+func (e *Extractor) FilterByPartAndFieldID(
+	partCode PartPrefixCode, fieldID string, fieldValuePatern string) []int {
 	var res []int
 	re := regexp.MustCompile(fieldValuePatern)
 	partName := PartsPrefixMapProduction[partCode].Internal
@@ -35,7 +35,16 @@ func (e *Extractor) FilterByPartAndFieldID(partCode PartPrefixCode, fieldID stri
 	return res
 }
 
-func (e *Extractor) TransformPartFieldID(partCode PartPrefixCode, fieldID string, fieldValuePatern string) {
+func (e *Extractor) ComputeID(
+	// Z praktických důvodů bych poprosil o zavedení sloupce [ID] pro označení příspěvku. Půjde o kalkulované pole, které bude mít podobu
+	// "[stanice] / [datum] / [cas_zacatku] - [cas konce] / [nazev]".
+	// Story, 5081
+	// Story, 1004 -> datum
+	// Story, 1004 -> cas
+	// Story, 1003 -> cas
+	// Story, 8 Nazev
+
+	partCode PartPrefixCode, fieldID string, fieldValuePatern string) {
 }
 
 func TransformEmptyString(input string) string {

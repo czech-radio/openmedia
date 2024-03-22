@@ -2,8 +2,10 @@ package internal
 
 import (
 	"errors"
+	"flag"
 	"fmt"
 	"log/slog"
+	"maps"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -49,17 +51,24 @@ func CleanUp() (chan os.Signal, *sync.WaitGroup) {
 
 // TestMain setup, run tests, and tear down (cleanup after tests)
 func TestMain(m *testing.M) {
-	// TESTS SETUP
-
-	//// Setup logging
+	// setup logging
 	level := os.Getenv("GOLOGLEVEL")
-	SetLogLevel(level)
+	SetLogLevel(level, "json")
 
+	flag.Parse()
+	// Short test without setup
+	if testing.Short() == true {
+		TESTS_RESULT_CODE = m.Run()
+		return
+	}
+
+	// TESTS SETUP
 	//// Setup testing data
 	current_directory, err := os.Getwd()
 	if err != nil {
 		panic(err)
 	}
+
 	TEST_DATA_DIR_SRC = current_directory + "/../test/testdata"
 	TEMP_DIR = DirectoryCreateTemporaryOrPanic("openmedia_archive_test_")
 	DirectoryIsReadableOrPanic(TEST_DATA_DIR_SRC)
@@ -243,5 +252,41 @@ func TestDateRangesIntersection(t *testing.T) {
 				t.Errorf("expected intersect to be %t; got %v", tc.intersect, dateRange)
 			}
 		})
+	}
+}
+
+func TestMapCopy(t *testing.T) {
+	originalMap := map[string]map[string]string{
+		"key1": {"innerKey1": "value1", "innerKey2": "value2"},
+		"key2": {"innerKey3": "value3", "innerKey4": "value4"},
+	}
+	copiedMap := make(map[string]map[string]string)
+	maps.Copy(copiedMap, originalMap)
+	originalMap["key1"]["innerKey1"] = "ekk"
+	PrintMap(originalMap)
+	PrintMap(copiedMap)
+}
+
+func TestMapCopy2(t *testing.T) {
+	originalRow := CSVrow{
+		"PartA": {"field1": {"Ahoj", "Hello", "Hi"}},
+		"PartB": {"field1": {"Ahoj", "Hello", "Hi"}},
+	}
+	newRow := CopyRow(originalRow)
+	originalRow["PartA"]["field1"] = CSVrowField{
+		"Kek", "Mek", "sek"}
+	PrintRow(originalRow)
+	PrintRow(newRow)
+}
+
+func PrintRow(input CSVrow) {
+	for ai, a := range input {
+		fmt.Println(ai, a)
+	}
+}
+
+func PrintMap(input map[string]map[string]string) {
+	for ai, a := range input {
+		fmt.Println(ai, a)
 	}
 }

@@ -2,7 +2,6 @@ package internal
 
 import (
 	"log/slog"
-	"maps"
 
 	"github.com/antchfx/xmlquery"
 )
@@ -24,8 +23,9 @@ func ExpandTableRows(table CSVtable, extr OMextractor) (CSVtable, error) {
 		}
 
 		slog.Debug("subnodes found", "count", subNodesCount)
-		parentRowCopy := CSVrow{}
-		maps.Copy(parentRowCopy, table[i].CSVrow)
+		parentRowCopy := CopyRow(table[i].CSVrow)
+		// parentRowCopy := CSVrow{}
+		// maps.Copy(parentRowCopy, table[i].CSVrow)
 		// Deep copy must be used here or at least in function which takes it as parameter and wants to modify it.
 		subRows := ExtractNodesFields(parentRowCopy, subNodes, extr)
 		if extr.KeepInputRows {
@@ -42,6 +42,17 @@ func ExpandTableRows(table CSVtable, extr OMextractor) (CSVtable, error) {
 	return result, nil
 }
 
+func CopyRow(inputRow CSVrow) CSVrow {
+	newRow := make(CSVrow)
+	for ai, a := range inputRow {
+		newRow[ai] = make(CSVrowPart)
+		for bi, b := range a {
+			newRow[ai][bi] = b
+		}
+	}
+	return newRow
+}
+
 func ExtractNodesFields(
 	parentRow CSVrow,
 	subNodes []*xmlquery.Node,
@@ -50,8 +61,9 @@ func ExtractNodesFields(
 	var table CSVtable
 	prefix := PartsPrefixMapProduction[extr.PartPrefixCode].Internal
 	for _, subNode := range subNodes {
-		parentRowCopy := CSVrow{}
-		maps.Copy(parentRowCopy, parentRow)
+		// parentRowCopy := CSVrow{}
+		// maps.Copy(parentRowCopy, parentRow)
+		parentRowCopy := CopyRow(parentRow)
 		part := NodeToCSVrowPart(subNode, extr)
 		rowNode := CSVrowNode{}
 		rowNode.Node = subNode
@@ -78,7 +90,8 @@ func NodeGetAttributes(
 		attrVal, _ := GetFieldValueByName(node.Attr, attrName)
 		field := CSVrowField{
 			FieldID: attrName,
-			// FieldName: fieldName, // or send it to map[Prefix]map[FieldID]FieldName
+			// FieldName: fieldName,
+			// or send it to map[Prefix]map[FieldID]FieldName so it does not take memory
 			Value: attrVal,
 		}
 		part[attrName] = field
@@ -109,7 +122,8 @@ func NodeGetFields(
 		// fieldName, _ := GetFieldValueByName(f.Attr, "FieldID")
 		field := CSVrowField{
 			FieldID: fieldID,
-			// FieldName: fieldName, // or send it to map[Prefix]map[FieldID]FieldName
+			// FieldName: fieldName,
+			// or send it to map[Prefix]map[FieldID]FieldName
 			Value: f.InnerText(),
 		}
 		part[fieldID] = field
