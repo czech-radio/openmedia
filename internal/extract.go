@@ -8,11 +8,9 @@ import (
 )
 
 func ExpandTableRows(table CSVtable, extr OMextractor) (CSVtable, error) {
-	objectType := GetLastPartOfObjectPath(extr.ObjectPath)
-	objquery, err := QueryObject(objectType)
-	if err != nil {
-		return nil, err
-	}
+	// objectType := GetLastPartOfObjectPath(extr.ObjectPath)
+	// objquery, err := QueryObject(objectType)
+	objquery := XMLqueryFromPath(extr.ObjectPath)
 	slog.Debug("object query", "query", objquery)
 
 	var result CSVtable
@@ -32,7 +30,6 @@ func ExpandTableRows(table CSVtable, extr OMextractor) (CSVtable, error) {
 		maps.Copy(parentRowCopy, table[i].CSVrow)
 		// Deep copy must be used here or at least in function which takes it as parameter and wants to modify it.
 		subRows := ExtractNodesFields(parentRowCopy, subNodes, extr)
-
 		if extr.KeepInputRows {
 			result = append(result, subRows...)
 			slog.Debug("appendig also input row")
@@ -53,6 +50,7 @@ func ExtractNodesFields(
 	extr OMextractor,
 ) CSVtable {
 	var table CSVtable
+	prefix := PartsPrefixMapProduction[extr.PartPrefixCode].Internal
 	for _, subNode := range subNodes {
 		parentRowCopy := CSVrow{}
 		maps.Copy(parentRowCopy, parentRow)
@@ -60,7 +58,7 @@ func ExtractNodesFields(
 		rowNode := CSVrowNode{}
 		rowNode.Node = subNode
 		rowNode.CSVrow = parentRowCopy
-		rowNode.CSVrow[extr.FieldsPrefix] = part
+		rowNode.CSVrow[prefix] = part
 		table = append(table, &rowNode)
 	}
 	return table

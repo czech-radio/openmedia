@@ -13,13 +13,13 @@ type UniqueValues = map[string]int // value vs count
 type CSVrowFields = []CSVrowField
 
 type OMextractor struct {
-	ObjectPath   string
-	FieldsPath   string
-	FieldIDs     []string
-	FieldsPrefix string
+	ObjectPath     string
+	FieldsPath     string
+	FieldIDs       []string
+	PartPrefixCode PartPrefixCode
+	FieldsPrefix   string
 
 	// Internals
-	// KeepInputRows bool
 	KeepInputRows bool
 	FieldIDsMap   map[string]bool
 }
@@ -28,11 +28,13 @@ type OMextractors []OMextractor
 
 type Extractor struct {
 	OMextractors
-	CSVrowPartsPositions
 	CSVrowPartsFieldsPositions
-	CSVrowHeader string
-	CSVdelim     string
-	BaseNode     *xmlquery.Node
+	CSVrowPartsPositionsInternal
+	CSVrowPartsPositionsExternal
+	CSVheaderInternal string
+	CSVheaderExternal string
+	CSVdelim          string
+	BaseNode          *xmlquery.Node
 	CSVtable
 }
 
@@ -51,20 +53,23 @@ func (e *Extractor) Init(
 }
 
 func (e *Extractor) MapRowParts() {
-	extCount := len(e.OMextractors)
-	partsPos := make(CSVrowPartsPositions, extCount)
-	for i, extr := range e.OMextractors {
-		partsPos[i] = extr.FieldsPrefix
+	var prefixesInternal, prefixesExternal []string
+	for _, extr := range e.OMextractors {
+		prefix := PartsPrefixMapProduction[extr.PartPrefixCode]
+		prefixesInternal = append(prefixesInternal, prefix.Internal)
+		prefixesExternal = append(prefixesExternal, prefix.External)
 	}
-	e.CSVrowPartsPositions = partsPos
+	e.CSVrowPartsPositionsExternal = prefixesExternal
+	e.CSVrowPartsPositionsInternal = prefixesInternal
 }
 
 func (e *Extractor) MapRowPartsFieldsPositions() {
 	extCount := len(e.OMextractors)
 	partsPos := make(CSVrowPartsFieldsPositions, extCount)
 	for _, extr := range e.OMextractors {
+		prefix := PartsPrefixMapProduction[extr.PartPrefixCode]
 		fp := GetPartFieldsPositions(extr)
-		partsPos[extr.FieldsPrefix] = fp
+		partsPos[prefix.Internal] = fp
 	}
 	e.CSVrowPartsFieldsPositions = partsPos
 }
@@ -84,9 +89,10 @@ func (e *Extractor) ExtractTable() error {
 
 func GetPartFieldsPositions(extr OMextractor) CSVrowPartFieldsPositions {
 	fieldsPositions := make(CSVrowPartFieldsPositions, 0, len(extr.FieldIDs))
+	prefix := PartsPrefixMapProduction[extr.PartPrefixCode].Internal
 	for _, fi := range extr.FieldIDs {
 		fp := FieldPosition{
-			FieldPrefix: extr.FieldsPrefix,
+			FieldPrefix: prefix,
 			FieldID:     fi,
 			FieldName:   "",
 		}

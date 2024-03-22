@@ -20,6 +20,7 @@ type ArchiveFile struct {
 	RundownType string
 	FilePath    string
 	BaseNode    *xmlquery.Node
+	Extractor
 }
 
 func (af *ArchiveFile) Init(wt WorkerTypeCode, filePath string) error {
@@ -87,7 +88,7 @@ func (af *ArchiveFile) ExtractByXMLquery(extrs OMextractors) error {
 	if err != nil {
 		return err
 	}
-	extractor.PrintTableToCSV(true, csvDelim)
+	af.Extractor = extractor
 	return nil
 }
 
@@ -112,7 +113,7 @@ func (apf *ArchivePackageFile) ExtractByXMLquery(
 	if err != nil {
 		return err
 	}
-	extractor.PrintTableToCSV(true, csvDelim)
+	// extractor.PrintTableToCSV(true, csvDelim)
 	// PrintRowPayloads("RESULT", extractor.Rows)
 	return nil
 }

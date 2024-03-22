@@ -2,6 +2,7 @@ package internal
 
 import (
 	"fmt"
+	"log/slog"
 	"regexp"
 	"strings"
 
@@ -16,6 +17,8 @@ type FieldPosition struct {
 }
 type CSVrowPartFieldsPositions []FieldPosition                       // Field
 type CSVrowPartsPositions []string                                   // Part
+type CSVrowPartsPositionsInternal []string                           // Part
+type CSVrowPartsPositionsExternal []string                           // Part
 type CSVrowPartsFieldsPositions map[string]CSVrowPartFieldsPositions // Row: partname vs partFieldsPositions
 
 // Table fields values
@@ -34,28 +37,43 @@ type CSVtable []*CSVrowNode
 type CSVtables map[string]*CSVtable
 
 func (e *Extractor) CSVheaderCreate(delim string) {
-	var builder strings.Builder
-	for _, i := range e.CSVrowPartsPositions {
-		pfp := e.CSVrowPartsFieldsPositions[i]
-		for _, j := range pfp {
-			fmt.Fprintf(&builder, "%s_%s%s", j.FieldPrefix, j.FieldID, delim)
+	var internalBuilder strings.Builder
+	var externalBuilder strings.Builder
+	for _, extr := range e.OMextractors {
+		prefix := PartsPrefixMapProduction[extr.PartPrefixCode]
+		for _, fieldID := range extr.FieldIDs {
+			fmt.Fprintf(
+				&internalBuilder, "%s_%s%s",
+				prefix.Internal, fieldID, delim,
+			)
+			fieldName, ok := FieldsIDsNamesProduction[fieldID]
+			if !ok {
+				slog.Warn("fieldname for given fieldID not defined", "filedID", fieldID)
+			}
+			fmt.Fprintf(
+				&externalBuilder, "%s_%s%s",
+				prefix.External, fieldName, delim,
+			)
 		}
 	}
-	e.CSVrowHeader = builder.String()
+	e.CSVheaderInternal = internalBuilder.String()
+	e.CSVheaderExternal = externalBuilder.String()
 }
 
 func (e *Extractor) CSVheaderPrint() {
-	fmt.Println(e.CSVrowHeader)
+	fmt.Println(e.CSVheaderInternal)
+	fmt.Println(e.CSVheaderExternal)
 }
 
 func (e *Extractor) PrintTableToCSV(header bool, delim string) {
 	if header {
-		fmt.Println(e.CSVrowHeader)
+		e.CSVheaderPrint()
 	}
 	var sb strings.Builder
 	for _, row := range e.CSVtable {
 		row.PrintToCSV(
-			&sb, e.CSVrowPartsPositions,
+			// &sb, e.CSVrowPartsPositions,
+			&sb, e.CSVrowPartsPositionsInternal,
 			e.CSVrowPartsFieldsPositions,
 			delim,
 		)
@@ -65,7 +83,7 @@ func (e *Extractor) PrintTableToCSV(header bool, delim string) {
 
 func (row CSVrow) PrintToCSV(
 	builder *strings.Builder,
-	partsPos CSVrowPartsPositions,
+	partsPos []string,
 	partsFieldsPos CSVrowPartsFieldsPositions,
 	delim string,
 ) {
@@ -84,7 +102,7 @@ func (row CSVrow) PrintToCSV(
 var hoursRegex = regexp.MustCompile("^13:00-14:00")
 
 func FilterByHours(row CSVrow) bool {
-	pos := "HourlyR-HED"
+	pos := PartsPrefixMapProduction[FieldPrefix_HourlyHead].Internal
 	part, ok := row[pos]
 	if !ok {
 		return true
@@ -97,17 +115,27 @@ func FilterByHours(row CSVrow) bool {
 	return ok
 }
 
+func TransformEmptyString(input string) string {
+	if input == "" {
+		return "(NEUVEDENO)"
+	}
+	return input
+}
+
 func (part CSVrowPart) PrintToCSV(
 	builder *strings.Builder, fieldsPosition CSVrowPartFieldsPositions, delim string,
 ) {
-	var value string
 	for _, pos := range fieldsPosition {
 		field, ok := part[pos.FieldID]
 		if !ok {
-			value = "FID NOT FOUND"
-		} else {
-			value = EscapeCSVdelim(field.Value)
+			value := "(NELZE)"
+			fmt.Fprintf(builder, "%s%s", value, delim)
+			continue
 		}
+
+		value := strings.TrimSpace(field.Value)
+		value = TransformEmptyString(value)
+		value = EscapeCSVdelim(value)
 		fmt.Fprintf(builder, "%s%s", value, delim)
 	}
 }

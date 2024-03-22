@@ -319,8 +319,8 @@ func TraceFunction(depth int) (string, string, int) {
 }
 
 func EscapeCSVdelim(value string) string {
-	out := strings.TrimSpace(value)
-	out = strings.ReplaceAll(out, "\t", "\\t")
+	// out := strings.TrimSpace(value)
+	out := strings.ReplaceAll(value, "\t", "\\t")
 	out = strings.ReplaceAll(out, "\n", "\\n")
 	return out
 }
