@@ -17,7 +17,7 @@ func TestPartPrintToCSV(t *testing.T) {
 		{"KAK", "id_Sek", "Nevim"},
 		{"KAK", "id_Tak", "NoName"},
 	}
-	rowPart.PrintToCSV(&builder, partsPos, CSVdelim)
+	rowPart.PrintPartToCSV(&builder, partsPos, CSVdelim)
 	fmt.Println(builder.String())
 }
 
@@ -55,6 +55,6 @@ func TestRowPrintToCSV(t *testing.T) {
 		"A", "B",
 	}
 
-	row.PrintToCSV(&builder, partsPos, partsFieldsPos, CSVdelim)
+	row.PrintRowToCSV(&builder, partsPos, partsFieldsPos, CSVdelim)
 	fmt.Println(builder.String())
 }

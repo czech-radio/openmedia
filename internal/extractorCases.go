@@ -1,9 +1,44 @@
 package internal
 
+var ProductionFieldsSubRundown = []string{
+	"8",
+	"1004",
+	"1003",
+	"1005",
+	"321",
+}
+
+var ProductionFieldsRadioStory = []string{
+	"8",
+	"5081",
+	"1004",
+	"1003",
+	"1005",
+	"1035",
+	"1036",
+	"1029",
+	"1010",
+	"1002",
+	"321",
+	"5079",
+	"16",
+	"5082",
+	"5072",
+	"5016",
+	"5",
+	"6",
+	"12",
+	"5071",
+	"5070",
+}
+
+var HeaderFieldPath string = "/OM_HEADER/OM_FIELD"
+var RecordFieldPath string = "/OM_FIELD"
+
 var EXTproduction = OMextractors{
 	{
-		ObjectPath:     "*Hourly Rundown",
-		FieldsPath:     "/OM_HEADER/OM_FIELD",
+		ObjectPath:     "/*Hourly Rundown",
+		FieldsPath:     HeaderFieldPath,
 		FieldIDs:       []string{"8"},
 		PartPrefixCode: FieldPrefix_HourlyHead,
 		KeepInputRows:  false,
@@ -11,22 +46,22 @@ var EXTproduction = OMextractors{
 	{
 		ObjectPath:       "/*Sub Rundown",
 		ObjectAttrsNames: []string{"TemplateName"},
-		FieldsPath:       "/OM_HEADER/OM_FIELD",
-		FieldIDs: []string{
-			"8", "1004", "1003", "1005", "321"},
-		PartPrefixCode: FieldPrefix_SubHead,
-		KeepInputRows:  true,
+		FieldsPath:       HeaderFieldPath,
+		FieldIDs:         ProductionFieldsSubRundown,
+		PartPrefixCode:   FieldPrefix_SubHead,
+		// KeepInputRows:    false,
+		KeepInputRows: true,
 	},
 	// {
-	// ObjectPath: "/<OM_RECORD>/Radio Story",
-	// FieldsPath: "/OM_HEADER/OM_FIELD",
-	// FieldIDs: []string{
-	// "8", "1004", "1003", "1005", "321"},
-	// FieldsPrefix:  "Story-HED",
-	// KeepInputRows: false,
+	// ObjectPath:       "/*Radio Story",
+	// ObjectAttrsNames: []string{"TemplateName"},
+	// FieldsPath:       HeaderFieldPath,
+	// FieldIDs:         ProductionFieldsRadioStory,
+	// PartPrefixCode:   FieldPrefix_StoryHead,
+	// KeepInputRows:    false,
 	// },
 	// {
-	// ObjectPath: "/<OM_RECORD>/Audioclip",
+	// ObjectPath: "/*Audioclip",
 	// ObjectPath:    "/<OM_RECORD>/Contact Item",
 	// FieldsPath:    "/OM_HEADER/OM_FIELD",
 	// FieldIDs:      []string{"8", "1005", "5082"},

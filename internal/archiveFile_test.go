@@ -32,7 +32,6 @@ func TestXMLqueryFile(t *testing.T) {
 	subNodes := xmlquery.Find(af.BaseNode, query)
 	fmt.Println(len(subNodes))
 	subNodes[0].SelectAttr("TemplateName")
-	// xmlquery.Find()
 }
 
 func TestArchiveFileExtractByXMLquery(t *testing.T) {
@@ -43,9 +42,12 @@ func TestArchiveFileExtractByXMLquery(t *testing.T) {
 		t.Error(err.Error())
 	}
 	err = af.ExtractByXMLquery(EXTproduction)
-	// err = af.ExtractByXMLquery(EXTproductionRECandHED)
 	if err != nil {
 		t.Error(err.Error())
 	}
-	af.Extractor.PrintTableToCSV(true, "\t")
+	patern := "13:00-14:00"
+	rowIdx := af.Extractor.FilterByPartAndFieldID(
+		FieldPrefix_HourlyHead, "8", patern,
+	)
+	af.Extractor.PrintTableRowsToCSV(true, "\t", rowIdx)
 }

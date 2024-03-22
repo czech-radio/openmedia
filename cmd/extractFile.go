@@ -19,7 +19,7 @@ func RunExtractFile(rootCfg *ConfigRoot, filterCfg *ConfigExtract) {
 	if err != nil {
 		internal.Errors.ExitWithCode(err)
 	}
-	af.Extractor.PrintTableToCSV(true, "\t")
+	af.Extractor.PrintTableRowsToCSV(true, "\t")
 	// workerTypes := []internal.WorkerTypeCode{
 	// internal.WorkerTypeRundownXMLutf16le}
 	// archiveFile := internal.ArchiveFile{}

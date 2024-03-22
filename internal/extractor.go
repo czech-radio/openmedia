@@ -37,6 +37,7 @@ type Extractor struct {
 	CSVdelim          string
 	BaseNode          *xmlquery.Node
 	CSVtable
+	CSVrowsFiltered []int
 }
 
 func (e *Extractor) Init(
@@ -127,8 +128,9 @@ func (extrs OMextractors) KeepInputRowsChecker() {
 			continue
 		}
 		if eCurrent == eCount {
-			// maybe not needed, also without allow the extr position to be independent insted to process sequentially
-			extr.KeepInputRows = false
+			// NOTE
+			// maybe not needed, also without it allow the extr position to be independent insted to process sequentially
+			// extr.KeepInputRows = false
 			break
 		}
 		eNext := eCurrent + 1
@@ -138,22 +140,6 @@ func (extrs OMextractors) KeepInputRowsChecker() {
 		}
 	}
 }
-
-// for current, currentExtractor := range omoes {
-// 	if current+1 > extractorsCount {
-// 		continue
-// 	}
-// 	for next := current + 1; next < extractorsCount; next++ {
-// 		currentParent := filepath.Dir(currentExtractor.ObjectPath)
-// 		followingParent := filepath.Dir(omoes[next].ObjectPath)
-// 		// fmt.Println("EF", current, currentExtractor.ObjectPath, currentParent, followingParent)
-// 		if currentParent == followingParent {
-// 			slog.Debug("wont be replaced", "extractor", currentExtractor.ObjectPath)
-// 			omoes[current].KeepInputRows = true
-// 		}
-// 		continue
-// 	}
-// }
 
 func GetLastPartOfObjectPath(path string) string {
 	return filepath.Base(path)

@@ -67,4 +67,19 @@ var FieldsIDsNamesProduction = FieldsIDsNames{
 	"5015":         "Politická příslušnost",
 	"5087":         "CustomUniqueID2",
 	"5088":         "Gender",
+	"1035":         "Čas textu",
+}
+
+type CSVspecialValueCode int
+
+const (
+	CSVspecialValueEmptyString = iota
+	CSVspecialValueChildNotFound
+	CSVspecialValueParentNotFound
+)
+
+var CSVspecialValues = map[CSVspecialValueCode]string{
+	CSVspecialValueEmptyString:    "(NEUVEDENO",
+	CSVspecialValueChildNotFound:  "(NELZE)",
+	CSVspecialValueParentNotFound: "(NEOBSAHUJE)",
 }

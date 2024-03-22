@@ -3,7 +3,6 @@ package internal
 import (
 	"fmt"
 	"log/slog"
-	"regexp"
 	"strings"
 
 	"github.com/antchfx/xmlquery"
@@ -79,69 +78,66 @@ func (e *Extractor) CSVheaderPrint() {
 	fmt.Println(e.CSVheaderExternal)
 }
 
-func (e *Extractor) PrintTableToCSV(header bool, delim string) {
+func (e *Extractor) PrintTableRowsToCSV(
+	header bool, delim string, rowsIndexes ...[]int) {
+	var sb strings.Builder
+	// Print header
 	if header {
 		e.CSVheaderPrint()
 	}
-	var sb strings.Builder
+
+	if len(rowsIndexes) > 1 {
+		slog.Error("not implemented multiple indexes' slices")
+	}
+
+	// Print specified rows
+	if len(rowsIndexes) == 1 {
+		for _, index := range rowsIndexes[0] {
+			e.CSVtable[index].PrintRowToCSV(
+				&sb, e.CSVrowPartsPositionsInternal,
+				e.CSVrowPartsFieldsPositions,
+				delim,
+			)
+		}
+		fmt.Print(sb.String())
+		return
+	}
+
+	// Print whole table
 	for _, row := range e.CSVtable {
-		row.PrintToCSV(
+		row.PrintRowToCSV(
 			&sb, e.CSVrowPartsPositionsInternal,
 			e.CSVrowPartsFieldsPositions,
 			delim,
 		)
 	}
-	fmt.Println(sb.String())
+	fmt.Print(sb.String())
 }
 
-func (row CSVrow) PrintToCSV(
+func (row CSVrow) PrintRowToCSV(
 	builder *strings.Builder,
 	partsPos []string,
 	partsFieldsPos CSVrowPartsFieldsPositions,
 	delim string,
 ) {
-	ok := FilterByHours(row)
-	if !ok {
-		return
-	}
 	for _, pos := range partsPos {
 		fieldsPos := partsFieldsPos[pos]
 		part := row[pos]
-		part.PrintToCSV(builder, fieldsPos, delim)
+		part.PrintPartToCSV(builder, fieldsPos, delim)
 	}
 	fmt.Fprintf(builder, "%s", "\n")
 }
 
-var hoursRegex = regexp.MustCompile("^13:00-14:00")
-
-func FilterByHours(row CSVrow) bool {
-	pos := PartsPrefixMapProduction[FieldPrefix_HourlyHead].Internal
-	part, ok := row[pos]
-	if !ok {
-		return true
-	}
-	hours, ok := part["8"]
-	if !ok {
-		return true
-	}
-	ok = hoursRegex.MatchString(hours.Value)
-	return ok
-}
-
-func TransformEmptyString(input string) string {
-	if input == "" {
-		return "(NEUVEDENO)"
-	}
-	return input
-}
-
-func (part CSVrowPart) PrintToCSV(
-	builder *strings.Builder, fieldsPosition CSVrowPartFieldsPositions, delim string,
+func (part CSVrowPart) PrintPartToCSV(
+	builder *strings.Builder,
+	fieldsPosition CSVrowPartFieldsPositions,
+	delim string,
 ) {
+	specVal := CSVspecialValues[CSVspecialValueChildNotFound]
 	for _, pos := range fieldsPosition {
 		field, ok := part[pos.FieldID]
 		if !ok {
-			value := "(NELZE)"
+			value := specVal
 			fmt.Fprintf(builder, "%s%s", value, delim)
 			continue
 		}
