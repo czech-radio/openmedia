@@ -28,19 +28,28 @@ func ExpandTableRows(table CSVtable, extr OMextractor) (CSVtable, error) {
 		}
 
 		slog.Debug("subnodes found", "count", subNodesCount)
-		parentRowCopy := CopyRow(row.CSVrow)
+		// parentRowCopy := CopyRow(row.CSVrow)
 		// Deep copy must be used here or at least in function which takes it as parameter and wants to modify it.
 		// TODO: Try using CSVrowPart map[string]*CSVrowField insted of  map[string]CSVrowField. So the "copy of parent row" can be made parRow:=map[FieldID]&Field. Every row or its parts based on parent row will reference same value of common fields. So it can be changed/transformed globaly for whole table. Transforming operations must be done on whole column. If not the column will be contamineted and no furher global transform on column can be made easily without iterating over whole column. The pros of using field pointer is speed and less memory allocations.
-		subRows := ExtractNodesFields(parentRowCopy, subNodes, extr)
+		// subRows := ExtractNodesFields(parentRowCopy, subNodes, extr)
+		subRows := ExtractNodesFields(row, subNodes, extr)
+		if len(subRows.Rows) == 1 && extr.PreserveParentNode {
+			subRows.Rows[0].Node = row.Node
+			newTable.Rows = append(newTable.Rows, subRows.Rows[0])
+			continue
+		}
+
 		if extr.KeepInputRows {
 			newTable.Rows = append(newTable.Rows, subRows.Rows...)
 			slog.Debug("appendig also input row")
 			newTable.Rows = append(newTable.Rows, row)
+			continue
 		}
 
 		if !extr.KeepInputRows {
 			slog.Debug("replacing input row")
 			newTable.Rows = append(newTable.Rows, subRows.Rows...)
+			continue
 		}
 	}
 	return newTable, nil
@@ -58,16 +67,18 @@ func CopyRow(inputRow CSVrow) CSVrow {
 }
 
 func ExtractNodesFields(
-	parentRow CSVrow,
+	// parentRow CSVrow,
+	parentRow *CSVrowNode,
 	subNodes []*xmlquery.Node,
 	extr OMextractor,
 ) CSVtable {
 	var table CSVtable
 	prefix := PartsPrefixMapProduction[extr.PartPrefixCode].Internal
 	for _, subNode := range subNodes {
-		parentRowCopy := CopyRow(parentRow)
+		parentRowCopy := CopyRow(parentRow.CSVrow)
 		part := NodeToCSVrowPart(subNode, extr)
 		rowNode := CSVrowNode{}
+		rowNode.Node = subNode
 		rowNode.Node = subNode
 		rowNode.CSVrow = parentRowCopy
 		rowNode.CSVrow[prefix] = part

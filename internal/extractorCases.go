@@ -2,10 +2,10 @@ package internal
 
 var ProductionFieldsSubRundown = []string{
 	"8",
-	// "1004",
-	// "1003",
-	// "1005",
-	// "321",
+	"1004",
+	"1003",
+	"1005",
+	"321",
 }
 
 var ProductionFieldsRadioStory = []string{
@@ -49,32 +49,40 @@ var ProductionFieldsContactItems = []string{
 	// "5088",
 }
 
-var HeaderFieldPath string = "/OM_HEADER/OM_FIELD"
-var RecordFieldPath string = "/OM_FIELD"
-
 var EXTproduction = OMextractors{
 	{
 		ObjectPath:     "/*Hourly Rundown",
-		FieldsPath:     HeaderFieldPath,
+		FieldsPath:     TemplateHeaderFieldPath,
 		FieldIDs:       []string{"8"},
 		PartPrefixCode: FieldPrefix_HourlyHead,
 		KeepInputRows:  false,
 	},
+	// {
+	// ObjectPath: "/<OM_RECORD>",
+	// ObjectPath: "/<OM_READER>/<OM_HEADER>",
+	// ObjectAttrsNames: []string{"RecordID"},
+	// FieldIDs:         []string{"8"},
+	// PartPrefixCode:   FieldPrefix_HourlyRec,
+	// KeepInputRows:    false,
+	// },
 	{
-		ObjectPath:       "/<OM_RECORD>",
-		ObjectAttrsNames: []string{"RecordID"},
-		FieldsPath:       RecordFieldPath,
-		FieldIDs:         ProductionFieldsRadioStory,
-		PartPrefixCode:   FieldPrefix_StoryHead,
-		KeepInputRows:    false,
+		ObjectPath:         "/*Sub Rundown",
+		ObjectAttrsNames:   []string{"TemplateName"},
+		FieldsPath:         TemplateHeaderFieldPath,
+		FieldIDs:           ProductionFieldsSubRundown,
+		PartPrefixCode:     FieldPrefix_SubHead,
+		PreserveParentNode: true,
+		// KeepInputRows:    true,
 	},
 	{
-		ObjectPath:       "/Sub Rundown",
+		ObjectPath:       "/*Sub Rundown",
 		ObjectAttrsNames: []string{"TemplateName"},
-		FieldsPath:       HeaderFieldPath,
-		FieldIDs:         ProductionFieldsSubRundown,
-		PartPrefixCode:   FieldPrefix_SubHead,
-		KeepInputRows:    true,
+		FieldsPath:       TemplateHeaderFieldPath,
+		FieldIDs:         []string{"321"},
+		// PartPrefixCode:   FieldPrefix_StoryKategory,
+		PartPrefixCode: FieldPrefix_SubHead,
+		// PreserveParentNode: true,
+		// KeepInputRows:    true,
 	},
 	// {
 	// ObjectPath:       "/<OM_RECORD>/Radio Story",

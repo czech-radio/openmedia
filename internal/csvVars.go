@@ -15,6 +15,7 @@ const (
 	FieldPrefix_AudioClipRec
 	FieldPrefix_ContactItemHead
 	FieldPrefix_ContactItemRec
+	FieldPrefix_StoryKategory
 )
 
 type PartPrefix struct {
@@ -34,11 +35,13 @@ var PartsPrefixMapProduction = PartsPrefixMap{
 	FieldPrefix_AudioClipRec:    {"Audio-REC", "AUD"},
 	FieldPrefix_ContactItemHead: {"Contact-HED", "KON"},
 	FieldPrefix_ContactItemRec:  {"Contact-REC", "KON"},
+	FieldPrefix_StoryKategory:   {"Story-CAT", "Kategory"},
 }
 
 type FieldsIDsNames map[string]string
 
 var FieldsIDsNamesProduction = FieldsIDsNames{
+	"1":            "Čas vytvoření",
 	"TemplateName": "kategorie",
 	"8":            "Název",
 	"1004":         "Čas začátku",
@@ -79,7 +82,7 @@ const (
 )
 
 var CSVspecialValues = map[CSVspecialValueCode]string{
-	CSVspecialValueEmptyString:    "(NEUVEDENO",
+	CSVspecialValueEmptyString:    "(NEUVEDENO)",
 	CSVspecialValueChildNotFound:  "(NELZE)",
 	CSVspecialValueParentNotFound: "(NEOBSAHUJE)",
 }

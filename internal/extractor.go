@@ -21,8 +21,10 @@ type OMextractor struct {
 	FieldsPrefix     string
 
 	// Internals
-	KeepInputRows bool
-	FieldIDsMap   map[string]bool
+	KeepInputRows      bool
+	PreserveParentNode bool // Add fields to input row
+	KeepNilSubnodes    bool
+	FieldIDsMap        map[string]bool
 }
 
 type OMextractors []OMextractor
@@ -53,6 +55,7 @@ func (e *Extractor) Init(
 	e.MapRowPartsFieldsPositions()
 	e.CreateTablesHeader(CSVdelim)
 	e.OMextractors.KeepInputRowsChecker()
+	e.OMextractors.MapFieldsPath()
 	e.CSVtable.Rows = []*CSVrowNode{{baseNode, CSVrow{}}}
 }
 
@@ -73,7 +76,8 @@ func (e *Extractor) MapRowPartsFieldsPositions() {
 	for _, extr := range e.OMextractors {
 		prefix := PartsPrefixMapProduction[extr.PartPrefixCode]
 		fp := GetPartFieldsPositions(extr)
-		partsPos[prefix.Internal] = fp
+		// partsPos[prefix.Internal] = fp
+		partsPos[prefix.Internal] = append(partsPos[prefix.Internal], fp...)
 	}
 	e.CSVrowPartsFieldsPositions = partsPos
 }
@@ -139,6 +143,21 @@ func (extrs OMextractors) KeepInputRowsChecker() {
 		for next := eNext; next < eCount; next++ {
 			//TODO: Without it depends on manual input alone
 			// fmt.Println("fek", eCurrent, next)
+		}
+	}
+}
+
+func (extrs OMextractors) MapFieldsPath() {
+	for i, extr := range extrs {
+		objectName := GetObjectNameFromPath(extr.ObjectPath)
+		if extr.FieldsPath == "" {
+			tag, ok := OmTagStructureMap[objectName]
+			if ok {
+				extrs[i].FieldsPath = tag.FieldsPath
+			}
+			if !ok && len(extr.FieldIDs) > 0 {
+				panic("fields path not given from which to extract")
+			}
 		}
 	}
 }

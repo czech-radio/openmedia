@@ -13,5 +13,5 @@ func TestExtractorInit(t *testing.T) {
 	fmt.Println("partsFieldsPos", ex.CSVrowPartsFieldsPositions)
 	fmt.Println("fieldsHeaderInternal", ex.CSVheaderInternal)
 	fmt.Println("fieldsHeaderExternal", ex.CSVheaderExternal)
-	fmt.Println("extractores", ex.OMextractors)
+	fmt.Printf("extractores: %+v\n", ex.OMextractors)
 }

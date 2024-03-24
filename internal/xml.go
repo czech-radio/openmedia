@@ -308,6 +308,15 @@ func GetPathGlobPrefix(objectName string) (string, string) {
 	return objectName, pathPrefix
 }
 
+func GetObjectNameFromPath(path string) string {
+	parts := strings.Split(path, "/")
+	if len(parts) == 0 {
+		return ""
+	}
+	objectName, _ := GetPathGlobPrefix(parts[len(parts)-1])
+	return objectName
+}
+
 func XMLqueryFromPath(path string) string {
 	// path: /Radio Rundown/<OM_RECORD>/Hourly Rundown"
 	var out strings.Builder
