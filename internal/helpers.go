@@ -434,3 +434,15 @@ func PrintRows(rows map[int]CSVrowFields) {
 func JoinObjectPath(oldpath, newpath string) string {
 	return oldpath + "/" + newpath
 }
+
+func PrintRow(input CSVrow) {
+	for ai, a := range input {
+		fmt.Println(ai, a)
+	}
+}
+
+func PrintMap(input map[string]map[string]string) {
+	for ai, a := range input {
+		fmt.Println(ai, a)
+	}
+}

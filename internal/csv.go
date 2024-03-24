@@ -3,6 +3,8 @@ package internal
 import (
 	"fmt"
 	"log/slog"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/antchfx/xmlquery"
@@ -32,10 +34,28 @@ type CSVrowNode struct {
 	Node *xmlquery.Node
 	CSVrow
 }
-type CSVtable []*CSVrowNode
-type CSVtables map[string]*CSVtable
+type CSVtable struct {
+	Rows    []*CSVrowNode
+	Headers []string
+	// HeaderInternal    string
+	// HeaderExternal    string
+	CSVrowsFiltered   []int
+	RowPartsPositions []string
+	CSVrowPartsFieldsPositions
 
-func (e *Extractor) CSVheaderCreate(delim string) {
+	CSVwriterLocal *strings.Builder
+	DstFilePath    string
+	SrcFilePath    string
+}
+
+type CSVtables struct {
+	TablesPositions map[int]string
+	Tables          map[string]*CSVtable // fileName:CSVtable
+	CSVwriterGlobal *strings.Builder
+	DstFileGlobal   *os.File
+}
+
+func (e *Extractor) CreateTablesHeader(delim string) {
 	var internalBuilder strings.Builder
 	var externalBuilder strings.Builder
 	for _, extr := range e.OMextractors {
@@ -47,7 +67,10 @@ func (e *Extractor) CSVheaderCreate(delim string) {
 			)
 			attrName, ok := FieldsIDsNamesProduction[attr]
 			if !ok {
-				slog.Warn("fieldname for given attribute not defined", "attribute", attr)
+				slog.Warn(
+					"fieldname for given attribute not defined",
+					"attribute", attr,
+				)
 			}
 			fmt.Fprintf(
 				&externalBuilder, "%s_%s%s",
@@ -73,48 +96,130 @@ func (e *Extractor) CSVheaderCreate(delim string) {
 	e.CSVheaderExternal = externalBuilder.String()
 }
 
-func (e *Extractor) CSVheaderPrint() {
-	fmt.Println(e.CSVheaderInternal)
-	fmt.Println(e.CSVheaderExternal)
+func (e *Extractor) CastTablesToCSV(
+	header bool, delim string, separateTables bool) {
+	if !separateTables {
+		e.CSVwriterGlobal = new(strings.Builder)
+	}
+	// Header write global
+	if !separateTables && header {
+		e.CSVwriterGlobal.WriteString(e.CSVheaderInternal)
+		e.CSVwriterGlobal.WriteString(e.CSVheaderExternal)
+	}
+
+	for i, table := range e.Tables {
+		if separateTables && header {
+			table.CastTableToCSV(header, delim)
+		}
+		table.CastTableToCSV(header, delim)
+		slog.Debug(
+			"casting table to CSV", "current", i, "count", len(e.Tables))
+	}
 }
 
-func (e *Extractor) PrintTableRowsToCSV(
+func (e *Extractor) SaveTablesToFile(
+	separateTables bool, dstFilePath string) error {
+	if !separateTables {
+		outputFile, err := os.OpenFile(dstFilePath, os.O_RDWR|os.O_CREATE, 0600)
+		if err != nil {
+			return err
+		}
+		defer outputFile.Close()
+		n, err := outputFile.WriteString(e.CSVwriterGlobal.String())
+		if err != nil {
+			return err
+		}
+		slog.Debug("writen bytes to one file", "filename", dstFilePath, "bytesCount", n)
+		return nil
+	}
+	current := 0
+	bytesCountCumulative := 0
+	for i, table := range e.Tables {
+		current++
+		dstFilePath := ConstructDstFilePath(table.SrcFilePath)
+		outputFile, err := os.OpenFile(dstFilePath, os.O_RDWR|os.O_CREATE, 0600)
+		if err != nil {
+			return err
+		}
+		n, err := outputFile.WriteString(table.CSVwriterLocal.String())
+		if err != nil {
+			return err
+		}
+		sequnece := fmt.Sprintf("%d/%d", current, len(e.Tables))
+		slog.Debug(
+			"writen bytes to file in sequence", "sequence", sequnece,
+			"filename", dstFilePath,
+			"srcFile", i, "bytesCount", n,
+		)
+
+	}
+	slog.Debug("finished writing files in sequence",
+		"bytesCount", bytesCountCumulative,
+		"filesCount", len(e.Tables))
+	return nil
+}
+
+func ConstructDstFilePath(srcPath string) string {
+	srcDir, name := filepath.Split(srcPath)
+	return filepath.Join(srcDir, "export"+name+"csv")
+}
+
+func (table *CSVtable) SaveTableToFile(dstFilePath string) (int, error) {
+	outputFile, err := os.OpenFile(dstFilePath, os.O_RDWR|os.O_CREATE, 0600)
+	if err != nil {
+		return 0, err
+	}
+	defer outputFile.Close()
+	return outputFile.WriteString(table.CSVwriterLocal.String())
+}
+
+func (table *CSVtable) CastTableToCSV(
 	header bool, delim string, rowsIndexes ...[]int) {
-	var sb strings.Builder
 	// Print header
 	if header {
-		e.CSVheaderPrint()
+		table.CastHeaderToCSV(table.Headers...)
 	}
 
 	if len(rowsIndexes) > 1 {
 		slog.Error("not implemented multiple indexes' slices")
 	}
+	var count int
 
 	// Print specified rows
 	if len(rowsIndexes) == 1 {
 		for _, index := range rowsIndexes[0] {
-			e.CSVtable[index].PrintRowToCSV(
-				&sb, e.CSVrowPartsPositionsInternal,
-				e.CSVrowPartsFieldsPositions,
+			table.Rows[index].CastToCSV(
+				table.CSVwriterLocal, table.RowPartsPositions,
+				table.CSVrowPartsFieldsPositions,
 				delim,
 			)
+			count++
 		}
-		fmt.Print(sb.String())
+		slog.Debug("lines casted to CSV", "count", count)
 		return
 	}
 
 	// Print whole table
-	for _, row := range e.CSVtable {
-		row.PrintRowToCSV(
-			&sb, e.CSVrowPartsPositionsInternal,
-			e.CSVrowPartsFieldsPositions,
+	for _, row := range table.Rows {
+		row.CastToCSV(
+			table.CSVwriterLocal, table.RowPartsPositions,
+			table.CSVrowPartsFieldsPositions,
 			delim,
 		)
+		count++
 	}
-	fmt.Print(sb.String())
+	slog.Debug("lines casted to CSV", "count", count)
 }
 
-func (row CSVrow) PrintRowToCSV(
+func (table *CSVtable) CastHeaderToCSV(headers ...string) {
+	for _, header := range headers {
+		if header != "" {
+			table.CSVwriterLocal.WriteString(header)
+		}
+	}
+}
+
+func (row CSVrow) CastToCSV(
 	builder *strings.Builder,
 	partsPos []string,
 	partsFieldsPos CSVrowPartsFieldsPositions,
@@ -123,12 +228,12 @@ func (row CSVrow) PrintRowToCSV(
 	for _, pos := range partsPos {
 		fieldsPos := partsFieldsPos[pos]
 		part := row[pos]
-		part.PrintPartToCSV(builder, fieldsPos, delim)
+		part.CastToCSV(builder, fieldsPos, delim)
 	}
 	fmt.Fprintf(builder, "%s", "\n")
 }
 
-func (part CSVrowPart) PrintPartToCSV(
+func (part CSVrowPart) CastToCSV(
 	builder *strings.Builder,
 	fieldsPosition CSVrowPartFieldsPositions,
 	delim string,

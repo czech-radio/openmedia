@@ -278,15 +278,3 @@ func TestMapCopy2(t *testing.T) {
 	PrintRow(originalRow)
 	PrintRow(newRow)
 }
-
-func PrintRow(input CSVrow) {
-	for ai, a := range input {
-		fmt.Println(ai, a)
-	}
-}
-
-func PrintMap(input map[string]map[string]string) {
-	for ai, a := range input {
-		fmt.Println(ai, a)
-	}
-}

@@ -14,7 +14,7 @@ func TestXMLqueryFile(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	query := "OM_OBJECT[@TemplateName='Radio Rundown']/OM_RECORD/OM_OBJECT[@TemplateName='Hourly Rundown']/OM_RECORD/OM_OBJECT[@TemplateName='Radio Story']"
+	// query := "OM_OBJECT[@TemplateName='Radio Rundown']/OM_RECORD/OM_OBJECT[@TemplateName='Hourly Rundown']/OM_RECORD/OM_OBJECT[@TemplateName='Radio Story']"
 	// pat := "*<OM_RECORD>"
 	// pat := "Radio Rundown"
 	// query := "OM_OBJECT[@TemplateName='Radio Rundown']/OM_RECORD/OM_OBJECT[@TemplateName='Hourly Rundown']/OM_RECORD/OM_OBJECT[@TemplateName='Radio Story']"
@@ -29,9 +29,15 @@ func TestXMLqueryFile(t *testing.T) {
 	// if err != nil {
 	// t.Error(err.Error())
 	// }
-	subNodes := xmlquery.Find(af.BaseNode, query)
-	fmt.Println(len(subNodes))
-	subNodes[0].SelectAttr("TemplateName")
+	queries := map[string]string{
+		"story":   "//OM_OBJECT[@TemplateName='Radio Story']",  // 130
+		"audio":   "//OM_OBJECT[@TemplateName='Audioclip']",    // 84
+		"contact": "//OM_OBJECT[@TemplateName='Contact Item']", // 66
+	}
+	for i, q := range queries {
+		subNodes := xmlquery.Find(af.BaseNode, q)
+		fmt.Println(i, q, len(subNodes))
+	}
 }
 
 func TestArchiveFileExtractByXMLquery(t *testing.T) {

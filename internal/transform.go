@@ -10,7 +10,7 @@ func (e *Extractor) FilterByPartAndFieldID(
 	var res []int
 	re := regexp.MustCompile(fieldValuePatern)
 	partName := PartsPrefixMapProduction[partCode].Internal
-	for i, row := range e.CSVtable {
+	for i, row := range e.CSVtable.Rows {
 		part, ok := row.CSVrow[partName]
 		if !ok {
 			slog.Debug(

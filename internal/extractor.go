@@ -35,9 +35,11 @@ type Extractor struct {
 	CSVheaderInternal string
 	CSVheaderExternal string
 	CSVdelim          string
-	BaseNode          *xmlquery.Node
+
+	BaseNode *xmlquery.Node
 	CSVtable
 	CSVrowsFiltered []int
+	CSVtables
 }
 
 func (e *Extractor) Init(
@@ -49,9 +51,9 @@ func (e *Extractor) Init(
 	e.BaseNode = baseNode
 	e.MapRowParts()
 	e.MapRowPartsFieldsPositions()
-	e.CSVheaderCreate(CSVdelim)
+	e.CreateTablesHeader(CSVdelim)
 	e.OMextractors.KeepInputRowsChecker()
-	e.CSVtable = []*CSVrowNode{{baseNode, CSVrow{}}}
+	e.CSVtable.Rows = []*CSVrowNode{{baseNode, CSVrow{}}}
 }
 
 func (e *Extractor) MapRowParts() {
