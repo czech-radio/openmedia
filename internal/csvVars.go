@@ -16,6 +16,7 @@ const (
 	FieldPrefix_ContactItemHead
 	FieldPrefix_ContactItemRec
 	FieldPrefix_StoryKategory
+	FieldPrefix_Record
 )
 
 type PartPrefix struct {
@@ -36,6 +37,7 @@ var PartsPrefixMapProduction = PartsPrefixMap{
 	FieldPrefix_ContactItemHead: {"Contact-HED", "KON"},
 	FieldPrefix_ContactItemRec:  {"Contact-REC", "KON"},
 	FieldPrefix_StoryKategory:   {"Story-CAT", "Kategory"},
+	// FieldPrefix_Record:          {"RID", "RID"},
 }
 
 type FieldsIDsNames map[string]string
@@ -43,6 +45,7 @@ type FieldsIDsNames map[string]string
 var FieldsIDsNamesProduction = FieldsIDsNames{
 	"1":            "Čas vytvoření",
 	"TemplateName": "kategorie",
+	"RecordID":     "RID",
 	"8":            "Název",
 	"1004":         "Čas začátku",
 	"1003":         "Čas konce",
@@ -109,7 +112,7 @@ var RadioCodes = RadioCodesMap{
 		"0134ce01-8684-3556-b568-f208392ac0bd"},
 	"19": {"WA-Wave", "19", "radiowave", "Radio Wave",
 		"6ab28be7-cdc8-3222-bd6e-c229553125fb"},
-	"21": {"RJ-Rádio Junior", "21", "radiojunior", "Rádio Junioru",
+	"21": {"RJ-Rádio Junior", "21", "radiojunior", "Rádio Junior",
 		"598a62af-86b5-3485-b89d-65379562694a"},
 	"23": {"ZV-Radio Prague International", "23", "cro7", "Radio Prague Int.",
 		"6731e7ee-98e7-36c3-993b-3122ad1317d1"},

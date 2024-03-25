@@ -21,10 +21,10 @@ type OMextractor struct {
 	FieldsPrefix     string
 
 	// Internals
-	KeepInputRows      bool
-	PreserveParentNode bool // Add fields to input row
-	KeepNilSubnodes    bool
-	FieldIDsMap        map[string]bool
+	KeepInputRow         bool
+	PreserveParentNode   bool // Add fields to input row
+	KeepWhenZeroSubnodes bool
+	FieldIDsMap          map[string]bool
 }
 
 type OMextractors []OMextractor
@@ -130,7 +130,7 @@ func (extrs OMextractors) KeepInputRowsChecker() {
 	eCount := len(extrs)
 	for eCurrent := 0; eCurrent < eCount; eCurrent++ {
 		extr := extrs[eCurrent]
-		if extr.KeepInputRows {
+		if extr.KeepInputRow {
 			continue
 		}
 		if eCurrent == eCount {

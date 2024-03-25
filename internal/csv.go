@@ -49,7 +49,7 @@ type CSVtable struct {
 }
 
 type CSVtables struct {
-	TablesPositions map[int]string
+	TablesPositions map[int]string       // pos:fileName
 	Tables          map[string]*CSVtable // fileName:CSVtable
 	CSVwriterGlobal *strings.Builder
 	DstFileGlobal   *os.File
@@ -161,7 +161,7 @@ func (e *Extractor) SaveTablesToFile(
 
 func ConstructDstFilePath(srcPath string) string {
 	srcDir, name := filepath.Split(srcPath)
-	return filepath.Join(srcDir, "export"+name+"csv")
+	return filepath.Join(srcDir, "export"+name+".csv")
 }
 
 func (table *CSVtable) SaveTableToFile(dstFilePath string) (int, error) {

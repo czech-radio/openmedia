@@ -1,0 +1,62 @@
+package internal
+
+var EXTproductionWithRecords = OMextractors{
+	{
+		ObjectPath:     "/*Hourly Rundown",
+		FieldsPath:     TemplateHeaderFieldPath,
+		FieldIDs:       []string{"8"},
+		PartPrefixCode: FieldPrefix_HourlyHead,
+		KeepInputRow:   false,
+	},
+	{
+		ObjectPath:       "/<OM_RECORD>",
+		FieldsPath:       TemplateRecordFieldPath,
+		ObjectAttrsNames: []string{"RecordID"},
+		// FieldIDs:         []string{"8"},
+		PartPrefixCode: FieldPrefix_HourlyRec,
+		KeepInputRow:   false,
+	},
+	{
+		ObjectPath:       "/Sub Rundown",
+		ObjectAttrsNames: []string{"TemplateName"},
+		FieldsPath:       TemplateHeaderFieldPath,
+		FieldIDs:         ProductionFieldsSubRundown,
+		PartPrefixCode:   FieldPrefix_SubHead,
+		// KeepInputRow:     true,
+		PreserveParentNode:   true,
+		KeepWhenZeroSubnodes: true,
+	},
+	{
+		ObjectPath:           "/Sub Rundown/<OM_RECORD>",
+		FieldsPath:           TemplateRecordFieldPath,
+		ObjectAttrsNames:     []string{"RecordID"},
+		PartPrefixCode:       FieldPrefix_SubRec,
+		KeepWhenZeroSubnodes: true,
+	},
+	{
+		ObjectPath:     "/Radio Story",
+		FieldsPath:     TemplateHeaderFieldPath,
+		PartPrefixCode: FieldPrefix_StoryHead,
+		FieldIDs:       []string{"8"},
+		// KeepWhenZeroSubnodes: true,
+	},
+	{
+		ObjectPath:       "/<OM_RECORD>",
+		FieldsPath:       TemplateRecordFieldPath,
+		ObjectAttrsNames: []string{"RecordID"},
+		PartPrefixCode:   FieldPrefix_StoryRec,
+		// FieldIDs:             []string{"8"},
+		KeepWhenZeroSubnodes: true,
+	},
+}
+
+//"/Radio Rundown",
+//"/Radio Rundown/<OM_RECORD>",
+//"/Radio Rundown/<OM_RECORD>/Hourly Rundown",
+//"/Radio Rundown/<OM_RECORD>/Hourly Rundown/<OM_RECORD>",
+//"/Radio Rundown/<OM_RECORD>/Hourly Rundown/<OM_RECORD>/Sub Rundown",
+//"/Radio Rundown/<OM_RECORD>/Hourly Rundown/<OM_RECORD>/Sub Rundown/<OM_RECORD>",
+//"/Radio Rundown/<OM_RECORD>/Hourly Rundown/<OM_RECORD>/Sub Rundown/<OM_RECORD>/Radio Story",
+//"/Radio Rundown/<OM_RECORD>/Hourly Rundown/<OM_RECORD>/Sub Rundown/<OM_RECORD>/Radio Story/<OM_RECORD>",
+//"/Radio Rundown/<OM_RECORD>/Hourly Rundown/<OM_RECORD>/Sub Rundown/<OM_RECORD>/Radio Story",
+//"/Radio Rundown/<OM_RECORD>/Hourly Rundown/<OM_RECORD>/Radio Story/Contact Item",
