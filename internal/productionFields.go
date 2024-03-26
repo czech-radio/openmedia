@@ -13,6 +13,7 @@ var ProductionFieldsSubRundown = []string{
 var ProductionFieldsRadioStory = []string{
 	"8",
 	"5081",
+	"datum",
 	"1004",
 	"1003",
 	"1005",

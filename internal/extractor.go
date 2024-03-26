@@ -59,6 +59,9 @@ func (e *Extractor) Init(
 	e.CSVtable.Rows = []*CSVrowNode{{baseNode, CSVrow{}}}
 }
 
+func (e *Extractor) NewTable() {
+}
+
 func (e *Extractor) MapRowParts() {
 	var prefixesInternal, prefixesExternal []string
 	for _, extr := range e.OMextractors {
@@ -84,6 +87,10 @@ func (e *Extractor) MapRowPartsFieldsPositions() {
 
 func (e *Extractor) ExtractTable() error {
 	for i, extr := range e.OMextractors {
+		if extr.ObjectPath == "" {
+			slog.Warn("extractor not extracted", "cause", "empty object")
+			continue
+		}
 		rows, err := ExpandTableRows(e.CSVtable, extr) // : maybe wrong
 		e.CSVtable = rows
 		if err != nil {
@@ -149,6 +156,9 @@ func (extrs OMextractors) KeepInputRowsChecker() {
 
 func (extrs OMextractors) MapFieldsPath() {
 	for i, extr := range extrs {
+		if extr.ObjectPath == "" {
+			continue
+		}
 		objectName := GetObjectNameFromPath(extr.ObjectPath)
 		if extr.FieldsPath == "" {
 			tag, ok := OmTagStructureMap[objectName]

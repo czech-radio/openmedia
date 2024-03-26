@@ -7,6 +7,7 @@ import (
 
 var TemplateHeaderFieldPath string = "/OM_HEADER/OM_FIELD"
 var TemplateRecordFieldPath string = "/OM_FIELD"
+var TemplateNoFields string = ""
 
 type XMLomTagStructure struct {
 	XMLtagName   string

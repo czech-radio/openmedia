@@ -72,6 +72,17 @@ func (af *ArchiveFile) ExtractByXMLquery(extrs OMextractors) error {
 	return nil
 }
 
+func (af *ArchiveFile) ExtractByXMLqueryB(extractor *Extractor) error {
+	// Extract specfied object fields
+	extractor.Init(af.BaseNode, extractor.OMextractors, CSVdelim)
+	err := extractor.ExtractTable()
+	if err != nil {
+		return err
+	}
+	// af.Extractor = extractor
+	return nil
+}
+
 func (apf *ArchivePackageFile) ExtractByXMLquery(
 	enc FileEncodingNumber, q *ArchiveFolderQuery) error {
 	var err error

@@ -36,7 +36,8 @@ var EXTproduction = OMextractors{
 		ObjectPath:     "/Radio Story",
 		FieldsPath:     TemplateHeaderFieldPath,
 		PartPrefixCode: FieldPrefix_StoryHead,
-		FieldIDs:       []string{"8"},
+		// FieldIDs:       []string{"8"},
+		FieldIDs: ProductionFieldsRadioStory,
 		// KeepWhenZeroSubnodes: true,
 	},
 	{
@@ -52,7 +53,7 @@ var EXTproduction = OMextractors{
 		FieldsPath:       TemplateHeaderFieldPath,
 		// FieldIDs:             ProductionSimpleTest,
 		FieldIDs:             ProductionFieldsAudio,
-		PartPrefixCode:       FieldPrefix_AudioClipRec,
+		PartPrefixCode:       FieldPrefix_AudioClipHead,
 		KeepWhenZeroSubnodes: true,
 		PreserveParentNode:   true,
 	},
@@ -65,5 +66,9 @@ var EXTproduction = OMextractors{
 		PartPrefixCode:       FieldPrefix_ContactItemHead,
 		KeepWhenZeroSubnodes: true,
 		PreserveParentNode:   true,
+	},
+	{
+		PartPrefixCode: FieldPrefix_ComputedID,
+		FieldIDs:       []string{"ID"},
 	},
 }

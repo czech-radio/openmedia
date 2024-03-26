@@ -17,6 +17,7 @@ const (
 	FieldPrefix_ContactItemRec
 	FieldPrefix_StoryKategory
 	FieldPrefix_Record
+	FieldPrefix_ComputedID
 )
 
 type PartPrefix struct {
@@ -37,12 +38,47 @@ var PartsPrefixMapProduction = PartsPrefixMap{
 	FieldPrefix_ContactItemHead: {"Contact-HED", "KON"},
 	FieldPrefix_ContactItemRec:  {"Contact-REC", "KON"},
 	FieldPrefix_StoryKategory:   {"Story-CAT", "Kategory"},
-	// FieldPrefix_Record:          {"RID", "RID"},
+	FieldPrefix_ComputedID:      {"Computed-ID", "ID"},
 }
 
 type FieldsIDsNames map[string]string
 
 var FieldsIDsNamesProduction = FieldsIDsNames{
+	"1":            "cas_vytvoreni",
+	"TemplateName": "kategorie",
+	"RecordID":     "RID",
+	"datum":        "datum",
+	"8":            "nazev",
+	"1004":         "cas_zacatku",
+	"1003":         "cas_konce",
+	"1005":         "stopaz",
+	"321":          "format",
+	"5081":         "stanice",
+	"1036":         "audio_stopaz",
+	"1029":         "korekce",
+	"1010":         "spoctena stopaz",
+	"1002":         "planovana stopaz",
+	"5079":         "cil_vyroby",
+	"16":           "druh",
+	"5082":         "itemcode",
+	"5072":         "incode",
+	"5016":         "tema",
+	"5":            "vytvoril",
+	"6":            "autor",
+	"12":           "redakce",
+	"5071":         "schvalil_stanice",
+	"5070":         "Schvalil_redakce",
+	"421":          "jmeno",
+	"422":          "prijmeni",
+	"423":          "spolecnost",
+	"424":          "funkce",
+	"5015":         "strana",
+	"5087":         "ID",
+	"5088":         "pohlavi",
+	"1035":         "cas_textu",
+}
+
+var FieldsIDsNamesProduction2 = FieldsIDsNames{
 	"1":            "Čas vytvoření",
 	"TemplateName": "kategorie",
 	"RecordID":     "RID",
@@ -147,4 +183,10 @@ var RadioCodes = RadioCodesMap{
 	"75": {"REGIONY-NOC", "75", "", "", ""},
 	"25": {"SP-RŽ Sport", "25", "", "", ""},
 	"27": {"PO-Pohoda", "27", "", "", ""},
+}
+
+var GenderCodes = map[string]string{
+	"0": "(NEUTR-0)",
+	"1": "Male",
+	"2": "Female",
 }
