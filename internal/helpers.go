@@ -446,3 +446,19 @@ func PrintMap(input map[string]map[string]string) {
 		fmt.Println(ai, a)
 	}
 }
+
+func ListDirFiles(dir string) ([]string, error) {
+	files := []string{}
+	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if !info.IsDir() {
+			// If it's a file, print its path
+			files = append(files, path)
+		}
+		return nil
+	})
+
+	return files, err
+}

@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github/czech-radio/openmedia-archive/internal"
+	"log/slog"
 )
 
 type ConfigExtractFolder struct {
@@ -11,21 +12,20 @@ type ConfigExtractFolder struct {
 }
 
 func RunExtractFolder(rootCfg *ConfigRoot, filterCfg *ConfigExtractFolder) {
-	files := []string{"/home/jk/CRO/CRO_BASE/openmedia-archive_backup/Archive/control/control_UTF16_RD_13-17_Plus_Tuesday_W01_2024_01_02.xml"}
-
-	extractor := internal.Extractor{}
-	delim := "\t"
-	extractor.Init(nil, internal.EXTproduction, delim)
-	for _, filePath := range files {
-		af := internal.ArchiveFile{}
-		err := af.Init(
-			internal.WorkerTypeRundownXMLutf16le, filePath)
-		if err != nil {
-			internal.Errors.ExitWithCode(err)
-		}
-		err = af.ExtractByXMLqueryB(&extractor)
-		if err != nil {
-			internal.Errors.ExitWithCode(err)
+	// folder := "/home/jk/CRO/CRO_BASE/openmedia-archive_backup/Archive/conrol_brezen/Vysocina"
+	// folder := "/home/jk/CRO/CRO_BASE/openmedia-archive_backup/Archive/conrol_brezen/Radiozur"
+	// folder := "/home/jk/CRO/CRO_BASE/openmedia-archive_backup/Archive/conrol_brezen/Dvojka"
+	folder := "/home/jk/CRO/CRO_BASE/openmedia-archive_backup/Archive/conrol_brezen/Plus"
+	files, err := internal.ListDirFiles(folder)
+	if err != nil {
+		slog.Error(err.Error())
+		return
+	}
+	header := true
+	for i, f := range files {
+		internal.ExtractProductionVer1(f, header)
+		if i == 0 {
+			header = false
 		}
 	}
 }

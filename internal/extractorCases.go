@@ -9,9 +9,8 @@ var EXTproduction = OMextractors{
 		KeepInputRow:   false,
 	},
 	{
-		ObjectPath: "/<OM_RECORD>",
-		FieldsPath: TemplateRecordFieldPath,
-		// ObjectAttrsNames: []string{"RecordID"},
+		ObjectPath:       "/<OM_RECORD>",
+		ObjectAttrsNames: []string{"RecordID"},
 		// FieldIDs:         []string{"8"},
 		PartPrefixCode: FieldPrefix_HourlyRec,
 		KeepInputRow:   false,
@@ -27,7 +26,6 @@ var EXTproduction = OMextractors{
 	},
 	{
 		ObjectPath: "/Sub Rundown/<OM_RECORD>",
-		FieldsPath: TemplateRecordFieldPath,
 		// ObjectAttrsNames:     []string{"RecordID"},
 		PartPrefixCode:       FieldPrefix_SubRec,
 		KeepWhenZeroSubnodes: true,
@@ -42,7 +40,6 @@ var EXTproduction = OMextractors{
 	},
 	{
 		ObjectPath: "/<OM_RECORD>",
-		FieldsPath: TemplateRecordFieldPath,
 		// ObjectAttrsNames:     []string{"RecordID"},
 		PartPrefixCode:       FieldPrefix_StoryRec,
 		KeepWhenZeroSubnodes: true,

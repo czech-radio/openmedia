@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log/slog"
 	"regexp"
+	"strconv"
 	"time"
 )
 
@@ -51,6 +52,30 @@ func GetGenderName(genderCode string) (string, error) {
 		return "", fmt.Errorf("unknown gender code: %s", genderCode)
 	}
 	return gender, nil
+}
+
+func TransformStopaz(stopaz string) (string, error) {
+	milliseconds, err := strconv.ParseInt(stopaz, 10, 64)
+	// milisint, err := strconv.Atoi(stopaz)
+	if err != nil {
+		return "", err
+	}
+	duration := time.Duration(milliseconds) * time.Millisecond
+	hours := int(duration.Hours())
+	minutes := int(duration.Minutes()) % 60
+	seconds := int(duration.Seconds()) % 60
+
+	remainingMilliseconds := milliseconds - (int64(hours)*3600000 + int64(minutes)*60000 + int64(seconds)*1000)
+	// mils := int64(milisint)
+	// hours := mils / (60 * 60 * 1000)
+	// minutes := (mils % (60 * 60) / 1000)
+	// secs := mils / 1000
+	// ms:=mils %%1000
+	// value := fmt.Sprintf("")
+	// t := time.UnixMilli(int64(milis))
+	value := fmt.Sprintf(
+		"%02d:%02d:%02d,%03d", hours, minutes, seconds, remainingMilliseconds)
+	return value, nil
 }
 
 func (e *Extractor) TransformField(
@@ -160,7 +185,8 @@ func (row CSVrow) ConstructID() string {
 	// Story, 1003 -> cas
 	// Story, 8 Nazev
 	stanice := part["5081"].Value
-	datum := part["1004"].Value
+	// datum := part["1004"].Value
+	datum := part["datum"].Value
 	// cas := part["1004"]
 	nazev := part["8"].Value
 	zacatek := part["1004"].Value

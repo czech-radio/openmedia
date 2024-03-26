@@ -78,7 +78,7 @@ var FieldsIDsNamesProduction = FieldsIDsNames{
 	"1035":         "cas_textu",
 }
 
-var FieldsIDsNamesProduction2 = FieldsIDsNames{
+var FieldsIDsNamesProductionLong = FieldsIDsNames{
 	"1":            "Čas vytvoření",
 	"TemplateName": "kategorie",
 	"RecordID":     "RID",
