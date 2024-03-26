@@ -18,6 +18,7 @@ const (
 	FieldPrefix_StoryKategory
 	FieldPrefix_Record
 	FieldPrefix_ComputedID
+	FieldPrefix_ComputedKategory
 )
 
 type PartPrefix struct {
@@ -27,23 +28,25 @@ type PartPrefix struct {
 type PartsPrefixMap = map[PartPrefixCode]PartPrefix
 
 var PartsPrefixMapProduction = PartsPrefixMap{
-	FieldPrefix_HourlyHead:      {"Hourly-HED", "blok"},
-	FieldPrefix_HourlyRec:       {"Hourly-REC", "blok"},
-	FieldPrefix_SubHead:         {"Sub-HED", "SP"},
-	FieldPrefix_SubRec:          {"Sub-REC", "SP"},
-	FieldPrefix_StoryHead:       {"Story-HED", "P"},
-	FieldPrefix_StoryRec:        {"Story-REC", "P"},
-	FieldPrefix_AudioClipHead:   {"Audio-HED", "AUD"},
-	FieldPrefix_AudioClipRec:    {"Audio-REC", "AUD"},
-	FieldPrefix_ContactItemHead: {"Contact-HED", "KON"},
-	FieldPrefix_ContactItemRec:  {"Contact-REC", "KON"},
-	FieldPrefix_StoryKategory:   {"Story-CAT", "Kategory"},
-	FieldPrefix_ComputedID:      {"Computed-ID", "ID"},
+	FieldPrefix_HourlyHead:       {"Hourly-HED", "blok"},
+	FieldPrefix_HourlyRec:        {"Hourly-REC", "blok"},
+	FieldPrefix_SubHead:          {"Sub-HED", "SP"},
+	FieldPrefix_SubRec:           {"Sub-REC", "SP"},
+	FieldPrefix_StoryHead:        {"Story-HED", "P"},
+	FieldPrefix_StoryRec:         {"Story-REC", "P"},
+	FieldPrefix_AudioClipHead:    {"Audio-HED", "AUD"},
+	FieldPrefix_AudioClipRec:     {"Audio-REC", "AUD"},
+	FieldPrefix_ContactItemHead:  {"Contact-HED", "KON"},
+	FieldPrefix_ContactItemRec:   {"Contact-REC", "KON"},
+	FieldPrefix_StoryKategory:    {"Story-Cat", "Kategory"},
+	FieldPrefix_ComputedID:       {"Comp-ID", "ID"},
+	FieldPrefix_ComputedKategory: {"Comp-Cat", "kategory"},
 }
 
 type FieldsIDsNames map[string]string
 
 var FieldsIDsNamesProduction = FieldsIDsNames{
+	"kategory":     "kategory",
 	"1":            "cas_vytvoreni",
 	"TemplateName": "kategorie",
 	"RecordID":     "RID",

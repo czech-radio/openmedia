@@ -120,6 +120,43 @@ func GetPartAndField(
 	return part, field, ok
 }
 
+func (e *Extractor) ComputeKategory() {
+	// Comp-Cat_katergory	Audio-HED_TemplateName
+	// kategory_	AUD_kategorie
+	for i, row := range e.CSVtable.Rows {
+		_, srcField, _ := GetPartAndField(
+			row.CSVrow, FieldPrefix_AudioClipHead, "TemplateName")
+		if srcField.Value == "" {
+			_, srcField, _ = GetPartAndField(
+				row.CSVrow, FieldPrefix_ContactItemHead, "TemplateName")
+		}
+		if srcField.Value == "" {
+			continue
+		}
+		dstField := CSVrowField{}
+		dstField.Value = srcField.Value
+		dstField.FieldID = "kategory"
+		dstPart := make(CSVrowPart)
+		dstPart["kategory"] = dstField
+		partName := PartsPrefixMapProduction[FieldPrefix_ComputedKategory].Internal
+		e.CSVtable.Rows[i].CSVrow[partName] = dstPart
+	}
+}
+
+func (e *Extractor) RemoveColumn(fieldPrefix PartPrefixCode, fieldID string) {
+	var newPos CSVrowPartFieldsPositions
+	partPrefixName := PartsPrefixMapProduction[fieldPrefix].Internal
+	positions := e.CSVrowPartsFieldsPositions[partPrefixName]
+	for _, pos := range positions {
+		if pos.FieldID == fieldID {
+			continue
+		}
+		newPos = append(newPos, pos)
+	}
+	e.CSVrowPartsFieldsPositions[partPrefixName] = newPos
+	// e.CreateTablesHeader()
+}
+
 func (e *Extractor) TransformDateToTime(
 	prefixCode PartPrefixCode, fieldID string, addDate bool) {
 	for _, row := range e.CSVtable.Rows {

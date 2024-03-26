@@ -45,6 +45,10 @@ var EXTproduction = OMextractors{
 		KeepWhenZeroSubnodes: true,
 	},
 	{
+		PartPrefixCode: FieldPrefix_ComputedKategory,
+		FieldIDs:       []string{"kategory"},
+	},
+	{
 		ObjectPath:       "/Audioclip",
 		ObjectAttrsNames: []string{"TemplateName"},
 		FieldsPath:       TemplateHeaderFieldPath,

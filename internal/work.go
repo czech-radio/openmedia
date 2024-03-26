@@ -52,6 +52,11 @@ func ExtractProductionVer1(filePath string, header bool) {
 		"1005", TransformStopaz)
 
 	af.ComputeID()
+	af.ComputeKategory()
+	af.RemoveColumn(
+		FieldPrefix_ContactItemHead, "TemplateName")
+	af.RemoveColumn(
+		FieldPrefix_AudioClipHead, "TemplateName")
 
 	// FILTER ROWS
 	// rowsIDx := af.Extractor.FilterByPartAndFieldID(internal.FieldPrefix_HourlyHead, "8", "13:00-14:00")
