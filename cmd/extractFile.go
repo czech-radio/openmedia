@@ -33,10 +33,10 @@ func RunExtractFile(rootCfg *ConfigRoot, filterCfg *ConfigExtractFile) {
 		internal.FieldPrefix_ContactItemHead,
 		"5088", internal.GetGenderName)
 
-	af.TransformDateToTime(internal.FieldPrefix_SubHead, "1004")
-	af.TransformDateToTime(internal.FieldPrefix_SubHead, "1003")
-	af.TransformDateToTime(internal.FieldPrefix_StoryHead, "1004")
-	af.TransformDateToTime(internal.FieldPrefix_StoryHead, "1003")
+	af.TransformDateToTime(internal.FieldPrefix_SubHead, "1004", false)
+	af.TransformDateToTime(internal.FieldPrefix_SubHead, "1003", false)
+	af.TransformDateToTime(internal.FieldPrefix_StoryHead, "1004", true)
+	af.TransformDateToTime(internal.FieldPrefix_StoryHead, "1003", false)
 	af.ComputeID()
 
 	af.Extractor.PrintTableRowsToCSV(true, "\t", rowsIDx)

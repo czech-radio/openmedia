@@ -96,7 +96,7 @@ func GetPartAndField(
 }
 
 func (e *Extractor) TransformDateToTime(
-	prefixCode PartPrefixCode, fieldID string) {
+	prefixCode PartPrefixCode, fieldID string, addDate bool) {
 	for _, row := range e.CSVtable.Rows {
 		part, field, ok := GetPartAndField(
 			row.CSVrow, prefixCode, fieldID)
@@ -111,9 +111,13 @@ func (e *Extractor) TransformDateToTime(
 		field.Value = fmt.Sprintf(
 			"%02d:%02d:%02d", date.Hour(), date.Minute(), date.Second())
 		part[fieldID] = field
-	}
 
-	// e.CSVtable.Rows[i].CSVrow[partName][fieldID] = field
+		datestr := fmt.Sprintf("%02d.%02d.%04d", date.Day(), date.Month(), date.Year())
+		if addDate {
+			field.Value = datestr
+			part["datum"] = field
+		}
+	}
 }
 
 func ParseXMLdate(input string) (time.Time, error) {
