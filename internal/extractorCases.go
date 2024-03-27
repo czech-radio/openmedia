@@ -44,6 +44,10 @@ var EXTeuroVolbyRID = OMextractors{
 		PartPrefixCode:       FieldPrefix_StoryRec,
 		KeepWhenZeroSubnodes: true,
 	},
+	{
+		PartPrefixCode: FieldPrefix_ComputedID,
+		FieldIDs:       []string{"ID"},
+	},
 }
 
 var EXTeuroVolby = OMextractors{
@@ -84,6 +88,10 @@ var EXTeuroVolby = OMextractors{
 		FieldIDs: ProductionFieldsRadioStory,
 		// KeepWhenZeroSubnodes: true,
 	},
+	{
+		PartPrefixCode: FieldPrefix_ComputedID,
+		FieldIDs:       []string{"ID"},
+	},
 	// {
 	// ObjectPath:           "/<OM_RECORD>",
 	// ObjectAttrsNames:     []string{"RecordID"},
@@ -92,7 +100,7 @@ var EXTeuroVolby = OMextractors{
 	// },
 }
 
-var EXTproductionAudioContacts = OMextractors{
+var EXTproduction = OMextractors{
 	{
 		ObjectPath:     "/*Hourly Rundown",
 		FieldsPath:     TemplateHeaderFieldPath,

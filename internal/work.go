@@ -61,7 +61,7 @@ func ExtractProductionVer1(filePath string, header bool) {
 	if err != nil {
 		Errors.ExitWithCode(err)
 	}
-	err = af.ExtractByXMLquery(EXTproductionAudioContacts)
+	err = af.ExtractByXMLquery(EXTproduction)
 	if err != nil {
 		Errors.ExitWithCode(err)
 	}

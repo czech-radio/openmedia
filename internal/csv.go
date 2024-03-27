@@ -114,26 +114,6 @@ func (e *Extractor) CreateTablesHeader(delim string) {
 			}
 			headerName := BuildHeaderNameExternal(extr.PartPrefixCode, fieldName)
 			fmt.Fprintf(&externalBuilder, "%s%s", headerName, delim)
-			// switch extr.PartPrefixCode {
-			// case FieldPrefix_StoryRec, FieldPrefix_StoryHead:
-			// 	// Jenonm nazev
-			// 	fmt.Fprintf(
-			// 		&externalBuilder, "%s%s",
-			// 		fieldName, delim,
-			// 	)
-			// case FieldPrefix_HourlyHead, FieldPrefix_HourlyRec:
-			// 	// Jenom prefix
-			// 	fmt.Fprintf(
-			// 		&externalBuilder, "%s%s",
-			// 		prefix.External, delim,
-			// 	)
-			// default:
-			// 	// Nazev+prefix
-			// 	fmt.Fprintf(
-			// 		&externalBuilder, "%s_%s%s",
-			// 		fieldName, prefix.External, delim,
-			// 	)
-			// }
 		}
 	}
 	e.CSVheaderInternal = internalBuilder.String()

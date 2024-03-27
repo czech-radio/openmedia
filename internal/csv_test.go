@@ -61,6 +61,6 @@ func TestPartPrintToCSV(t *testing.T) {
 
 func TestCreateTablesHeaderB(t *testing.T) {
 	extractor := new(Extractor)
-	extractor.Init(nil, EXTproductionAudioContacts, CSVdelim)
+	extractor.Init(nil, EXTproduction, CSVdelim)
 	extractor.CreateTablesHeaderB(CSVdelim)
 }

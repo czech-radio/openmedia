@@ -86,6 +86,7 @@ var FieldsIDsNamesProduction = FieldsIDsNames{
 	"5087":         "ID",
 	"5088":         "pohlavi",
 	"1035":         "cas_textu",
+	"ID":           "compID",
 }
 
 var FieldsIDsNamesProductionLong = FieldsIDsNames{

@@ -127,23 +127,27 @@ func ArchivePackageFileMatch(nestedFileName string, q *ArchiveFolderQuery) (bool
 	meta, err := ArchivePackageFilenameParse(nestedFileName)
 	if err != nil {
 		slog.Debug(
-			"filename match filename", "filename", nestedFileName, "matched", false)
+			"filename match filename", "filename", nestedFileName,
+			"matched", false)
 		return false, err
 	}
 	if len(q.RadioNames) > 0 && !q.RadioNames[meta.RadioName] {
 		slog.Debug(
-			"filename match radioname", "filename", nestedFileName, "matched", false)
+			"filename match radioname", "filename", nestedFileName,
+			"matched", false)
 		return false, nil
 	}
 	if len(q.WeekDays) > 0 && !q.WeekDays[meta.WeekDay] {
 		slog.Debug(
-			"filename match weekdays", "filename", nestedFileName, "matched", false)
+			"filename match weekdays", "filename", nestedFileName,
+			"matched", false)
 		return false, nil
 	}
 	_, ok := DateRangesIntersection(q.DateRange, meta.DateRange)
 	if !ok {
-		slog.Debug(
-			"filename match daterange", "filename", nestedFileName, "matched", false)
+		slog.Warn(
+			"filename match daterange", "filename", nestedFileName,
+			"matched", false)
 		return false, nil
 	}
 
@@ -166,11 +170,15 @@ func PackageMap(packageName PackageName, q *ArchiveFolderQuery) (
 		}
 		if !ok {
 			slog.Debug(
-				"package no_match", "package", packageName, "file", fr.Name, "query", q.DateRange, "matched", false)
+				"package no_match", "package", packageName,
+				"file", fr.Name, "query", q.DateRange,
+				"matched", false)
 			continue
 		}
 		slog.Debug(
-			"package matched", "package", packageName, "file", fr.Name, "query", q.DateRange, "matched", true)
+			"package matched", "package", packageName,
+			"file", fr.Name, "query", q.DateRange,
+			"matched", true)
 		ap.PackageName = packageName
 		ap.PackageReader = zipr
 		apf := ArchivePackageFile{}
@@ -180,6 +188,7 @@ func PackageMap(packageName PackageName, q *ArchiveFolderQuery) (
 	}
 	count += len(ap.PackageFiles)
 	slog.Warn(
-		"filenames in all packages", "count", count, "matched", true)
+		"filenames in all packages", "count", count,
+		"matched", true)
 	return &ap, count, nil
 }

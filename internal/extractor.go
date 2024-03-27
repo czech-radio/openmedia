@@ -89,7 +89,7 @@ func (e *Extractor) MapRowPartsFieldsPositions() {
 func (e *Extractor) ExtractTable() error {
 	for i, extr := range e.OMextractors {
 		if extr.ObjectPath == "" {
-			slog.Warn("extractor not extracted", "cause", "empty object")
+			slog.Debug("extractor not extracted", "cause", "empty object")
 			continue
 		}
 		rows, err := ExpandTableRows(e.CSVtable, extr) // : maybe wrong

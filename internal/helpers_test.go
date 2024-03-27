@@ -267,6 +267,19 @@ func TestMapCopy(t *testing.T) {
 	PrintMap(copiedMap)
 }
 
+func TestCzechDateToUTC(t *testing.T) {
+	from, err := CzechDateToUTC(2024, 3, 4, 0)
+	if err != nil {
+		t.Error(err)
+	}
+	to, err := CzechDateToUTC(2024, 3, 5, 0)
+	if err != nil {
+		t.Error(err)
+	}
+	fmt.Println(from)
+	fmt.Println(to)
+}
+
 // func TestMapCopy2(t *testing.T) {
 // originalRow := CSVrow{
 // "PartA": {"field1": {"Ahoj", "Hello", "Hi"}},

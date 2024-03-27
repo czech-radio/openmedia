@@ -40,7 +40,7 @@ func (af *ArchiveFolder) FolderListing(
 	rootDir string, recursive bool,
 	filterRange [2]time.Time) error {
 	dirWalker := func(filePath string, file fs.DirEntry, err error) error {
-		slog.Info(filePath)
+		slog.Debug(filePath)
 		if err != nil {
 			return err
 		}
@@ -131,7 +131,7 @@ func (af *ArchiveFolder) FolderExtract(query *ArchiveFolderQuery) {
 				slog.Error(err.Error())
 			}
 			query.PrintHeader = false
-			break
+			// break
 		}
 	}
 }

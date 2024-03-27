@@ -27,12 +27,15 @@ func RunExtract(rootCfg *ConfigRoot, filterCfg *ConfigExtract) {
 		PackageTypes: workerTypes,
 	}
 
-	// dateFrom := time.Date(2024, 2, 1, 13, 0, 0, 1, internal.ArchiveTimeZone)
-	// dateTo := time.Date(2024, 2, 1, 14, 0, 0, 0, internal.ArchiveTimeZone)
-	// filterRange := [2]time.Time{dateFrom, dateTo}
-	dateFrom := time.Date(2024, 3, 1, 0, 0, 0, 1, internal.ArchiveTimeZone)
-	// dateTo := time.Date(2024, 3, 31, 0, 0, 0, 0, internal.ArchiveTimeZone)
-	dateTo := time.Date(2024, 3, 2, 0, 0, 0, 0, internal.ArchiveTimeZone)
+	dateFrom, err := internal.CzechDateToUTC(2024, 3, 4, 0)
+	if err != nil {
+		internal.Errors.ExitWithCode(err)
+	}
+	dateTo, err := internal.CzechDateToUTC(2024, 3, 5, 0)
+	if err != nil {
+		internal.Errors.ExitWithCode(err)
+	}
+
 	filterRange := [2]time.Time{dateFrom, dateTo}
 
 	query := internal.ArchiveFolderQuery{
@@ -46,7 +49,7 @@ func RunExtract(rootCfg *ConfigRoot, filterCfg *ConfigExtract) {
 	srcFolder := "/mnt/remote/cro/export-avo/Rundowns"
 	// srcFolder := "/home/jk/CRO/CRO_BASE/openmedia-archive_backup/Archive/"
 
-	err := arf.FolderMap(srcFolder, true, &query)
+	err = arf.FolderMap(srcFolder, true, &query)
 	if err != nil {
 		internal.Errors.ExitWithCode(err)
 	}

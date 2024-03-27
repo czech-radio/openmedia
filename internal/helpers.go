@@ -338,21 +338,29 @@ func ProcessedFileRename(originalPath string) error {
 
 func DateRangesIntersection(rA, rB [2]time.Time) ([2]time.Time, bool) {
 	resrange := [2]time.Time{}
+
+	// Special cases
+	// rA is default zero time!
 	if rA[0].IsZero() && rA[1].IsZero() {
 		return rB, true
 	}
+
 	if rA[0].After(rB[1]) {
 		return resrange, false
 	}
 	if rA[1].Before(rB[0]) {
 		return resrange, false
 	}
+
+	// Get intersec start time
 	var start time.Time
 	if rA[0].Before(rB[0]) {
 		start = rB[0]
 	} else {
 		start = rA[0]
 	}
+
+	// Get intersec end time
 	var end time.Time
 	if rA[1].Before(rB[1]) {
 		end = rA[1]
@@ -461,4 +469,19 @@ func ListDirFiles(dir string) ([]string, error) {
 	})
 
 	return files, err
+}
+
+func CzechDateToUTC(year, month, day, hour int) (
+	time.Time, error) {
+	var res time.Time
+	location, err := time.LoadLocation("Europe/Prague")
+	if err != nil {
+		return res, err
+	}
+	mont := time.Month(month)
+	czechDate := time.Date(
+		year, mont, day, hour,
+		0, 0, 0, location,
+	)
+	return czechDate.UTC(), nil
 }
