@@ -31,16 +31,19 @@ type OMextractors []OMextractor
 
 type Extractor struct {
 	OMextractors
+	BaseNode *xmlquery.Node
+	CSVdelim string
+
 	CSVrowPartsFieldsPositions
 	CSVrowPartsPositionsInternal
 	CSVrowPartsPositionsExternal
-	CSVheaderInternal string
-	CSVheaderExternal string
-	CSVdelim          string
 
-	BaseNode *xmlquery.Node
+	CSVheaders          map[string]CSVrow
+	CSVheadersPositions []CSVheaderCodeName
+	CSVheaderInternal   string
+	CSVheaderExternal   string
+
 	CSVtable
-	CSVrowsFiltered []int
 	CSVtables
 }
 
@@ -63,11 +66,11 @@ func (e *Extractor) NewTable() {
 }
 
 func (e *Extractor) MapRowParts() {
-	var prefixesInternal, prefixesExternal []string
+	var prefixesInternal, prefixesExternal []PartPrefixCode
 	for _, extr := range e.OMextractors {
-		prefix := PartsPrefixMapProduction[extr.PartPrefixCode]
-		prefixesInternal = append(prefixesInternal, prefix.Internal)
-		prefixesExternal = append(prefixesExternal, prefix.External)
+		// prefix := PartsPrefixMapProduction[extr.PartPrefixCode]
+		prefixesInternal = append(prefixesInternal, extr.PartPrefixCode)
+		prefixesExternal = append(prefixesExternal, extr.PartPrefixCode)
 	}
 	e.CSVrowPartsPositionsExternal = prefixesExternal
 	e.CSVrowPartsPositionsInternal = prefixesInternal
@@ -77,10 +80,8 @@ func (e *Extractor) MapRowPartsFieldsPositions() {
 	extCount := len(e.OMextractors)
 	partsPos := make(CSVrowPartsFieldsPositions, extCount)
 	for _, extr := range e.OMextractors {
-		prefix := PartsPrefixMapProduction[extr.PartPrefixCode]
 		fp := GetPartFieldsPositions(extr)
-		// partsPos[prefix.Internal] = fp
-		partsPos[prefix.Internal] = append(partsPos[prefix.Internal], fp...)
+		partsPos[extr.PartPrefixCode] = append(partsPos[extr.PartPrefixCode], fp...)
 	}
 	e.CSVrowPartsFieldsPositions = partsPos
 }

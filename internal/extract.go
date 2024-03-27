@@ -77,7 +77,7 @@ func ExtractNodesFields(
 	extr OMextractor,
 ) CSVtable {
 	var newTable CSVtable
-	prefix := PartsPrefixMapProduction[extr.PartPrefixCode].Internal
+	// prefix := PartsPrefixMapProduction[extr.PartPrefixCode].Internal
 	for _, subNode := range subNodes {
 		parentRowCopy := CopyRow(parentRow.CSVrow)
 		part := NodeToCSVrowPart(subNode, extr)
@@ -88,7 +88,7 @@ func ExtractNodesFields(
 			newRowNode.Node = subNode
 		}
 		newRowNode.CSVrow = parentRowCopy
-		newRowNode.CSVrow[prefix] = part
+		newRowNode.CSVrow[extr.PartPrefixCode] = part
 		newTable.Rows = append(newTable.Rows, &newRowNode)
 	}
 	return newTable

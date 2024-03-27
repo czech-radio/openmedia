@@ -267,14 +267,14 @@ func TestMapCopy(t *testing.T) {
 	PrintMap(copiedMap)
 }
 
-func TestMapCopy2(t *testing.T) {
-	originalRow := CSVrow{
-		"PartA": {"field1": {"Ahoj", "Hello", "Hi"}},
-		"PartB": {"field1": {"Ahoj", "Hello", "Hi"}},
-	}
-	newRow := CopyRow(originalRow)
-	originalRow["PartA"]["field1"] = CSVrowField{
-		"Kek", "Mek", "sek"}
-	PrintRow(originalRow)
-	PrintRow(newRow)
-}
+// func TestMapCopy2(t *testing.T) {
+// originalRow := CSVrow{
+// "PartA": {"field1": {"Ahoj", "Hello", "Hi"}},
+// "PartB": {"field1": {"Ahoj", "Hello", "Hi"}},
+// }
+// newRow := CopyRow(originalRow)
+// originalRow["PartA"]["field1"] = CSVrowField{
+// "Kek", "Mek", "sek"}
+// PrintRow(originalRow)
+// PrintRow(newRow)
+// }

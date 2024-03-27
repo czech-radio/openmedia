@@ -4,6 +4,13 @@ type PartPrefixCode int
 
 var CSVdelim = "\t"
 
+type CSVheaderCodeName int
+
+const (
+	CSVheaderInternal CSVheaderCodeName = iota
+	CSVheaderExternal
+)
+
 const (
 	FieldPrefix_HourlyHead PartPrefixCode = iota
 	FieldPrefix_HourlyRec

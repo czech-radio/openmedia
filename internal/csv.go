@@ -16,11 +16,12 @@ type FieldPosition struct {
 	FieldID     string
 	FieldName   string
 }
-type CSVrowPartFieldsPositions []FieldPosition                       // Field
-type CSVrowPartsPositions []string                                   // Part
-type CSVrowPartsPositionsInternal []string                           // Part
-type CSVrowPartsPositionsExternal []string                           // Part
-type CSVrowPartsFieldsPositions map[string]CSVrowPartFieldsPositions // Row: partname vs partFieldsPositions
+type CSVrowPartFieldsPositions []FieldPosition     // Field
+type CSVrowPartsPositions []string                 // Part
+type CSVrowPartsPositionsInternal []PartPrefixCode // Part
+type CSVrowPartsPositionsExternal []PartPrefixCode // Part
+// type CSVrowPartsFieldsPositions map[string]CSVrowPartFieldsPositions         // Row: partname vs partFieldsPositions
+type CSVrowPartsFieldsPositions map[PartPrefixCode]CSVrowPartFieldsPositions // Row: partname vs partFieldsPositions
 
 // Table fields values
 type CSVrowField struct {
@@ -28,19 +29,20 @@ type CSVrowField struct {
 	FieldName string // Maybe not needed here. Must construct general list of fieldPrefix:fieldIDs vs FieldName
 	Value     string
 }
-type CSVrowPart map[string]CSVrowField // FieldID:CSVrowField
-type CSVrow map[string]CSVrowPart      // Whole CSV line PartPrefix:RowPart
+type CSVrowPart map[string]CSVrowField    // FieldID:CSVrowField
+type CSVrow map[PartPrefixCode]CSVrowPart // Whole CSV line PartPrefix:RowPart
 type CSVrowNode struct {
 	Node *xmlquery.Node
 	CSVrow
 }
+
+type CSVheaders map[CSVheaderCodeName]CSVrow
+
 type CSVtable struct {
-	Rows    []*CSVrowNode
-	Headers []string
-	// HeaderInternal    string
-	// HeaderExternal    string
+	Rows              []*CSVrowNode
+	Headers           []string
 	CSVrowsFiltered   []int
-	RowPartsPositions []string
+	RowPartsPositions []PartPrefixCode
 	CSVrowPartsFieldsPositions
 
 	CSVwriterLocal *strings.Builder
@@ -94,6 +96,24 @@ func (e *Extractor) CreateTablesHeader(delim string) {
 	}
 	e.CSVheaderInternal = internalBuilder.String()
 	e.CSVheaderExternal = externalBuilder.String()
+}
+
+func (e *Extractor) CreateTablesHeaderB(delim string) {
+	var internalBuilder strings.Builder
+	// var externalBuilder strings.Builder
+	for _, partPrefixCode := range e.CSVrowPartsPositionsInternal {
+		prefix := PartsPrefixMapProduction[partPrefixCode]
+
+		// rowPart := e.CSVrowPartsFieldsPositions[partName]
+		rowPart := e.CSVrowPartsFieldsPositions[partPrefixCode]
+		for _, field := range rowPart {
+			fmt.Fprintf(
+				&internalBuilder, "%s_%s%s",
+				prefix.Internal, field.FieldID, delim,
+			)
+		}
+	}
+	fmt.Println(internalBuilder.String())
 }
 
 func (e *Extractor) CastTablesToCSV(
@@ -221,7 +241,7 @@ func (table *CSVtable) CastHeaderToCSV(headers ...string) {
 
 func (row CSVrow) CastToCSV(
 	builder *strings.Builder,
-	partsPos []string,
+	partsPos CSVrowPartsPositionsInternal,
 	partsFieldsPos CSVrowPartsFieldsPositions,
 	delim string,
 ) {

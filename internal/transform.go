@@ -12,13 +12,12 @@ func (e *Extractor) FilterByPartAndFieldID(
 	partCode PartPrefixCode, fieldID string, fieldValuePatern string) []int {
 	var res []int
 	re := regexp.MustCompile(fieldValuePatern)
-	partName := PartsPrefixMapProduction[partCode].Internal
 	for i, row := range e.CSVtable.Rows {
-		part, ok := row.CSVrow[partName]
+		part, ok := row.CSVrow[partCode]
 		if !ok {
 			slog.Debug(
 				"filter not effective", "reason", "partname not found",
-				"partName", partName,
+				"partName", partCode,
 			)
 			return nil
 		}
@@ -26,7 +25,7 @@ func (e *Extractor) FilterByPartAndFieldID(
 		if !ok {
 			slog.Debug(
 				"filter not effective", "reason", "fieldID not found",
-				"partName", partName,
+				"partName", partCode,
 			)
 			return nil
 		}
@@ -84,7 +83,7 @@ func (e *Extractor) TransformField(
 	partName := PartsPrefixMapProduction[partCode].Internal
 
 	for i, row := range e.CSVtable.Rows {
-		part, ok := row.CSVrow[partName]
+		part, ok := row.CSVrow[partCode]
 		if !ok {
 			slog.Warn("row part name not found", "partName", partName)
 			continue
@@ -99,16 +98,15 @@ func (e *Extractor) TransformField(
 			continue
 		}
 		field.Value = name
-		e.CSVtable.Rows[i].CSVrow[partName][fieldID] = field
+		e.CSVtable.Rows[i].CSVrow[partCode][fieldID] = field
 	}
 }
 
 func GetPartAndField(
-	row CSVrow, fieldPrefix PartPrefixCode,
+	row CSVrow, partCode PartPrefixCode,
 	fieldID string) (
 	CSVrowPart, CSVrowField, bool) {
-	partName := PartsPrefixMapProduction[fieldPrefix].Internal
-	part, ok := row[partName]
+	part, ok := row[partCode]
 	if !ok {
 		return part, CSVrowField{}, ok
 	}
@@ -138,22 +136,21 @@ func (e *Extractor) ComputeKategory() {
 		dstField.FieldID = "kategory"
 		dstPart := make(CSVrowPart)
 		dstPart["kategory"] = dstField
-		partName := PartsPrefixMapProduction[FieldPrefix_ComputedKategory].Internal
-		e.CSVtable.Rows[i].CSVrow[partName] = dstPart
+		e.CSVtable.Rows[i].CSVrow[FieldPrefix_ComputedKategory] = dstPart
 	}
 }
 
-func (e *Extractor) RemoveColumn(fieldPrefix PartPrefixCode, fieldID string) {
+func (e *Extractor) RemoveColumn(
+	fieldPrefix PartPrefixCode, fieldID string) {
 	var newPos CSVrowPartFieldsPositions
-	partPrefixName := PartsPrefixMapProduction[fieldPrefix].Internal
-	positions := e.CSVrowPartsFieldsPositions[partPrefixName]
+	positions := e.CSVrowPartsFieldsPositions[fieldPrefix]
 	for _, pos := range positions {
 		if pos.FieldID == fieldID {
 			continue
 		}
 		newPos = append(newPos, pos)
 	}
-	e.CSVrowPartsFieldsPositions[partPrefixName] = newPos
+	e.CSVrowPartsFieldsPositions[fieldPrefix] = newPos
 	// e.CreateTablesHeader()
 }
 
@@ -193,7 +190,7 @@ func ParseXMLdate(input string) (time.Time, error) {
 }
 
 func (e *Extractor) ComputeID() {
-	partName := PartsPrefixMapProduction[FieldPrefix_ComputedID].Internal
+	// partName := PartsPrefixMapProduction[FieldPrefix_ComputedID].Internal
 	targetFieldID := "ID"
 	for i, row := range e.CSVtable.Rows {
 		id := row.ConstructID()
@@ -204,13 +201,12 @@ func (e *Extractor) ComputeID() {
 		}
 		part := make(CSVrowPart)
 		part[targetFieldID] = field
-		e.CSVtable.Rows[i].CSVrow[partName] = part
+		e.CSVtable.Rows[i].CSVrow[FieldPrefix_ComputedID] = part
 	}
 }
 
 func (row CSVrow) ConstructID() string {
-	partName := PartsPrefixMapProduction[FieldPrefix_StoryHead].Internal
-	part, ok := row[partName]
+	part, ok := row[FieldPrefix_StoryHead]
 	if !ok {
 		return ""
 	}
