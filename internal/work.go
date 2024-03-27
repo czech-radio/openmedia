@@ -47,6 +47,16 @@ func ExtractProductionVer1(filePath string, header bool) {
 		FieldPrefix_StoryHead,
 		"1002", TransformStopaz)
 
+	// korekce
+	af.TransformField(
+		FieldPrefix_StoryHead,
+		"1029", TransformStopaz)
+
+	af.TransformField(
+		FieldPrefix_StoryHead,
+		"1035", TransformStopaz)
+
+	// Audio
 	af.TransformField(
 		FieldPrefix_AudioClipHead,
 		"1005", TransformStopaz)

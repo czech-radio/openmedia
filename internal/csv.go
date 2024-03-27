@@ -99,21 +99,24 @@ func (e *Extractor) CreateTablesHeader(delim string) {
 }
 
 func (e *Extractor) CreateTablesHeaderB(delim string) {
-	var internalBuilder strings.Builder
-	// var externalBuilder strings.Builder
+	var builderInternal strings.Builder
+	var builderExternal strings.Builder
 	for _, partPrefixCode := range e.CSVrowPartsPositionsInternal {
 		prefix := PartsPrefixMapProduction[partPrefixCode]
 
-		// rowPart := e.CSVrowPartsFieldsPositions[partName]
 		rowPart := e.CSVrowPartsFieldsPositions[partPrefixCode]
 		for _, field := range rowPart {
 			fmt.Fprintf(
-				&internalBuilder, "%s_%s%s",
+				&builderInternal, "%s_%s%s",
 				prefix.Internal, field.FieldID, delim,
+			)
+			fmt.Fprintf(
+				&builderExternal, "%s_%s%s",
+				prefix.External, field.FieldID, delim,
 			)
 		}
 	}
-	fmt.Println(internalBuilder.String())
+	fmt.Println(builderInternal.String())
 }
 
 func (e *Extractor) CastTablesToCSV(
