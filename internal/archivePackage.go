@@ -166,7 +166,7 @@ func PackageMap(packageName PackageName, q *ArchiveFolderQuery) (
 		}
 		if !ok {
 			slog.Debug(
-				"package match", "package", packageName, "file", fr.Name, "query", q.DateRange, "matched", false)
+				"package no_match", "package", packageName, "file", fr.Name, "query", q.DateRange, "matched", false)
 			continue
 		}
 		slog.Debug(
@@ -176,6 +176,7 @@ func PackageMap(packageName PackageName, q *ArchiveFolderQuery) (
 		apf := ArchivePackageFile{}
 		apf.Reader = fr
 		ap.PackageFiles[fr.Name] = &apf
+		ap.PacakgeFilesOrder = append(ap.PacakgeFilesOrder, fr.Name)
 	}
 	count += len(ap.PackageFiles)
 	slog.Warn(

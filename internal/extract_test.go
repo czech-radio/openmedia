@@ -42,8 +42,8 @@ func TestGetLastPartOfObjectPath(t *testing.T) {
 }
 
 func TestReplaceParentRowTrue(t *testing.T) {
-	EXTproduction.KeepInputRowsChecker()
-	PrintObjJson("FEK", EXTproduction)
+	EXTproductionAudioContacts.KeepInputRowsChecker()
+	PrintObjJson("FEK", EXTproductionAudioContacts)
 }
 
 func TestArchiveFolderExtract(t *testing.T) {

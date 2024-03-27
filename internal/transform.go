@@ -5,8 +5,33 @@ import (
 	"log/slog"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 )
+
+func (e *Extractor) UniqueRows() {
+	if e.CSVtable.UniqueRows == nil {
+		e.CSVtable.UniqueRows = make(map[string]int)
+	}
+	for i, row := range e.CSVtable.Rows {
+		rowBuilder := strings.Builder{}
+		row.CSVrow.CastToCSV(
+			&rowBuilder,
+			e.CSVrowPartsPositionsInternal,
+			e.CSVrowPartsFieldsPositions, CSVdelim)
+		rowStr := rowBuilder.String()
+		_, ok := e.CSVtable.UniqueRows[rowStr]
+		if !ok {
+			e.CSVtable.UniqueRowsOrder = append(e.CSVtable.UniqueRowsOrder, i)
+		}
+		e.CSVtable.UniqueRows[rowStr]++
+	}
+
+	slog.Warn("unique rows count",
+		"uniqueCount", len(e.CSVtable.UniqueRowsOrder),
+		"allCount", len(e.CSVtable.Rows),
+	)
+}
 
 func (e *Extractor) FilterByPartAndFieldID(
 	partCode PartPrefixCode, fieldID string, fieldValuePatern string) []int {
@@ -86,7 +111,7 @@ func (e *Extractor) TransformField(
 	for i, row := range e.CSVtable.Rows {
 		part, ok := row.CSVrow[partCode]
 		if !ok {
-			slog.Warn("row part name not found", "partName", partName)
+			slog.Debug("row part name not found", "partName", partName)
 			continue
 		}
 		field, ok := part[fieldID]
@@ -95,7 +120,7 @@ func (e *Extractor) TransformField(
 		}
 		name, err := fun(field.Value)
 		if err != nil {
-			slog.Warn(err.Error())
+			slog.Debug(err.Error())
 			continue
 		}
 		field.Value = name
@@ -113,7 +138,7 @@ func GetPartAndField(
 	}
 	field, ok := part[fieldID]
 	if !ok {
-		slog.Warn("fieldID not found", "fieldID", fieldID)
+		slog.Debug("fieldID not found", "fieldID", fieldID)
 		return part, field, ok
 	}
 	return part, field, ok

@@ -9,29 +9,31 @@ import (
 )
 
 type ArchiveFolder struct {
-	PackageTypes  []WorkerTypeCode
-	XMLencoding   FileEncodingNumber
-	PackagesNames []PackageName
-	Packages      map[PackageName]*ArchivePackage
-	Files         []string
+	PackageTypes       []WorkerTypeCode
+	XMLencoding        FileEncodingNumber
+	PackagesNamesOrder []PackageName
+	Packages           map[PackageName]*ArchivePackage
+	Files              []string
 }
 
 type FileName string
 type PackageName string
 
 type ArchivePackage struct {
-	PackageName   PackageName
-	PackageReader *zip.ReadCloser
-	PackageFiles  map[string]*ArchivePackageFile
+	PackageName       PackageName
+	PackageReader     *zip.ReadCloser
+	PackageFiles      map[string]*ArchivePackageFile
+	PacakgeFilesOrder []string
 }
 
 type ArchiveFolderQuery struct {
-	RadioNames map[string]bool
-	DateRange  [2]time.Time
-	IsoWeeks   map[int]bool
-	Months     map[int]bool
-	WeekDays   map[time.Weekday]bool
-	Extractors OMextractors
+	RadioNames  map[string]bool
+	DateRange   [2]time.Time
+	IsoWeeks    map[int]bool
+	Months      map[int]bool
+	WeekDays    map[time.Weekday]bool
+	Extractors  OMextractors
+	PrintHeader bool
 }
 
 func (af *ArchiveFolder) FolderListing(
@@ -65,7 +67,7 @@ func (af *ArchiveFolder) FolderListing(
 					slog.Debug(
 						"package matched", "package", filePath)
 					packageName := PackageName(filePath)
-					af.PackagesNames = append(af.PackagesNames, packageName)
+					af.PackagesNamesOrder = append(af.PackagesNamesOrder, packageName)
 				}
 			}
 		}
@@ -97,7 +99,7 @@ func (af *ArchiveFolder) FolderMap(
 		af.Packages = make(map[PackageName]*ArchivePackage)
 	}
 	filesCount := 0
-	for _, packageName := range af.PackagesNames {
+	for _, packageName := range af.PackagesNamesOrder {
 		archivePackage, count, err := PackageMap(packageName, q)
 		if err != nil {
 			return err
@@ -113,13 +115,22 @@ func (af *ArchiveFolder) FolderMap(
 }
 
 func (af *ArchiveFolder) FolderExtract(query *ArchiveFolderQuery) {
-	for _, p := range af.Packages {
-		for _, pf := range p.PackageFiles {
-			// err := pf.ExtractByParser(af.XMLencoding, query)
-			err := pf.ExtractByXMLquery(af.XMLencoding, query)
+	query.PrintHeader = true
+	for _, packageName := range af.PackagesNamesOrder {
+		slog.Warn("proccessing package", "package", packageName)
+		// for _, pf := range p.PackageFiles {
+		archivePackage := af.Packages[packageName]
+		for _, fileName := range archivePackage.PacakgeFilesOrder {
+			file := archivePackage.PackageFiles[fileName]
+			slog.Warn(
+				"proccessing package", "package", packageName,
+				"file", file.Reader.Name,
+			)
+			err := file.ExtractByXMLquery(af.XMLencoding, query)
 			if err != nil {
 				slog.Error(err.Error())
 			}
+			query.PrintHeader = false
 			break
 		}
 	}

@@ -47,7 +47,7 @@ func TestArchiveFileExtractByXMLquery(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	err = af.ExtractByXMLquery(EXTproduction)
+	err = af.ExtractByXMLquery(EXTproductionAudioContacts)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -66,7 +66,7 @@ func BenchmarkArchiveFileExtractByXMLquery(b *testing.B) {
 		b.Error(err.Error())
 	}
 	for i := 0; i < b.N; i++ {
-		err = af.ExtractByXMLquery(EXTproduction)
+		err = af.ExtractByXMLquery(EXTproductionAudioContacts)
 		if err != nil {
 			b.Error(err.Error())
 		}

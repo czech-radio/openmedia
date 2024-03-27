@@ -8,7 +8,7 @@ import (
 
 func TestExtractorInit(t *testing.T) {
 	var ex Extractor
-	ex.Init(nil, EXTproduction, CSVdelim)
+	ex.Init(nil, EXTproductionAudioContacts, CSVdelim)
 	fmt.Println("prefixesInternal", ex.CSVrowPartsPositionsInternal)
 	fmt.Println("prefixesExternal", ex.CSVrowPartsPositionsExternal)
 	fmt.Println("partsFieldsPos", ex.CSVrowPartsFieldsPositions)

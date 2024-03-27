@@ -77,7 +77,7 @@ var FieldsIDsNamesProduction = FieldsIDsNames{
 	"6":            "autor",
 	"12":           "redakce",
 	"5071":         "schvalil_stanice",
-	"5070":         "Schvalil_redakce",
+	"5070":         "schvalil_redakce",
 	"421":          "jmeno",
 	"422":          "prijmeni",
 	"423":          "spolecnost",

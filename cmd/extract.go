@@ -22,36 +22,30 @@ type ConfigExtract struct {
 }
 
 func RunExtract(rootCfg *ConfigRoot, filterCfg *ConfigExtract) {
-	// options := internal.FilterOptions{}
-	// internal.CopyFields(filterCfg, &options)
-	// options.FilterType = internal.WorkerTypeCode(filterCfg.FilterTypeNumber)
-	// slog.Info("effective subcommand options", "options", options)
-	// if rootCfg.DebugConfig {
-	// return
-	// }
-	// internal.DirectoryIsReadableOrPanic(options.SourceDirectory)
-	// ORIG:
-	// filter := internal.Filter{Options: options}
-	// err := filter.Folder()
-	// if err != nil {
-	// internal.Errors.ExitWithCode(err)
-	// }
-
 	workerTypes := []internal.WorkerTypeCode{internal.WorkerTypeZIPoriginal}
 	arf := internal.ArchiveFolder{
 		PackageTypes: workerTypes,
 	}
-	dateFrom := time.Date(2024, 2, 1, 13, 0, 0, 1, internal.ArchiveTimeZone)
-	dateTo := time.Date(2024, 2, 1, 14, 0, 0, 0, internal.ArchiveTimeZone)
+
+	// dateFrom := time.Date(2024, 2, 1, 13, 0, 0, 1, internal.ArchiveTimeZone)
+	// dateTo := time.Date(2024, 2, 1, 14, 0, 0, 0, internal.ArchiveTimeZone)
+	// filterRange := [2]time.Time{dateFrom, dateTo}
+	dateFrom := time.Date(2024, 3, 1, 0, 0, 0, 1, internal.ArchiveTimeZone)
+	// dateTo := time.Date(2024, 3, 31, 0, 0, 0, 0, internal.ArchiveTimeZone)
+	dateTo := time.Date(2024, 3, 2, 0, 0, 0, 0, internal.ArchiveTimeZone)
 	filterRange := [2]time.Time{dateFrom, dateTo}
+
 	query := internal.ArchiveFolderQuery{
 		RadioNames: map[string]bool{
 			"Radiožurnál": true,
 		},
-		DateRange:  filterRange,
-		Extractors: internal.EXTproduction,
+		DateRange: filterRange,
+		// Extractors: internal.EXTeuroVolby,
+		Extractors: internal.EXTeuroVolbyRID,
 	}
-	srcFolder := "/home/jk/CRO/CRO_BASE/openmedia-archive_backup/Archive/"
+	srcFolder := "/mnt/remote/cro/export-avo/Rundowns"
+	// srcFolder := "/home/jk/CRO/CRO_BASE/openmedia-archive_backup/Archive/"
+
 	err := arf.FolderMap(srcFolder, true, &query)
 	if err != nil {
 		internal.Errors.ExitWithCode(err)

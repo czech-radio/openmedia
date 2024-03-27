@@ -38,12 +38,20 @@ type CSVrowNode struct {
 
 type CSVheaders map[CSVheaderCodeName]CSVrow
 
+type UniqueRow struct {
+	Count         int
+	TablePosition int
+}
+
 type CSVtable struct {
 	Rows              []*CSVrowNode
 	Headers           []string
 	CSVrowsFiltered   []int
 	RowPartsPositions []PartPrefixCode
 	CSVrowPartsFieldsPositions
+
+	UniqueRowsOrder []int
+	UniqueRows      map[string]int
 
 	CSVwriterLocal *strings.Builder
 	DstFilePath    string
@@ -55,6 +63,22 @@ type CSVtables struct {
 	Tables          map[string]*CSVtable // fileName:CSVtable
 	CSVwriterGlobal *strings.Builder
 	DstFileGlobal   *os.File
+}
+
+func BuildHeaderNameExternal(
+	prefixCode PartPrefixCode, fieldName string) string {
+	prefix := PartsPrefixMapProduction[prefixCode]
+	switch prefixCode {
+	case FieldPrefix_StoryRec, FieldPrefix_StoryHead:
+		// Jenonm nazev
+		return fieldName
+	case FieldPrefix_HourlyHead, FieldPrefix_HourlyRec:
+		// Jenom prefix
+		return prefix.External
+	default:
+		// prefix + fieldName
+		return fmt.Sprintf("%s_%s", fieldName, prefix.External)
+	}
 }
 
 func (e *Extractor) CreateTablesHeader(delim string) {
@@ -88,10 +112,28 @@ func (e *Extractor) CreateTablesHeader(delim string) {
 			if !ok {
 				slog.Warn("fieldname for given fieldID not defined", "filedID", fieldID)
 			}
-			fmt.Fprintf(
-				&externalBuilder, "%s_%s%s",
-				prefix.External, fieldName, delim,
-			)
+			headerName := BuildHeaderNameExternal(extr.PartPrefixCode, fieldName)
+			fmt.Fprintf(&externalBuilder, "%s%s", headerName, delim)
+			// switch extr.PartPrefixCode {
+			// case FieldPrefix_StoryRec, FieldPrefix_StoryHead:
+			// 	// Jenonm nazev
+			// 	fmt.Fprintf(
+			// 		&externalBuilder, "%s%s",
+			// 		fieldName, delim,
+			// 	)
+			// case FieldPrefix_HourlyHead, FieldPrefix_HourlyRec:
+			// 	// Jenom prefix
+			// 	fmt.Fprintf(
+			// 		&externalBuilder, "%s%s",
+			// 		prefix.External, delim,
+			// 	)
+			// default:
+			// 	// Nazev+prefix
+			// 	fmt.Fprintf(
+			// 		&externalBuilder, "%s_%s%s",
+			// 		fieldName, prefix.External, delim,
+			// 	)
+			// }
 		}
 	}
 	e.CSVheaderInternal = internalBuilder.String()

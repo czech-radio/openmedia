@@ -1,12 +1,67 @@
 package internal
 
+func (e *Extractor) TransformEurovolby(printHeader bool) {
+	// Convert dates
+	e.TransformDateToTime(FieldPrefix_SubHead, "1004", false)
+	e.TransformDateToTime(FieldPrefix_SubHead, "1003", false)
+	e.TransformDateToTime(FieldPrefix_StoryHead, "1004", true)
+	e.TransformDateToTime(FieldPrefix_StoryHead, "1003", false)
+
+	// Convert stopaz
+	e.TransformField(
+		FieldPrefix_SubHead,
+		"1005", TransformStopaz)
+
+	e.TransformField(
+		FieldPrefix_StoryHead,
+		"1005", TransformStopaz)
+
+	e.TransformField(
+		FieldPrefix_StoryHead,
+		"1036", TransformStopaz)
+
+	e.TransformField(
+		FieldPrefix_StoryHead,
+		"1010", TransformStopaz)
+
+	e.TransformField(
+		FieldPrefix_StoryHead,
+		"1002", TransformStopaz)
+
+	// korekce
+	e.TransformField(
+		FieldPrefix_StoryHead,
+		"1029", TransformStopaz)
+
+	e.TransformField(
+		FieldPrefix_StoryHead,
+		"1035", TransformStopaz)
+
+	// Audio
+	e.TransformField(
+		FieldPrefix_AudioClipHead,
+		"1005", TransformStopaz)
+
+	e.ComputeID()
+	e.ComputeKategory()
+	e.RemoveColumn(
+		FieldPrefix_ContactItemHead, "TemplateName")
+	e.RemoveColumn(
+		FieldPrefix_AudioClipHead, "TemplateName")
+
+	// FILTER ROWS
+	// rowsIDx := e.Extractor.FilterByPartAndFieldID(internal.FieldPrefix_HourlyHead, "8", "13:00-14:00")
+	// e.Extractor.PrintTableRowsToCSV(true, "\t", rowsIDx)
+	e.PrintTableRowsToCSV(printHeader, "\t")
+}
+
 func ExtractProductionVer1(filePath string, header bool) {
 	af := ArchiveFile{}
 	err := af.Init(WorkerTypeRundownXMLutf16le, filePath)
 	if err != nil {
 		Errors.ExitWithCode(err)
 	}
-	err = af.ExtractByXMLquery(EXTproduction)
+	err = af.ExtractByXMLquery(EXTproductionAudioContacts)
 	if err != nil {
 		Errors.ExitWithCode(err)
 	}
