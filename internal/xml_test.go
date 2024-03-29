@@ -57,4 +57,5 @@ func Test_ValidateFilesInDirectory(t *testing.T) {
 
 func Test_XMLbuildAttrQuery(t *testing.T) {
 	fmt.Println(XMLbuildAttrQuery("FieldID", []string{"1", "2", "3"}))
+	fmt.Println(XMLbuildAttrQuery("TemplateName", []string{"Audioclip", "Contact Item"}))
 }

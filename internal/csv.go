@@ -82,45 +82,6 @@ func BuildHeaderNameExternal(
 }
 
 func (e *Extractor) CreateTablesHeader(delim string) {
-	var internalBuilder strings.Builder
-	var externalBuilder strings.Builder
-	for _, extr := range e.OMextractors {
-		prefix := PartsPrefixMapProduction[extr.PartPrefixCode]
-		for _, attr := range extr.ObjectAttrsNames {
-			fmt.Fprintf(
-				&internalBuilder, "%s_%s%s",
-				prefix.Internal, attr, delim,
-			)
-			attrName, ok := FieldsIDsNamesProduction[attr]
-			if !ok {
-				slog.Warn(
-					"fieldname for given attribute not defined",
-					"attribute", attr,
-				)
-			}
-			fmt.Fprintf(
-				&externalBuilder, "%s_%s%s",
-				prefix.External, attrName, delim,
-			)
-		}
-		for _, fieldID := range extr.FieldIDs {
-			fmt.Fprintf(
-				&internalBuilder, "%s_%s%s",
-				prefix.Internal, fieldID, delim,
-			)
-			fieldName, ok := FieldsIDsNamesProduction[fieldID]
-			if !ok {
-				slog.Warn("fieldname for given fieldID not defined", "filedID", fieldID)
-			}
-			headerName := BuildHeaderNameExternal(extr.PartPrefixCode, fieldName)
-			fmt.Fprintf(&externalBuilder, "%s%s", headerName, delim)
-		}
-	}
-	e.CSVheaderInternal = internalBuilder.String()
-	e.CSVheaderExternal = externalBuilder.String()
-}
-
-func (e *Extractor) CreateTablesHeaderB(delim string) {
 	var builderInternal strings.Builder
 	var builderExternal strings.Builder
 	for _, partPrefixCode := range e.CSVrowPartsPositionsInternal {
@@ -138,8 +99,48 @@ func (e *Extractor) CreateTablesHeaderB(delim string) {
 			)
 		}
 	}
-	fmt.Println(builderInternal.String())
+	e.CSVheaderInternal = builderInternal.String()
+	e.CSVheaderExternal = builderInternal.String()
 }
+
+// func (e *Extractor) CreateTablesHeader(delim string) {
+// 	var internalBuilder strings.Builder
+// 	var externalBuilder strings.Builder
+// 	for _, extr := range e.OMextractors {
+// 		prefix := PartsPrefixMapProduction[extr.PartPrefixCode]
+// 		for _, attr := range extr.ObjectAttrsNames {
+// 			fmt.Fprintf(
+// 				&internalBuilder, "%s_%s%s",
+// 				prefix.Internal, attr, delim,
+// 			)
+// 			attrName, ok := FieldsIDsNamesProduction[attr]
+// 			if !ok {
+// 				slog.Warn(
+// 					"fieldname for given attribute not defined",
+// 					"attribute", attr,
+// 				)
+// 			}
+// 			fmt.Fprintf(
+// 				&externalBuilder, "%s_%s%s",
+// 				prefix.External, attrName, delim,
+// 			)
+// 		}
+// 		for _, fieldID := range extr.FieldIDs {
+// 			fmt.Fprintf(
+// 				&internalBuilder, "%s_%s%s",
+// 				prefix.Internal, fieldID, delim,
+// 			)
+// 			fieldName, ok := FieldsIDsNamesProduction[fieldID]
+// 			if !ok {
+// 				slog.Warn("fieldname for given fieldID not defined", "filedID", fieldID)
+// 			}
+// 			headerName := BuildHeaderNameExternal(extr.PartPrefixCode, fieldName)
+// 			fmt.Fprintf(&externalBuilder, "%s%s", headerName, delim)
+// 		}
+// 	}
+// 	e.CSVheaderInternal = internalBuilder.String()
+// 	e.CSVheaderExternal = externalBuilder.String()
+// }
 
 func (e *Extractor) CastTablesToCSV(
 	header bool, delim string, separateTables bool) {

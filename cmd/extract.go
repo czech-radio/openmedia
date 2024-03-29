@@ -27,11 +27,11 @@ func RunExtract(rootCfg *ConfigRoot, filterCfg *ConfigExtract) {
 		PackageTypes: workerTypes,
 	}
 
-	dateFrom, err := internal.CzechDateToUTC(2024, 3, 4, 0)
+	dateFrom, err := internal.CzechDateToUTC(2024, 3, 0, 0)
 	if err != nil {
 		internal.Errors.ExitWithCode(err)
 	}
-	dateTo, err := internal.CzechDateToUTC(2024, 3, 5, 0)
+	dateTo, err := internal.CzechDateToUTC(2024, 4, 1, 0)
 	if err != nil {
 		internal.Errors.ExitWithCode(err)
 	}
@@ -40,11 +40,14 @@ func RunExtract(rootCfg *ConfigRoot, filterCfg *ConfigExtract) {
 
 	query := internal.ArchiveFolderQuery{
 		RadioNames: map[string]bool{
-			"Radiožurnál": true,
+			// "Radiožurnál": true,
+			// "Plus": true,
+			// "Dvojka": true,
+			// "ČRo_Vysočina": true,
 		},
-		DateRange: filterRange,
-		// Extractors: internal.EXTeuroVolby,
-		Extractors: internal.EXTeuroVolbyRID,
+		DateRange:  filterRange,
+		Extractors: internal.EXTeuroVolby,
+		// Extractors: internal.EXTeuroVolbyRID,
 	}
 	srcFolder := "/mnt/remote/cro/export-avo/Rundowns"
 	// srcFolder := "/home/jk/CRO/CRO_BASE/openmedia-archive_backup/Archive/"

@@ -13,6 +13,8 @@ type UniqueValues = map[string]int // value vs count
 type CSVrowFields = []CSVrowField
 
 type OMextractor struct {
+	OrExt []OMextractor
+
 	ObjectPath       string
 	ObjectAttrsNames []string
 	FieldsPath       string
@@ -69,8 +71,18 @@ func (e *Extractor) MapRowParts() {
 	var prefixesInternal, prefixesExternal []PartPrefixCode
 	for _, extr := range e.OMextractors {
 		// prefix := PartsPrefixMapProduction[extr.PartPrefixCode]
-		prefixesInternal = append(prefixesInternal, extr.PartPrefixCode)
-		prefixesExternal = append(prefixesExternal, extr.PartPrefixCode)
+		prefixesInternal = append(
+			prefixesInternal, extr.PartPrefixCode)
+		prefixesExternal = append(
+			prefixesExternal, extr.PartPrefixCode)
+		if len(extr.OrExt) > 0 {
+			for _, subExt := range extr.OrExt {
+				prefixesInternal = append(
+					prefixesInternal, subExt.PartPrefixCode)
+				prefixesExternal = append(
+					prefixesExternal, subExt.PartPrefixCode)
+			}
+		}
 	}
 	e.CSVrowPartsPositionsExternal = prefixesExternal
 	e.CSVrowPartsPositionsInternal = prefixesInternal
@@ -82,6 +94,13 @@ func (e *Extractor) MapRowPartsFieldsPositions() {
 	for _, extr := range e.OMextractors {
 		fp := GetPartFieldsPositions(extr)
 		partsPos[extr.PartPrefixCode] = append(partsPos[extr.PartPrefixCode], fp...)
+		if len(extr.OrExt) > 0 {
+			for _, subExt := range extr.OrExt {
+				fp := GetPartFieldsPositions(subExt)
+				partsPos[subExt.PartPrefixCode] = append(
+					partsPos[subExt.PartPrefixCode], fp...)
+			}
+		}
 	}
 	e.CSVrowPartsFieldsPositions = partsPos
 }
@@ -92,7 +111,7 @@ func (e *Extractor) ExtractTable() error {
 			slog.Debug("extractor not extracted", "cause", "empty object")
 			continue
 		}
-		rows, err := ExpandTableRows(e.CSVtable, extr) // : maybe wrong
+		rows, err := ExpandTableRows(e.CSVtable, extr)
 		e.CSVtable = rows
 		if err != nil {
 			return err

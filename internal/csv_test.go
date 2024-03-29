@@ -58,9 +58,3 @@ func TestPartPrintToCSV(t *testing.T) {
 // 	row.CastToCSV(&builder, partsPos, partsFieldsPos, CSVdelim)
 // 	fmt.Println(builder.String())
 // }
-
-func TestCreateTablesHeaderB(t *testing.T) {
-	extractor := new(Extractor)
-	extractor.Init(nil, EXTproduction, CSVdelim)
-	extractor.CreateTablesHeaderB(CSVdelim)
-}

@@ -15,7 +15,8 @@ func RunExtractFolder(rootCfg *ConfigRoot, filterCfg *ConfigExtractFolder) {
 	// folder := "/home/jk/CRO/CRO_BASE/openmedia-archive_backup/Archive/conrol_brezen/Vysocina"
 	// folder := "/home/jk/CRO/CRO_BASE/openmedia-archive_backup/Archive/conrol_brezen/Radiozur"
 	// folder := "/home/jk/CRO/CRO_BASE/openmedia-archive_backup/Archive/conrol_brezen/Dvojka"
-	folder := "/home/jk/CRO/CRO_BASE/openmedia-archive_backup/Archive/conrol_brezen/Plus"
+	// folder := "/home/jk/CRO/CRO_BASE/openmedia-archive_backup/Archive/conrol_brezen/Plus"
+	folder := "/home/jk/CRO/CRO_BASE/openmedia-archive_backup/Archive/landa_control"
 	files, err := internal.ListDirFiles(folder)
 	if err != nil {
 		slog.Error(err.Error())

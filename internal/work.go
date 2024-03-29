@@ -57,11 +57,13 @@ func (e *Extractor) TransformEurovolby(printHeader bool) {
 
 func ExtractProductionVer1(filePath string, header bool) {
 	af := ArchiveFile{}
-	err := af.Init(WorkerTypeRundownXMLutf16le, filePath)
+	// err := af.Init(WorkerTypeRundownXMLutf16le, filePath)
+	err := af.Init(WorkerTypeRundownXMLutf8, filePath)
 	if err != nil {
 		Errors.ExitWithCode(err)
 	}
-	err = af.ExtractByXMLquery(EXTproduction)
+	// err = af.ExtractByXMLquery(EXTproduction)
+	err = af.ExtractByXMLquery(EXTeuroVolby)
 	if err != nil {
 		Errors.ExitWithCode(err)
 	}

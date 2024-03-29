@@ -30,14 +30,18 @@ func TestXMLqueryFile(t *testing.T) {
 	// t.Error(err.Error())
 	// }
 	queries := map[string]string{
-		"story":   "//OM_OBJECT[@TemplateName='Radio Story']",  // 130
-		"audio":   "//OM_OBJECT[@TemplateName='Audioclip']",    // 84
-		"contact": "//OM_OBJECT[@TemplateName='Contact Item']", // 66
+		"story":       "//OM_OBJECT[@TemplateName='Radio Story']",  // 130
+		"audio":       "//OM_OBJECT[@TemplateName='Audioclip']",    // 84
+		"contact":     "//OM_OBJECT[@TemplateName='Contact Item']", // 66
+		"audo+contac": "//OM_OBJECT[@TemplateName='Audioclip' or @TemplateName='Contact Item']",
 	}
 	for i, q := range queries {
 		subNodes := xmlquery.Find(af.BaseNode, q)
 		fmt.Println(i, q, len(subNodes))
 	}
+}
+
+func TestXMLqueryFileListNodes(t *testing.T) {
 }
 
 func TestArchiveFileExtractByXMLquery(t *testing.T) {
