@@ -340,6 +340,16 @@ func XMLqueryFromPath(path string) string {
 	return out.String()
 }
 
+func XMLparalelQuery(extractors []OMextractor) string {
+	var query string
+	objects := []string{}
+	for _, e := range extractors {
+		objects = append(objects, e.ObjectPath)
+	}
+	query = XMLbuildAttrQuery("TemplateName", objects)
+	return query
+}
+
 func XMLqueryFields(fieldsPath string, IDs []string) string {
 	attrQuery := XMLbuildAttrQuery("FieldID", IDs)
 	return fieldsPath + attrQuery

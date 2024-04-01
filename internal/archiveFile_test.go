@@ -44,14 +44,15 @@ func TestXMLqueryFile(t *testing.T) {
 func TestXMLqueryFileListNodes(t *testing.T) {
 }
 
-func TestArchiveFileExtractByXMLquery(t *testing.T) {
+func TestArchiveFileExtractByXMLqueryFilter(t *testing.T) {
 	filePath := "/home/jk/CRO/CRO_BASE/openmedia-archive_backup/Archive/control/control_UTF16_RD_13-17_Plus_Tuesday_W01_2024_01_02.xml"
 	af := ArchiveFile{}
 	err := af.Init(WorkerTypeRundownXMLutf16le, filePath)
 	if err != nil {
 		t.Error(err.Error())
 	}
-	err = af.ExtractByXMLquery(EXTproduction)
+	// err = af.ExtractByXMLquery(EXTproduction)
+	err = af.ExtractByXMLquery(EXTtest)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -60,6 +61,21 @@ func TestArchiveFileExtractByXMLquery(t *testing.T) {
 		FieldPrefix_HourlyHead, "8", patern,
 	)
 	af.Extractor.PrintTableRowsToCSV(true, "\t", rowIdx)
+}
+
+func TestArchiveFileExtractByXMLquery(t *testing.T) {
+	filePath := "/home/jk/CRO/CRO_BASE/openmedia-archive_backup/Archive/control/control_UTF16_RD_13-17_Plus_Tuesday_W01_2024_01_02.xml"
+	af := ArchiveFile{}
+	err := af.Init(WorkerTypeRundownXMLutf16le, filePath)
+	if err != nil {
+		t.Error(err.Error())
+	}
+	// err = af.ExtractByXMLquery(EXTproduction)
+	err = af.ExtractByXMLquery(EXTtest)
+	if err != nil {
+		t.Error(err.Error())
+	}
+	af.Extractor.PrintTableRowsToCSV(true, "\t")
 }
 
 func BenchmarkArchiveFileExtractByXMLquery(b *testing.B) {

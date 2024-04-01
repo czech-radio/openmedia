@@ -22,7 +22,8 @@ type ConfigExtract struct {
 }
 
 func RunExtract(rootCfg *ConfigRoot, filterCfg *ConfigExtract) {
-	workerTypes := []internal.WorkerTypeCode{internal.WorkerTypeZIPoriginal}
+	workerTypes := []internal.WorkerTypeCode{
+		internal.WorkerTypeZIPoriginal}
 	arf := internal.ArchiveFolder{
 		PackageTypes: workerTypes,
 	}

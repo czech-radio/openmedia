@@ -23,8 +23,18 @@ func RunExtractFolder(rootCfg *ConfigRoot, filterCfg *ConfigExtractFolder) {
 		return
 	}
 	header := true
-	for i, f := range files {
-		internal.ExtractProductionVer1(f, header)
+	for i, filePath := range files {
+		af := internal.ArchiveFile{}
+		err := af.Init(internal.WorkerTypeRundownXMLutf8, filePath)
+		if err != nil {
+			internal.Errors.ExitWithCode(err)
+		}
+		err = af.ExtractByXMLquery(internal.EXTtest)
+		if err != nil {
+			internal.Errors.ExitWithCode(err)
+		}
+		af.Extractor.TransformEurovolby()
+		af.Extractor.PrintTableRowsToCSV(header, "\t")
 		if i == 0 {
 			header = false
 		}

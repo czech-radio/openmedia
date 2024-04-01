@@ -60,6 +60,18 @@ type ArchivePackageFile struct {
 	Tables map[WorkerTypeCode]CSVtable
 }
 
+func (af *ArchiveFile) ExtractByXMLqueryB(extrs OMextractors) error {
+	// Extract specfied object fields
+	var extractor Extractor
+	extractor.Init(af.BaseNode, extrs, CSVdelim)
+	err := extractor.ExtractTable()
+	if err != nil {
+		return err
+	}
+	af.Extractor = extractor
+	return nil
+}
+
 func (af *ArchiveFile) ExtractByXMLquery(extrs OMextractors) error {
 	// Extract specfied object fields
 	var extractor Extractor
@@ -93,7 +105,7 @@ func (apf *ArchivePackageFile) ExtractByXMLquery(
 		return err
 	}
 	extractor.UniqueRows()
-	extractor.TransformEurovolby(q.PrintHeader)
+	extractor.TransformEurovolby()
 	return nil
 }
 

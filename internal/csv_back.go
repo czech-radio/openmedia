@@ -49,5 +49,5 @@ func (e *Extractor) PrintTableRowsToCSV(
 		count++
 	}
 	fmt.Print(sb.String())
-	slog.Debug("lines printed", "count", count)
+	slog.Warn("lines printed", "count", count)
 }

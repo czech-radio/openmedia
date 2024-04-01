@@ -259,3 +259,40 @@ func TransformEmptyString(input string) string {
 	}
 	return input
 }
+
+func (row CSVrow) ConsructRecordIDs() string {
+	prefixes := []PartPrefixCode{
+		FieldPrefix_HourlyRec,
+		FieldPrefix_SubRec,
+		FieldPrefix_StoryRec,
+	}
+	var sb strings.Builder
+	var value string
+	for _, prefix := range prefixes {
+		value = ""
+		part, ok := row[prefix]
+		if ok {
+			value = part["RecordID"].Value
+		}
+		if value == "" {
+			value = "-"
+		}
+		fmt.Fprintf(&sb, "/%s", value)
+	}
+	return sb.String()
+}
+
+func (e *Extractor) ComputeRecordIDs() {
+	targetFieldID := "RID"
+	for i, row := range e.CSVtable.Rows {
+		id := row.ConsructRecordIDs()
+		field := CSVrowField{
+			FieldID:   targetFieldID,
+			FieldName: "",
+			Value:     id,
+		}
+		part := make(CSVrowPart)
+		part[targetFieldID] = field
+		e.CSVtable.Rows[i].CSVrow[FieldPrefix_ComputedRID] = part
+	}
+}

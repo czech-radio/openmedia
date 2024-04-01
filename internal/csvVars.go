@@ -26,6 +26,7 @@ const (
 	FieldPrefix_Record
 	FieldPrefix_ComputedID
 	FieldPrefix_ComputedKategory
+	FieldPrefix_ComputedRID
 )
 
 type PartPrefix struct {
@@ -38,7 +39,7 @@ var PartsPrefixMapProduction = PartsPrefixMap{
 	FieldPrefix_HourlyHead:       {"Hourly-HED", "blok"},
 	FieldPrefix_HourlyRec:        {"Hourly-REC", "blok"},
 	FieldPrefix_SubHead:          {"Sub-HED", "SP"},
-	FieldPrefix_SubRec:           {"Sub-REC", "SP"},
+	FieldPrefix_SubRec:           {"Sub-REC", "Sub-REC"},
 	FieldPrefix_StoryHead:        {"Story-HED", "P"},
 	FieldPrefix_StoryRec:         {"Story-REC", "P"},
 	FieldPrefix_AudioClipHead:    {"Audio-HED", "AUD"},
@@ -48,6 +49,7 @@ var PartsPrefixMapProduction = PartsPrefixMap{
 	FieldPrefix_StoryKategory:    {"Story-Cat", "Kategory"},
 	FieldPrefix_ComputedID:       {"Comp-ID", "ID"},
 	FieldPrefix_ComputedKategory: {"Comp-Cat", "kategory"},
+	FieldPrefix_ComputedRID:      {"Comp-RID", "Comp-RID"},
 }
 
 type FieldsIDsNames map[string]string
