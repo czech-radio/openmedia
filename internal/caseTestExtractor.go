@@ -6,6 +6,11 @@ var EXTtest = OMextractors{
 		FieldIDs:       []string{"RID"},
 	},
 	{
+		ObjectPath:       "/Radio Rundown/<OM_RECORD>",
+		ObjectAttrsNames: []string{"RecordID"},
+		PartPrefixCode:   FieldPrefix_RadioRec,
+	},
+	{
 		ObjectPath:     "/*Hourly Rundown",
 		FieldsPath:     TemplateHeaderFieldPath,
 		FieldIDs:       []string{"8"},
@@ -14,8 +19,7 @@ var EXTtest = OMextractors{
 	{
 		ObjectPath:       "/<OM_RECORD>",
 		ObjectAttrsNames: []string{"RecordID"},
-		// FieldIDs:         []string{"8"},
-		PartPrefixCode: FieldPrefix_HourlyRec,
+		PartPrefixCode:   FieldPrefix_HourlyRec,
 	},
 	{
 		ObjectPath:           "/Sub Rundown",
@@ -32,10 +36,11 @@ var EXTtest = OMextractors{
 		KeepWhenZeroSubnodes: true,
 	},
 	{
-		ObjectPath:     "/Radio Story",
-		FieldsPath:     TemplateHeaderFieldPath,
-		PartPrefixCode: FieldPrefix_StoryHead,
-		FieldIDs:       []string{"8"},
+		ObjectPath:       "/Radio Story",
+		FieldsPath:       TemplateHeaderFieldPath,
+		ObjectAttrsNames: []string{"TemplateName"},
+		PartPrefixCode:   FieldPrefix_StoryHead,
+		FieldIDs:         []string{"8"},
 		// FieldIDs:             ProductionFieldsRadioStory,
 		KeepWhenZeroSubnodes: true,
 	},
@@ -48,7 +53,7 @@ var EXTtest = OMextractors{
 	{
 		ObjectPath:           "Audioclip|Contact Item",
 		ObjectAttrsNames:     []string{"TemplateName"},
-		PartPrefixCode:       FieldPrefix_AudioClipHead,
+		PartPrefixCode:       FieldPrefix_StoryKategory,
 		KeepWhenZeroSubnodes: true,
 	},
 	// {

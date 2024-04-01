@@ -332,8 +332,11 @@ func XMLqueryFromPath(path string) string {
 				&out, "%s%s", globPrefix, attrName.XMLtagName)
 			continue
 		}
+
+		paralel := strings.Split(object, "|")
 		attrQuery := XMLbuildAttrQuery(
-			"TemplateName", []string{object})
+			// "TemplateName", []string{object})
+			"TemplateName", paralel)
 		fmt.Fprintf(
 			&out, "%sOM_OBJECT%s", globPrefix, attrQuery)
 	}

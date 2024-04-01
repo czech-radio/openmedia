@@ -68,17 +68,10 @@ type CSVtables struct {
 func BuildHeaderNameExternal(
 	prefixCode PartPrefixCode, fieldName string) string {
 	prefix := PartsPrefixMapProduction[prefixCode]
-	switch prefixCode {
-	case FieldPrefix_StoryRec, FieldPrefix_StoryHead:
-		// Jenonm nazev
+	if prefix.External == "" {
 		return fieldName
-	case FieldPrefix_HourlyHead, FieldPrefix_HourlyRec:
-		// Jenom prefix
-		return prefix.External
-	default:
-		// prefix + fieldName
-		return fmt.Sprintf("%s_%s", fieldName, prefix.External)
 	}
+	return fmt.Sprintf("%s_%s", fieldName, prefix.External)
 }
 
 func (e *Extractor) CreateTablesHeader(delim string) {

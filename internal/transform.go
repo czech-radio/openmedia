@@ -262,6 +262,7 @@ func TransformEmptyString(input string) string {
 
 func (row CSVrow) ConsructRecordIDs() string {
 	prefixes := []PartPrefixCode{
+		FieldPrefix_RadioRec,
 		FieldPrefix_HourlyRec,
 		FieldPrefix_SubRec,
 		FieldPrefix_StoryRec,
@@ -282,7 +283,7 @@ func (row CSVrow) ConsructRecordIDs() string {
 	return sb.String()
 }
 
-func (e *Extractor) ComputeRecordIDs() {
+func (e *Extractor) ComputeRecordIDs(removeSrcColumns bool) {
 	targetFieldID := "RID"
 	for i, row := range e.CSVtable.Rows {
 		id := row.ConsructRecordIDs()
@@ -294,5 +295,15 @@ func (e *Extractor) ComputeRecordIDs() {
 		part := make(CSVrowPart)
 		part[targetFieldID] = field
 		e.CSVtable.Rows[i].CSVrow[FieldPrefix_ComputedRID] = part
+	}
+	if removeSrcColumns {
+		e.RemoveColumn(
+			FieldPrefix_RadioRec, "RecordID")
+		e.RemoveColumn(
+			FieldPrefix_HourlyRec, "RecordID")
+		e.RemoveColumn(
+			FieldPrefix_SubRec, "RecordID")
+		e.RemoveColumn(
+			FieldPrefix_StoryRec, "RecordID")
 	}
 }

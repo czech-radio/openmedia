@@ -15,20 +15,6 @@ func TestXMLqueryFile(t *testing.T) {
 		t.Error(err.Error())
 	}
 	// query := "OM_OBJECT[@TemplateName='Radio Rundown']/OM_RECORD/OM_OBJECT[@TemplateName='Hourly Rundown']/OM_RECORD/OM_OBJECT[@TemplateName='Radio Story']"
-	// pat := "*<OM_RECORD>"
-	// pat := "Radio Rundown"
-	// query := "OM_OBJECT[@TemplateName='Radio Rundown']/OM_RECORD/OM_OBJECT[@TemplateName='Hourly Rundown']/OM_RECORD/OM_OBJECT[@TemplateName='Radio Story']"
-	// 47
-	// query := "OM_OBJECT[@TemplateName='Radio Rundown']/OM_RECORD/OM_OBJECT[@TemplateName='Hourly Rundown']/OM_RECORD//OM_OBJECT[@TemplateName='Contact Item']"
-	// query := "OM_OBJECT[@TemplateName='Radio Rundown']/OM_RECORD/OM_OBJECT[@TemplateName='Hourly Rundown']/OM_RECORD/OM_OBJECT[@TemplateName='Sub Rundown']/OM_RECORD/OM_OBJECT[@TemplateName='Radio Story']"
-	// 83
-	// query := "OM_OBJECT[@TemplateName='Radio Rundown']/OM_RECORD/OM_OBJECT[@TemplateName='Hourly Rundown']/OM_RECORD/OM_OBJECT[@TemplateName='Sub Rundown']/OM_RECORD//OM_OBJECT[@TemplateName='Radio Story']"
-	// pat := "*Radio Story"
-	// query, err := QueryObject(pat)
-	// fmt.Println(query)
-	// if err != nil {
-	// t.Error(err.Error())
-	// }
 	queries := map[string]string{
 		"story":       "//OM_OBJECT[@TemplateName='Radio Story']",  // 130
 		"audio":       "//OM_OBJECT[@TemplateName='Audioclip']",    // 84
@@ -39,9 +25,6 @@ func TestXMLqueryFile(t *testing.T) {
 		subNodes := xmlquery.Find(af.BaseNode, q)
 		fmt.Println(i, q, len(subNodes))
 	}
-}
-
-func TestXMLqueryFileListNodes(t *testing.T) {
 }
 
 func TestArchiveFileExtractByXMLqueryFilter(t *testing.T) {

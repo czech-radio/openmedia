@@ -19,6 +19,7 @@ func RunExtractFile(rootCfg *ConfigRoot, filterCfg *ConfigExtractFile) {
 	if err != nil {
 		internal.Errors.ExitWithCode(err)
 	}
-	af.Extractor.TransformEurovolby()
+	// af.Extractor.TransformEurovolby()
+	af.Extractor.TransformTest()
 	af.Extractor.PrintTableRowsToCSV(true, "\t")
 }

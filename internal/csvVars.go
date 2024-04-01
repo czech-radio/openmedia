@@ -12,7 +12,8 @@ const (
 )
 
 const (
-	FieldPrefix_HourlyHead PartPrefixCode = iota
+	FieldPrefix_RadioRec PartPrefixCode = iota
+	FieldPrefix_HourlyHead
 	FieldPrefix_HourlyRec
 	FieldPrefix_SubHead
 	FieldPrefix_SubRec
@@ -36,17 +37,18 @@ type PartPrefix struct {
 type PartsPrefixMap = map[PartPrefixCode]PartPrefix
 
 var PartsPrefixMapProduction = PartsPrefixMap{
+	FieldPrefix_RadioRec:         {"Radio-REC", "radio"},
 	FieldPrefix_HourlyHead:       {"Hourly-HED", "blok"},
 	FieldPrefix_HourlyRec:        {"Hourly-REC", "blok"},
 	FieldPrefix_SubHead:          {"Sub-HED", "SP"},
-	FieldPrefix_SubRec:           {"Sub-REC", "Sub-REC"},
-	FieldPrefix_StoryHead:        {"Story-HED", "P"},
-	FieldPrefix_StoryRec:         {"Story-REC", "P"},
+	FieldPrefix_SubRec:           {"Sub-REC", "SP-REC"},
+	FieldPrefix_StoryHead:        {"Story-HED", ""},
+	FieldPrefix_StoryRec:         {"Story-REC", ""},
+	FieldPrefix_StoryKategory:    {"Story-Cat", ""},
 	FieldPrefix_AudioClipHead:    {"Audio-HED", "AUD"},
 	FieldPrefix_AudioClipRec:     {"Audio-REC", "AUD"},
 	FieldPrefix_ContactItemHead:  {"Contact-HED", "KON"},
 	FieldPrefix_ContactItemRec:   {"Contact-REC", "KON"},
-	FieldPrefix_StoryKategory:    {"Story-Cat", "Kategory"},
 	FieldPrefix_ComputedID:       {"Comp-ID", "ID"},
 	FieldPrefix_ComputedKategory: {"Comp-Cat", "kategory"},
 	FieldPrefix_ComputedRID:      {"Comp-RID", "Comp-RID"},
