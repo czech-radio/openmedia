@@ -64,9 +64,6 @@ func (e *Extractor) Init(
 	e.CSVtable.Rows = []*CSVrowNode{{baseNode, CSVrow{}}}
 }
 
-func (e *Extractor) NewTable() {
-}
-
 func (e *Extractor) MapRowParts() {
 	var prefixesInternal, prefixesExternal []PartPrefixCode
 	for _, extr := range e.OMextractors {

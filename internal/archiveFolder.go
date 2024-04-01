@@ -27,13 +27,15 @@ type ArchivePackage struct {
 }
 
 type ArchiveFolderQuery struct {
-	RadioNames  map[string]bool
-	DateRange   [2]time.Time
-	IsoWeeks    map[int]bool
-	Months      map[int]bool
-	WeekDays    map[time.Weekday]bool
-	Extractors  OMextractors
-	PrintHeader bool
+	RadioNames        map[string]bool
+	DateRange         [2]time.Time
+	IsoWeeks          map[int]bool
+	Months            map[int]bool
+	WeekDays          map[time.Weekday]bool
+	Extractors        OMextractors
+	ComputeUniqueRows bool
+	PrintHeader       bool
+	CSVdelim          string
 }
 
 func (af *ArchiveFolder) FolderListing(
@@ -56,7 +58,9 @@ func (af *ArchiveFolder) FolderListing(
 		for _, wtc := range af.PackageTypes {
 			switch wtc {
 			case WorkerTypeZIPminified, WorkerTypeZIPoriginal:
-				af.InferEncoding(wtc)
+				// af.InferEncoding(wtc)
+				enc := InferEncoding(wtc)
+				af.XMLencoding = enc
 				ok, _ := ArchivePackageMatch(filePath, wtc, filterRange)
 				if !ok {
 					slog.Debug(
@@ -74,18 +78,6 @@ func (af *ArchiveFolder) FolderListing(
 		return nil
 	}
 	return filepath.WalkDir(rootDir, dirWalker)
-}
-
-func (af *ArchiveFolder) InferEncoding(wtc WorkerTypeCode) FileEncodingNumber {
-	var enc FileEncodingNumber
-	switch wtc {
-	case WorkerTypeZIPminified:
-		enc = UTF8
-	case WorkerTypeZIPoriginal:
-		enc = UTF16le
-	}
-	af.XMLencoding = enc
-	return enc
 }
 
 // NOTE: Do not forget to close all files
@@ -114,9 +106,12 @@ func (af *ArchiveFolder) FolderMap(
 	return nil
 }
 
-func (af *ArchiveFolder) FolderExtract(query *ArchiveFolderQuery) {
+func (af *ArchiveFolder) FolderExtract(
+	query *ArchiveFolderQuery) {
 	query.PrintHeader = true
+	// packageLoop:
 	for _, packageName := range af.PackagesNamesOrder {
+		// packageLoop:
 		slog.Warn("proccessing package", "package", packageName)
 		// for _, pf := range p.PackageFiles {
 		archivePackage := af.Packages[packageName]
@@ -131,7 +126,7 @@ func (af *ArchiveFolder) FolderExtract(query *ArchiveFolderQuery) {
 				slog.Error(err.Error())
 			}
 			query.PrintHeader = false
-			// break
+			// break packageLoop
 		}
 	}
 }

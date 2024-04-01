@@ -54,10 +54,10 @@ func RunRoot() {
 		cmdCfg := &ConfigArchive{}
 		internal.SetupSubFlags(cmdCfg)
 		RunArchive(rcfg, cmdCfg)
-	case "extract":
-		cmdCfg := &ConfigExtract{}
+	case "extractArchive":
+		cmdCfg := &ConfigExtractArchive{}
 		internal.SetupSubFlags(cmdCfg)
-		RunExtract(rcfg, cmdCfg)
+		RunExtractArchive(rcfg, cmdCfg)
 	case "extractFile":
 		cmdCfg := &ConfigExtractFile{}
 		internal.SetupSubFlags(cmdCfg)

@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-type ConfigExtract struct {
+type ConfigExtractArchive struct {
 	SourceDirectory        string `cmd:"source_directory; i; ; directory to be processed"`
 	DestinationDirectory   string `cmd:"destination_directory; o; ; otput files"`
 	RecurseSourceDirectory bool   `cmd:"recurse_source_directory; R; false; recurse source directory"`
@@ -18,26 +18,26 @@ type ConfigExtract struct {
 	DateFrom string `cmd:"date_from; df; ; filter date from"`
 	DateTo   string `cmd:"date_to; dt; ; filter date to"`
 
-	FilterTypeNumber int `cmd:"filter_type; ft; 0; files type to be processed"`
+	ComputeUniqueRows      string `cmd:"compute_unique_rows; cur; false; compute unique rows for all tables"`
+	ProccessPerArchiveFile string `cmd:"process_per_archive_file; ppaf; true; run process for each file alone do not group tables"`
+	ProccessPerPackage     string `cmd:"process_per_archive_package; ppap; false; run process for each file alone do not group tables"`
 }
 
-func RunExtract(rootCfg *ConfigRoot, filterCfg *ConfigExtract) {
+func RunExtractArchive(rootCfg *ConfigRoot, cfg *ConfigExtractArchive) {
 	workerTypes := []internal.WorkerTypeCode{
 		internal.WorkerTypeZIPoriginal}
+	// internal.WorkerTypeZIPminified}
 	arf := internal.ArchiveFolder{
 		PackageTypes: workerTypes,
 	}
 
-	dateFrom, err := internal.CzechDateToUTC(2024, 3, 0, 0)
-	if err != nil {
-		internal.Errors.ExitWithCode(err)
-	}
-	dateTo, err := internal.CzechDateToUTC(2024, 4, 1, 0)
-	if err != nil {
-		internal.Errors.ExitWithCode(err)
-	}
+	dateFrom, _ := internal.CzechDateToUTC(2024, 3, 1, 0)
+	dateTo, _ := internal.CzechDateToUTC(2024, 4, 1, 0)
 
 	filterRange := [2]time.Time{dateFrom, dateTo}
+
+	// extractor := internal.Extractor{}
+	// extractor.Init(nil, internal.EXTproduction, internal.CSVdelim)
 
 	query := internal.ArchiveFolderQuery{
 		RadioNames: map[string]bool{
@@ -47,13 +47,17 @@ func RunExtract(rootCfg *ConfigRoot, filterCfg *ConfigExtract) {
 			// "ČRo_Vysočina": true,
 		},
 		DateRange:  filterRange,
-		Extractors: internal.EXTeuroVolby,
-		// Extractors: internal.EXTeuroVolbyRID,
+		Extractors: internal.EXTproduction,
+		CSVdelim:   cfg.CSVdelim,
 	}
+
+	// var extractor Extractor
+	// extractor.Init(openMedia, q.Extractors, CSVdelim)
 	srcFolder := "/mnt/remote/cro/export-avo/Rundowns"
 	// srcFolder := "/home/jk/CRO/CRO_BASE/openmedia-archive_backup/Archive/"
 
-	err = arf.FolderMap(srcFolder, true, &query)
+	err := arf.FolderMap(
+		srcFolder, true, &query)
 	if err != nil {
 		internal.Errors.ExitWithCode(err)
 	}

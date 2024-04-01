@@ -5,12 +5,10 @@ import (
 	"bytes"
 	"encoding/xml"
 	"fmt"
-	"io"
 	"os"
 	"strings"
 
 	"github.com/antchfx/xmlquery"
-	enc_unicode "golang.org/x/text/encoding/unicode"
 )
 
 type ArchiveFile struct {
@@ -23,6 +21,16 @@ type ArchiveFile struct {
 	Extractor
 }
 
+// switch enc {
+// case UTF8:
+// data, err = io.ReadAll(fileHandle)
+// case UTF16le:
+// utf8reader := enc_unicode.UTF16(enc_unicode.LittleEndian, enc_unicode.IgnoreBOM).NewDecoder().Reader(fileHandle)
+// data, err = io.ReadAll(utf8reader)
+// default:
+// err = fmt.Errorf("unknown encoding")
+// }
+
 func (af *ArchiveFile) Init(wt WorkerTypeCode, filePath string) error {
 	wr := WorkerTypeMap[wt]
 	instructions := strings.Split(wr, "_")
@@ -33,19 +41,28 @@ func (af *ArchiveFile) Init(wt WorkerTypeCode, filePath string) error {
 	if err != nil {
 		return err
 	}
+
 	// switch file encoding type
-	// TODO: implement for UTF8
-	utf8reader := enc_unicode.UTF16(enc_unicode.LittleEndian, enc_unicode.IgnoreBOM).NewDecoder().Reader(fileHandle)
-	data, err := io.ReadAll(utf8reader)
+	enc := InferEncoding(wt)
+	data, err := HandleFileEncoding(enc, fileHandle)
 	if err != nil {
 		return err
 	}
-	bytesReader := bytes.NewReader(data)
-	bytesReader, err = XmlAmendUTF16header(bytesReader)
+	breader, err := HandleXMLfileHeader(enc, data)
 	if err != nil {
 		return err
 	}
-	af.Reader = bytesReader
+	// utf8reader := enc_unicode.UTF16(enc_unicode.LittleEndian, enc_unicode.IgnoreBOM).NewDecoder().Reader(fileHandle)
+	// data, err := io.ReadAll(utf8reader)
+	// if err != nil {
+	// return err
+	// }
+	// bytesReader := bytes.NewReader(data)
+	// bytesReader, err = XmlAmendUTF16header(bytesReader)
+	// if err != nil {
+	// return err
+	// }
+	af.Reader = breader
 
 	openMedia, err := XmlFindBaseOpenMediaNode(af.Reader)
 	if err != nil {
@@ -58,18 +75,6 @@ func (af *ArchiveFile) Init(wt WorkerTypeCode, filePath string) error {
 type ArchivePackageFile struct {
 	Reader *zip.File
 	Tables map[WorkerTypeCode]CSVtable
-}
-
-func (af *ArchiveFile) ExtractByXMLqueryB(extrs OMextractors) error {
-	// Extract specfied object fields
-	var extractor Extractor
-	extractor.Init(af.BaseNode, extrs, CSVdelim)
-	err := extractor.ExtractTable()
-	if err != nil {
-		return err
-	}
-	af.Extractor = extractor
-	return nil
 }
 
 func (af *ArchiveFile) ExtractByXMLquery(extrs OMextractors) error {
@@ -104,8 +109,11 @@ func (apf *ArchivePackageFile) ExtractByXMLquery(
 	if err != nil {
 		return err
 	}
-	extractor.UniqueRows()
-	extractor.TransformEurovolby()
+	if q.ComputeUniqueRows {
+		extractor.UniqueRows()
+	}
+	extractor.TransformProduction()
+	extractor.PrintTableRowsToCSV(q.PrintHeader, q.CSVdelim)
 	return nil
 }
 

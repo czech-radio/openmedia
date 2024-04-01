@@ -194,6 +194,7 @@ func (e *Extractor) TransformDateToTime(
 			continue
 		}
 		field.Value = fmt.Sprintf(
+			// "%02d:%02d:%02d,%03d", date.Hour(), date.Minute(), date.Second(), date.Nanosecond()/1000000)
 			"%02d:%02d:%02d", date.Hour(), date.Minute(), date.Second())
 		part[fieldID] = field
 
@@ -206,7 +207,9 @@ func (e *Extractor) TransformDateToTime(
 }
 
 func ParseXMLdate(input string) (time.Time, error) {
+	// layout := "20060102T150405.000"
 	layout := "20060102T150405.000"
+	// parsedTime, err := time.Parse(layout, input)
 	parsedTime, err := time.Parse(layout, input)
 	if err != nil {
 		slog.Error(err.Error())

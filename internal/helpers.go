@@ -394,18 +394,26 @@ const (
 	UTF16be
 )
 
-func ZipFileExtractData(zf *zip.File, enc FileEncodingNumber) ([]byte, error) {
-	fileHandle, err := zf.Open()
-	if err != nil {
-		return nil, err
+func InferEncoding(wtc WorkerTypeCode) FileEncodingNumber {
+	var enc FileEncodingNumber
+	switch wtc {
+	case WorkerTypeZIPminified, WorkerTypeRundownXMLutf8:
+		enc = UTF8
+	case WorkerTypeZIPoriginal, WorkerTypeRundownXMLutf16le:
+		enc = UTF16le
 	}
-	defer fileHandle.Close()
+	return enc
+}
+
+func HandleFileEncoding(
+	enc FileEncodingNumber, ioReaderCloser io.ReadCloser) ([]byte, error) {
 	var data []byte
+	var err error
 	switch enc {
 	case UTF8:
-		data, err = io.ReadAll(fileHandle)
+		data, err = io.ReadAll(ioReaderCloser)
 	case UTF16le:
-		utf8reader := enc_unicode.UTF16(enc_unicode.LittleEndian, enc_unicode.IgnoreBOM).NewDecoder().Reader(fileHandle)
+		utf8reader := enc_unicode.UTF16(enc_unicode.LittleEndian, enc_unicode.IgnoreBOM).NewDecoder().Reader(ioReaderCloser)
 		data, err = io.ReadAll(utf8reader)
 	default:
 		err = fmt.Errorf("unknown encoding")
@@ -413,11 +421,9 @@ func ZipFileExtractData(zf *zip.File, enc FileEncodingNumber) ([]byte, error) {
 	return data, err
 }
 
-func ZipXmlFileDecodeData(zf *zip.File, enc FileEncodingNumber) (*bytes.Reader, error) {
-	data, err := ZipFileExtractData(zf, enc)
-	if err != nil {
-		return nil, err
-	}
+func HandleXMLfileHeader(
+	enc FileEncodingNumber, data []byte) (*bytes.Reader, error) {
+	var err error
 	breader := bytes.NewReader(data)
 	switch enc {
 	case UTF8:
@@ -432,11 +438,44 @@ func ZipXmlFileDecodeData(zf *zip.File, enc FileEncodingNumber) (*bytes.Reader, 
 	return breader, err
 }
 
-func PrintRows(rows map[int]CSVrowFields) {
-	for i := 0; i < len(rows); i++ {
-		fmt.Println(i, rows[i])
-		fmt.Println()
+func ZipFileExtractData(zf *zip.File, enc FileEncodingNumber) ([]byte, error) {
+	fileHandle, err := zf.Open()
+	if err != nil {
+		return nil, err
 	}
+	defer fileHandle.Close()
+	// var data []byte
+	return HandleFileEncoding(enc, fileHandle)
+	// switch enc {
+	// case UTF8:
+	// data, err = io.ReadAll(fileHandle)
+	// case UTF16le:
+	// utf8reader := enc_unicode.UTF16(enc_unicode.LittleEndian, enc_unicode.IgnoreBOM).NewDecoder().Reader(fileHandle)
+	// data, err = io.ReadAll(utf8reader)
+	// default:
+	// err = fmt.Errorf("unknown encoding")
+	// }
+	// return data, err
+}
+
+func ZipXmlFileDecodeData(zf *zip.File, enc FileEncodingNumber) (*bytes.Reader, error) {
+	data, err := ZipFileExtractData(zf, enc)
+	if err != nil {
+		return nil, err
+	}
+	return HandleXMLfileHeader(enc, data)
+	// breader := bytes.NewReader(data)
+	// switch enc {
+	// case UTF8:
+	// case UTF16le:
+	// breader, err = XmlAmendUTF16header(breader)
+	// if err != nil {
+	// return nil, err
+	// }
+	// default:
+	// err = fmt.Errorf("unknown encoding")
+	// }
+	// return breader, err
 }
 
 func JoinObjectPath(oldpath, newpath string) string {
@@ -446,6 +485,13 @@ func JoinObjectPath(oldpath, newpath string) string {
 func PrintRow(input CSVrow) {
 	for ai, a := range input {
 		fmt.Println(ai, a)
+	}
+}
+
+func PrintRows(rows map[int]CSVrowFields) {
+	for i := 0; i < len(rows); i++ {
+		fmt.Println(i, rows[i])
+		fmt.Println()
 	}
 }
 

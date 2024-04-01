@@ -2,6 +2,7 @@ package internal
 
 import (
 	"log/slog"
+	"strings"
 
 	"github.com/antchfx/xmlquery"
 )
@@ -9,56 +10,6 @@ import (
 // ExpandTableRows parse additional data from xml for each row. Multiple rows none,one or more rows may be created from one original row.
 // Deep copy must be used here or at least in function which takes it as parameter and wants to modify it.
 // TODO: Try using CSVrowPart map[string]*CSVrowField insted of  map[string]CSVrowField. So the "copy of parent row" can be made parRow:=map[FieldID]&Field. Every row or its parts based on parent row will reference same value of common fields. So it can be changed/transformed globaly for whole table. Transforming operations must be done on whole column. If not the column will be contamineted and no furher global transform on column can be made easily without iterating over whole column. The pros of using field pointer is speed and less memory allocations.
-func ExpandTableRowsB(table CSVtable, extr OMextractor) (CSVtable, error) {
-	objquery := XMLqueryFromPath(extr.ObjectPath)
-	slog.Debug("object query", "query", objquery)
-
-	// paralelQuery:=
-
-	var newTable CSVtable
-	slog.Debug("table length", "count", len(table.Rows))
-
-	for i, row := range table.Rows {
-		subNodes := xmlquery.Find(row.Node, objquery)
-		subNodesCount := len(subNodes)
-
-		prow := CopyRow(table.Rows[i].CSVrow)
-		newRow := &CSVrowNode{row.Node, prow}
-		if subNodesCount == 0 && extr.KeepWhenZeroSubnodes {
-			slog.Debug("no subnodes found", "row", i, "parentRow", row.CSVrow)
-			newTable.Rows = append(newTable.Rows, newRow)
-			continue
-		}
-		if subNodesCount == 0 {
-			slog.Debug("no subnodes found", "row", i, "parentRow", row.CSVrow)
-			continue
-		}
-
-		slog.Debug("subnodes found", "count", subNodesCount)
-		subRows := ExtractNodesFields(row, subNodes, extr)
-		newTable.Rows = append(newTable.Rows, subRows.Rows...)
-
-		if extr.PreserveParentNode {
-			for i := range subRows.Rows {
-				subRows.Rows[i].Node = row.Node
-			}
-		}
-
-		if extr.KeepInputRow {
-			slog.Debug("appendig also input row")
-			newTable.Rows = append(newTable.Rows, newRow)
-		}
-
-		// 		if len(subRows.Rows) == 1 && extr.PreserveParentNode {
-		// 			// NOTE: It may be useful even for len > 1
-		// 			subRows.Rows[0].Node = row.Node
-		// 			newTable.Rows = append(newTable.Rows, subRows.Rows[0])
-		// 		}
-
-	}
-	return newTable, nil
-}
-
 func ExpandTableRows(table CSVtable, extr OMextractor) (CSVtable, error) {
 	var newTable CSVtable
 	objquery := XMLqueryFromPath(extr.ObjectPath)
@@ -68,35 +19,21 @@ func ExpandTableRows(table CSVtable, extr OMextractor) (CSVtable, error) {
 		// Find main object: exmp OM_RECORD
 		subNodes := xmlquery.Find(row.Node, objquery)
 		subNodesCount := len(subNodes)
-		slog.Debug("subnodes found", "count", subNodesCount)
 
 		prow := CopyRow(row.CSVrow)
 		newRow := &CSVrowNode{row.Node, prow}
 		if len(subNodes) == 0 && extr.KeepWhenZeroSubnodes {
-			slog.Debug("FUCK subnodes not found",
+			slog.Debug("subnodes not_found",
 				"objquery", objquery, "parent", row.Node.Data)
 			newTable.Rows = append(newTable.Rows, newRow)
 			continue
 		}
-
-		// Find subobjects: exmp Audioclip and Contact Item
-		// prow := CopyRow(table.Rows[i].CSVrow)
-		// newRow := &CSVrowNode{row.Node, prow}
-
+		// Extract objects fields
+		slog.Debug("subnodes found", "count", subNodesCount)
 		subRows := ExtractNodesFields(row, subNodes, extr)
 		newTable.Rows = append(newTable.Rows, subRows.Rows...)
 	}
 	return newTable, nil
-}
-
-func ExpandParalelObjects(table CSVtable, extr OMextractor) {
-	if len(extr.OrExt) == 0 {
-		return
-	}
-	// subObjQuery := XMLparalelQuery(extr.OrExt)
-	// for i, row := range table {
-	// }
-	// subObjNodes := xmlquery.Find(row.Node, objquery)
 }
 
 func CopyRow(inputRow CSVrow) CSVrow {
@@ -150,7 +87,7 @@ func NodeGetAttributes(
 			FieldID: attrName,
 			// FieldName: fieldName,
 			// or send it to map[Prefix]map[FieldID]FieldName so it does not take memory
-			Value: attrVal,
+			Value: strings.TrimSpace(attrVal),
 		}
 		part[attrName] = field
 	}
@@ -182,7 +119,7 @@ func NodeGetFields(
 			FieldID: fieldID,
 			// FieldName: fieldName,
 			// or send it to map[Prefix]map[FieldID]FieldName
-			Value: f.InnerText(),
+			Value: strings.TrimSpace(f.InnerText()),
 		}
 		part[fieldID] = field
 	}

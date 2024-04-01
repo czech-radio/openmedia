@@ -55,13 +55,24 @@ var EXTtest = OMextractors{
 		ObjectAttrsNames:     []string{"TemplateName"},
 		PartPrefixCode:       FieldPrefix_StoryKategory,
 		KeepWhenZeroSubnodes: true,
+		PreserveParentNode:   true,
 	},
-	// {
-	// 	PartPrefixCode: FieldPrefix_ComputedKategory,
-	// 	FieldIDs:       []string{"kategory"},
-	// },
-	// {
-	// 	PartPrefixCode: FieldPrefix_ComputedID,
-	// 	FieldIDs:       []string{"ID"},
-	// },
+	{
+		ObjectPath:           "Audioclip",
+		FieldsPath:           TemplateHeaderFieldPath,
+		FieldIDs:             []string{"8"},
+		PartPrefixCode:       FieldPrefix_AudioClipHead,
+		KeepWhenZeroSubnodes: true,
+	},
+	{
+		ObjectPath:           "Contact Item",
+		FieldsPath:           TemplateHeaderFieldPath,
+		FieldIDs:             []string{"1"},
+		PartPrefixCode:       FieldPrefix_ContactItemHead,
+		KeepWhenZeroSubnodes: true,
+	},
+	{
+		PartPrefixCode: FieldPrefix_ComputedID,
+		FieldIDs:       []string{"ID"},
+	},
 }
