@@ -46,8 +46,9 @@ func RunExtractArchive(rootCfg *ConfigRoot, cfg *ConfigExtractArchive) {
 			// "Dvojka": true,
 			// "ČRo_Vysočina": true,
 		},
-		DateRange:  filterRange,
-		Extractors: internal.EXTproduction,
+		DateRange: filterRange,
+		// Extractors: internal.EXTproduction,
+		Extractors: internal.EXTeuroVolby,
 		CSVdelim:   cfg.CSVdelim,
 	}
 

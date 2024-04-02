@@ -111,7 +111,6 @@ func (af *ArchiveFolder) FolderExtract(
 	query.PrintHeader = true
 	// packageLoop:
 	for _, packageName := range af.PackagesNamesOrder {
-		// packageLoop:
 		slog.Warn("proccessing package", "package", packageName)
 		// for _, pf := range p.PackageFiles {
 		archivePackage := af.Packages[packageName]

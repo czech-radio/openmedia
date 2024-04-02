@@ -38,13 +38,13 @@ func (e *Extractor) TransformEurovolby() {
 		"1035", TransformStopaz)
 
 	// Audio
-	e.TransformField(
-		FieldPrefix_AudioClipHead,
-		"1005", TransformStopaz)
+	// e.TransformField(
+	// FieldPrefix_AudioClipHead,
+	// "1005", TransformStopaz)
 
 	e.ComputeID()
 	// RecordIDs
-	e.ComputeRecordIDs(false)
+	// e.ComputeRecordIDs(false)
 
 	// FILTER ROWS
 	// rowsIDx := e.Extractor.FilterByPartAndFieldID(internal.FieldPrefix_HourlyHead, "8", "13:00-14:00")

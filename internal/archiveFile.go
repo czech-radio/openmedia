@@ -112,7 +112,8 @@ func (apf *ArchivePackageFile) ExtractByXMLquery(
 	if q.ComputeUniqueRows {
 		extractor.UniqueRows()
 	}
-	extractor.TransformProduction()
+	// extractor.TransformProduction()
+	extractor.TransformEurovolby()
 	extractor.PrintTableRowsToCSV(q.PrintHeader, q.CSVdelim)
 	return nil
 }
