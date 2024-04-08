@@ -158,7 +158,7 @@ func (w *ArchivePackageWorker) Init(dstdir, archiveName string) error {
 		w.ArchiveWriter = zip.NewWriter(archive)
 	}
 	// 2. Skip if exists. TODO: Golang zip package does not support adding files to old archive.
-	// archive must be reacreated such that the content from old archive is copied to the new archive
+	// archive must be reacreated such that the content from old archive is copied to the new archive. Alternatively use tar zip.
 	if exists {
 		return fmt.Errorf("archive already exists: %s", archiveName)
 	}

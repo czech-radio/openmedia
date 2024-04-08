@@ -105,23 +105,27 @@ func TransformStopaz(stopaz string) (string, error) {
 
 func (e *Extractor) TransformField(
 	partCode PartPrefixCode, fieldID string,
-	fun func(string) (string, error)) {
+	fun func(string) (string, error), force bool) {
 	partName := PartsPrefixMapProduction[partCode].Internal
 
 	for i, row := range e.CSVtable.Rows {
 		part, ok := row.CSVrow[partCode]
-		if !ok {
-			slog.Debug("row part name not found", "partName", partName)
+		if !ok && !force {
+			slog.Debug("row part name not found",
+				"partName", partName)
 			continue
 		}
 		field, ok := part[fieldID]
-		if !ok {
+		if !ok && !force {
 			continue
 		}
 		name, err := fun(field.Value)
 		if err != nil {
 			slog.Debug(err.Error())
 			continue
+		}
+		if e.CSVtable.Rows[i].CSVrow[partCode] == nil {
+			e.CSVtable.Rows[i].CSVrow[partCode] = make(CSVrowPart)
 		}
 		field.Value = name
 		e.CSVtable.Rows[i].CSVrow[partCode][fieldID] = field
@@ -234,10 +238,15 @@ func (e *Extractor) ComputeID() {
 }
 
 func (row CSVrow) ConstructID() string {
-	part, ok := row[FieldPrefix_StoryHead]
+	partStoryHead, ok := row[FieldPrefix_StoryHead]
 	if !ok {
 		return ""
 	}
+	partHourlyHead, ok := row[FieldPrefix_HourlyHead]
+	if !ok {
+		return ""
+	}
+
 	// Z praktických důvodů bych poprosil o zavedení sloupce [ID] pro označení příspěvku. Půjde o kalkulované pole, které bude mít podobu
 	// "[stanice] / [datum] / [cas_zacatku] - [cas konce] / [nazev]".
 	// Story, 5081
@@ -245,13 +254,16 @@ func (row CSVrow) ConstructID() string {
 	// Story, 1004 -> cas
 	// Story, 1003 -> cas
 	// Story, 8 Nazev
-	stanice := part["5081"].Value
-	datum := part["datum"].Value
-	nazev := part["8"].Value
-	zacatek := part["1004"].Value
-	konec := part["1003"].Value
-	out := fmt.Sprintf("%s/%s/%s - %s/%s",
-		stanice, datum, zacatek, konec, nazev)
+	blok := partHourlyHead["8"].Value
+	stanice := partStoryHead["5081"].Value
+	datum := partStoryHead["datum"].Value
+	nazev := partStoryHead["8"].Value
+	zacatek := partStoryHead["1004"].Value
+	konec := partStoryHead["1003"].Value
+	// out := fmt.Sprintf("%s/%s/%s - %s/%s",
+	// stanice, datum, zacatek, konec, nazev)
+	out := fmt.Sprintf("%s/%s/%s/%s - %s/%s",
+		stanice, blok, datum, zacatek, konec, nazev)
 	return out
 }
 
@@ -261,6 +273,28 @@ func TransformEmptyString(input string) string {
 		return value
 	}
 	return input
+}
+
+func TransformEmptyToNoContain(input string) (string, error) {
+	childVal := CSVspecialValues[CSVspecialValueChildNotFound]
+	if input == childVal {
+		return CSVspecialValues[CSVspecialValueParentNotFound], nil
+	}
+	if input == "" {
+		return CSVspecialValues[CSVspecialValueParentNotFound], nil
+	}
+	return input, nil
+}
+
+func TransformShortenField(input string) (string, error) {
+	targetLength := 248
+	// targetLength := 10
+	if len(input) <= targetLength {
+		return input, nil
+	} else {
+		// Shorten the string to 249 characters
+		return input[:targetLength], nil
+	}
 }
 
 func (row CSVrow) ConsructRecordIDs() string {
@@ -286,8 +320,11 @@ func (row CSVrow) ConsructRecordIDs() string {
 	return sb.String()
 }
 
+func (e *Extractor) ComputeIndex() {
+}
+
 func (e *Extractor) ComputeRecordIDs(removeSrcColumns bool) {
-	targetFieldID := "RID"
+	targetFieldID := "C-RID"
 	for i, row := range e.CSVtable.Rows {
 		id := row.ConsructRecordIDs()
 		field := CSVrowField{

@@ -31,7 +31,11 @@ func RunExtractArchive(rootCfg *ConfigRoot, cfg *ConfigExtractArchive) {
 		PackageTypes: workerTypes,
 	}
 
-	dateFrom, _ := internal.CzechDateToUTC(2024, 3, 1, 0)
+	// brezen
+	// dateFrom, _ := internal.CzechDateToUTC(2024, 3, 1, 0)
+	// dateTo, _ := internal.CzechDateToUTC(2024, 4, 1, 0)
+	// week13
+	dateFrom, _ := internal.CzechDateToUTC(2024, 3, 25, 0)
 	dateTo, _ := internal.CzechDateToUTC(2024, 4, 1, 0)
 
 	filterRange := [2]time.Time{dateFrom, dateTo}
@@ -42,14 +46,16 @@ func RunExtractArchive(rootCfg *ConfigRoot, cfg *ConfigExtractArchive) {
 	query := internal.ArchiveFolderQuery{
 		RadioNames: map[string]bool{
 			// "Radiožurnál": true,
-			// "Plus": true,
+			"Plus": true,
 			// "Dvojka": true,
 			// "ČRo_Vysočina": true,
+			// "ČRo_Karlovy_Vary": true,
+			// "ČRo_Brno": true,
 		},
-		DateRange: filterRange,
-		// Extractors: internal.EXTproduction,
-		Extractors: internal.EXTeuroVolby,
-		CSVdelim:   cfg.CSVdelim,
+		DateRange:  filterRange,
+		Extractors: internal.EXTproduction,
+		// Extractors: internal.EXTeuroVolby,
+		CSVdelim: cfg.CSVdelim,
 	}
 
 	// var extractor Extractor

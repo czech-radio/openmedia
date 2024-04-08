@@ -58,7 +58,10 @@ func ExtractNodesFields(
 		part := NodeToCSVrowPart(subNode, extr)
 		newRowNode := CSVrowNode{}
 		if extr.PreserveParentNode {
-			newRowNode.Node = parentRow.Node
+			// newRowNode.Node = parentRow.Node
+			// slog.Warn(parentRow.Node.Parent.Data)
+			// newRowNode.Node = parentRow.Node
+			newRowNode.Node = subNode.Parent // TEST Should be
 		} else {
 			newRowNode.Node = subNode
 		}

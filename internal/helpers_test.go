@@ -2,7 +2,6 @@ package internal
 
 import (
 	"errors"
-	"flag"
 	"fmt"
 	"log/slog"
 	"maps"
@@ -49,57 +48,78 @@ func CleanUp() (chan os.Signal, *sync.WaitGroup) {
 	return com, wg
 }
 
-// TestMain setup, run tests, and tear down (cleanup after tests)
-func TestMain(m *testing.M) {
-	// setup logging
-	level := os.Getenv("GOLOGLEVEL")
-	SetLogLevel(level, "json")
-
-	flag.Parse()
-	// Short test without setup
-	if testing.Short() == true {
-		TESTS_RESULT_CODE = m.Run()
-		return
-	}
-
-	// TESTS SETUP
-	//// Setup testing data
-	current_directory, err := os.Getwd()
-	if err != nil {
-		panic(err)
-	}
-
-	TEST_DATA_DIR_SRC = current_directory + "/../test/testdata"
-	TEMP_DIR = DirectoryCreateTemporaryOrPanic("openmedia_archive_test_")
-	DirectoryIsReadableOrPanic(TEST_DATA_DIR_SRC)
-	TEMP_DIR_TEST_SRC = filepath.Join(TEMP_DIR, "SRC")
-	TEMP_DIR_TEST_DST = filepath.Join(TEMP_DIR, "DST")
-	err = os.MkdirAll(TEMP_DIR_TEST_DST, 0700)
-	if err != nil {
-		slog.Error(err.Error())
-	}
-
-	//// copy testing data to temporary directory
-	SetLogLevel("0")
-	err_copy := DirectoryCopy(
-		TEST_DATA_DIR_SRC,
-		TEMP_DIR_TEST_SRC,
-		true, false, "",
-	)
-	if err_copy != nil {
-		os.Exit(-1)
-	}
-	SetLogLevel(level, "json")
-
-	// Clean up (teardown)
-	cleanupChan, waitGroup := CleanUp()
-
-	// Run tests
-	TESTS_RESULT_CODE = m.Run()
-	// os.Exit(TESTS_RESULT_CODE)
-	cleanupChan <- syscall.SIGHUP
-	waitGroup.Wait()
+var Setup = SetupTest{
+	TestDataSource:      "",
+	TempDataSource:      "",
+	TempDataDestination: "",
 }
+
+func TestNeedsSetup(t *testing.T) {
+	Setup.Init()
+	// PrepareTestDirectory()
+	// t.Skip()
+	// t.Helper()
+	// t.Cleanup()
+	// m.Run()
+	// t.TempDir
+}
+
+func TestNoNeedToSetup(t *testing.T) {
+	// SetInitory()
+	// PrepareTestDirectory()
+}
+
+// // TestMain setup, run tests, and tear down (cleanup after tests)
+// func TestMain(m *testing.M) {
+// 	// setup logging
+// 	level := os.Getenv("GOLOGLEVEL")
+// 	SetLogLevel(level, "json")
+
+// 	flag.Parse()
+// 	// Short test without setup
+// 	if testing.Short() == true {
+// 		TESTS_RESULT_CODE = m.Run()
+// 		return
+// 	}
+
+// 	// TESTS SETUP
+// 	//// Setup testing data
+// 	current_directory, err := os.Getwd()
+// 	if err != nil {
+// 		panic(err)
+// 	}
+
+// 	TEST_DATA_DIR_SRC = current_directory + "/../test/testdata"
+// 	TEMP_DIR = DirectoryCreateTemporaryOrPanic("openmedia_archive_test_")
+// 	DirectoryIsReadableOrPanic(TEST_DATA_DIR_SRC)
+// 	TEMP_DIR_TEST_SRC = filepath.Join(TEMP_DIR, "SRC")
+// 	TEMP_DIR_TEST_DST = filepath.Join(TEMP_DIR, "DST")
+// 	err = os.MkdirAll(TEMP_DIR_TEST_DST, 0700)
+// 	if err != nil {
+// 		slog.Error(err.Error())
+// 	}
+
+// 	//// copy testing data to temporary directory
+// 	SetLogLevel("0")
+// 	err_copy := DirectoryCopy(
+// 		TEST_DATA_DIR_SRC,
+// 		TEMP_DIR_TEST_SRC,
+// 		true, false, "",
+// 	)
+// 	if err_copy != nil {
+// 		os.Exit(-1)
+// 	}
+// 	SetLogLevel(level, "json")
+
+// 	// Clean up (teardown)
+// 	cleanupChan, waitGroup := CleanUp()
+
+// 	// Run tests
+// 	TESTS_RESULT_CODE = m.Run()
+// 	// os.Exit(TESTS_RESULT_CODE)
+// 	cleanupChan <- syscall.SIGHUP
+// 	waitGroup.Wait()
+// }
 
 type TestPair struct {
 	Input          any

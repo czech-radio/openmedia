@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"flag"
 	"fmt"
 	"io"
 	"io/fs"
@@ -15,6 +16,7 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/ncruces/go-strftime"
@@ -120,7 +122,7 @@ func DirectoryIsReadableOrPanic(file_path string) {
 	}
 	// Check if file_path is directory
 	if !fileInfo.IsDir() {
-		panic(err)
+		panic("filepath is directory")
 	}
 
 	// Check file_path file mode or file permission
@@ -530,4 +532,54 @@ func CzechDateToUTC(year, month, day, hour int) (
 		0, 0, 0, location,
 	)
 	return czechDate.UTC(), nil
+}
+
+type SetupTest struct {
+	// Config
+	TestDataSource      string
+	TempDataSource      string
+	TempDataDestination string
+
+	// Internals
+	done        bool
+	initialized bool
+	chanCleanUP chan os.Signal
+	waitGroup   *sync.WaitGroup
+}
+
+func (st *SetupTest) Init() {
+	if st.initialized {
+		return
+	}
+	level := os.Getenv("GOLOGLEVEL")
+	SetLogLevel(level, "json")
+	flag.Parse()
+	slog.Debug("preparing test directory")
+	// Short test without setup
+	// if testing.Short() == true {
+	// TESTS_RESULT_CODE = m.Run()
+	// return
+	// }
+	st.initialized = true
+}
+
+func (st *SetupTest) CleanUP() {
+	st.chanCleanUP = make(chan os.Signal, 1)
+	st.waitGroup = new(sync.WaitGroup)
+	st.waitGroup.Add(1)
+	// wg.Add(1)
+	// go func() {
+	// 	signal.Notify(com, os.Interrupt, syscall.SIGHUP)
+	// 	signal := <-com
+	// 	slog.Info("clean up started")
+	// 	DirectoryDeleteOrPanic(TEMP_DIR)
+	// 	slog.Info("clean up finished")
+	// 	switch signal {
+	// 	case os.Interrupt:
+	// 		os.Exit(-1)
+	// 	case syscall.SIGHUP:
+	// 		os.Exit(TESTS_RESULT_CODE)
+	// 	}
+	// }()
+	// return com, wg
 }

@@ -9,7 +9,8 @@ type ConfigExtractFile struct {
 }
 
 func RunExtractFile(rootCfg *ConfigRoot, filterCfg *ConfigExtractFile) {
-	filePath := "/home/jk/CRO/CRO_BASE/openmedia-archive_backup/Archive/control/control_UTF16_RD_13-17_Plus_Tuesday_W01_2024_01_02.xml"
+	// filePath := "/home/jk/CRO/CRO_BASE/openmedia-archive_backup/Archive/control/control_UTF16_RD_13-17_Plus_Tuesday_W01_2024_01_02.xml"
+	filePath := "/home/jk/CRO/CRO_BASE/openmedia-archive_backup/Archive/control2/RD_18-24_Radiožurnál_Friday_W09_2024_03_01_utf16le.xml"
 	// filePath := "/home/jk/CRO/CRO_BASE/openmedia-archive_backup/Archive/control/control_UTF8_RD_13-17_Plus_Tuesday_W01_2024_01_02.xml"
 	af := internal.ArchiveFile{}
 	err := af.Init(
@@ -19,13 +20,13 @@ func RunExtractFile(rootCfg *ConfigRoot, filterCfg *ConfigExtractFile) {
 		internal.Errors.ExitWithCode(err)
 	}
 	// err = af.ExtractByXMLquery(internal.EXTtest)
-	// err = af.ExtractByXMLquery(internal.EXTproduction)
-	err = af.ExtractByXMLquery(internal.EXTeuroVolby)
+	err = af.ExtractByXMLquery(internal.EXTproduction)
+	// err = af.ExtractByXMLquery(internal.EXTeuroVolby)
 	if err != nil {
 		internal.Errors.ExitWithCode(err)
 	}
-	// af.Extractor.TransformProduction()
-	af.Extractor.TransformEurovolby()
+	af.Extractor.TransformProduction()
+	// af.Extractor.TransformEurovolby()
 	// af.Extractor.TransformTest()
 	af.Extractor.PrintTableRowsToCSV(true, "\t")
 }

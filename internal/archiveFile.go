@@ -21,16 +21,6 @@ type ArchiveFile struct {
 	Extractor
 }
 
-// switch enc {
-// case UTF8:
-// data, err = io.ReadAll(fileHandle)
-// case UTF16le:
-// utf8reader := enc_unicode.UTF16(enc_unicode.LittleEndian, enc_unicode.IgnoreBOM).NewDecoder().Reader(fileHandle)
-// data, err = io.ReadAll(utf8reader)
-// default:
-// err = fmt.Errorf("unknown encoding")
-// }
-
 func (af *ArchiveFile) Init(wt WorkerTypeCode, filePath string) error {
 	wr := WorkerTypeMap[wt]
 	instructions := strings.Split(wr, "_")
@@ -52,16 +42,6 @@ func (af *ArchiveFile) Init(wt WorkerTypeCode, filePath string) error {
 	if err != nil {
 		return err
 	}
-	// utf8reader := enc_unicode.UTF16(enc_unicode.LittleEndian, enc_unicode.IgnoreBOM).NewDecoder().Reader(fileHandle)
-	// data, err := io.ReadAll(utf8reader)
-	// if err != nil {
-	// return err
-	// }
-	// bytesReader := bytes.NewReader(data)
-	// bytesReader, err = XmlAmendUTF16header(bytesReader)
-	// if err != nil {
-	// return err
-	// }
 	af.Reader = breader
 
 	openMedia, err := XmlFindBaseOpenMediaNode(af.Reader)
@@ -112,8 +92,8 @@ func (apf *ArchivePackageFile) ExtractByXMLquery(
 	if q.ComputeUniqueRows {
 		extractor.UniqueRows()
 	}
-	// extractor.TransformProduction()
-	extractor.TransformEurovolby()
+	extractor.TransformProduction()
+	// extractor.TransformEurovolby()
 	extractor.PrintTableRowsToCSV(q.PrintHeader, q.CSVdelim)
 	return nil
 }

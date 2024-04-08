@@ -51,46 +51,49 @@ var PartsPrefixMapProduction = PartsPrefixMap{
 	FieldPrefix_ContactItemRec:   {"Contact-REC", "KON"},
 	FieldPrefix_ComputedID:       {"Comp-ID", "ID"},
 	FieldPrefix_ComputedKategory: {"Comp-Cat", "kategory"},
-	FieldPrefix_ComputedRID:      {"Comp-RID", "Comp-RID"},
+	FieldPrefix_ComputedRID:      {"Comp-RID", ""},
 }
 
 type FieldsIDsNames map[string]string
 
 var FieldsIDsNamesProduction = FieldsIDsNames{
-	"kategory":     "kategory",
 	"1":            "cas_vytvoreni",
-	"TemplateName": "kategorie",
-	"RecordID":     "RID",
-	"datum":        "datum",
-	"8":            "nazev",
-	"1004":         "cas_zacatku",
-	"1003":         "cas_konce",
-	"1005":         "stopaz",
-	"321":          "format",
-	"5081":         "stanice",
-	"1036":         "audio_stopaz",
-	"1029":         "korekce",
-	"1010":         "spoctena_stopaz",
 	"1002":         "planovana_stopaz",
-	"5079":         "cil_vyroby",
-	"16":           "druh",
-	"5082":         "itemcode",
-	"5072":         "incode",
-	"5016":         "tema",
-	"5":            "vytvoril",
-	"6":            "autor",
+	"1003":         "cas_konce",
+	"1004":         "cas_zacatku",
+	"1005":         "stopaz",
+	"1010":         "spoctena_stopaz",
+	"1029":         "korekce",
+	"1035":         "cas_textu",
+	"1036":         "audio_stopaz",
 	"12":           "redakce",
-	"5071":         "schvalil_stanice",
-	"5070":         "schvalil_redakce",
+	"16":           "druh",
+	"321":          "format",
+	"38":           "stopaz",
 	"421":          "jmeno",
 	"422":          "prijmeni",
 	"423":          "spolecnost",
 	"424":          "funkce",
+	"5":            "vytvoril",
 	"5015":         "strana",
+	"5016":         "tema",
+	"5070":         "schvalil_redakce",
+	"5071":         "schvalil_stanice",
+	"5072":         "incode",
+	"5079":         "cil_vyroby",
+	"5081":         "stanice",
+	"5082":         "itemcode",
 	"5087":         "ID",
 	"5088":         "pohlavi",
-	"1035":         "cas_textu",
+	"6":            "autor",
+	"8":            "nazev",
 	"ID":           "compID",
+	"RecordID":     "RID",
+	"TemplateName": "kategorie",
+	"datum":        "datum",
+	"kategory":     "kategory",
+	"C-RID":        "RID",
+	"C-index":      "index",
 }
 
 var FieldsIDsNamesProductionLong = FieldsIDsNames{
@@ -129,6 +132,16 @@ var FieldsIDsNamesProductionLong = FieldsIDsNames{
 
 type CSVspecialValueCode int
 
+// (NS)	Všechny buňky, které je možné vyplnit skrze formuláře (příspěvku, audia, kontaktu, subrundownu) a které ovšem vyplněny nejsou, přepíšeme hodnotou "(NS)", tj. "not specified".
+// (NC)	Jestliže příspěvek neobsahuje žádnou část, sloupec [kategorie_CAST]bude obsahovat hodnotu "(NC)".
+// Jestliže příspěvek není součástí žádného subrundownu, sloupec [kategorie_SP]bude obsahovat hodnotu "(NC)".
+// (NP)	Jestliže příspěvek neobsahuje žádnou část, pak všechny další sloupce, které se týkají částí příspěvku (audia i kontaktu) budou obsahovat hodnotu "(NP)". (S výjimkou sloupce [kategorie_CAST], který bude obsahovat hodnotu "(NC)" - viz výše).
+// Jestliže příspěvek obsahuje audio, sloupce týkající se kontaktu budou vyplněny hodnotou "(NP)". Jestliže příspěvek obsahuje kontakt, sloupce týkající se audia budou vyplněny hodnotou "(NP)".
+// Jestliže příspěvek není součástí žádného subrundownu, všechny sloupce týkající se subrundownu budou vyplněny hodnotou "(NP)". (S výjimkou sloupce [kategorie_SP], který bude obsahovat hodnotu "(NC)" - viz výše).
+
+// Později
+// (NV)	Pro potřeby validace dat pak v další fázi práce na analýze produkce přibyde hodnota (NV), tj. "not valid" či "invalid". Ta bude označovat buňky vyplněné neplatnou hodntodou, takže místo [redakce] = "banán" tam pak bude [redakce] = "(NV)". Vedle toho bude seznam těch přepsaných hodnot s jejich četnostmi, takže tam pak bude k proměnné [stanice] údaj "banán" = 1krát.
+
 const (
 	CSVspecialValueEmptyString = iota
 	CSVspecialValueChildNotFound
@@ -136,9 +149,12 @@ const (
 )
 
 var CSVspecialValues = map[CSVspecialValueCode]string{
-	CSVspecialValueEmptyString:    "(NEUVEDENO)",
-	CSVspecialValueChildNotFound:  "(NELZE)",
-	CSVspecialValueParentNotFound: "(NEOBSAHUJE)",
+	CSVspecialValueEmptyString:    "(NS)",
+	CSVspecialValueChildNotFound:  "(NP)",
+	CSVspecialValueParentNotFound: "(NC)",
+	// CSVspecialValueEmptyString:    "(NEUVEDENO)",
+	// CSVspecialValueChildNotFound:  "(NELZE)",
+	// CSVspecialValueParentNotFound: "(NEOBSAHUJE)",
 }
 
 type Radio struct {
