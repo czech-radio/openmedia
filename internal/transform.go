@@ -62,6 +62,21 @@ func (e *Extractor) FilterByPartAndFieldID(
 	return res
 }
 
+func (e *Extractor) RemoveColumn(
+	fieldPrefix PartPrefixCode, fieldID string) {
+	var newPos CSVrowPartFieldsPositions
+	positions := e.CSVrowPartsFieldsPositions[fieldPrefix]
+	for _, pos := range positions {
+		if pos.FieldID == fieldID {
+			continue
+		}
+		newPos = append(newPos, pos)
+	}
+	e.CSVrowPartsFieldsPositions[fieldPrefix] = newPos
+	e.CreateTablesHeader(CSVdelim)
+}
+
+// Geters
 func GetRadioName(radioCode string) (string, error) {
 	names, ok := RadioCodes[radioCode]
 	if !ok {
@@ -78,31 +93,23 @@ func GetGenderName(genderCode string) (string, error) {
 	return gender, nil
 }
 
-func TransformStopaz(stopaz string) (string, error) {
-	var sign string
-	milliSeconds, err := strconv.ParseInt(stopaz, 10, 64)
-	if err != nil {
-		return "", err
+func GetPartAndField(
+	row CSVrow, partCode PartPrefixCode,
+	fieldID string) (
+	CSVrowPart, CSVrowField, bool) {
+	part, ok := row[partCode]
+	if !ok {
+		return part, CSVrowField{}, ok
 	}
-	if milliSeconds < 0 {
-		milliSeconds = -milliSeconds
-		sign = "-"
+	field, ok := part[fieldID]
+	if !ok {
+		slog.Debug("fieldID not found", "fieldID", fieldID)
+		return part, field, ok
 	}
-	duration := time.Duration(milliSeconds) * time.Millisecond
-	// hoursF := int64(60 * 60 * 1000)
-	// hours := milliSeconds / hoursF
-
-	format := "%s%02d:%02d:%02d,%03d"
-	hours := int(duration.Hours())
-	minutes := int(duration.Minutes()) % 60
-	seconds := int(duration.Seconds()) % 60
-	milis := int(duration.Milliseconds()) % 1000
-
-	value := fmt.Sprintf(
-		format, sign, hours, minutes, seconds, milis)
-	return value, nil
+	return part, field, ok
 }
 
+// Transformers
 func (e *Extractor) TransformField(
 	partCode PartPrefixCode, fieldID string,
 	fun func(string) (string, error), force bool) {
@@ -132,56 +139,36 @@ func (e *Extractor) TransformField(
 	}
 }
 
-func GetPartAndField(
-	row CSVrow, partCode PartPrefixCode,
-	fieldID string) (
-	CSVrowPart, CSVrowField, bool) {
-	part, ok := row[partCode]
-	if !ok {
-		return part, CSVrowField{}, ok
+func TransformObjectID(objectID string) (string, error) {
+	if objectID == "" || objectID == CSVspecialValues[CSVspecialValueChildNotFound] {
+		return objectID, nil
 	}
-	field, ok := part[fieldID]
-	if !ok {
-		slog.Debug("fieldID not found", "fieldID", fieldID)
-		return part, field, ok
-	}
-	return part, field, ok
+	return fmt.Sprintf("ID_%s", objectID), nil
 }
 
-func (e *Extractor) ComputeKategory() {
-	// Comp-Cat_katergory	Audio-HED_TemplateName
-	// kategory_	AUD_kategorie
-	for i, row := range e.CSVtable.Rows {
-		_, srcField, _ := GetPartAndField(
-			row.CSVrow, FieldPrefix_AudioClipHead, "TemplateName")
-		if srcField.Value == "" {
-			_, srcField, _ = GetPartAndField(
-				row.CSVrow, FieldPrefix_ContactItemHead, "TemplateName")
-		}
-		if srcField.Value == "" {
-			continue
-		}
-		dstField := CSVrowField{}
-		dstField.Value = srcField.Value
-		dstField.FieldID = "kategory"
-		dstPart := make(CSVrowPart)
-		dstPart["kategory"] = dstField
-		e.CSVtable.Rows[i].CSVrow[FieldPrefix_ComputedKategory] = dstPart
+func TransformStopaz(stopaz string) (string, error) {
+	var sign string
+	milliSeconds, err := strconv.ParseInt(stopaz, 10, 64)
+	if err != nil {
+		return "", err
 	}
-}
+	if milliSeconds < 0 {
+		milliSeconds = -milliSeconds
+		sign = "-"
+	}
+	duration := time.Duration(milliSeconds) * time.Millisecond
+	// hoursF := int64(60 * 60 * 1000)
+	// hours := milliSeconds / hoursF
 
-func (e *Extractor) RemoveColumn(
-	fieldPrefix PartPrefixCode, fieldID string) {
-	var newPos CSVrowPartFieldsPositions
-	positions := e.CSVrowPartsFieldsPositions[fieldPrefix]
-	for _, pos := range positions {
-		if pos.FieldID == fieldID {
-			continue
-		}
-		newPos = append(newPos, pos)
-	}
-	e.CSVrowPartsFieldsPositions[fieldPrefix] = newPos
-	e.CreateTablesHeader(CSVdelim)
+	format := "%s%02d:%02d:%02d,%03d"
+	hours := int(duration.Hours())
+	minutes := int(duration.Minutes()) % 60
+	seconds := int(duration.Seconds()) % 60
+	milis := int(duration.Milliseconds()) % 1000
+
+	value := fmt.Sprintf(
+		format, sign, hours, minutes, seconds, milis)
+	return value, nil
 }
 
 func (e *Extractor) TransformDateToTime(
@@ -220,6 +207,207 @@ func ParseXMLdate(input string) (time.Time, error) {
 		return parsedTime, err
 	}
 	return parsedTime, err
+}
+
+func TransformEmptyString(input string) string {
+	value := CSVspecialValues[CSVspecialValueEmptyString]
+	if input == "" {
+		return value
+	}
+	return input
+}
+
+func TransformEmptyToNoContain(input string) (string, error) {
+	childVal := CSVspecialValues[CSVspecialValueChildNotFound]
+	if input == childVal {
+		return CSVspecialValues[CSVspecialValueParentNotFound], nil
+	}
+	if input == "" {
+		return CSVspecialValues[CSVspecialValueParentNotFound], nil
+	}
+	return input, nil
+}
+
+func TransformShortenField(input string) (string, error) {
+	targetLength := 248
+	// targetLength := 10
+	if len(input) <= targetLength {
+		return input, nil
+	} else {
+		// Shorten the string to 249 characters
+		return input[:targetLength], nil
+	}
+}
+
+// Field constructers/computers
+
+func (row CSVrow) ConsructRecordIDs() string {
+	prefixes := []PartPrefixCode{
+		FieldPrefix_RadioRec,
+		FieldPrefix_HourlyRec,
+		FieldPrefix_SubRec,
+		FieldPrefix_StoryRec,
+	}
+	var sb strings.Builder
+	var value string
+	for _, prefix := range prefixes {
+		value = ""
+		part, ok := row[prefix]
+		if ok {
+			value = part["RecordID"].Value
+		}
+		if value == "" {
+			value = "-"
+		}
+		fmt.Fprintf(&sb, "/%s", value)
+	}
+	return sb.String()
+}
+
+func (e *Extractor) ComputeIndex() {
+	targetFieldID := "C-index"
+	prevIDs := []string{"", "", "", ""}
+	prevPos := []int{0, 0, 0}
+	var index string
+	for i, row := range e.CSVtable.Rows {
+		dstPart, ok := e.CSVtable.Rows[i].CSVrow[FieldPrefix_ComputedRID]
+		if !ok {
+			dstPart = make(CSVrowPart)
+		}
+		if i == 0 {
+			index, prevIDs, _ = ComputeIndexCreate(row.CSVrow, prevIDs, prevPos)
+		}
+		if i > 0 {
+			index, prevIDs, prevPos = ComputeIndexCreate(row.CSVrow, prevIDs, prevPos)
+		}
+		field := CSVrowField{
+			FieldID:   targetFieldID,
+			FieldName: "",
+			Value:     index,
+		}
+		dstPart[targetFieldID] = field
+		e.CSVtable.Rows[i].CSVrow[FieldPrefix_ComputedRID] = dstPart
+	}
+}
+
+func ComputeIndexCreate(
+	row CSVrow, prevIDs []string, prevPos []int) (string, []string, []int) {
+	_, blok, _ := GetPartAndField(
+		row, FieldPrefix_HourlyHead, "8")
+	_, sub, _ := GetPartAndField(
+		row, FieldPrefix_SubHead, "ObjectID")
+	_, story, _ := GetPartAndField(
+		row, FieldPrefix_StoryHead, "ObjectID")
+	_, storyPart, _ := GetPartAndField(
+		row, FieldPrefix_StoryKategory, "ObjectID")
+	// slog.Warn("compare", "cur", blok.Value, "prev", prevIDs[0])
+	if sub.Value == prevIDs[0] {
+		goto skip_sub
+	}
+	if story.Value != prevIDs[2] {
+		prevPos[0]++
+		if sub.Value == "" {
+			prevPos[1] = 0
+		} else {
+			prevPos[1]++
+		}
+	}
+skip_sub:
+	if story.Value == prevIDs[2] {
+		prevPos[2]++
+	}
+	if story.Value != prevIDs[2] {
+		prevPos[2] = 1
+	}
+
+	if blok.Value != prevIDs[0] {
+		// reset for new blok
+		prevPos[0] = 1
+		prevPos[1] = 0
+		prevPos[2] = 0
+	}
+	prev := []string{blok.Value, sub.Value, story.Value, storyPart.Value}
+	index := ComputeIndexCast(blok.Value, prevPos)
+	return index, prev, prevPos
+}
+
+func ComputeIndexCreateB(
+	// Story order
+	row CSVrow, prevIDs []string, prevPos []int) (string, []string, []int) {
+	_, blok, _ := GetPartAndField(
+		row, FieldPrefix_HourlyHead, "8")
+	_, sub, _ := GetPartAndField(
+		row, FieldPrefix_SubHead, "ObjectID")
+	_, story, _ := GetPartAndField(
+		row, FieldPrefix_StoryHead, "ObjectID")
+	_, storyPart, _ := GetPartAndField(
+		row, FieldPrefix_StoryKategory, "ObjectID")
+	// slog.Warn("compare", "cur", blok.Value, "prev", prevIDs[0])
+	if story.Value != prevIDs[2] {
+		prevPos[0]++
+	}
+	prev := []string{blok.Value, sub.Value, story.Value, storyPart.Value}
+	index := ComputeIndexCast(blok.Value, prevPos)
+	return index, prev, prevPos
+}
+
+func ComputeIndexCast(blok string, pos []int) string {
+	var index strings.Builder
+	if len(blok) > 5 {
+		fmt.Fprintf(&index, "%s", blok[0:5])
+	} else {
+		fmt.Fprintf(&index, "%s", blok)
+	}
+	// for i := range pos[0:2] {
+	for i := range pos {
+		fmt.Fprintf(&index, "/%02d", pos[i])
+	}
+	return index.String()
+}
+
+func (e *Extractor) ComputeRecordIDs(removeSrcColumns bool) {
+	targetFieldID := "C-RID"
+	for i, row := range e.CSVtable.Rows {
+		id := row.ConsructRecordIDs()
+		field := CSVrowField{
+			FieldID:   targetFieldID,
+			FieldName: "",
+			Value:     id,
+		}
+		part, ok := e.CSVtable.Rows[i].CSVrow[FieldPrefix_ComputedRID]
+		if !ok {
+			part = make(CSVrowPart)
+		}
+		part[targetFieldID] = field
+		e.CSVtable.Rows[i].CSVrow[FieldPrefix_ComputedRID] = part
+	}
+	if removeSrcColumns {
+		e.RemoveColumn(
+			FieldPrefix_RadioRec, "RecordID")
+		e.RemoveColumn(
+			FieldPrefix_HourlyRec, "RecordID")
+		e.RemoveColumn(
+			FieldPrefix_SubRec, "RecordID")
+		e.RemoveColumn(
+			FieldPrefix_StoryRec, "RecordID")
+	}
+}
+
+func (e *Extractor) SetFileNameColumn() {
+	targetFieldID := "FileName"
+	for i := range e.CSVtable.Rows {
+		field := CSVrowField{
+			FieldID:   targetFieldID,
+			FieldName: "",
+			Value:     e.CSVtable.SrcFilePath,
+		}
+		part, ok := e.CSVtable.Rows[i].CSVrow[FieldPrefix_ComputedRID]
+		if !ok {
+			part = make(CSVrowPart)
+		}
+		part[targetFieldID] = field
+		e.CSVtable.Rows[i].CSVrow[FieldPrefix_ComputedRID] = part
+	}
 }
 
 func (e *Extractor) ComputeID() {
@@ -265,85 +453,4 @@ func (row CSVrow) ConstructID() string {
 	out := fmt.Sprintf("%s/%s/%s/%s - %s/%s",
 		stanice, blok, datum, zacatek, konec, nazev)
 	return out
-}
-
-func TransformEmptyString(input string) string {
-	value := CSVspecialValues[CSVspecialValueEmptyString]
-	if input == "" {
-		return value
-	}
-	return input
-}
-
-func TransformEmptyToNoContain(input string) (string, error) {
-	childVal := CSVspecialValues[CSVspecialValueChildNotFound]
-	if input == childVal {
-		return CSVspecialValues[CSVspecialValueParentNotFound], nil
-	}
-	if input == "" {
-		return CSVspecialValues[CSVspecialValueParentNotFound], nil
-	}
-	return input, nil
-}
-
-func TransformShortenField(input string) (string, error) {
-	targetLength := 248
-	// targetLength := 10
-	if len(input) <= targetLength {
-		return input, nil
-	} else {
-		// Shorten the string to 249 characters
-		return input[:targetLength], nil
-	}
-}
-
-func (row CSVrow) ConsructRecordIDs() string {
-	prefixes := []PartPrefixCode{
-		FieldPrefix_RadioRec,
-		FieldPrefix_HourlyRec,
-		FieldPrefix_SubRec,
-		FieldPrefix_StoryRec,
-	}
-	var sb strings.Builder
-	var value string
-	for _, prefix := range prefixes {
-		value = ""
-		part, ok := row[prefix]
-		if ok {
-			value = part["RecordID"].Value
-		}
-		if value == "" {
-			value = "-"
-		}
-		fmt.Fprintf(&sb, "/%s", value)
-	}
-	return sb.String()
-}
-
-func (e *Extractor) ComputeIndex() {
-}
-
-func (e *Extractor) ComputeRecordIDs(removeSrcColumns bool) {
-	targetFieldID := "C-RID"
-	for i, row := range e.CSVtable.Rows {
-		id := row.ConsructRecordIDs()
-		field := CSVrowField{
-			FieldID:   targetFieldID,
-			FieldName: "",
-			Value:     id,
-		}
-		part := make(CSVrowPart)
-		part[targetFieldID] = field
-		e.CSVtable.Rows[i].CSVrow[FieldPrefix_ComputedRID] = part
-	}
-	if removeSrcColumns {
-		e.RemoveColumn(
-			FieldPrefix_RadioRec, "RecordID")
-		e.RemoveColumn(
-			FieldPrefix_HourlyRec, "RecordID")
-		e.RemoveColumn(
-			FieldPrefix_SubRec, "RecordID")
-		e.RemoveColumn(
-			FieldPrefix_StoryRec, "RecordID")
-	}
 }

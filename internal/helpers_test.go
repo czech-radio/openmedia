@@ -48,27 +48,6 @@ func CleanUp() (chan os.Signal, *sync.WaitGroup) {
 	return com, wg
 }
 
-var Setup = SetupTest{
-	TestDataSource:      "",
-	TempDataSource:      "",
-	TempDataDestination: "",
-}
-
-func TestNeedsSetup(t *testing.T) {
-	Setup.Init()
-	// PrepareTestDirectory()
-	// t.Skip()
-	// t.Helper()
-	// t.Cleanup()
-	// m.Run()
-	// t.TempDir
-}
-
-func TestNoNeedToSetup(t *testing.T) {
-	// SetInitory()
-	// PrepareTestDirectory()
-}
-
 // // TestMain setup, run tests, and tear down (cleanup after tests)
 // func TestMain(m *testing.M) {
 // 	// setup logging
@@ -114,11 +93,11 @@ func TestNoNeedToSetup(t *testing.T) {
 // 	// Clean up (teardown)
 // 	cleanupChan, waitGroup := CleanUp()
 
-// 	// Run tests
-// 	TESTS_RESULT_CODE = m.Run()
-// 	// os.Exit(TESTS_RESULT_CODE)
-// 	cleanupChan <- syscall.SIGHUP
-// 	waitGroup.Wait()
+// // Run tests
+// TESTS_RESULT_CODE = m.Run()
+// // os.Exit(TESTS_RESULT_CODE)
+// cleanupChan <- syscall.SIGHUP
+// waitGroup.Wait()
 // }
 
 type TestPair struct {
@@ -164,11 +143,6 @@ func Test_CurrentDir(t *testing.T) {
 
 func Test_DirectoryCreateInRam(t *testing.T) {
 	directory := DirectoryCreateInRam("golang_test")
-	defer os.RemoveAll(directory)
-}
-
-func TestDirectoryCreateTemporary(t *testing.T) {
-	directory := DirectoryCreateTemporaryOrPanic("golang_test")
 	defer os.RemoveAll(directory)
 }
 

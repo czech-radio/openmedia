@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"flag"
 	"fmt"
 	"io"
 	"io/fs"
@@ -14,9 +13,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"runtime"
-	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/ncruces/go-strftime"
@@ -31,45 +28,6 @@ type VersionInfo struct {
 	BuildTime string
 }
 
-// SetLogLevel: sets log level, default=0
-func SetLogLevel(level string, logType ...string) {
-	var logger *slog.Logger
-	var loggerType string
-	intlevel, err := strconv.Atoi(level)
-	if err != nil {
-		intlevel = 0
-	}
-	hopts := slog.HandlerOptions{
-		AddSource: true,
-		Level:     slog.Level(intlevel),
-		ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
-			if a.Key == slog.SourceKey {
-				// Shorten the the filepath in log
-				source, _ := a.Value.Any().(*slog.Source)
-				if source != nil {
-					source.File = filepath.Base(source.File)
-				}
-			}
-			return a
-		},
-	}
-	if logType != nil && logType[0] != "" {
-		loggerType = logType[0]
-	}
-	switch loggerType {
-	case "json":
-		jhandle := slog.NewJSONHandler(os.Stderr, &hopts)
-		logger = slog.New(jhandle)
-	case "plain":
-		thandle := slog.NewTextHandler(os.Stderr, &hopts)
-		logger = slog.New(thandle)
-	default:
-		thandle := slog.NewTextHandler(os.Stderr, &hopts)
-		logger = slog.New(thandle)
-	}
-	slog.SetDefault(logger)
-}
-
 func PrintObjJson(mark string, input any) {
 	res, err := json.MarshalIndent(input, "", "\t")
 	if err != nil {
@@ -77,20 +35,6 @@ func PrintObjJson(mark string, input any) {
 		return
 	}
 	fmt.Println(mark, string(res))
-}
-
-// Sleeper sleeps for specified durration
-func Sleeper(duration int, time_unit string) {
-	switch time_unit {
-	case "ms":
-		time.Sleep(time.Duration(duration) * time.Millisecond)
-	case "s":
-		time.Sleep(time.Duration(duration) * time.Second)
-	case "m":
-		time.Sleep(time.Duration(duration) * time.Minute)
-	default:
-		panic("Wrong time time_unit")
-	}
 }
 
 func IsOlderThanOneISOweek(dateToCheck, dateNow time.Time) bool {
@@ -153,25 +97,6 @@ func DirectoryCreateInRam(base_name string) string {
 		panic(err)
 	}
 	return filepath
-}
-
-func DirectoryCreateTemporaryOrPanic(base_name string) string {
-	var err error
-	var file_path string
-	switch runtime.GOOS {
-	case "linux":
-		// Create temp directory in RAM
-		// file_path, err = os.MkdirTemp("/dev/shm", base_name)
-		file_path, err = os.MkdirTemp("/tmp/", base_name)
-	default:
-		// Create temp directory in system default temp directory
-		file_path, err = os.MkdirTemp("", base_name)
-	}
-	if err != nil {
-		panic(err)
-	}
-	slog.Debug("Temp directory created: " + file_path)
-	return file_path
 }
 
 func DirectoryDeleteOrPanic(directory string) {
@@ -304,10 +229,6 @@ func FileExists(filePath string) (bool, error) {
 		return false, fmt.Errorf("specified path is a directory, not a zip file")
 	}
 	return true, nil
-}
-
-func XOR(a, b bool) bool {
-	return (a || b) && !(a && b)
 }
 
 func TraceFunction(depth int) (string, string, int) {
@@ -532,54 +453,4 @@ func CzechDateToUTC(year, month, day, hour int) (
 		0, 0, 0, location,
 	)
 	return czechDate.UTC(), nil
-}
-
-type SetupTest struct {
-	// Config
-	TestDataSource      string
-	TempDataSource      string
-	TempDataDestination string
-
-	// Internals
-	done        bool
-	initialized bool
-	chanCleanUP chan os.Signal
-	waitGroup   *sync.WaitGroup
-}
-
-func (st *SetupTest) Init() {
-	if st.initialized {
-		return
-	}
-	level := os.Getenv("GOLOGLEVEL")
-	SetLogLevel(level, "json")
-	flag.Parse()
-	slog.Debug("preparing test directory")
-	// Short test without setup
-	// if testing.Short() == true {
-	// TESTS_RESULT_CODE = m.Run()
-	// return
-	// }
-	st.initialized = true
-}
-
-func (st *SetupTest) CleanUP() {
-	st.chanCleanUP = make(chan os.Signal, 1)
-	st.waitGroup = new(sync.WaitGroup)
-	st.waitGroup.Add(1)
-	// wg.Add(1)
-	// go func() {
-	// 	signal.Notify(com, os.Interrupt, syscall.SIGHUP)
-	// 	signal := <-com
-	// 	slog.Info("clean up started")
-	// 	DirectoryDeleteOrPanic(TEMP_DIR)
-	// 	slog.Info("clean up finished")
-	// 	switch signal {
-	// 	case os.Interrupt:
-	// 		os.Exit(-1)
-	// 	case syscall.SIGHUP:
-	// 		os.Exit(TESTS_RESULT_CODE)
-	// 	}
-	// }()
-	// return com, wg
 }

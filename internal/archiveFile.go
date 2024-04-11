@@ -61,7 +61,7 @@ func (af *ArchiveFile) ExtractByXMLquery(extrs OMextractors) error {
 	// Extract specfied object fields
 	var extractor Extractor
 	extractor.Init(af.BaseNode, extrs, CSVdelim)
-	err := extractor.ExtractTable()
+	err := extractor.ExtractTable(af.FilePath)
 	if err != nil {
 		return err
 	}
@@ -85,7 +85,11 @@ func (apf *ArchivePackageFile) ExtractByXMLquery(
 	// Extract specfied object fields
 	var extractor Extractor
 	extractor.Init(openMedia, q.Extractors, CSVdelim)
-	err = extractor.ExtractTable()
+
+	// extractor.CSVtable.Rows[0].CSVrow[FieldPrefix_ComputedRID] = make(CSVrowPart)
+	// extractor.CSVtable.Rows[0].CSVrow[FieldPrefix_ComputedRID]["FileName"] = field
+
+	err = extractor.ExtractTable(apf.Reader.Name)
 	if err != nil {
 		return err
 	}

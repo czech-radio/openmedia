@@ -51,4 +51,5 @@ var ProductionFieldsContactItems = []string{
 	"5016",
 	"5087",
 	"5088",
+	"filtered",
 }

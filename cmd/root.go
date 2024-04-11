@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"github/czech-radio/openmedia-archive/internal"
+	"github/czech-radio/openmedia-archive/internal/helper"
 	"log/slog"
 )
 
@@ -39,8 +40,8 @@ type ConfigRoot struct {
 
 func RunRoot() {
 	rcfg := &ConfigRoot{}
-	internal.SetupRootFlags(rcfg)
-	internal.SetLogLevel(rcfg.Verbose, rcfg.LogType)
+	helper.SetupRootFlags(rcfg)
+	helper.SetLogLevel(rcfg.Verbose, rcfg.LogType)
 	if flag.NArg() < 1 {
 		VersionInfoPrint()
 		return
@@ -52,19 +53,19 @@ func RunRoot() {
 	switch subcmd {
 	case "archive":
 		cmdCfg := &ConfigArchive{}
-		internal.SetupSubFlags(cmdCfg)
+		helper.SetupSubFlags(cmdCfg)
 		RunArchive(rcfg, cmdCfg)
 	case "extractArchive":
 		cmdCfg := &ConfigExtractArchive{}
-		internal.SetupSubFlags(cmdCfg)
+		helper.SetupSubFlags(cmdCfg)
 		RunExtractArchive(rcfg, cmdCfg)
 	case "extractFile":
 		cmdCfg := &ConfigExtractFile{}
-		internal.SetupSubFlags(cmdCfg)
+		helper.SetupSubFlags(cmdCfg)
 		RunExtractFile(rcfg, cmdCfg)
 	case "extractFolder":
 		cmdCfg := &ConfigExtractFolder{}
-		internal.SetupSubFlags(cmdCfg)
+		helper.SetupSubFlags(cmdCfg)
 		RunExtractFolder(rcfg, cmdCfg)
 	default:
 		slog.Error("unknown command", "command", subcmd)

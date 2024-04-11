@@ -23,10 +23,11 @@ type OMextractor struct {
 	FieldsPrefix     string
 
 	// Internals
-	KeepInputRow         bool
-	PreserveParentNode   bool // Add fields to input row
-	KeepWhenZeroSubnodes bool
-	FieldIDsMap          map[string]bool
+	KeepInputRow            bool
+	PreserveParentNode      bool // Add fields to input row
+	PreserveParentNodeLevel int
+	KeepWhenZeroSubnodes    bool
+	FieldIDsMap             map[string]bool
 }
 
 type OMextractors []OMextractor
@@ -102,7 +103,7 @@ func (e *Extractor) MapRowPartsFieldsPositions() {
 	e.CSVrowPartsFieldsPositions = partsPos
 }
 
-func (e *Extractor) ExtractTable() error {
+func (e *Extractor) ExtractTable(fileName string) error {
 	for i, extr := range e.OMextractors {
 		if extr.ObjectPath == "" {
 			slog.Debug("extractor not extracted", "cause", "empty object")
@@ -110,6 +111,7 @@ func (e *Extractor) ExtractTable() error {
 		}
 		rows, err := ExpandTableRows(e.CSVtable, extr)
 		e.CSVtable = rows
+		e.CSVtable.SrcFilePath = fileName
 		if err != nil {
 			return err
 		}

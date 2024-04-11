@@ -94,6 +94,9 @@ var FieldsIDsNamesProduction = FieldsIDsNames{
 	"kategory":     "kategory",
 	"C-RID":        "RID",
 	"C-index":      "index",
+	"ObjectID":     "ObjectID",
+	"FileName":     "FileName",
+	"filtered":     "filtered",
 }
 
 var FieldsIDsNamesProductionLong = FieldsIDsNames{

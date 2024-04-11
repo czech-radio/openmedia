@@ -61,8 +61,6 @@ func (e *Extractor) TransformProduction() {
 	// Convert stopaz
 	e.TransformField(FieldPrefix_SubHead,
 		"1005", TransformStopaz, false)
-	e.TransformField(FieldPrefix_SubHead,
-		"38", TransformStopaz, false)
 	e.TransformField(FieldPrefix_StoryHead,
 		"1036", TransformStopaz, false)
 	e.TransformField(FieldPrefix_StoryHead,
@@ -71,6 +69,8 @@ func (e *Extractor) TransformProduction() {
 		"1010", TransformStopaz, false)
 	e.TransformField(FieldPrefix_StoryHead,
 		"1002", TransformStopaz, false)
+	e.TransformField(FieldPrefix_AudioClipHead,
+		"38", TransformStopaz, false)
 
 	// Korekce
 	e.TransformField(FieldPrefix_StoryHead,
@@ -88,13 +88,18 @@ func (e *Extractor) TransformProduction() {
 		"ID", TransformShortenField, false,
 	)
 	e.ComputeRecordIDs(true)
+	e.SetFileNameColumn()
 
 	// Transform Special Values
 	e.TransformField(FieldPrefix_SubHead,
 		"TemplateName", TransformEmptyToNoContain, true)
 	e.TransformField(FieldPrefix_StoryKategory,
 		"TemplateName", TransformEmptyToNoContain, true)
+	e.ComputeIndex()
 
+	e.TransformField(FieldPrefix_StoryHead, "ObjectID", TransformObjectID, false)
+	e.TransformField(FieldPrefix_StoryKategory, "ObjectID", TransformObjectID, false)
+	e.TransformField(FieldPrefix_SubHead, "ObjectID", TransformObjectID, false)
 }
 
 func (e *Extractor) TransformTest() {

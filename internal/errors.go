@@ -8,6 +8,9 @@ import (
 	"strings"
 )
 
+// List of errors
+// /usr/lib/go/src/syscall/zerrors_linux_amd64.go:1490
+
 type ControlFlowAction int
 
 const (
