@@ -102,7 +102,7 @@ func (e *Extractor) TransformProduction() {
 	e.TransformField(FieldPrefix_SubHead, "ObjectID", TransformObjectID, false)
 }
 
-func (e *Extractor) TransformTest() {
+func (e *Extractor) TransformMock() {
 	// Convert dates
 	e.TransformDateToTime(FieldPrefix_SubHead,
 		"1004", false)

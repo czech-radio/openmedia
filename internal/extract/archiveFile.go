@@ -88,6 +88,7 @@ func (apf *ArchivePackageFile) ExtractByXMLquery(
 	var extractor Extractor
 	extractor.Init(openMedia, q.Extractors, CSVdelim)
 
+	// add default row
 	// extractor.CSVtable.Rows[0].CSVrow[FieldPrefix_ComputedRID] = make(CSVrowPart)
 	// extractor.CSVtable.Rows[0].CSVrow[FieldPrefix_ComputedRID]["FileName"] = field
 
@@ -98,8 +99,7 @@ func (apf *ArchivePackageFile) ExtractByXMLquery(
 	if q.ComputeUniqueRows {
 		extractor.UniqueRows()
 	}
-	extractor.TransformProduction()
-	// extractor.TransformEurovolby()
+	extractor.Transform(q.Transformer)
 	extractor.PrintTableRowsToCSV(q.PrintHeader, q.CSVdelim)
 	return nil
 }

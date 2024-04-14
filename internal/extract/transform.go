@@ -9,6 +9,30 @@ import (
 	"time"
 )
 
+type TransformerCode int
+
+const (
+	TransformerMock TransformerCode = iota
+	TransformerCodedFields
+	TransformerProduction
+	TransformerEurovolby
+)
+
+// var ExtractorTransformerCodeMap map[ExtractorTransformerCode]
+
+func (e *Extractor) Transform(code TransformerCode) {
+	switch code {
+	case TransformerMock:
+		e.TransformMock()
+	case TransformerCodedFields:
+		e.TransformCodedFields()
+	case TransformerProduction:
+		e.TransformProduction()
+	case TransformerEurovolby:
+		e.TransformEurovolby()
+	}
+}
+
 func (e *Extractor) UniqueRows() {
 	if e.CSVtable.UniqueRows == nil {
 		e.CSVtable.UniqueRows = make(map[string]int)

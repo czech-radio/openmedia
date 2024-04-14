@@ -38,6 +38,7 @@ type ArchiveFolderQuery struct {
 	ComputeUniqueRows bool
 	PrintHeader       bool
 	CSVdelim          string
+	Transformer       TransformerCode
 }
 
 func (af *ArchiveFolder) FolderListing(
@@ -111,10 +112,8 @@ func (af *ArchiveFolder) FolderMap(
 func (af *ArchiveFolder) FolderExtract(
 	query *ArchiveFolderQuery) {
 	query.PrintHeader = true
-	// packageLoop:
 	for _, packageName := range af.PackagesNamesOrder {
 		slog.Warn("proccessing package", "package", packageName)
-		// for _, pf := range p.PackageFiles {
 		archivePackage := af.Packages[packageName]
 		for _, fileName := range archivePackage.PacakgeFilesOrder {
 			file := archivePackage.PackageFiles[fileName]
@@ -127,7 +126,6 @@ func (af *ArchiveFolder) FolderExtract(
 				slog.Error(err.Error())
 			}
 			query.PrintHeader = false
-			// break packageLoop
 		}
 	}
 }
