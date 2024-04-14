@@ -5,49 +5,45 @@ import (
 	"log/slog"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"sync"
 	"syscall"
 	"testing"
 )
 
-// var Setup = SetupTest{
-// TestDataSource:      "",
-// TempDataSource:      "",
-// TempDataDestination: "",
-// }
-
 type TesterConfig struct {
 	// Config
 	CurrentDir          string
 	TestDataSource      string
+	TempDir             string
 	TempDataSource      string
 	TempDataDestination string
 
 	// Internals
 	testType        string
-	InitializedTemp bool
-	InitializedMain bool
+	initializedTemp bool
+	initializedMain bool
 	failed          bool
 	sigChan         chan os.Signal
+	WaitCount       int
 	WaitGroup       *sync.WaitGroup
-	waitCount       int
 }
 
 func (tc *TesterConfig) WaitAdd() {
-	tc.waitCount++
+	tc.WaitCount++
 	tc.WaitGroup.Add(1)
-	slog.Warn("wait count", "count", tc.waitCount)
+	slog.Warn("wait count", "count", tc.WaitCount)
 }
 
 func (tc *TesterConfig) WaitDone() {
 	tc.WaitGroup.Done()
-	tc.waitCount--
-	slog.Warn("wait count", "count", tc.waitCount)
+	tc.WaitCount--
+	slog.Warn("wait count", "count", tc.WaitCount)
 }
 
 func (tc *TesterConfig) InitMain() {
-	if !tc.InitializedMain {
-		tc.InitializedMain = true
+	if !tc.initializedMain {
+		tc.initializedMain = true
 		level := os.Getenv("GOLOGLEVEL")
 		curDir, err := os.Getwd()
 		if err != nil {
@@ -83,7 +79,7 @@ func (tc *TesterConfig) WaitForSignal() {
 	case syscall.SIGILL:
 		slog.Error("bad instruction")
 		if tc.testType == "manual" {
-			slog.Error("bad instruction witing", "count", tc.waitCount)
+			slog.Error("bad instruction witing", "count", tc.WaitCount)
 			<-tc.sigChan
 		}
 	case syscall.SIGHUP:
@@ -93,24 +89,26 @@ func (tc *TesterConfig) WaitForSignal() {
 }
 
 func (tc *TesterConfig) InitTempSrc(needsTemp bool) {
-	if needsTemp && !tc.InitializedTemp {
+	if needsTemp && !tc.initializedTemp {
 		slog.Debug("preparing test directory", "curdir", tc.CurrentDir)
-		tc.TempDataSource = DirectoryCreateTemporaryOrPanic("openmedia")
-		tc.InitializedTemp = true
-		// err_copy := DirectoryCopy(
-		// TEST_DATA_DIR_SRC,
-		// TEMP_DIR_TEST_SRC,
-		// true, false, "",
-		// )
-		// if err_copy != nil {
-		// os.Exit(-1)
-		// }
+		tc.TempDir = DirectoryCreateTemporaryOrPanic("openmedia")
+		tc.TempDataSource = filepath.Join(tc.TempDir, "SRC")
+		tc.TempDataDestination = filepath.Join(tc.TempDir, "DST")
+		tc.initializedTemp = true
+		err_copy := DirectoryCopy(
+			tc.TestDataSource,
+			tc.TempDataSource,
+			true, false, "",
+		)
+		if err_copy != nil {
+			os.Exit(-1)
+		}
 	}
 }
 
 func (tc *TesterConfig) CleanuUP() {
-	if tc.InitializedTemp {
-		DirectoryDeleteOrPanic(tc.TempDataSource)
+	if tc.initializedTemp {
+		DirectoryDeleteOrPanic(tc.TempDir)
 	}
 }
 
@@ -136,6 +134,23 @@ func (tc *TesterConfig) RecoverPanic(t *testing.T) {
 		tc.failed = true
 		slog.Error("test panics", "reason", r)
 		t.Fail()
+		tc.WaitDone()
+		if tc.testType == "manual" {
+			tc.sigChan <- syscall.SIGILL
+		}
+		return
+	}
+	if !tc.failed {
+		tc.WaitDone()
+	}
+}
+
+func (tc *TesterConfig) RecoverPanicNoFail(t *testing.T) {
+	if t.Skipped() {
+		return
+	}
+	if r := recover(); r != nil {
+		slog.Warn("test recovered panic", "reason", r)
 		tc.WaitDone()
 		if tc.testType == "manual" {
 			tc.sigChan <- syscall.SIGILL

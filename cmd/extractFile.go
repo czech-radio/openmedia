@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github/czech-radio/openmedia-archive/internal"
+	"github/czech-radio/openmedia-archive/internal/extcases"
 	"github/czech-radio/openmedia-archive/internal/helper"
 )
 
@@ -23,7 +24,7 @@ func RunExtractFile(rootCfg *ConfigRoot, filterCfg *ConfigExtractFile) {
 		helper.Errors.ExitWithCode(err)
 	}
 	// err = af.ExtractByXMLquery(internal.EXTtest)
-	err = af.ExtractByXMLquery(internal.EXTproduction)
+	err = af.ExtractByXMLquery(extcases.EXTproduction)
 	// err = af.ExtractByXMLquery(internal.EXTeuroVolby)
 	if err != nil {
 		helper.Errors.ExitWithCode(err)

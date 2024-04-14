@@ -38,13 +38,15 @@ func TestPABC2(t *testing.T) {
 }
 
 func TestAABfail1(t *testing.T) {
-	defer testerConfig.RecoverPanic(t)
+	// defer testerConfig.RecoverPanic(t)
+	defer testerConfig.RecoverPanicNoFail(t)
 	testerConfig.InitTest(t, true)
 	panic("kek")
 }
 
 func TestAABfail2(t *testing.T) {
-	defer testerConfig.RecoverPanic(t)
+	// defer testerConfig.RecoverPanic(t)
+	defer testerConfig.RecoverPanicNoFail(t)
 	testerConfig.InitTest(t, false)
 	panic("kek")
 }
@@ -64,5 +66,5 @@ func TestAABnofail2(t *testing.T) {
 func TestAAC1(t *testing.T) {
 	defer testerConfig.RecoverPanic(t)
 	testerConfig.InitTest(t, true)
-	Sleeper(10, "s")
+	Sleeper(2, "s")
 }

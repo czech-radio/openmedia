@@ -1,6 +1,8 @@
-package internal
+package extcases
 
-var EXTeuroVolby = OMextractors{
+import i "github/czech-radio/openmedia-archive/internal"
+
+var EXTeuroVolby = i.OMextractors{
 	// {
 	// ObjectPath:       "/Radio Rundown/<OM_RECORD>",
 	// ObjectAttrsNames: []string{"RecordID"},
@@ -8,34 +10,34 @@ var EXTeuroVolby = OMextractors{
 	// },
 	{
 		ObjectPath:     "/*Hourly Rundown",
-		FieldsPath:     TemplateHeaderFieldPath,
+		FieldsPath:     i.TemplateHeaderFieldPath,
 		FieldIDs:       []string{"8"},
-		PartPrefixCode: FieldPrefix_HourlyHead,
+		PartPrefixCode: i.FieldPrefix_HourlyHead,
 	},
 	{
 		ObjectPath: "/<OM_RECORD>",
 		// ObjectAttrsNames: []string{"RecordID"},
-		PartPrefixCode: FieldPrefix_HourlyRec,
+		PartPrefixCode: i.FieldPrefix_HourlyRec,
 	},
 	{
 		ObjectPath:           "/Sub Rundown",
 		ObjectAttrsNames:     []string{"TemplateName"},
-		FieldsPath:           TemplateHeaderFieldPath,
+		FieldsPath:           i.TemplateHeaderFieldPath,
 		FieldIDs:             ProductionFieldsSubRundown,
-		PartPrefixCode:       FieldPrefix_SubHead,
+		PartPrefixCode:       i.FieldPrefix_SubHead,
 		KeepWhenZeroSubnodes: true,
 	},
 	{
 		ObjectPath: "/<OM_RECORD>",
 		// ObjectAttrsNames:     []string{"RecordID"},
-		PartPrefixCode:       FieldPrefix_SubRec,
+		PartPrefixCode:       i.FieldPrefix_SubRec,
 		KeepWhenZeroSubnodes: true,
 	},
 	{
 		ObjectPath:       "/Radio Story",
-		FieldsPath:       TemplateHeaderFieldPath,
+		FieldsPath:       i.TemplateHeaderFieldPath,
 		ObjectAttrsNames: []string{"TemplateName"},
-		PartPrefixCode:   FieldPrefix_StoryHead,
+		PartPrefixCode:   i.FieldPrefix_StoryHead,
 		FieldIDs:         ProductionFieldsRadioStory,
 		// KeepWhenZeroSubnodes: true,
 	},

@@ -1,7 +1,9 @@
 package helper
 
 import (
+	"errors"
 	"os"
+	"path/filepath"
 	"testing"
 )
 
@@ -25,19 +27,25 @@ func Test_DirectoryCreateInRam(t *testing.T) {
 	defer os.RemoveAll(directory)
 }
 
-// func Test_DirectoryCopy(t *testing.T) {
-// 	srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_complex_dupes")
-// 	dstDir := filepath.Join(TEMP_DIR_TEST_DST, "DirectoryCopy")
-// 	// Test copy matching files
-// 	err := helper.DirectoryCopy(
-// 		srcDir, dstDir, true, false, "hello")
-// 	if err != nil {
-// 		t.Error(err)
-// 	}
-// 	// Test copy recursive and overwrite destination files
-// 	err = helper.DirectoryCopy(
-// 		srcDir, dstDir, true, true, "")
-// 	if err != nil && errors.Unwrap(err) != helper.ErrFilePathExists {
-// 		t.Error(err)
-// 	}
-// }
+func Test_DirectoryCopy(t *testing.T) {
+	defer testerConfig.RecoverPanic(t)
+	testerConfig.InitTest(t, true)
+	srcDir := filepath.Join(
+		testerConfig.TempDataSource, "rundowns_complex_dupes")
+	dstDir := filepath.Join(
+		testerConfig.TempDataDestination, "DirectoryCopy")
+
+	// Test copy matching files
+	err := DirectoryCopy(
+		srcDir, dstDir,
+		true, false, "hello")
+	if err != nil {
+		t.Error(err)
+	}
+	// Test copy recursive and overwrite destination files
+	err = DirectoryCopy(
+		srcDir, dstDir, true, true, "")
+	if err != nil && errors.Unwrap(err) != ErrFilePathExists {
+		t.Error(err)
+	}
+}

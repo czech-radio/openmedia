@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github/czech-radio/openmedia-archive/internal"
+	"github/czech-radio/openmedia-archive/internal/extcases"
 	"github/czech-radio/openmedia-archive/internal/helper"
 	"log/slog"
 )
@@ -30,7 +31,7 @@ func RunExtractFolder(rootCfg *ConfigRoot, filterCfg *ConfigExtractFolder) {
 		if err != nil {
 			helper.Errors.ExitWithCode(err)
 		}
-		err = af.ExtractByXMLquery(internal.EXTtest)
+		err = af.ExtractByXMLquery(extcases.EXTmock)
 		if err != nil {
 			helper.Errors.ExitWithCode(err)
 		}

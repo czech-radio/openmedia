@@ -3,6 +3,7 @@ package cmd
 import (
 	// "github/czech-radio/openmedia-archive/internal"
 	"github/czech-radio/openmedia-archive/internal"
+	"github/czech-radio/openmedia-archive/internal/extcases"
 	"github/czech-radio/openmedia-archive/internal/helper"
 	"time"
 )
@@ -59,7 +60,7 @@ func RunExtractArchive(rootCfg *ConfigRoot, cfg *ConfigExtractArchive) {
 			// "ČRo_Brno": true,
 		},
 		DateRange:  filterRange,
-		Extractors: internal.EXTproduction,
+		Extractors: extcases.EXTproduction,
 		// Extractors: internal.EXTeuroVolby,
 		CSVdelim: cfg.CSVdelim,
 	}

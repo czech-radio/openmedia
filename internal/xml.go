@@ -384,18 +384,7 @@ func ZipFileExtractData(zf *zip.File, enc helper.FileEncodingNumber) ([]byte, er
 		return nil, err
 	}
 	defer fileHandle.Close()
-	// var data []byte
 	return helper.HandleFileEncoding(enc, fileHandle)
-	// switch enc {
-	// case UTF8:
-	// data, err = io.ReadAll(fileHandle)
-	// case UTF16le:
-	// utf8reader := enc_unicode.UTF16(enc_unicode.LittleEndian, enc_unicode.IgnoreBOM).NewDecoder().Reader(fileHandle)
-	// data, err = io.ReadAll(utf8reader)
-	// default:
-	// err = fmt.Errorf("unknown encoding")
-	// }
-	// return data, err
 }
 
 func ZipXmlFileDecodeData(zf *zip.File, enc helper.FileEncodingNumber) (*bytes.Reader, error) {
@@ -404,16 +393,4 @@ func ZipXmlFileDecodeData(zf *zip.File, enc helper.FileEncodingNumber) (*bytes.R
 		return nil, err
 	}
 	return HandleXMLfileHeader(enc, data)
-	// breader := bytes.NewReader(data)
-	// switch enc {
-	// case UTF8:
-	// case UTF16le:
-	// breader, err = XmlAmendUTF16header(breader)
-	// if err != nil {
-	// return nil, err
-	// }
-	// default:
-	// err = fmt.Errorf("unknown encoding")
-	// }
-	// return breader, err
 }
