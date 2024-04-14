@@ -35,11 +35,11 @@ func RunArchive(
 		TempDir := helper.DirectoryCreateTemporaryOrPanic("openmedia_archive")
 		options.DestinationDirectory = TempDir
 	}
-	internal.DirectoryIsReadableOrPanic(options.SourceDirectory)
-	internal.DirectoryIsReadableOrPanic(options.DestinationDirectory)
+	helper.DirectoryIsReadableOrPanic(options.SourceDirectory)
+	helper.DirectoryIsReadableOrPanic(options.DestinationDirectory)
 	process := internal.Archive{Options: options}
 	err := process.Folder()
 	if err != nil {
-		internal.Errors.ExitWithCode(err)
+		helper.Errors.ExitWithCode(err)
 	}
 }

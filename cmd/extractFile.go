@@ -1,6 +1,9 @@
 package cmd
 
-import "github/czech-radio/openmedia-archive/internal"
+import (
+	"github/czech-radio/openmedia-archive/internal"
+	"github/czech-radio/openmedia-archive/internal/helper"
+)
 
 type ConfigExtractFile struct {
 	SourceFile      string `cmd:"source_file; i; ; input file"`
@@ -17,13 +20,13 @@ func RunExtractFile(rootCfg *ConfigRoot, filterCfg *ConfigExtractFile) {
 		internal.WorkerTypeRundownXMLutf16le, filePath)
 	// internal.WorkerTypeRundownXMLutf8, filePath)
 	if err != nil {
-		internal.Errors.ExitWithCode(err)
+		helper.Errors.ExitWithCode(err)
 	}
 	// err = af.ExtractByXMLquery(internal.EXTtest)
 	err = af.ExtractByXMLquery(internal.EXTproduction)
 	// err = af.ExtractByXMLquery(internal.EXTeuroVolby)
 	if err != nil {
-		internal.Errors.ExitWithCode(err)
+		helper.Errors.ExitWithCode(err)
 	}
 	af.Extractor.TransformProduction()
 	// af.Extractor.TransformEurovolby()

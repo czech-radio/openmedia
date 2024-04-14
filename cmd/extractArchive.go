@@ -1,7 +1,9 @@
 package cmd
 
 import (
+	// "github/czech-radio/openmedia-archive/internal"
 	"github/czech-radio/openmedia-archive/internal"
+	"github/czech-radio/openmedia-archive/internal/helper"
 	"time"
 )
 
@@ -32,20 +34,20 @@ func RunExtractArchive(rootCfg *ConfigRoot, cfg *ConfigExtractArchive) {
 	}
 
 	// brezen
-	// dateFrom, _ := internal.CzechDateToUTC(2024, 2, 1, 0)
-	// dateTo, _ := internal.CzechDateToUTC(2024, 4, 1, 0)
+	// dateFrom, _ := helper.CzechDateToUTC(2024, 2, 1, 0)
+	// dateTo, _ := helper.CzechDateToUTC(2024, 4, 1, 0)
 	// week13
-	// dateFrom, _ := internal.CzechDateToUTC(2024, 3, 1, 0)
-	dateFrom, _ := internal.CzechDateToUTC(2023, 12, 1, 0)
-	// dateFrom, _ := internal.CzechDateToUTC(2024, 3, 25, 0)
-	// dateFrom, _ := internal.CzechDateToUTC(2024, 3, 31, 0)
-	dateTo, _ := internal.CzechDateToUTC(2024, 3, 1, 0)
-	// dateTo, _ := internal.CzechDateToUTC(2024, 4, 1, 0)
+	// dateFrom, _ := helper.CzechDateToUTC(2024, 3, 1, 0)
+	// dateFrom, _ := helper.CzechDateToUTC(2023, 12, 1, 0)
+	// dateFrom, _ := helper.CzechDateToUTC(2024, 3, 25, 0)
+	dateFrom, _ := helper.CzechDateToUTC(2024, 3, 31, 0)
+	// dateTo, _ := helper.CzechDateToUTC(2024, 3, 1, 0)
+	dateTo, _ := helper.CzechDateToUTC(2024, 4, 1, 0)
 
 	filterRange := [2]time.Time{dateFrom, dateTo}
 
-	// extractor := internal.Extractor{}
-	// extractor.Init(nil, internal.EXTproduction, internal.CSVdelim)
+	// extractor := helper.Extractor{}
+	// extractor.Init(nil, helper.EXTproduction, helper.CSVdelim)
 
 	query := internal.ArchiveFolderQuery{
 		RadioNames: map[string]bool{
@@ -70,7 +72,7 @@ func RunExtractArchive(rootCfg *ConfigRoot, cfg *ConfigExtractArchive) {
 	err := arf.FolderMap(
 		srcFolder, true, &query)
 	if err != nil {
-		internal.Errors.ExitWithCode(err)
+		helper.Errors.ExitWithCode(err)
 	}
 	arf.FolderExtract(&query)
 }

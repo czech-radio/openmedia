@@ -2,6 +2,7 @@ package internal
 
 import (
 	"archive/zip"
+	"github/czech-radio/openmedia-archive/internal/helper"
 	"io/fs"
 	"log/slog"
 	"path/filepath"
@@ -10,7 +11,7 @@ import (
 
 type ArchiveFolder struct {
 	PackageTypes       []WorkerTypeCode
-	XMLencoding        FileEncodingNumber
+	XMLencoding        helper.FileEncodingNumber
 	PackagesNamesOrder []PackageName
 	Packages           map[PackageName]*ArchivePackage
 	Files              []string

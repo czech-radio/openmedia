@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github/czech-radio/openmedia-archive/internal/helper"
 	"io"
 	"log/slog"
 	"os"
@@ -35,6 +36,17 @@ var WorkerTypeMap = map[WorkerTypeCode]string{
 	WorkerTypeCSVcontactsFields:       "CONTACT_FIELDS.csv",
 	WorkerTypeCSVcontactsUniqueFields: "CONTACT_FIELDS_UNIQUE.csv",
 	WorkerTypeCSVprodukce:             "PRODUKCE.csv",
+}
+
+func InferEncoding(wtc WorkerTypeCode) helper.FileEncodingNumber {
+	var enc helper.FileEncodingNumber
+	switch wtc {
+	case WorkerTypeZIPminified, WorkerTypeRundownXMLutf8:
+		enc = helper.UTF8
+	case WorkerTypeZIPoriginal, WorkerTypeRundownXMLutf16le:
+		enc = helper.UTF16le
+	}
+	return enc
 }
 
 type Archive struct {
@@ -113,7 +125,7 @@ type ArchivePackageWorker struct {
 
 func (w *ArchivePackageWorker) MapOldArchive(archivePath string) (bool, error) {
 	// Check if there is an old archive
-	ok, err := FileExists(archivePath)
+	ok, err := helper.FileExists(archivePath)
 	if err != nil {
 		return false, err
 	}
@@ -179,7 +191,7 @@ func (f *ArchiveItemFileMeta) Parse(
 	metaInfo OMmetaInfo, fileInfo os.FileInfo, reader io.Reader,
 	opts *ArchiveOptions, sourceFilePath string) error {
 	date := metaInfo.Date
-	if !IsOlderThanOneISOweek(date, time.Now()) {
+	if !helper.IsOlderThanOneISOweek(date, time.Now()) {
 		return fmt.Errorf("file date not older than 1 ISOWeek: %s", sourceFilePath)
 	}
 	year, week := date.ISOWeek()
@@ -236,16 +248,16 @@ func (f *ArchiveItemFileMeta) SetWeekWorkerName(wtc WorkerTypeCode) string {
 	return f.WorkerName
 }
 
-func (p *Archive) ErrorHandle(errMain error, errorsPartial ...error) ControlFlowAction {
+func (p *Archive) ErrorHandle(errMain error, errorsPartial ...error) helper.ControlFlowAction {
 	p.Results.FilesProcessed++
 	if errMain == nil {
 		p.Results.FilesSuccess++
-		return Continue
+		return helper.Continue
 	}
 
 	p.Results.FilesFailure++
 	// Get info about function which called this hadnler
-	fileName, funcName, line := TraceFunction(2)
+	fileName, funcName, line := helper.TraceFunction(2)
 	slog.Error(errMain.Error(), "source", fileName, "function", funcName, "line", line)
 	p.Errors = append(p.Errors, errMain)
 	if len(errorsPartial) > 0 {
@@ -253,9 +265,9 @@ func (p *Archive) ErrorHandle(errMain error, errorsPartial ...error) ControlFlow
 	}
 
 	if p.Options.InvalidFileContinue {
-		return Skip
+		return helper.Skip
 	}
-	return Break
+	return helper.Break
 }
 
 func (p *Archive) PrepareOutput() error {
@@ -271,7 +283,7 @@ func (p *Archive) PrepareOutput() error {
 
 func (p *Archive) Folder() error {
 	validateResult, err := ValidateFilesInDirectory(p.Options.SourceDirectory, p.Options.RecurseSourceDirectory)
-	if p.ErrorHandle(err, validateResult.Errors...) == Break {
+	if p.ErrorHandle(err, validateResult.Errors...) == helper.Break {
 		return err
 	}
 	p.Results.FilesCount = validateResult.FilesCount
@@ -286,12 +298,12 @@ func (p *Archive) Folder() error {
 processFolder:
 	for _, file := range validateResult.FilesValid {
 		err := p.File(file)
-		err = ErrorWrap("filename", file, err)
+		err = helper.ErrorWrap("filename", file, err)
 		flow := p.ErrorHandle(err)
 		switch flow {
-		case Skip:
+		case helper.Skip:
 			continue processFolder
-		case Break:
+		case helper.Break:
 			break processFolder
 		}
 	}
@@ -402,7 +414,7 @@ func (p *Archive) File(sourceFilePath string) error {
 	}
 	p.WG.Add(1)
 	if p.Options.ProcessedFileRename {
-		return ProcessedFileRename(sourceFilePath)
+		return helper.ProcessedFileRename(sourceFilePath)
 	}
 	if p.Options.ProcessedFileDelete {
 		return os.Remove(sourceFilePath)

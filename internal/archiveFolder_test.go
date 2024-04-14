@@ -9,7 +9,7 @@ import (
 var srcFolder = "/home/jk/CRO/CRO_BASE/openmedia-archive_backup/Archive/"
 
 func TestArchiveFolderListing(t *testing.T) {
-	skipTest(t)
+	// skipTest(t)
 	workerTypes := []WorkerTypeCode{WorkerTypeZIPminified}
 	arf := ArchiveFolder{
 		PackageTypes: workerTypes,

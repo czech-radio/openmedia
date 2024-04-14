@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github/czech-radio/openmedia-archive/internal"
+	"github/czech-radio/openmedia-archive/internal/helper"
 	"log/slog"
 )
 
@@ -17,7 +18,7 @@ func RunExtractFolder(rootCfg *ConfigRoot, filterCfg *ConfigExtractFolder) {
 	// folder := "/home/jk/CRO/CRO_BASE/openmedia-archive_backup/Archive/conrol_brezen/Dvojka"
 	// folder := "/home/jk/CRO/CRO_BASE/openmedia-archive_backup/Archive/conrol_brezen/Plus"
 	folder := "/home/jk/CRO/CRO_BASE/openmedia-archive_backup/Archive/landa_control"
-	files, err := internal.ListDirFiles(folder)
+	files, err := helper.ListDirFiles(folder)
 	if err != nil {
 		slog.Error(err.Error())
 		return
@@ -27,11 +28,11 @@ func RunExtractFolder(rootCfg *ConfigRoot, filterCfg *ConfigExtractFolder) {
 		af := internal.ArchiveFile{}
 		err := af.Init(internal.WorkerTypeRundownXMLutf8, filePath)
 		if err != nil {
-			internal.Errors.ExitWithCode(err)
+			helper.Errors.ExitWithCode(err)
 		}
 		err = af.ExtractByXMLquery(internal.EXTtest)
 		if err != nil {
-			internal.Errors.ExitWithCode(err)
+			helper.Errors.ExitWithCode(err)
 		}
 		af.Extractor.TransformEurovolby()
 		af.Extractor.PrintTableRowsToCSV(header, "\t")

@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"encoding/xml"
 	"fmt"
+	"github/czech-radio/openmedia-archive/internal/helper"
 	"os"
 	"strings"
 
@@ -34,7 +35,7 @@ func (af *ArchiveFile) Init(wt WorkerTypeCode, filePath string) error {
 
 	// switch file encoding type
 	enc := InferEncoding(wt)
-	data, err := HandleFileEncoding(enc, fileHandle)
+	data, err := helper.HandleFileEncoding(enc, fileHandle)
 	if err != nil {
 		return err
 	}
@@ -70,7 +71,7 @@ func (af *ArchiveFile) ExtractByXMLquery(extrs OMextractors) error {
 }
 
 func (apf *ArchivePackageFile) ExtractByXMLquery(
-	enc FileEncodingNumber, q *ArchiveFolderQuery) error {
+	enc helper.FileEncodingNumber, q *ArchiveFolderQuery) error {
 	var err error
 	// Extract file from zip
 	dataReader, err := ZipXmlFileDecodeData(apf.Reader, enc)
@@ -103,7 +104,7 @@ func (apf *ArchivePackageFile) ExtractByXMLquery(
 }
 
 func (apf *ArchivePackageFile) ExtractByParser(
-	enc FileEncodingNumber, q *ArchiveFolderQuery) error {
+	enc helper.FileEncodingNumber, q *ArchiveFolderQuery) error {
 	dr, err := ZipXmlFileDecodeData(apf.Reader, enc)
 	if err != nil {
 		return err

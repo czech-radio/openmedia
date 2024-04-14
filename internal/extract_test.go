@@ -2,6 +2,7 @@ package internal
 
 import (
 	"fmt"
+	"github/czech-radio/openmedia-archive/internal/helper"
 	"path/filepath"
 	"testing"
 	"time"
@@ -43,7 +44,7 @@ func TestGetLastPartOfObjectPath(t *testing.T) {
 
 func TestReplaceParentRowTrue(t *testing.T) {
 	EXTproduction.KeepInputRowsChecker()
-	PrintObjJson("FEK", EXTproduction)
+	helper.PrintObjJson("FEK", EXTproduction)
 }
 
 func TestArchiveFolderExtract(t *testing.T) {

@@ -2,6 +2,7 @@ package internal
 
 import (
 	"fmt"
+	"github/czech-radio/openmedia-archive/internal/helper"
 	"log/slog"
 	"os"
 	"path/filepath"
@@ -251,7 +252,7 @@ func (part CSVrowPart) CastToCSV(
 
 		value := strings.TrimSpace(field.Value)
 		value = TransformEmptyString(value)
-		value = EscapeCSVdelim(value)
+		value = helper.EscapeCSVdelim(value)
 		fmt.Fprintf(builder, "%s%s", value, delim)
 	}
 }

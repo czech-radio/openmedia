@@ -1,10 +1,12 @@
 package internal
 
 import (
+	"archive/zip"
 	"bufio"
 	"bytes"
 	"encoding/xml"
 	"fmt"
+	"github/czech-radio/openmedia-archive/internal/helper"
 	"io"
 	"io/fs"
 	"os"
@@ -20,13 +22,13 @@ import (
 func PipeConsume(input_reader *io.PipeReader) {
 	var resultBuffer bytes.Buffer
 	_, err := io.Copy(&resultBuffer, input_reader)
-	Errors.ExitWithCode(err)
+	helper.Errors.ExitWithCode(err)
 }
 
 func PipePrint(input_reader *io.PipeReader) {
 	var resultBuffer bytes.Buffer
 	_, err := io.Copy(&resultBuffer, input_reader)
-	Errors.ExitWithCode(err)
+	helper.Errors.ExitWithCode(err)
 	fmt.Println(resultBuffer.String())
 }
 
@@ -36,7 +38,7 @@ func PipeUTF16leToUTF8(r io.Reader) *io.PipeReader {
 	go func() {
 		defer pw.Close()
 		_, err := io.Copy(pw, utf8reader)
-		Errors.ExitWithCode(err)
+		helper.Errors.ExitWithCode(err)
 	}()
 	return pr
 }
@@ -95,10 +97,10 @@ func PipeRundownHeaderAmmend(input_reader io.Reader) *io.PipeReader {
 				_, err = writer.WriteString(line + "\n")
 			}
 		}
-		Errors.ExitWithCode(err)
+		helper.Errors.ExitWithCode(err)
 		// Write remainig bytes wihtout scanning?
 		err = writer.Flush()
-		Errors.ExitWithCode(err)
+		helper.Errors.ExitWithCode(err)
 
 	}()
 	return pr
@@ -112,9 +114,9 @@ func PipeRundownHeaderAdd(input_reader io.Reader) *io.PipeReader {
 		defer pw.Close()
 		defer writer.Flush()
 		_, err := writer.Write(openMediaXmlHeader)
-		Errors.ExitWithCode(err)
+		helper.Errors.ExitWithCode(err)
 		_, err = io.Copy(writer, buffReader)
-		Errors.ExitWithCode(err)
+		helper.Errors.ExitWithCode(err)
 	}()
 	return pr
 }
@@ -141,9 +143,9 @@ func PipeRundownMarshal(om *OPENMEDIA) *io.PipeReader {
 	go func() {
 		defer pw.Close()
 		xmlBytes, err := xml.MarshalIndent(om, "", "  ")
-		Errors.ExitWithCode(err)
+		helper.Errors.ExitWithCode(err)
 		_, err = writer.Write(xmlBytes)
-		Errors.ExitWithCode(err)
+		helper.Errors.ExitWithCode(err)
 		writer.Flush()
 	}()
 	return pr
@@ -245,7 +247,8 @@ func ValidateFilesInDirectory(rootDir string, recursive bool) (*ArchiveResult, e
 		return result, err
 	}
 	if len(result.Errors) > 0 {
-		err := fmt.Errorf("%s, count %d", Errors.CodeMsg(ErrCodeInvalid), len(result.Errors))
+		err := fmt.Errorf("%s, count %d",
+			helper.Errors.CodeMsg(helper.ErrCodeInvalid), len(result.Errors))
 		return result, err
 		// errors.New("invalid files count: %d", len(result.Errors))
 	}
@@ -356,4 +359,61 @@ func XMLparalelQuery(extractors []OMextractor) string {
 func XMLqueryFields(fieldsPath string, IDs []string) string {
 	attrQuery := XMLbuildAttrQuery("FieldID", IDs)
 	return fieldsPath + attrQuery
+}
+
+func HandleXMLfileHeader(
+	enc helper.FileEncodingNumber, data []byte) (*bytes.Reader, error) {
+	var err error
+	breader := bytes.NewReader(data)
+	switch enc {
+	case helper.UTF8:
+	case helper.UTF16le:
+		breader, err = XmlAmendUTF16header(breader)
+		if err != nil {
+			return nil, err
+		}
+	default:
+		err = fmt.Errorf("unknown encoding")
+	}
+	return breader, err
+}
+
+func ZipFileExtractData(zf *zip.File, enc helper.FileEncodingNumber) ([]byte, error) {
+	fileHandle, err := zf.Open()
+	if err != nil {
+		return nil, err
+	}
+	defer fileHandle.Close()
+	// var data []byte
+	return helper.HandleFileEncoding(enc, fileHandle)
+	// switch enc {
+	// case UTF8:
+	// data, err = io.ReadAll(fileHandle)
+	// case UTF16le:
+	// utf8reader := enc_unicode.UTF16(enc_unicode.LittleEndian, enc_unicode.IgnoreBOM).NewDecoder().Reader(fileHandle)
+	// data, err = io.ReadAll(utf8reader)
+	// default:
+	// err = fmt.Errorf("unknown encoding")
+	// }
+	// return data, err
+}
+
+func ZipXmlFileDecodeData(zf *zip.File, enc helper.FileEncodingNumber) (*bytes.Reader, error) {
+	data, err := ZipFileExtractData(zf, enc)
+	if err != nil {
+		return nil, err
+	}
+	return HandleXMLfileHeader(enc, data)
+	// breader := bytes.NewReader(data)
+	// switch enc {
+	// case UTF8:
+	// case UTF16le:
+	// breader, err = XmlAmendUTF16header(breader)
+	// if err != nil {
+	// return nil, err
+	// }
+	// default:
+	// err = fmt.Errorf("unknown encoding")
+	// }
+	// return breader, err
 }

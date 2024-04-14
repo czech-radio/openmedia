@@ -10,13 +10,13 @@ import (
 	"testing"
 )
 
-var Setup = SetupTest{
-	TestDataSource:      "",
-	TempDataSource:      "",
-	TempDataDestination: "",
-}
+// var Setup = SetupTest{
+// TestDataSource:      "",
+// TempDataSource:      "",
+// TempDataDestination: "",
+// }
 
-type SetupTest struct {
+type TesterConfig struct {
 	// Config
 	CurrentDir          string
 	TestDataSource      string
@@ -25,90 +25,98 @@ type SetupTest struct {
 
 	// Internals
 	testType        string
-	tempInitialized bool
-	baseInitialized bool
+	InitializedTemp bool
+	InitializedMain bool
 	failed          bool
 	sigChan         chan os.Signal
-	waitGroup       *sync.WaitGroup
+	WaitGroup       *sync.WaitGroup
 	waitCount       int
 }
 
-func (st *SetupTest) WaitAdd() {
-	st.waitCount++
-	st.waitGroup.Add(1)
-	slog.Warn("wait count", "count", st.waitCount)
+func (tc *TesterConfig) WaitAdd() {
+	tc.waitCount++
+	tc.WaitGroup.Add(1)
+	slog.Warn("wait count", "count", tc.waitCount)
 }
 
-func (st *SetupTest) WaitDone() {
-	st.waitCount--
-	st.waitGroup.Done()
-	slog.Warn("wait count", "count", st.waitCount)
+func (tc *TesterConfig) WaitDone() {
+	tc.WaitGroup.Done()
+	tc.waitCount--
+	slog.Warn("wait count", "count", tc.waitCount)
 }
 
-func (st *SetupTest) InitMain() {
-	if !st.baseInitialized {
+func (tc *TesterConfig) InitMain() {
+	if !tc.InitializedMain {
+		tc.InitializedMain = true
 		level := os.Getenv("GOLOGLEVEL")
 		curDir, err := os.Getwd()
 		if err != nil {
 			panic(err)
 		}
-		st.CurrentDir = curDir
+		tc.CurrentDir = curDir
 		SetLogLevel(level, "json")
-		st.testType = os.Getenv("GO_TEST_TYPE")
+		tc.testType = os.Getenv("GO_TEST_TYPE")
 		flag.Parse()
 		slog.Warn("main initialized")
-		st.baseInitialized = true
-		st.sigChan = make(chan os.Signal, 1)
-		st.waitGroup = new(sync.WaitGroup)
+		tc.sigChan = make(chan os.Signal, 1)
+		tc.WaitGroup = new(sync.WaitGroup)
 		signal.Notify(
-			st.sigChan,
+			tc.sigChan,
 			syscall.SIGILL,
 			syscall.SIGINT,
 			syscall.SIGHUP,
 		)
-	}
-	if st.testType == "manual" {
-		st.WaitAdd()
-		go st.WaitForSignal()
-		slog.Warn("waiting for signal")
+		if tc.testType == "manual" {
+			tc.WaitAdd()
+			go tc.WaitForSignal()
+			slog.Warn("waiting for signal")
+		}
 	}
 }
 
-func (st *SetupTest) WaitForSignal() {
-	sig := <-st.sigChan
+func (tc *TesterConfig) WaitForSignal() {
+	sig := <-tc.sigChan
 	slog.Warn("interrupting", "signal", sig.String())
 	switch sig {
 	case syscall.SIGINT:
-		<-st.sigChan
+		<-tc.sigChan
 	case syscall.SIGILL:
 		slog.Error("bad instruction")
-		if st.testType == "manual" {
-			slog.Error("bad instruction witing", "count", st.waitCount)
-			<-st.sigChan
+		if tc.testType == "manual" {
+			slog.Error("bad instruction witing", "count", tc.waitCount)
+			<-tc.sigChan
 		}
 	case syscall.SIGHUP:
 		slog.Warn("test ends")
 	}
-	st.WaitDone()
+	tc.WaitDone()
 }
 
-func (st *SetupTest) InitTempSrc(needsTemp bool) {
-	if needsTemp && !st.tempInitialized {
-		slog.Debug("preparing test directory")
-		st.TestDataSource = DirectoryCreateTemporaryOrPanic("openmedia")
-		st.tempInitialized = true
+func (tc *TesterConfig) InitTempSrc(needsTemp bool) {
+	if needsTemp && !tc.InitializedTemp {
+		slog.Debug("preparing test directory", "curdir", tc.CurrentDir)
+		tc.TempDataSource = DirectoryCreateTemporaryOrPanic("openmedia")
+		tc.InitializedTemp = true
+		// err_copy := DirectoryCopy(
+		// TEST_DATA_DIR_SRC,
+		// TEMP_DIR_TEST_SRC,
+		// true, false, "",
+		// )
+		// if err_copy != nil {
+		// os.Exit(-1)
+		// }
 	}
 }
 
-func (st *SetupTest) CleanuUP() {
-	if st.tempInitialized {
-		DirectoryDeleteOrPanic(st.TempDataSource)
+func (tc *TesterConfig) CleanuUP() {
+	if tc.InitializedTemp {
+		DirectoryDeleteOrPanic(tc.TempDataSource)
 	}
 }
 
-func (st *SetupTest) InitTest(
+func (tc *TesterConfig) InitTest(
 	t *testing.T, needsTemp bool) {
-	if st.failed {
+	if tc.failed {
 		t.SkipNow()
 		return
 	}
@@ -116,25 +124,25 @@ func (st *SetupTest) InitTest(
 		t.SkipNow()
 		return
 	}
-	st.InitTempSrc(needsTemp)
-	st.WaitAdd()
+	tc.InitTempSrc(needsTemp)
+	tc.WaitAdd()
 }
 
-func (st *SetupTest) RecoverPanic(t *testing.T) {
+func (tc *TesterConfig) RecoverPanic(t *testing.T) {
 	if t.Skipped() {
 		return
 	}
 	if r := recover(); r != nil {
-		st.failed = true
+		tc.failed = true
 		slog.Error("test panics", "reason", r)
 		t.Fail()
-		st.WaitDone()
-		if st.testType == "manual" {
-			st.sigChan <- syscall.SIGILL
+		tc.WaitDone()
+		if tc.testType == "manual" {
+			tc.sigChan <- syscall.SIGILL
 		}
 		return
 	}
-	if !st.failed {
-		st.WaitDone()
+	if !tc.failed {
+		tc.WaitDone()
 	}
 }

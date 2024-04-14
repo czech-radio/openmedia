@@ -3,6 +3,7 @@ package internal
 import (
 	"archive/zip"
 	"fmt"
+	"github/czech-radio/openmedia-archive/internal/helper"
 	"log/slog"
 	"regexp"
 	"strconv"
@@ -48,7 +49,7 @@ func ArchivePackageMatch(
 		return false, nil
 	}
 	packageRange := [2]time.Time{packageStart, packageEnd}
-	_, ok = DateRangesIntersection(filterRange, packageRange)
+	_, ok = helper.DateRangesIntersection(filterRange, packageRange)
 	return ok, nil
 }
 
@@ -143,7 +144,7 @@ func ArchivePackageFileMatch(nestedFileName string, q *ArchiveFolderQuery) (bool
 			"matched", false)
 		return false, nil
 	}
-	_, ok := DateRangesIntersection(q.DateRange, meta.DateRange)
+	_, ok := helper.DateRangesIntersection(q.DateRange, meta.DateRange)
 	if !ok {
 		slog.Warn(
 			"filename match daterange", "filename", nestedFileName,

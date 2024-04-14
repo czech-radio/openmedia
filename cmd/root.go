@@ -4,7 +4,6 @@ package cmd
 import (
 	"flag"
 	"fmt"
-	"github/czech-radio/openmedia-archive/internal"
 	"github/czech-radio/openmedia-archive/internal/helper"
 	"log/slog"
 )
@@ -17,7 +16,7 @@ var (
 )
 
 // VersionInfo Binary version info
-var VersionInfo = internal.VersionInfo{
+var VersionInfo = helper.VersionInfo{
 	Version:   "0.9.9",
 	GitTag:    BuildGitTag,
 	GitCommit: BuildGitCommit,
