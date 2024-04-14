@@ -10,6 +10,12 @@ import (
 	"testing"
 )
 
+var Setup = SetupTest{
+	TestDataSource:      "",
+	TempDataSource:      "",
+	TempDataDestination: "",
+}
+
 type SetupTest struct {
 	// Config
 	CurrentDir          string
@@ -24,6 +30,19 @@ type SetupTest struct {
 	failed          bool
 	sigChan         chan os.Signal
 	waitGroup       *sync.WaitGroup
+	waitCount       int
+}
+
+func (st *SetupTest) WaitAdd() {
+	st.waitCount++
+	st.waitGroup.Add(1)
+	slog.Warn("wait count", "count", st.waitCount)
+}
+
+func (st *SetupTest) WaitDone() {
+	st.waitCount--
+	st.waitGroup.Done()
+	slog.Warn("wait count", "count", st.waitCount)
 }
 
 func (st *SetupTest) InitMain() {
@@ -37,7 +56,7 @@ func (st *SetupTest) InitMain() {
 		SetLogLevel(level, "json")
 		st.testType = os.Getenv("GO_TEST_TYPE")
 		flag.Parse()
-		slog.Warn("initialized")
+		slog.Warn("main initialized")
 		st.baseInitialized = true
 		st.sigChan = make(chan os.Signal, 1)
 		st.waitGroup = new(sync.WaitGroup)
@@ -49,62 +68,73 @@ func (st *SetupTest) InitMain() {
 		)
 	}
 	if st.testType == "manual" {
-		st.waitGroup.Add(1)
+		st.WaitAdd()
+		go st.WaitForSignal()
+		slog.Warn("waiting for signal")
 	}
-	slog.Warn("waiting for signal")
-	go st.WaitForSignal()
 }
 
 func (st *SetupTest) WaitForSignal() {
 	sig := <-st.sigChan
-	st.waitGroup.Add(1)
 	slog.Warn("interrupting", "signal", sig.String())
 	switch sig {
 	case syscall.SIGINT:
 		<-st.sigChan
-		os.Exit(-2)
 	case syscall.SIGILL:
 		slog.Error("bad instruction")
 		if st.testType == "manual" {
+			slog.Error("bad instruction witing", "count", st.waitCount)
 			<-st.sigChan
 		}
-		os.Exit(-1)
 	case syscall.SIGHUP:
 		slog.Warn("test ends")
-		os.Exit(0)
+	}
+	st.WaitDone()
+}
+
+func (st *SetupTest) InitTempSrc(needsTemp bool) {
+	if needsTemp && !st.tempInitialized {
+		slog.Debug("preparing test directory")
+		st.TestDataSource = DirectoryCreateTemporaryOrPanic("openmedia")
+		st.tempInitialized = true
 	}
 }
 
-func (st *SetupTest) InitTemp(needsTemp bool) {
-	if needsTemp && !st.tempInitialized {
-		slog.Debug("preparing test directory")
-		st.tempInitialized = true
-		// st.TestDataSource=
+func (st *SetupTest) CleanuUP() {
+	if st.tempInitialized {
+		DirectoryDeleteOrPanic(st.TempDataSource)
 	}
 }
 
 func (st *SetupTest) InitTest(
-	t *testing.T, short bool) {
+	t *testing.T, needsTemp bool) {
 	if st.failed {
 		t.SkipNow()
 		return
 	}
-	st.InitTemp(short)
-	st.waitGroup.Add(1)
+	if testing.Short() && needsTemp {
+		t.SkipNow()
+		return
+	}
+	st.InitTempSrc(needsTemp)
+	st.WaitAdd()
 }
 
 func (st *SetupTest) RecoverPanic(t *testing.T) {
+	if t.Skipped() {
+		return
+	}
 	if r := recover(); r != nil {
 		st.failed = true
 		slog.Error("test panics", "reason", r)
 		t.Fail()
-		st.sigChan <- syscall.SIGILL
-		return
-	}
-	if t.Skipped() {
+		st.WaitDone()
+		if st.testType == "manual" {
+			st.sigChan <- syscall.SIGILL
+		}
 		return
 	}
 	if !st.failed {
-		st.waitGroup.Done()
+		st.WaitDone()
 	}
 }

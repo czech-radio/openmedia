@@ -1,6 +1,7 @@
 package helper
 
 import (
+	"fmt"
 	"log/slog"
 	"os"
 	"runtime"
@@ -23,4 +24,14 @@ func DirectoryCreateTemporaryOrPanic(base_name string) string {
 	}
 	slog.Debug("Temp directory created: " + file_path)
 	return file_path
+}
+
+func DirectoryDeleteOrPanic(directory string) {
+	err := os.RemoveAll(directory)
+	if err == nil {
+		msg := fmt.Sprintf("removed directory: %s", directory)
+		slog.Debug(msg)
+	} else {
+		panic(err)
+	}
 }

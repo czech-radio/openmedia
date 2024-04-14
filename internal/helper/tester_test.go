@@ -5,22 +5,18 @@ import (
 	"testing"
 )
 
-var Setup = SetupTest{
-	TestDataSource:      "",
-	TempDataSource:      "",
-	TempDataDestination: "",
-}
-
 func TestMain(m *testing.M) {
 	Setup.InitMain()
 	exCode := m.Run()
 	slog.Warn("ex", "code", exCode)
 	Setup.waitGroup.Wait()
+	// Setup.CleanuUP()
+	// os.Exit(exCode)
 }
 
 func TestABfail1(t *testing.T) {
 	defer Setup.RecoverPanic(t)
-	Setup.InitTest(t, false)
+	Setup.InitTest(t, true)
 	panic("kek")
 }
 
