@@ -1,7 +1,8 @@
-package internal
+package extract
 
 import (
 	"archive/zip"
+	ar "github/czech-radio/openmedia-archive/internal/archive"
 	"github/czech-radio/openmedia-archive/internal/helper"
 	"io/fs"
 	"log/slog"
@@ -10,7 +11,7 @@ import (
 )
 
 type ArchiveFolder struct {
-	PackageTypes       []WorkerTypeCode
+	PackageTypes       []ar.WorkerTypeCode
 	XMLencoding        helper.FileEncodingNumber
 	PackagesNamesOrder []PackageName
 	Packages           map[PackageName]*ArchivePackage
@@ -58,9 +59,9 @@ func (af *ArchiveFolder) FolderListing(
 		}
 		for _, wtc := range af.PackageTypes {
 			switch wtc {
-			case WorkerTypeZIPminified, WorkerTypeZIPoriginal:
+			case ar.WorkerTypeZIPminified, ar.WorkerTypeZIPoriginal:
 				// af.InferEncoding(wtc)
-				enc := InferEncoding(wtc)
+				enc := ar.InferEncoding(wtc)
 				af.XMLencoding = enc
 				ok, _ := ArchivePackageMatch(filePath, wtc, filterRange)
 				if !ok {

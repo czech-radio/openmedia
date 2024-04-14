@@ -2,8 +2,8 @@ package cmd
 
 import (
 	// "github/czech-radio/openmedia-archive/internal"
-	"github/czech-radio/openmedia-archive/internal"
-	"github/czech-radio/openmedia-archive/internal/extcases"
+	internal "github/czech-radio/openmedia-archive/internal/archive"
+	"github/czech-radio/openmedia-archive/internal/extract"
 	"github/czech-radio/openmedia-archive/internal/helper"
 	"time"
 )
@@ -30,7 +30,7 @@ func RunExtractArchive(rootCfg *ConfigRoot, cfg *ConfigExtractArchive) {
 	workerTypes := []internal.WorkerTypeCode{
 		internal.WorkerTypeZIPoriginal}
 	// internal.WorkerTypeZIPminified}
-	arf := internal.ArchiveFolder{
+	arf := extract.ArchiveFolder{
 		PackageTypes: workerTypes,
 	}
 
@@ -50,7 +50,7 @@ func RunExtractArchive(rootCfg *ConfigRoot, cfg *ConfigExtractArchive) {
 	// extractor := helper.Extractor{}
 	// extractor.Init(nil, helper.EXTproduction, helper.CSVdelim)
 
-	query := internal.ArchiveFolderQuery{
+	query := extract.ArchiveFolderQuery{
 		RadioNames: map[string]bool{
 			// "Radiožurnál": true,
 			// "Plus": true,
@@ -60,7 +60,7 @@ func RunExtractArchive(rootCfg *ConfigRoot, cfg *ConfigExtractArchive) {
 			// "ČRo_Brno": true,
 		},
 		DateRange:  filterRange,
-		Extractors: extcases.EXTproduction,
+		Extractors: extract.EXTproduction,
 		// Extractors: internal.EXTeuroVolby,
 		CSVdelim: cfg.CSVdelim,
 	}

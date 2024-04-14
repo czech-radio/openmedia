@@ -1,4 +1,4 @@
-package internal
+package extract
 
 func (e *Extractor) TransformEurovolby() {
 	// Convert dates

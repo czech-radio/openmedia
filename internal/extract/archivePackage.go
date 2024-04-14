@@ -1,8 +1,9 @@
-package internal
+package extract
 
 import (
 	"archive/zip"
 	"fmt"
+	ar "github/czech-radio/openmedia-archive/internal/archive"
 	"github/czech-radio/openmedia-archive/internal/helper"
 	"log/slog"
 	"regexp"
@@ -35,8 +36,8 @@ func ArchivePackageNameParse(packageName string) (time.Time, time.Time, string, 
 }
 
 func ArchivePackageMatch(
-	packageName string, wtc WorkerTypeCode, filterRange [2]time.Time) (bool, error) {
-	wtcTypeName, ok := WorkerTypeMap[wtc]
+	packageName string, wtc ar.WorkerTypeCode, filterRange [2]time.Time) (bool, error) {
+	wtcTypeName, ok := ar.WorkerTypeMap[wtc]
 	if !ok {
 		panic("unknown workertype code")
 	}

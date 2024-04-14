@@ -1,4 +1,4 @@
-package extcases
+package extract
 
 var ProductionSimpleTest = []string{"8"}
 

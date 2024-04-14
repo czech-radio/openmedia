@@ -15,7 +15,6 @@ import (
 	"strings"
 
 	"github.com/antchfx/xmlquery"
-	"github.com/go-xmlfmt/xmlfmt"
 	"golang.org/x/text/encoding/unicode"
 )
 
@@ -264,11 +263,6 @@ func (ar *ArchiveResult) AddError(err ...error) {
 	}
 }
 
-func XMLprint(node *xmlquery.Node) {
-	ex := xmlfmt.FormatXML(node.OutputXML(true), "", "\t")
-	fmt.Println(ex)
-}
-
 func GetFieldValueByName(attrs []xmlquery.Attr, id string) (string, bool) {
 	for _, i := range attrs {
 		if i.Name.Local == id {
@@ -344,16 +338,6 @@ func XMLqueryFromPath(path string) string {
 			&out, "%sOM_OBJECT%s", globPrefix, attrQuery)
 	}
 	return out.String()
-}
-
-func XMLparalelQuery(extractors []OMextractor) string {
-	var query string
-	objects := []string{}
-	for _, e := range extractors {
-		objects = append(objects, e.ObjectPath)
-	}
-	query = XMLbuildAttrQuery("TemplateName", objects)
-	return query
 }
 
 func XMLqueryFields(fieldsPath string, IDs []string) string {

@@ -10,6 +10,25 @@ import (
 	"github.com/ncruces/go-strftime"
 )
 
+// var testerConfig = helper.TesterConfig{
+// TestDataSource: "../test/testdata",
+// }
+
+// func TestMain(m *testing.M) {
+// testerConfig.InitMain()
+// exitCode := m.Run()
+// slog.Debug("exit code", "code", exitCode)
+// testerConfig.WaitGroup.Wait()
+// testerConfig.CleanuUP()
+// }
+
+func TestAABfail1(t *testing.T) {
+	// defer testerConfig.RecoverPanic(t)
+	// defer testerConfig.RecoverPanicNoFail(t)
+	// testerConfig.InitTest(t, false)
+	panic("kek")
+}
+
 func Test_ErrorsMarshalLog(t *testing.T) {
 	errs := []error{errors.New("hello"), errors.New("world")}
 	err := ErrorsMarshalLog(errs)
@@ -60,9 +79,14 @@ func Test_ParseUplink(t *testing.T) {
 }
 
 // func Test_ProcessFolder(t *testing.T) {
+// 	defer testerConfig.RecoverPanic(t)
+// 	testerConfig.InitTest(t, true)
+
 // 	subDir := "rundowns_mix"
-// 	srcDir := filepath.Join(TEMP_DIR_TEST_SRC, subDir)
-// 	dstDir := filepath.Join(TEMP_DIR_TEST_DST, subDir)
+// 	srcDir := filepath.Join(
+// 		testerConfig.TempDataSource, subDir)
+// 	dstDir := filepath.Join(
+// 		testerConfig.TempDataDestination, subDir)
 // 	opts := ArchiveOptions{
 // 		SourceDirectory:      srcDir,
 // 		DestinationDirectory: dstDir,

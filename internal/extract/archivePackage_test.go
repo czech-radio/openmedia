@@ -1,7 +1,8 @@
-package internal
+package extract
 
 import (
 	"fmt"
+	ar "github/czech-radio/openmedia-archive/internal/archive"
 	"testing"
 	"time"
 )
@@ -13,11 +14,11 @@ func TestPackageNameParse(t *testing.T) {
 
 func TestArchivePackageMatch(t *testing.T) {
 	packageName := "2021_W09_MINIFIED.zip"
-	dateFrom := time.Date(2021, 1, 1, 0, 0, 0, 0, ArchiveTimeZone)
-	dateTo := time.Date(2022, 2, 1, 0, 0, 0, 0, ArchiveTimeZone)
+	dateFrom := time.Date(2021, 1, 1, 0, 0, 0, 0, ar.ArchiveTimeZone)
+	dateTo := time.Date(2022, 2, 1, 0, 0, 0, 0, ar.ArchiveTimeZone)
 	filterRange := [2]time.Time{dateFrom, dateTo}
 	ok, err :=
-		ArchivePackageMatch(packageName, WorkerTypeZIPminified, filterRange)
+		ArchivePackageMatch(packageName, ar.WorkerTypeZIPminified, filterRange)
 	if err != nil {
 		t.Error(err)
 	}
@@ -44,8 +45,8 @@ func TestArchivePackageFileMatch(t *testing.T) {
 		"RD_00-05_Radiožurnál_Saturday_W05_2020_02_01.xml",
 		"RD_05-09_ČRo_Brno_Saturday_W05_2020_02_01.xml",
 	}
-	dateFrom := time.Date(2021, 1, 1, 0, 0, 0, 0, ArchiveTimeZone)
-	dateTo := time.Date(2022, 2, 1, 0, 0, 0, 0, ArchiveTimeZone)
+	dateFrom := time.Date(2021, 1, 1, 0, 0, 0, 0, ar.ArchiveTimeZone)
+	dateTo := time.Date(2022, 2, 1, 0, 0, 0, 0, ar.ArchiveTimeZone)
 	query := &ArchiveFolderQuery{
 		DateRange: [2]time.Time{
 			dateFrom,

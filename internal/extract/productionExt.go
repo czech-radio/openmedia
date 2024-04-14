@@ -1,77 +1,77 @@
-package extcases
+package extract
 
 import (
-	i "github/czech-radio/openmedia-archive/internal"
+	ar "github/czech-radio/openmedia-archive/internal/archive"
 )
 
-var EXTproduction = i.OMextractors{
-	i.OMextractor{
-		PartPrefixCode: i.FieldPrefix_ComputedRID,
+var EXTproduction = OMextractors{
+	OMextractor{
+		PartPrefixCode: FieldPrefix_ComputedRID,
 		FieldIDs:       []string{"FileName", "C-RID", "C-index"},
 	},
-	i.OMextractor{
+	OMextractor{
 		ObjectPath:       "/Radio Rundown/<OM_RECORD>",
 		ObjectAttrsNames: []string{"RecordID"},
-		PartPrefixCode:   i.FieldPrefix_RadioRec,
+		PartPrefixCode:   FieldPrefix_RadioRec,
 	},
-	i.OMextractor{
+	OMextractor{
 		ObjectPath:     "/*Hourly Rundown",
-		FieldsPath:     i.TemplateHeaderFieldPath,
+		FieldsPath:     ar.TemplateHeaderFieldPath,
 		FieldIDs:       []string{"8"},
-		PartPrefixCode: i.FieldPrefix_HourlyHead,
+		PartPrefixCode: FieldPrefix_HourlyHead,
 	},
-	i.OMextractor{
+	OMextractor{
 		ObjectPath:       "/<OM_RECORD>",
 		ObjectAttrsNames: []string{"RecordID"},
-		PartPrefixCode:   i.FieldPrefix_HourlyRec,
+		PartPrefixCode:   FieldPrefix_HourlyRec,
 	},
-	i.OMextractor{
+	OMextractor{
 		ObjectPath:           "/Sub Rundown",
 		ObjectAttrsNames:     []string{"TemplateName", "ObjectID"},
-		FieldsPath:           i.TemplateHeaderFieldPath,
+		FieldsPath:           ar.TemplateHeaderFieldPath,
 		FieldIDs:             ProductionFieldsSubRundown,
-		PartPrefixCode:       i.FieldPrefix_SubHead,
+		PartPrefixCode:       FieldPrefix_SubHead,
 		KeepWhenZeroSubnodes: true,
 	},
-	i.OMextractor{
+	OMextractor{
 		ObjectPath:           "/<OM_RECORD>",
 		ObjectAttrsNames:     []string{"RecordID"},
-		PartPrefixCode:       i.FieldPrefix_SubRec,
+		PartPrefixCode:       FieldPrefix_SubRec,
 		KeepWhenZeroSubnodes: true,
 	},
-	i.OMextractor{
+	OMextractor{
 		ObjectPath:       "/*Radio Story",
-		FieldsPath:       i.TemplateHeaderFieldPath,
+		FieldsPath:       ar.TemplateHeaderFieldPath,
 		ObjectAttrsNames: []string{"TemplateName", "ObjectID"},
-		PartPrefixCode:   i.FieldPrefix_StoryHead,
+		PartPrefixCode:   FieldPrefix_StoryHead,
 		// FieldIDs:         []string{"8"},
 		FieldIDs: ProductionFieldsRadioStory,
 	},
-	i.OMextractor{
+	OMextractor{
 		ObjectPath:           "/<OM_RECORD>/Audioclip|Contact Item|Contact Bin",
 		ObjectAttrsNames:     []string{"TemplateName", "ObjectID"},
-		PartPrefixCode:       i.FieldPrefix_StoryKategory,
+		PartPrefixCode:       FieldPrefix_StoryKategory,
 		KeepWhenZeroSubnodes: true,
 		PreserveParentNode:   true,
 	},
-	i.OMextractor{
+	OMextractor{
 		ObjectPath: "/Audioclip",
-		FieldsPath: i.TemplateHeaderFieldPath,
+		FieldsPath: ar.TemplateHeaderFieldPath,
 		// FieldIDs:   []string{"8"},
 		FieldIDs:             ProductionFieldsAudio,
-		PartPrefixCode:       i.FieldPrefix_AudioClipHead,
+		PartPrefixCode:       FieldPrefix_AudioClipHead,
 		KeepWhenZeroSubnodes: true,
 	},
-	i.OMextractor{
+	OMextractor{
 		ObjectPath: "/Contact Item|Contact Bin",
-		FieldsPath: i.TemplateHeaderFieldPath,
+		FieldsPath: ar.TemplateHeaderFieldPath,
 		// FieldIDs:             []string{"1"},
 		FieldIDs:             ProductionFieldsContactItems,
-		PartPrefixCode:       i.FieldPrefix_ContactItemHead,
+		PartPrefixCode:       FieldPrefix_ContactItemHead,
 		KeepWhenZeroSubnodes: true,
 	},
-	i.OMextractor{
-		PartPrefixCode: i.FieldPrefix_ComputedID,
+	OMextractor{
+		PartPrefixCode: FieldPrefix_ComputedID,
 		FieldIDs:       []string{"ID"},
 	},
 }

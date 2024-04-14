@@ -1,6 +1,7 @@
-package internal
+package extract
 
 import (
+	ar "github/czech-radio/openmedia-archive/internal/archive"
 	"log/slog"
 	"path/filepath"
 
@@ -178,9 +179,9 @@ func (extrs OMextractors) MapFieldsPath() {
 		if extr.ObjectPath == "" {
 			continue
 		}
-		objectName := GetObjectNameFromPath(extr.ObjectPath)
+		objectName := ar.GetObjectNameFromPath(extr.ObjectPath)
 		if extr.FieldsPath == "" {
-			tag, ok := OmTagStructureMap[objectName]
+			tag, ok := ar.OmTagStructureMap[objectName]
 			if ok {
 				extrs[i].FieldsPath = tag.FieldsPath
 			}

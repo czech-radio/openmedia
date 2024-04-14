@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	"github/czech-radio/openmedia-archive/internal"
-	"github/czech-radio/openmedia-archive/internal/extcases"
+	internal "github/czech-radio/openmedia-archive/internal/archive"
+	"github/czech-radio/openmedia-archive/internal/extract"
 	"github/czech-radio/openmedia-archive/internal/helper"
 )
 
@@ -16,7 +16,7 @@ func RunExtractFile(rootCfg *ConfigRoot, filterCfg *ConfigExtractFile) {
 	// filePath := "/home/jk/CRO/CRO_BASE/openmedia-archive_backup/Archive/control/control_UTF16_RD_13-17_Plus_Tuesday_W01_2024_01_02.xml"
 	filePath := "/home/jk/CRO/CRO_BASE/openmedia-archive_backup/Archive/control2/RD_18-24_Radiožurnál_Friday_W09_2024_03_01_utf16le.xml"
 	// filePath := "/home/jk/CRO/CRO_BASE/openmedia-archive_backup/Archive/control/control_UTF8_RD_13-17_Plus_Tuesday_W01_2024_01_02.xml"
-	af := internal.ArchiveFile{}
+	af := extract.ArchiveFile{}
 	err := af.Init(
 		internal.WorkerTypeRundownXMLutf16le, filePath)
 	// internal.WorkerTypeRundownXMLutf8, filePath)
@@ -24,7 +24,7 @@ func RunExtractFile(rootCfg *ConfigRoot, filterCfg *ConfigExtractFile) {
 		helper.Errors.ExitWithCode(err)
 	}
 	// err = af.ExtractByXMLquery(internal.EXTtest)
-	err = af.ExtractByXMLquery(extcases.EXTproduction)
+	err = af.ExtractByXMLquery(extract.EXTproduction)
 	// err = af.ExtractByXMLquery(internal.EXTeuroVolby)
 	if err != nil {
 		helper.Errors.ExitWithCode(err)

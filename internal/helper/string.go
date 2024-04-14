@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"log/slog"
 	"strings"
+
+	"github.com/antchfx/xmlquery"
+	"github.com/go-xmlfmt/xmlfmt"
 )
 
 // func PrintRow(input CSVrow) {
@@ -44,4 +47,9 @@ func EscapeCSVdelim(value string) string {
 	out := strings.ReplaceAll(value, "\t", "\\t")
 	out = strings.ReplaceAll(out, "\n", "\\n")
 	return out
+}
+
+func XMLprint(node *xmlquery.Node) {
+	ex := xmlfmt.FormatXML(node.OutputXML(true), "", "\t")
+	fmt.Println(ex)
 }

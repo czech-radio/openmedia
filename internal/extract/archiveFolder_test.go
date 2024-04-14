@@ -1,7 +1,8 @@
-package internal
+package extract
 
 import (
 	"fmt"
+	ar "github/czech-radio/openmedia-archive/internal/archive"
 	"testing"
 	"time"
 )
@@ -10,12 +11,12 @@ var srcFolder = "/home/jk/CRO/CRO_BASE/openmedia-archive_backup/Archive/"
 
 func TestArchiveFolderListing(t *testing.T) {
 	// skipTest(t)
-	workerTypes := []WorkerTypeCode{WorkerTypeZIPminified}
+	workerTypes := []ar.WorkerTypeCode{ar.WorkerTypeZIPminified}
 	arf := ArchiveFolder{
 		PackageTypes: workerTypes,
 	}
-	dateFrom := time.Date(2020, 1, 1, 0, 0, 0, 0, ArchiveTimeZone)
-	dateTo := time.Date(2025, 2, 1, 0, 0, 0, 0, ArchiveTimeZone)
+	dateFrom := time.Date(2020, 1, 1, 0, 0, 0, 0, ar.ArchiveTimeZone)
+	dateTo := time.Date(2025, 2, 1, 0, 0, 0, 0, ar.ArchiveTimeZone)
 	filterRange := [2]time.Time{dateFrom, dateTo}
 	err := arf.FolderListing(srcFolder, true, filterRange)
 	if err != nil {
@@ -25,13 +26,13 @@ func TestArchiveFolderListing(t *testing.T) {
 }
 
 func TestArchiveFolderMap(t *testing.T) {
-	workerTypes := []WorkerTypeCode{WorkerTypeZIPminified}
+	workerTypes := []ar.WorkerTypeCode{ar.WorkerTypeZIPminified}
 	arf := ArchiveFolder{
 		PackageTypes: workerTypes,
 	}
 
-	dateFrom := time.Date(2020, 2, 1, 0, 0, 0, 0, ArchiveTimeZone)
-	dateTo := time.Date(2020, 2, 1, 10, 0, 0, 0, ArchiveTimeZone)
+	dateFrom := time.Date(2020, 2, 1, 0, 0, 0, 0, ar.ArchiveTimeZone)
+	dateTo := time.Date(2020, 2, 1, 10, 0, 0, 0, ar.ArchiveTimeZone)
 	filterRange := [2]time.Time{dateFrom, dateTo}
 	query := ArchiveFolderQuery{DateRange: filterRange}
 	err := arf.FolderMap(srcFolder, true, &query)
@@ -45,13 +46,13 @@ func TestArchiveFolderMap(t *testing.T) {
 }
 
 func TestArchiveFolderMap2(t *testing.T) {
-	workerTypes := []WorkerTypeCode{WorkerTypeZIPminified}
+	workerTypes := []ar.WorkerTypeCode{ar.WorkerTypeZIPminified}
 	arf := ArchiveFolder{
 		PackageTypes: workerTypes,
 	}
 
-	dateFrom := time.Date(2020, 2, 1, 0, 0, 0, 0, ArchiveTimeZone)
-	dateTo := time.Date(2020, 2, 1, 10, 0, 0, 0, ArchiveTimeZone)
+	dateFrom := time.Date(2020, 2, 1, 0, 0, 0, 0, ar.ArchiveTimeZone)
+	dateTo := time.Date(2020, 2, 1, 10, 0, 0, 0, ar.ArchiveTimeZone)
 	filterRange := [2]time.Time{dateFrom, dateTo}
 
 	query := ArchiveFolderQuery{

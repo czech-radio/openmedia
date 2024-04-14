@@ -1,10 +1,11 @@
-package internal
+package extract
 
 import (
 	"archive/zip"
 	"bytes"
 	"encoding/xml"
 	"fmt"
+	ar "github/czech-radio/openmedia-archive/internal/archive"
 	"github/czech-radio/openmedia-archive/internal/helper"
 	"os"
 	"strings"
@@ -14,7 +15,7 @@ import (
 
 type ArchiveFile struct {
 	Reader      *bytes.Reader
-	Tables      map[WorkerTypeCode]CSVtable
+	Tables      map[ar.WorkerTypeCode]CSVtable
 	Encoding    string
 	RundownType string
 	FilePath    string
@@ -22,8 +23,8 @@ type ArchiveFile struct {
 	Extractor
 }
 
-func (af *ArchiveFile) Init(wt WorkerTypeCode, filePath string) error {
-	wr := WorkerTypeMap[wt]
+func (af *ArchiveFile) Init(wt ar.WorkerTypeCode, filePath string) error {
+	wr := ar.WorkerTypeMap[wt]
 	instructions := strings.Split(wr, "_")
 	af.RundownType = instructions[0]
 	af.Encoding = instructions[2]
@@ -34,18 +35,18 @@ func (af *ArchiveFile) Init(wt WorkerTypeCode, filePath string) error {
 	}
 
 	// switch file encoding type
-	enc := InferEncoding(wt)
+	enc := ar.InferEncoding(wt)
 	data, err := helper.HandleFileEncoding(enc, fileHandle)
 	if err != nil {
 		return err
 	}
-	breader, err := HandleXMLfileHeader(enc, data)
+	breader, err := ar.HandleXMLfileHeader(enc, data)
 	if err != nil {
 		return err
 	}
 	af.Reader = breader
 
-	openMedia, err := XmlFindBaseOpenMediaNode(af.Reader)
+	openMedia, err := ar.XmlFindBaseOpenMediaNode(af.Reader)
 	if err != nil {
 		return err
 	}
@@ -55,7 +56,7 @@ func (af *ArchiveFile) Init(wt WorkerTypeCode, filePath string) error {
 
 type ArchivePackageFile struct {
 	Reader *zip.File
-	Tables map[WorkerTypeCode]CSVtable
+	Tables map[ar.WorkerTypeCode]CSVtable
 }
 
 func (af *ArchiveFile) ExtractByXMLquery(extrs OMextractors) error {
@@ -74,12 +75,12 @@ func (apf *ArchivePackageFile) ExtractByXMLquery(
 	enc helper.FileEncodingNumber, q *ArchiveFolderQuery) error {
 	var err error
 	// Extract file from zip
-	dataReader, err := ZipXmlFileDecodeData(apf.Reader, enc)
+	dataReader, err := ar.ZipXmlFileDecodeData(apf.Reader, enc)
 	if err != nil {
 		return err
 	}
 	// Parse base xml node
-	openMedia, err := XmlFindBaseOpenMediaNode(dataReader)
+	openMedia, err := ar.XmlFindBaseOpenMediaNode(dataReader)
 	if err != nil {
 		return err
 	}
@@ -105,11 +106,11 @@ func (apf *ArchivePackageFile) ExtractByXMLquery(
 
 func (apf *ArchivePackageFile) ExtractByParser(
 	enc helper.FileEncodingNumber, q *ArchiveFolderQuery) error {
-	dr, err := ZipXmlFileDecodeData(apf.Reader, enc)
+	dr, err := ar.ZipXmlFileDecodeData(apf.Reader, enc)
 	if err != nil {
 		return err
 	}
-	var OM OPENMEDIA
+	var OM ar.OPENMEDIA
 	err = xml.NewDecoder(dr).Decode(&OM)
 	if err != nil {
 		return err

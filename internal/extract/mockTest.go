@@ -1,13 +1,13 @@
-package extcases
+package extract
 
 import (
 	"fmt"
-	"github/czech-radio/openmedia-archive/internal"
+	ar "github/czech-radio/openmedia-archive/internal/archive"
 	"testing"
 )
 
 func TestExtractorInit(t *testing.T) {
-	var ex internal.Extractor
+	var ex Extractor
 	// ex.Init(nil, EXTproduction, CSVdelim)
 	ex.Init(nil, EXTmock, "\t")
 	fmt.Println("prefixesInternal", ex.CSVrowPartsPositionsInternal)
@@ -23,8 +23,8 @@ func TestExtractorInit(t *testing.T) {
 
 func TestArchiveFileExtractByXMLqueryFilter(t *testing.T) {
 	filePath := "/home/jk/CRO/CRO_BASE/openmedia-archive_backup/Archive/control/control_UTF16_RD_13-17_Plus_Tuesday_W01_2024_01_02.xml"
-	af := internal.ArchiveFile{}
-	err := af.Init(internal.WorkerTypeRundownXMLutf16le, filePath)
+	af := ArchiveFile{}
+	err := af.Init(ar.WorkerTypeRundownXMLutf16le, filePath)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -35,15 +35,15 @@ func TestArchiveFileExtractByXMLqueryFilter(t *testing.T) {
 	}
 	patern := "13:00-14:00"
 	rowIdx := af.Extractor.FilterByPartAndFieldID(
-		internal.FieldPrefix_HourlyHead, "8", patern,
+		FieldPrefix_HourlyHead, "8", patern,
 	)
 	af.Extractor.PrintTableRowsToCSV(true, "\t", rowIdx)
 }
 
 func TestArchiveFileExtractByXMLquery(t *testing.T) {
 	filePath := "/home/jk/CRO/CRO_BASE/openmedia-archive_backup/Archive/control/control_UTF16_RD_13-17_Plus_Tuesday_W01_2024_01_02.xml"
-	af := internal.ArchiveFile{}
-	err := af.Init(internal.WorkerTypeRundownXMLutf16le, filePath)
+	af := ArchiveFile{}
+	err := af.Init(ar.WorkerTypeRundownXMLutf16le, filePath)
 	if err != nil {
 		t.Error(err.Error())
 	}

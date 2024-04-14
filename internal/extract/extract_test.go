@@ -1,7 +1,8 @@
-package internal
+package extract
 
 import (
 	"fmt"
+	ar "github/czech-radio/openmedia-archive/internal/archive"
 	"path/filepath"
 	"testing"
 	"time"
@@ -9,13 +10,13 @@ import (
 
 func TestXmlQueryFields(t *testing.T) {
 	ids := []string{"1", "2"}
-	res := XMLqueryFields("/OM_HEADER/OM_FIELD", ids)
+	res := ar.XMLqueryFields("/OM_HEADER/OM_FIELD", ids)
 	fmt.Println(res)
 }
 
 func TestXmlQuery(t *testing.T) {
 	ids := []string{"1", "2"}
-	res := XMLqueryFields("/OM_HEADER/OM_FIELD", ids)
+	res := ar.XMLqueryFields("/OM_HEADER/OM_FIELD", ids)
 	fmt.Println(res)
 }
 
@@ -43,12 +44,12 @@ func TestGetLastPartOfObjectPath(t *testing.T) {
 
 func TestArchiveFolderExtract(t *testing.T) {
 	// workerTypes := []WorkerTypeCode{WorkerTypeZIPminified}
-	workerTypes := []WorkerTypeCode{WorkerTypeZIPoriginal}
+	workerTypes := []ar.WorkerTypeCode{ar.WorkerTypeZIPoriginal}
 	arf := ArchiveFolder{
 		PackageTypes: workerTypes,
 	}
-	dateFrom := time.Date(2020, 2, 1, 0, 0, 0, 0, ArchiveTimeZone)
-	dateTo := time.Date(2020, 2, 1, 3, 0, 0, 0, ArchiveTimeZone)
+	dateFrom := time.Date(2020, 2, 1, 0, 0, 0, 0, ar.ArchiveTimeZone)
+	dateTo := time.Date(2020, 2, 1, 3, 0, 0, 0, ar.ArchiveTimeZone)
 	filterRange := [2]time.Time{dateFrom, dateTo}
 	query := ArchiveFolderQuery{
 		DateRange: filterRange,
@@ -66,12 +67,12 @@ func TestArchiveFolderExtract(t *testing.T) {
 
 func TestArchiveFolderExtractProdukce(t *testing.T) {
 	// workerTypes := []WorkerTypeCode{WorkerTypeZIPminified}
-	workerTypes := []WorkerTypeCode{WorkerTypeZIPoriginal}
+	workerTypes := []ar.WorkerTypeCode{ar.WorkerTypeZIPoriginal}
 	arf := ArchiveFolder{
 		PackageTypes: workerTypes,
 	}
-	dateFrom := time.Date(2024, 2, 1, 13, 0, 0, 1, ArchiveTimeZone)
-	dateTo := time.Date(2024, 2, 1, 14, 0, 0, 0, ArchiveTimeZone)
+	dateFrom := time.Date(2024, 2, 1, 13, 0, 0, 1, ar.ArchiveTimeZone)
+	dateTo := time.Date(2024, 2, 1, 14, 0, 0, 0, ar.ArchiveTimeZone)
 	filterRange := [2]time.Time{dateFrom, dateTo}
 	query := ArchiveFolderQuery{
 		DateRange: filterRange,

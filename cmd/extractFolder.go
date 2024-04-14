@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	"github/czech-radio/openmedia-archive/internal"
-	"github/czech-radio/openmedia-archive/internal/extcases"
+	internal "github/czech-radio/openmedia-archive/internal/archive"
+	"github/czech-radio/openmedia-archive/internal/extract"
 	"github/czech-radio/openmedia-archive/internal/helper"
 	"log/slog"
 )
@@ -26,12 +26,12 @@ func RunExtractFolder(rootCfg *ConfigRoot, filterCfg *ConfigExtractFolder) {
 	}
 	header := true
 	for i, filePath := range files {
-		af := internal.ArchiveFile{}
+		af := extract.ArchiveFile{}
 		err := af.Init(internal.WorkerTypeRundownXMLutf8, filePath)
 		if err != nil {
 			helper.Errors.ExitWithCode(err)
 		}
-		err = af.ExtractByXMLquery(extcases.EXTmock)
+		err = af.ExtractByXMLquery(extract.EXTmock)
 		if err != nil {
 			helper.Errors.ExitWithCode(err)
 		}
