@@ -11,6 +11,8 @@ import (
 	"testing"
 )
 
+// TODO: add t.Error() to recover
+
 type TesterConfig struct {
 	// Config
 	CurrentDir          string
@@ -64,9 +66,9 @@ func (tc *TesterConfig) InitMain() {
 		)
 		if tc.testType == "manual" {
 			tc.WaitAdd()
-			go tc.WaitForSignal()
-			slog.Warn("waiting for signal")
 		}
+		go tc.WaitForSignal()
+		slog.Warn("waiting for signal")
 	}
 }
 
@@ -76,6 +78,10 @@ func (tc *TesterConfig) WaitForSignal() {
 	switch sig {
 	case syscall.SIGINT:
 		<-tc.sigChan
+		if tc.testType != "manual" {
+			tc.CleanuUP()
+			os.Exit(-1)
+		}
 	case syscall.SIGILL:
 		slog.Error("bad instruction")
 		if tc.testType == "manual" {
@@ -98,7 +104,7 @@ func (tc *TesterConfig) InitTempSrc(needsTemp bool) {
 		err_copy := DirectoryCopy(
 			tc.TestDataSource,
 			tc.TempDataSource,
-			true, false, "",
+			true, false, "", false,
 		)
 		if err_copy != nil {
 			os.Exit(-1)
@@ -127,6 +133,8 @@ func (tc *TesterConfig) InitTest(
 }
 
 func (tc *TesterConfig) RecoverPanic(t *testing.T) {
+	// TODO: add t.Error(err)
+	// TODO: do not print result when running auto test
 	if t.Skipped() {
 		return
 	}

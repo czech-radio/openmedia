@@ -38,13 +38,13 @@ func Test_DirectoryCopy(t *testing.T) {
 	// Test copy matching files
 	err := DirectoryCopy(
 		srcDir, dstDir,
-		true, false, "hello")
+		true, false, "hello", false)
 	if err != nil {
 		t.Error(err)
 	}
 	// Test copy recursive and overwrite destination files
 	err = DirectoryCopy(
-		srcDir, dstDir, true, true, "")
+		srcDir, dstDir, true, true, "", false)
 	if err != nil && errors.Unwrap(err) != ErrFilePathExists {
 		t.Error(err)
 	}

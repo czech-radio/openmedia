@@ -119,6 +119,7 @@ func DirectoryCopy(
 	recurse bool,
 	overwrite bool,
 	path_regex string,
+	verbose bool,
 ) error {
 	var regex_patt *regexp.Regexp
 	if path_regex != "" {
@@ -143,7 +144,7 @@ func DirectoryCopy(
 				return err
 			}
 			slog.Debug("created", "path", dstDir)
-			err = CopyFile(srcFile, dstFile, overwrite)
+			err = CopyFile(srcFile, dstFile, overwrite, verbose)
 			if err != nil {
 				return err
 			}

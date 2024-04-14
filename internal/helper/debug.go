@@ -9,6 +9,10 @@ type VersionInfo struct {
 	BuildTime string
 }
 
+func XOR(a, b bool) bool {
+	return (a || b) && !(a && b)
+}
+
 func TraceFunction(depth int) (string, string, int) {
 	pc, fileName, line, ok := runtime.Caller(depth)
 	details := runtime.FuncForPC(pc)

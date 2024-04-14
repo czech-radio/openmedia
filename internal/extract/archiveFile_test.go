@@ -3,12 +3,27 @@ package extract
 import (
 	"fmt"
 	ar "github/czech-radio/openmedia-archive/internal/archive"
+	"github/czech-radio/openmedia-archive/internal/helper"
+	"log/slog"
 	"testing"
 
 	"github.com/antchfx/xmlquery"
 )
 
+var testerConfig = helper.TesterConfig{
+	TestDataSource: "../../test/testdata",
+}
+
+func TestMain(m *testing.M) {
+	testerConfig.InitMain()
+	exitCode := m.Run()
+	slog.Debug("exit code", "code", exitCode)
+	testerConfig.WaitGroup.Wait()
+	testerConfig.CleanuUP()
+}
+
 func TestXMLqueryFile(t *testing.T) {
+
 	filePath := "/home/jk/CRO/CRO_BASE/openmedia-archive_backup/Archive/control/control_UTF16_RD_13-17_Plus_Tuesday_W01_2024_01_02.xml"
 	af := ArchiveFile{}
 	err := af.Init(ar.WorkerTypeRundownXMLutf16le, filePath)

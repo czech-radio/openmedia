@@ -6,6 +6,20 @@ import (
 	"github.com/ncruces/go-strftime"
 )
 
+// Sleeper sleeps for specified durration
+func Sleeper(duration int, time_unit string) {
+	switch time_unit {
+	case "ms":
+		time.Sleep(time.Duration(duration) * time.Millisecond)
+	case "s":
+		time.Sleep(time.Duration(duration) * time.Second)
+	case "m":
+		time.Sleep(time.Duration(duration) * time.Minute)
+	default:
+		panic("Wrong time time_unit")
+	}
+}
+
 func IsOlderThanOneISOweek(dateToCheck, dateNow time.Time) bool {
 	year_check, week_check := dateToCheck.ISOWeek()
 	year_now, week_now := dateNow.ISOWeek()

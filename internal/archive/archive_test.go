@@ -2,7 +2,10 @@ package internal
 
 import (
 	"errors"
+	"fmt"
+	"github/czech-radio/openmedia-archive/internal/helper"
 	"log/slog"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"testing"
@@ -10,23 +13,22 @@ import (
 	"github.com/ncruces/go-strftime"
 )
 
-// var testerConfig = helper.TesterConfig{
-// TestDataSource: "../test/testdata",
-// }
+var testerConfig = helper.TesterConfig{
+	TestDataSource: "../../test/testdata",
+}
 
-// func TestMain(m *testing.M) {
-// testerConfig.InitMain()
-// exitCode := m.Run()
-// slog.Debug("exit code", "code", exitCode)
-// testerConfig.WaitGroup.Wait()
-// testerConfig.CleanuUP()
-// }
+func TestMain(m *testing.M) {
+	testerConfig.InitMain()
+	exitCode := m.Run()
+	slog.Debug("exit code", "code", exitCode)
+	testerConfig.WaitGroup.Wait()
+	testerConfig.CleanuUP()
+}
 
-func TestAABfail1(t *testing.T) {
-	// defer testerConfig.RecoverPanic(t)
-	// defer testerConfig.RecoverPanicNoFail(t)
-	// testerConfig.InitTest(t, false)
-	panic("kek")
+func TestAABnofail(t *testing.T) {
+	defer testerConfig.RecoverPanic(t)
+	testerConfig.InitTest(t, false)
+	helper.Sleeper(2, "s")
 }
 
 func Test_ErrorsMarshalLog(t *testing.T) {
@@ -78,161 +80,196 @@ func Test_ParseUplink(t *testing.T) {
 	_ = date
 }
 
-// func Test_ProcessFolder(t *testing.T) {
-// 	defer testerConfig.RecoverPanic(t)
-// 	testerConfig.InitTest(t, true)
+func Test_ProcessFolder(t *testing.T) {
+	defer testerConfig.RecoverPanic(t)
+	testerConfig.InitTest(t, true)
 
-// 	subDir := "rundowns_mix"
-// 	srcDir := filepath.Join(
-// 		testerConfig.TempDataSource, subDir)
-// 	dstDir := filepath.Join(
-// 		testerConfig.TempDataDestination, subDir)
-// 	opts := ArchiveOptions{
-// 		SourceDirectory:      srcDir,
-// 		DestinationDirectory: dstDir,
-// 		InvalidFileRename:    false,
-// 		// InvalidFileContinue:  false,
-// 		InvalidFileContinue:    true,
-// 		CompressionType:        "zip",
-// 		RecurseSourceDirectory: true,
-// 	}
-// 	process := Archive{Options: opts}
-// 	err := process.Folder()
-// 	if err != nil {
-// 		t.Error(err)
-// 	}
-// }
+	subDir := "rundowns_mix"
+	srcDir := filepath.Join(
+		testerConfig.TempDataSource, subDir)
+	dstDir := filepath.Join(
+		testerConfig.TempDataDestination, subDir)
+	opts := ArchiveOptions{
+		SourceDirectory:      srcDir,
+		DestinationDirectory: dstDir,
+		InvalidFileRename:    false,
+		// InvalidFileContinue:  false,
+		InvalidFileContinue:    true,
+		CompressionType:        "zip",
+		RecurseSourceDirectory: true,
+	}
+	process := Archive{Options: opts}
+	err := process.Folder()
+	if err != nil {
+		t.Error(err)
+	}
+}
 
-// func Test_ProcessFolderInvalid(t *testing.T) {
-// 	subDir := "rundowns_invalid"
-// 	srcDir := filepath.Join(TEMP_DIR_TEST_SRC, subDir)
-// 	dstDir := filepath.Join(TEMP_DIR_TEST_DST, subDir)
-// 	opts := ArchiveOptions{
-// 		SourceDirectory:        srcDir,
-// 		DestinationDirectory:   dstDir,
-// 		InvalidFileRename:      false,
-// 		InvalidFileContinue:    true,
-// 		CompressionType:        "zip",
-// 		RecurseSourceDirectory: true,
-// 	}
-// 	process := Archive{Options: opts}
-// 	err := process.Folder()
-// 	if err != nil {
-// 		t.Error(err)
-// 	}
-// }
+func Test_ProcessFolderInvalid(t *testing.T) {
+	defer testerConfig.RecoverPanic(t)
+	testerConfig.InitTest(t, true)
 
-// func Test_ProcessFolderComplexNoDupes(t *testing.T) {
-// 	subDir := "rundowns_complex_nodupes"
-// 	srcDir := filepath.Join(TEMP_DIR_TEST_SRC, subDir)
-// 	dstDir := filepath.Join(TEMP_DIR_TEST_DST, subDir)
-// 	opts := ArchiveOptions{
-// 		SourceDirectory:          srcDir,
-// 		DestinationDirectory:     dstDir,
-// 		InvalidFileRename:        false,
-// 		InvalidFileContinue:      true,
-// 		CompressionType:          "zip",
-// 		PreserveFoldersInArchive: false,
-// 		RecurseSourceDirectory:   true,
-// 		// PreserveFoldersInArchive: true,
-// 	}
-// 	process := Archive{Options: opts}
-// 	err := process.Folder()
-// 	if err != nil {
-// 		t.Error(err)
-// 	}
-// }
+	subDir := "rundowns_invalid"
+	srcDir := filepath.Join(
+		testerConfig.TempDataSource, subDir)
+	dstDir := filepath.Join(
+		testerConfig.TempDataDestination, subDir)
 
-// func Test_ProcessFolderComplexDupes(t *testing.T) {
-// 	subDir := "rundowns_complex_dupes"
-// 	srcDir := filepath.Join(TEMP_DIR_TEST_SRC, subDir)
-// 	dstDir := filepath.Join(TEMP_DIR_TEST_DST, subDir)
-// 	opts := ArchiveOptions{
-// 		SourceDirectory:      srcDir,
-// 		DestinationDirectory: dstDir,
-// 		InvalidFileRename:    false,
-// 		// InvalidFileContinue:  false,
-// 		InvalidFileContinue:      true,
-// 		CompressionType:          "zip",
-// 		PreserveFoldersInArchive: false,
-// 		// RecurseSourceDirectory:   false,
-// 		RecurseSourceDirectory: true,
-// 	}
-// 	process := Archive{Options: opts}
-// 	err := process.Folder()
-// 	if err != nil {
-// 		t.Error(err)
-// 	}
-// }
+	opts := ArchiveOptions{
+		SourceDirectory:        srcDir,
+		DestinationDirectory:   dstDir,
+		InvalidFileRename:      false,
+		InvalidFileContinue:    true,
+		CompressionType:        "zip",
+		RecurseSourceDirectory: true,
+	}
+	process := Archive{Options: opts}
+	err := process.Folder()
+	if err != nil {
+		t.Error(err)
+	}
+}
 
-// func Test_ProcessFolderComplexDupesSame(t *testing.T) {
-// 	srcDir := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_complex_dupes")
-// 	opts := ArchiveOptions{
-// 		SourceDirectory:          srcDir,
-// 		DestinationDirectory:     srcDir,
-// 		InvalidFileRename:        false,
-// 		InvalidFileContinue:      true,
-// 		CompressionType:          "zip",
-// 		PreserveFoldersInArchive: false,
-// 		RecurseSourceDirectory:   true,
-// 	}
-// 	process := Archive{Options: opts}
-// 	err := process.Folder()
-// 	fmt.Printf("%+v\n", process.Results)
-// 	if err != nil {
-// 		t.Error(err)
-// 	}
-// }
+func Test_ProcessFolderComplexNoDupes(t *testing.T) {
+	defer testerConfig.RecoverPanic(t)
+	testerConfig.InitTest(t, true)
 
-// func Test_ProcessFolderRundownsAppend(t *testing.T) {
-// 	subDir := "rundowns_append"
-// 	srcDir := filepath.Join(TEMP_DIR_TEST_SRC, subDir)
-// 	subDirs := []string{
-// 		"dir1",
-// 		// "dir2",
-// 		// "dir3",
-// 		// "dir4",
-// 	}
-// 	dstDir := filepath.Join(TEMP_DIR_TEST_DST, subDir)
-// 	for i := range subDirs {
-// 		srcSubDir := filepath.Join(srcDir, subDirs[i])
-// 		fmt.Println("PROCESSING FOLDER", srcSubDir)
-// 		opts := ArchiveOptions{
-// 			SourceDirectory:          srcSubDir,
-// 			DestinationDirectory:     dstDir,
-// 			InvalidFileRename:        false,
-// 			InvalidFileContinue:      true,
-// 			CompressionType:          "zip",
-// 			PreserveFoldersInArchive: false,
-// 			// PreserveFoldersInArchive: true,
-// 			ProcessedFileRename:    true,
-// 			RecurseSourceDirectory: true,
-// 		}
-// 		process := Archive{Options: opts}
-// 		err := process.Folder()
-// 		fmt.Printf("%+v\n", process.Results)
-// 		if err != nil {
-// 			t.Error(err)
-// 		}
-// 	}
-// }
+	subDir := "rundowns_complex_nodupes"
+	srcDir := filepath.Join(
+		testerConfig.TempDataSource, subDir)
+	dstDir := filepath.Join(
+		testerConfig.TempDataDestination, subDir)
 
-// func Test_ProcessFolderDate(t *testing.T) {
-// 	subDir := "rundowns_date"
-// 	srcDir := filepath.Join(TEMP_DIR_TEST_SRC, subDir)
-// 	dstDir := filepath.Join(TEMP_DIR_TEST_DST, subDir)
-// 	opts := ArchiveOptions{
-// 		SourceDirectory:          srcDir,
-// 		DestinationDirectory:     dstDir,
-// 		InvalidFileRename:        false,
-// 		InvalidFileContinue:      true,
-// 		CompressionType:          "zip",
-// 		PreserveFoldersInArchive: false,
-// 		RecurseSourceDirectory:   true,
-// 	}
-// 	process := Archive{Options: opts}
-// 	err := process.Folder()
-// 	if err != nil {
-// 		t.Error(err)
-// 	}
-// }
+	opts := ArchiveOptions{
+		SourceDirectory:          srcDir,
+		DestinationDirectory:     dstDir,
+		InvalidFileRename:        false,
+		InvalidFileContinue:      true,
+		CompressionType:          "zip",
+		PreserveFoldersInArchive: false,
+		RecurseSourceDirectory:   true,
+		// PreserveFoldersInArchive: true,
+	}
+	process := Archive{Options: opts}
+	err := process.Folder()
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func Test_ProcessFolderComplexDupes(t *testing.T) {
+	defer testerConfig.RecoverPanic(t)
+	testerConfig.InitTest(t, true)
+
+	subDir := "rundowns_complex_dupes"
+	srcDir := filepath.Join(
+		testerConfig.TempDataSource, subDir)
+	dstDir := filepath.Join(
+		testerConfig.TempDataDestination, subDir)
+
+	opts := ArchiveOptions{
+		SourceDirectory:      srcDir,
+		DestinationDirectory: dstDir,
+		InvalidFileRename:    false,
+		// InvalidFileContinue:  false,
+		InvalidFileContinue:      true,
+		CompressionType:          "zip",
+		PreserveFoldersInArchive: false,
+		// RecurseSourceDirectory:   false,
+		RecurseSourceDirectory: true,
+	}
+	process := Archive{Options: opts}
+	err := process.Folder()
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func Test_ProcessFolderComplexDupesSame(t *testing.T) {
+	defer testerConfig.RecoverPanic(t)
+	testerConfig.InitTest(t, true)
+
+	subDir := "rundowns_complex_dupes"
+	srcDir := filepath.Join(
+		testerConfig.TempDataSource, subDir)
+
+	opts := ArchiveOptions{
+		SourceDirectory:          srcDir,
+		DestinationDirectory:     srcDir,
+		InvalidFileRename:        false,
+		InvalidFileContinue:      true,
+		CompressionType:          "zip",
+		PreserveFoldersInArchive: false,
+		RecurseSourceDirectory:   true,
+	}
+	process := Archive{Options: opts}
+	err := process.Folder()
+	fmt.Printf("%+v\n", process.Results)
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func Test_ProcessFolderRundownsAppend(t *testing.T) {
+	defer testerConfig.RecoverPanic(t)
+	testerConfig.InitTest(t, true)
+
+	subDir := "rundowns_append"
+	srcDir := filepath.Join(
+		testerConfig.TempDataSource, subDir)
+	subDirs := []string{
+		"dir1",
+		// "dir2",
+		// "dir3",
+		// "dir4",
+	}
+	dstDir := filepath.Join(
+		testerConfig.TempDataDestination, subDir)
+	for i := range subDirs {
+		srcSubDir := filepath.Join(srcDir, subDirs[i])
+		fmt.Println("PROCESSING FOLDER", srcSubDir)
+		opts := ArchiveOptions{
+			SourceDirectory:          srcSubDir,
+			DestinationDirectory:     dstDir,
+			InvalidFileRename:        false,
+			InvalidFileContinue:      true,
+			CompressionType:          "zip",
+			PreserveFoldersInArchive: false,
+			// PreserveFoldersInArchive: true,
+			ProcessedFileRename:    true,
+			RecurseSourceDirectory: true,
+		}
+		process := Archive{Options: opts}
+		err := process.Folder()
+		fmt.Printf("%+v\n", process.Results)
+		if err != nil {
+			t.Error(err)
+		}
+	}
+}
+
+func Test_ProcessFolderDate(t *testing.T) {
+	defer testerConfig.RecoverPanic(t)
+	testerConfig.InitTest(t, true)
+
+	subDir := "rundowns_date"
+	srcDir := filepath.Join(
+		testerConfig.TempDataSource, subDir)
+	dstDir := filepath.Join(
+		testerConfig.TempDataDestination, subDir)
+
+	opts := ArchiveOptions{
+		SourceDirectory:          srcDir,
+		DestinationDirectory:     dstDir,
+		InvalidFileRename:        false,
+		InvalidFileContinue:      true,
+		CompressionType:          "zip",
+		PreserveFoldersInArchive: false,
+		RecurseSourceDirectory:   true,
+	}
+	process := Archive{Options: opts}
+	err := process.Folder()
+	if err != nil {
+		t.Error(err)
+	}
+}

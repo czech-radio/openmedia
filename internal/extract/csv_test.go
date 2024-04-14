@@ -21,40 +21,40 @@ func TestPartPrintToCSV(t *testing.T) {
 	fmt.Println(builder.String())
 }
 
-// func TestRowPrintToCSV(t *testing.T) {
-// 	var builder strings.Builder
-// 	rowPart1 := CSVrowPart{
-// 		"id_Kek": {"id_Kek", "n_Kek", "kardamon"},
-// 		"id_Sek": {"id_Sek", "n_Sek", "cinnamon"},
-// 		"id_Tak": {"id_Tak", "n_Tak", "vanilin"},
-// 	}
-// 	rowPart2 := CSVrowPart{
-// 		"id_Kek": {"id_Kek", "n_Kek", "cumin"},
-// 		"id_Sek": {"id_Sek", "n_Sek", "peper"},
-// 		"id_Tak": {"id_Tak", "n_Tak", "chilli"},
-// 	}
-// 	row := CSVrow{
-// 		"A": rowPart1,
-// 		"B": rowPart2,
-// 	}
+func TestRowPrintToCSV(t *testing.T) {
+	var builder strings.Builder
+	rowPart1 := CSVrowPart{
+		"id_Kek": {"id_Kek", "n_Kek", "kardamon"},
+		"id_Sek": {"id_Sek", "n_Sek", "cinnamon"},
+		"id_Tak": {"id_Tak", "n_Tak", "vanilin"},
+	}
+	rowPart2 := CSVrowPart{
+		"id_Kek": {"id_Kek", "n_Kek", "cumin"},
+		"id_Sek": {"id_Sek", "n_Sek", "peper"},
+		"id_Tak": {"id_Tak", "n_Tak", "chilli"},
+	}
+	row := CSVrow{
+		FieldPrefix_SubHead:   rowPart1,
+		FieldPrefix_StoryHead: rowPart2,
+	}
 
-// 	partFieldPos1 := CSVrowPartFieldsPositions{
-// 		{"A", "id_Sek", "Nevim"},
-// 		{"A", "id_Tak", "NoName"},
-// 	}
-// 	partFieldPos2 := CSVrowPartFieldsPositions{
-// 		{"B", "id_Sek", "Nevim"},
-// 		{"B", "id_Tak", "NoName"},
-// 	}
+	partFieldPos1 := CSVrowPartFieldsPositions{
+		{"A", "id_Sek", "Nevim"},
+		{"A", "id_Tak", "NoName"},
+	}
+	partFieldPos2 := CSVrowPartFieldsPositions{
+		{"B", "id_Sek", "Nevim"},
+		{"B", "id_Tak", "NoName"},
+	}
 
-// 	partsFieldsPos := CSVrowPartsFieldsPositions{
-// 		"A": partFieldPos2,
-// 		"B": partFieldPos1,
-// 	}
-// 	partsPos := CSVrowPartsPositions{
-// 		"A", "B",
-// 	}
+	partsFieldsPos := CSVrowPartsFieldsPositions{
+		FieldPrefix_SubHead:   partFieldPos2,
+		FieldPrefix_StoryHead: partFieldPos1,
+	}
+	partsPos := CSVrowPartsPositionsInternal{
+		FieldPrefix_SubHead, FieldPrefix_StoryHead,
+	}
 
-// 	row.CastToCSV(&builder, partsPos, partsFieldsPos, CSVdelim)
-// 	fmt.Println(builder.String())
-// }
+	row.CastToCSV(&builder, partsPos, partsFieldsPos, CSVdelim)
+	fmt.Println(builder.String())
+}

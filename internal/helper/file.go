@@ -40,7 +40,7 @@ func HandleFileEncoding(
 
 func CopyFile(
 	src_file_path, dst_file_path string,
-	overwrite bool,
+	overwrite bool, verbose bool,
 ) error {
 	slog.Debug(
 		"copying file",
