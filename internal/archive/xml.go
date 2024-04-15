@@ -1,31 +1,33 @@
 package internal
 
 import (
+	"archive/zip"
 	"bufio"
 	"bytes"
 	"encoding/xml"
 	"fmt"
+	"github/czech-radio/openmedia-archive/internal/helper"
 	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/antchfx/xmlquery"
-	"github.com/go-xmlfmt/xmlfmt"
 	"golang.org/x/text/encoding/unicode"
 )
 
 func PipeConsume(input_reader *io.PipeReader) {
 	var resultBuffer bytes.Buffer
 	_, err := io.Copy(&resultBuffer, input_reader)
-	Errors.ExitWithCode(err)
+	helper.Errors.ExitWithCode(err)
 }
 
 func PipePrint(input_reader *io.PipeReader) {
 	var resultBuffer bytes.Buffer
 	_, err := io.Copy(&resultBuffer, input_reader)
-	Errors.ExitWithCode(err)
+	helper.Errors.ExitWithCode(err)
 	fmt.Println(resultBuffer.String())
 }
 
@@ -35,9 +37,46 @@ func PipeUTF16leToUTF8(r io.Reader) *io.PipeReader {
 	go func() {
 		defer pw.Close()
 		_, err := io.Copy(pw, utf8reader)
-		Errors.ExitWithCode(err)
+		helper.Errors.ExitWithCode(err)
 	}()
 	return pr
+}
+
+func XmlFindBaseOpenMediaNode(breader *bytes.Reader,
+) (*xmlquery.Node, error) {
+	// Parse base xml node
+	baseNode, err := xmlquery.Parse(breader)
+	if err != nil {
+		return nil, err
+	}
+	nodes := xmlquery.Find(baseNode, "/OPENMEDIA")
+	if len(nodes) != 1 {
+		return nil, fmt.Errorf(
+			"unknown opendmedia file, nodes found count: %d,should be 1",
+			len(nodes),
+		)
+	}
+	return nodes[0], nil
+}
+
+func XmlAmendUTF16header(breader *bytes.Reader) (*bytes.Reader, error) {
+	var buf bytes.Buffer
+	var err error
+	replace := "encoding=\"UTF-16\""
+	scanner := bufio.NewScanner(breader)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if strings.Contains(line, replace) {
+			line = strings.Replace(line, replace, "encoding=\"UTF-8\"", 1)
+			_, err = fmt.Fprintln(&buf, line)
+		} else {
+			_, err = fmt.Fprintln(&buf, line)
+		}
+		if err != nil {
+			return nil, err
+		}
+	}
+	return bytes.NewReader(buf.Bytes()), nil
 }
 
 func PipeRundownHeaderAmmend(input_reader io.Reader) *io.PipeReader {
@@ -57,10 +96,10 @@ func PipeRundownHeaderAmmend(input_reader io.Reader) *io.PipeReader {
 				_, err = writer.WriteString(line + "\n")
 			}
 		}
-		Errors.ExitWithCode(err)
+		helper.Errors.ExitWithCode(err)
 		// Write remainig bytes wihtout scanning?
 		err = writer.Flush()
-		Errors.ExitWithCode(err)
+		helper.Errors.ExitWithCode(err)
 
 	}()
 	return pr
@@ -74,9 +113,9 @@ func PipeRundownHeaderAdd(input_reader io.Reader) *io.PipeReader {
 		defer pw.Close()
 		defer writer.Flush()
 		_, err := writer.Write(openMediaXmlHeader)
-		Errors.ExitWithCode(err)
+		helper.Errors.ExitWithCode(err)
 		_, err = io.Copy(writer, buffReader)
-		Errors.ExitWithCode(err)
+		helper.Errors.ExitWithCode(err)
 	}()
 	return pr
 }
@@ -103,9 +142,9 @@ func PipeRundownMarshal(om *OPENMEDIA) *io.PipeReader {
 	go func() {
 		defer pw.Close()
 		xmlBytes, err := xml.MarshalIndent(om, "", "  ")
-		Errors.ExitWithCode(err)
+		helper.Errors.ExitWithCode(err)
 		_, err = writer.Write(xmlBytes)
-		Errors.ExitWithCode(err)
+		helper.Errors.ExitWithCode(err)
 		writer.Flush()
 	}()
 	return pr
@@ -134,7 +173,7 @@ type OpenMediaFileType struct {
 	OutputDir    string
 }
 
-var OpenMediaFileTypeMap map[OpenMediaFileTypeCode]*OpenMediaFileType = map[OpenMediaFileTypeCode]*OpenMediaFileType{
+var OpenMediaFileTypeMap = map[OpenMediaFileTypeCode]*OpenMediaFileType{
 	OmFileTypeRundown: {
 		OmFileTypeRundown, "RD", "Radio Rundown", "Rundowns"},
 	OmFileTypeContact: {
@@ -207,7 +246,8 @@ func ValidateFilesInDirectory(rootDir string, recursive bool) (*ArchiveResult, e
 		return result, err
 	}
 	if len(result.Errors) > 0 {
-		err := fmt.Errorf("%s, count %d", Errors.CodeMsg(ErrCodeInvalid), len(result.Errors))
+		err := fmt.Errorf("%s, count %d",
+			helper.Errors.CodeMsg(helper.ErrCodeInvalid), len(result.Errors))
 		return result, err
 		// errors.New("invalid files count: %d", len(result.Errors))
 	}
@@ -215,12 +255,126 @@ func ValidateFilesInDirectory(rootDir string, recursive bool) (*ArchiveResult, e
 }
 
 func (ar *ArchiveResult) AddError(err ...error) {
-	if err != nil && len(err) > 0 {
+	if err == nil {
+		return
+	}
+	if len(err) > 0 {
 		ar.Errors = append(ar.Errors, err...)
 	}
 }
 
-func XMLprint(node *xmlquery.Node) {
-	ex := xmlfmt.FormatXML(node.OutputXML(true), "", "\t")
-	fmt.Println(ex)
+func GetFieldValueByName(attrs []xmlquery.Attr, id string) (string, bool) {
+	for _, i := range attrs {
+		if i.Name.Local == id {
+			return i.Value, true
+		}
+	}
+	return "NO_VALUE", false
+}
+
+func XMLbuildAttrQuery(attrName string, ids []string) string {
+	if len(ids) == 0 {
+		return ""
+	}
+	if ids[0] == "*" {
+		return "/*"
+	}
+	var expr strings.Builder
+	attrQuery := "@" + attrName + "='"
+	expr.WriteString("[")
+	for i, id := range ids {
+		if i != len(ids)-1 {
+			expr.WriteString(attrQuery + id + "' or ")
+		} else {
+			// expr.WriteString("@FieldID='" + id + "']@FieldID")
+			expr.WriteString(attrQuery + id + "']")
+		}
+	}
+	return expr.String()
+}
+
+func GetPathGlobPrefix(objectName string) (string, string) {
+	pathPrefix := "/"
+	pattern := "^\\*"
+	regex := regexp.MustCompile(pattern)
+	parts := regex.Split(objectName, -1)
+	if len(parts) > 1 {
+		objectName = parts[1]
+		pathPrefix = "//"
+	}
+	return objectName, pathPrefix
+}
+
+func GetObjectNameFromPath(path string) string {
+	parts := strings.Split(path, "/")
+	if len(parts) == 0 {
+		return ""
+	}
+	objectName, _ := GetPathGlobPrefix(parts[len(parts)-1])
+	return objectName
+}
+
+func XMLqueryFromPath(path string) string {
+	// path: /Radio Rundown/<OM_RECORD>/Hourly Rundown"
+	var out strings.Builder
+	parts := strings.Split(path, "/")
+	for _, part := range parts {
+		if part == "" {
+			continue
+		}
+		object, globPrefix := GetPathGlobPrefix(part)
+		attrName, ok := OmTagStructureMap[object]
+		if ok {
+			fmt.Fprintf(
+				&out, "%s%s", globPrefix, attrName.XMLtagName)
+			continue
+		}
+
+		paralel := strings.Split(object, "|")
+		attrQuery := XMLbuildAttrQuery(
+			// "TemplateName", []string{object})
+			"TemplateName", paralel)
+		fmt.Fprintf(
+			&out, "%sOM_OBJECT%s", globPrefix, attrQuery)
+	}
+	return out.String()
+}
+
+func XMLqueryFields(fieldsPath string, IDs []string) string {
+	attrQuery := XMLbuildAttrQuery("FieldID", IDs)
+	return fieldsPath + attrQuery
+}
+
+func HandleXMLfileHeader(
+	enc helper.FileEncodingNumber, data []byte) (*bytes.Reader, error) {
+	var err error
+	breader := bytes.NewReader(data)
+	switch enc {
+	case helper.UTF8:
+	case helper.UTF16le:
+		breader, err = XmlAmendUTF16header(breader)
+		if err != nil {
+			return nil, err
+		}
+	default:
+		err = fmt.Errorf("unknown encoding")
+	}
+	return breader, err
+}
+
+func ZipFileExtractData(zf *zip.File, enc helper.FileEncodingNumber) ([]byte, error) {
+	fileHandle, err := zf.Open()
+	if err != nil {
+		return nil, err
+	}
+	defer fileHandle.Close()
+	return helper.HandleFileEncoding(enc, fileHandle)
+}
+
+func ZipXmlFileDecodeData(zf *zip.File, enc helper.FileEncodingNumber) (*bytes.Reader, error) {
+	data, err := ZipFileExtractData(zf, enc)
+	if err != nil {
+		return nil, err
+	}
+	return HandleXMLfileHeader(enc, data)
 }

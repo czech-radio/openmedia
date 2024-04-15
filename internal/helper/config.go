@@ -1,4 +1,4 @@
-package internal
+package helper
 
 import (
 	"flag"
@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-var flagsUsage string = "Usage:\n"
+var flagsUsage = "Usage:\n"
 
 // Usage called when help command invoked
 func Usage() {
@@ -47,6 +47,17 @@ func GetBoolValueByPriority(longFlagValue, shortFlagValue, envValue, defaultValu
 	return res
 }
 
+func GetIntValueByPriority(longFlagValue, shortFlagValue, envValue, defaultValue int) int {
+	res := defaultValue
+	if longFlagValue != defaultValue {
+		res = longFlagValue
+	}
+	if shortFlagValue != defaultValue {
+		res = shortFlagValue
+	}
+	return res
+}
+
 func DeclareFlags(config interface{}) (FlagsMap, error) {
 	flags := make(FlagsMap)
 	v := reflect.ValueOf(config)
@@ -82,6 +93,15 @@ func DeclareFlags(config interface{}) (FlagsMap, error) {
 			flagMap["short"] = flag.Bool(cmdOpts[1], false, cmdOpts[3])
 			flagMap["default"] = b
 			flagMap["field"] = velem.FieldByName(field.Name)
+		case reflect.Int:
+			v, err := strconv.Atoi(cmdOpts[2])
+			if err != nil {
+				return flags, err
+			}
+			flagMap["long"] = flag.Int(cmdOpts[0], v, cmdOpts[3])
+			flagMap["short"] = flag.Int(cmdOpts[1], v, cmdOpts[3])
+			flagMap["default"] = v
+			flagMap["field"] = velem.FieldByName(field.Name)
 		}
 		flags[field.Name] = flagMap
 	}
@@ -106,6 +126,13 @@ func (fm FlagsMap) ParseFlags() error {
 		case reflect.Bool:
 			val := GetBoolValueByPriority(
 				*long.(*bool), *short.(*bool), false, def.(bool))
+			err := SetField(rfv, val)
+			if err != nil {
+				return err
+			}
+		case reflect.Int:
+			val := GetIntValueByPriority(
+				*long.(*int), *short.(*int), 0, def.(int))
 			err := SetField(rfv, val)
 			if err != nil {
 				return err

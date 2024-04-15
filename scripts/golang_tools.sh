@@ -42,7 +42,8 @@ declare -a golang_tools=(
   'github.com/jstemmer/gotags@master'
   #
   ### 'guru': a tool for answering questions about Go source code., https://pkg.go.dev/golang.org/x/tools/cmd/guru
-  'golang.org/x/tools/cmd/guru@master'
+  # 'golang.org/x/tools/cmd/guru@master'
+  'golang.org/x/tools/cmd/guru@latest'
   #
   ### 'impl': impl generates method stubs for implementing an interface., https://pkg.go.dev/github.com/josharian/impl
   'github.com/josharian/impl@main'

@@ -5,6 +5,28 @@ import (
 	"encoding/xml"
 )
 
+var TemplateHeaderFieldPath string = "/OM_HEADER/OM_FIELD"
+var TemplateRecordFieldPath string = "/OM_FIELD"
+var TemplateNoFields string = ""
+
+type XMLomTagStructure struct {
+	XMLtagName   string
+	SelectorAttr string
+	FieldsPath   string
+}
+
+var OmTagStructureMap = map[string]XMLomTagStructure{
+	"<OM_OBJCET>": {"OM_OBJECT", "TemplateName", TemplateHeaderFieldPath},
+	"<OM_RECORD>": {"OM_RECORD", "RecorddID", TemplateRecordFieldPath},
+	"<OM_HEADER>": {"OM_HEADER", "", TemplateRecordFieldPath},
+}
+
+var ObjectXMLnameMap = map[string]string{
+	"OM_OBJECT": "TemplateName",
+	"OM_RECORD": "RecordID",
+	"OM_FIELD":  "FieldID",
+}
+
 var lineEnd = []byte("\n")
 var openMediaXmlHeader []byte = append([]byte(
 	`<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
@@ -58,7 +80,10 @@ type OM_FIELD struct {
 func (omf *OM_FIELD) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 	var inInterface map[string]interface{}
 	inrec, _ := json.Marshal(omf)
-	json.Unmarshal(inrec, &inInterface)
+	err := json.Unmarshal(inrec, &inInterface)
+	if err != nil {
+		return err
+	}
 	maxEmptyCount := len(inInterface) - 1 // Filed attrs should never be empty
 	var emptyCount int
 	for _, val := range inInterface {

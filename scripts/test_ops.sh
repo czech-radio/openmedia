@@ -5,6 +5,27 @@ SCRIPT_DIR="${SCRIPT_PATH%/*}"
 # TEST_CMD="${HOME}/go/bin/gotestsum --format testname "
 
 Go_test_debug(){
+  go clean -testcache
+  local path
+  local path="$1"
+  local path="${SCRIPT_DIR}/../${path}/..."
+  local test_pattern
+  test_pattern="${2:-''}"
+  test_opts="${3}"
+  GO_TEST_TYPE="manual" GOLOGLEVEL=-4 go test -v "$path" -run "$test_pattern" "${test_opts}"
+}
+
+Go_test_run(){
+  go clean -testcache
+  local path
+  local path="$1"
+  local path="${SCRIPT_DIR}/../${path}/..."
+  local test_pattern
+  test_pattern="${2:-''}"
+  GO_TEST_TYPE="manual" GOLOGLEVEL=10 go test -v "$path" -run "$test_pattern"
+}
+
+Go_test_auto(){
   local path
   local path="$1"
   local path="${SCRIPT_DIR}/../${path}/..."
@@ -16,7 +37,13 @@ Go_test_debug(){
 Go_delve(){
   local package="$1"
   local function="$2"
-  dlv test "$package" -- -test.run="$2"
+  dlv test "$package" -- -test.run="$function"
+}
+
+Go_delve_trace(){
+  local package="$1"
+  local function="$2"
+  dlv trace "$package" -- -test.run="$function"
 }
 
 Go_bench(){

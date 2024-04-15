@@ -1,7 +1,8 @@
 package cmd
 
 import (
-	"github/czech-radio/openmedia-archive/internal"
+	ar "github/czech-radio/openmedia-archive/internal/archive"
+	"github/czech-radio/openmedia-archive/internal/helper"
 	"log/slog"
 )
 
@@ -9,7 +10,7 @@ import (
 // cmdmap[command_name]=["source_dir","i","","directory to be processed]
 // TODO: Add test for commands. (dont know how to avoid circular dependency)
 
-type Config_archive struct {
+type ConfigArchive struct {
 	SourceDirectory          string `cmd:"source_directory; i; ; directory to be processed"`
 	DestinationDirectory     string `cmd:"destination_directory; o; ; otput files"`
 	CompressionType          string `cmd:"compression_type; ct; zip; type of file compression [zip]."`
@@ -22,22 +23,23 @@ type Config_archive struct {
 }
 
 func RunArchive(
-	root_cfg *Config_root, create_cfg *Config_archive) {
-	options := internal.ProcessOptions{}
-	internal.CopyFields(create_cfg, &options)
+	rootCfg *ConfigRoot, createCfg *ConfigArchive) {
+	options := ar.ArchiveOptions{}
+	// internal.CopyFields(createCfg, &options)
+	helper.CopyFields(createCfg, &options)
 	slog.Info("effective subcommand options", "options", options)
-	if root_cfg.DebugConfig {
+	if rootCfg.DebugConfig {
 		return
 	}
-	if root_cfg.DryRun {
-		TEMP_DIR := internal.DirectoryCreateTemporaryOrPanic("openmedia_archive")
-		options.DestinationDirectory = TEMP_DIR
+	if rootCfg.DryRun {
+		TempDir := helper.DirectoryCreateTemporaryOrPanic("openmedia_archive")
+		options.DestinationDirectory = TempDir
 	}
-	internal.DirectoryIsReadableOrPanic(options.SourceDirectory)
-	internal.DirectoryIsReadableOrPanic(options.DestinationDirectory)
-	process := internal.Process{Options: options}
+	helper.DirectoryIsReadableOrPanic(options.SourceDirectory)
+	helper.DirectoryIsReadableOrPanic(options.DestinationDirectory)
+	process := ar.Archive{Options: options}
 	err := process.Folder()
 	if err != nil {
-		internal.Errors.ExitWithCode(err)
+		helper.Errors.ExitWithCode(err)
 	}
 }

@@ -1,9 +1,10 @@
+// Package cmd defines subcommands for binary
 package cmd
 
 import (
 	"flag"
 	"fmt"
-	"github/czech-radio/openmedia-archive/internal"
+	"github/czech-radio/openmedia-archive/internal/helper"
 	"log/slog"
 )
 
@@ -14,18 +15,20 @@ var (
 	BuildBuildTime string
 )
 
-var VersionInfo = internal.VersionInfo{
+// VersionInfo Binary version info
+var VersionInfo = helper.VersionInfo{
 	Version:   "0.9.9",
 	GitTag:    BuildGitTag,
 	GitCommit: BuildGitCommit,
-	BuildTime: BuildBuildTime,
 }
 
+// VersionInfoPrint print binary version info
 func VersionInfoPrint() {
 	fmt.Printf("openmedia_archive:%+v\n", VersionInfo)
 }
 
-type Config_root struct {
+// ConfigRoot Config for root command
+type ConfigRoot struct {
 	// "long flag; short flag; default value; description"
 	Version     bool   `cmd:"version; V; false; version of the program"`
 	Verbose     string `cmd:"verbose; v; 0; program verbosity level: DEBUG (-4), INFO (0), WARN (4), and ERROR (8)"`
@@ -35,9 +38,9 @@ type Config_root struct {
 }
 
 func RunRoot() {
-	rcfg := &Config_root{}
-	internal.SetupRootFlags(rcfg)
-	internal.SetLogLevel(rcfg.Verbose, rcfg.LogType)
+	rcfg := &ConfigRoot{}
+	helper.SetupRootFlags(rcfg)
+	helper.SetLogLevel(rcfg.Verbose, rcfg.LogType)
 	if flag.NArg() < 1 {
 		VersionInfoPrint()
 		return
@@ -48,13 +51,21 @@ func RunRoot() {
 
 	switch subcmd {
 	case "archive":
-		cmdCfg := &Config_archive{}
-		internal.SetupSubFlags(cmdCfg)
+		cmdCfg := &ConfigArchive{}
+		helper.SetupSubFlags(cmdCfg)
 		RunArchive(rcfg, cmdCfg)
-	case "extract":
-		cmdCfg := &Config_extract{}
-		internal.SetupSubFlags(cmdCfg)
-		RunExtract(rcfg, cmdCfg)
+	case "extractArchive":
+		cmdCfg := &ConfigExtractArchive{}
+		helper.SetupSubFlags(cmdCfg)
+		RunExtractArchive(rcfg, cmdCfg)
+	case "extractFile":
+		cmdCfg := &ConfigExtractFile{}
+		helper.SetupSubFlags(cmdCfg)
+		RunExtractFile(rcfg, cmdCfg)
+	case "extractFolder":
+		cmdCfg := &ConfigExtractFolder{}
+		helper.SetupSubFlags(cmdCfg)
+		RunExtractFolder(rcfg, cmdCfg)
 	default:
 		slog.Error("unknown command", "command", subcmd)
 	}

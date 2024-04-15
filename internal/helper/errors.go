@@ -1,10 +1,22 @@
-package internal
+package helper
 
 import (
 	"errors"
+	"fmt"
 	"log/slog"
 	"os"
 	"strings"
+)
+
+// List of errors
+// /usr/lib/go/src/syscall/zerrors_linux_amd64.go:1490
+
+type ControlFlowAction int
+
+const (
+	Continue ControlFlowAction = iota
+	Skip
+	Break
 )
 
 // Error codes for os.Exit
@@ -40,6 +52,13 @@ var Errors ErrorsCodeMap = ErrorsCodeMap{
 	ErrCodeParseXML:   "cannot parse xml",
 	ErrCodeParseField: "cannot parse field",
 	// ErrCodeDataFormat: "file has incompatible format",
+}
+
+func ErrorWrap(fieldName, fieldValue string, err error) error {
+	if err != nil {
+		return fmt.Errorf("%s: %s, %w", fieldName, fieldValue, err)
+	}
+	return nil
 }
 
 func (ecm ErrorsCodeMap) CodeMsg(code ErrorCode) string {
