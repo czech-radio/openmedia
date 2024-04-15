@@ -41,15 +41,16 @@ func (e *Extractor) TransformEurovolby() {
 	// e.PrintTableRowsToCSV(printHeader, "\t")
 }
 
-func (e *Extractor) TransformCodedFields() {
-	// af.TransformField(
-	// internal.FieldPrefix_StoryHead,
-	// "5081", internal.GetRadioName)
+// NOTE: docasne nepouzite bude dospecifikovano
+// func (e *Extractor) TransformCodedFields() {
+// 	e.TransformField(
+// 		FieldPrefix_StoryHead,
+// 		"5081", GetRadioName)
 
-	// af.TransformField(
-	// internal.FieldPrefix_ContactItemHead,
-	// "5088", internal.GetGenderName)
-}
+// 	e.TransformField(
+// 		FieldPrefix_ContactItemHead,
+// 		"5088", GetGenderName)
+// }
 
 func (e *Extractor) TransformProduction() {
 	// Convert dates

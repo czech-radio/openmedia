@@ -152,12 +152,9 @@ const (
 )
 
 var CSVspecialValues = map[CSVspecialValueCode]string{
-	CSVspecialValueEmptyString:    "(NS)",
-	CSVspecialValueChildNotFound:  "(NP)",
-	CSVspecialValueParentNotFound: "(NC)",
-	// CSVspecialValueEmptyString:    "(NEUVEDENO)",
-	// CSVspecialValueChildNotFound:  "(NELZE)",
-	// CSVspecialValueParentNotFound: "(NEOBSAHUJE)",
+	CSVspecialValueEmptyString:    "(NS)", // (NEUVEDENO)
+	CSVspecialValueChildNotFound:  "(NP)", // (NELZE)
+	CSVspecialValueParentNotFound: "(NC)", // (NEOBSAHUJE)
 }
 
 type Radio struct {

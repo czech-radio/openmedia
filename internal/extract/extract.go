@@ -73,6 +73,14 @@ func ExtractNodesFields(
 	return newTable
 }
 
+func NodeGetParent(node *xmlquery.Node, levelUp int) *xmlquery.Node {
+	resultNode := node
+	for i := 0; i <= levelUp; i++ {
+		resultNode = resultNode.Parent
+	}
+	return resultNode
+}
+
 func NodeToCSVrowPart(node *xmlquery.Node, ext OMextractor) CSVrowPart {
 	fieldCount := len(ext.ObjectAttrsNames) + len(ext.FieldIDs)
 	part := make(CSVrowPart, fieldCount)
@@ -129,15 +137,6 @@ func NodeGetFields(
 	}
 	return part
 }
-
-// func (omh *OM_HEADER) ExtractFieldsByFieldID(ids []int) CSVrowFields {
-// 	var row CSVrowFields
-// 	// for _, field := range omh.Fields {
-// 	// field.OM
-// 	// row[field.]
-// 	// }
-// 	return row
-// }
 
 func XMLparalelQuery(extractors []OMextractor) string {
 	var query string

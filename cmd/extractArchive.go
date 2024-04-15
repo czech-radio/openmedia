@@ -26,6 +26,7 @@ type ConfigExtractArchive struct {
 	RadioNames  string `cmd:"radio_names; rn; ; list of radio names"`
 	Transformer string `cmd:"transformer; tr; ; csv fields transformer name"`
 
+	// Processing specification
 	ComputeUniqueRows      string `cmd:"compute_unique_rows; cur; false; compute unique rows for all tables"`
 	ProccessPerArchiveFile string `cmd:"process_per_archive_file; ppaf; true; run process for each file alone do not group tables"`
 	ProccessPerPackage     string `cmd:"process_per_archive_package; ppap; false; run process for each file alone do not group tables"`
