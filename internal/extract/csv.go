@@ -17,17 +17,16 @@ type FieldPosition struct {
 	FieldID     string
 	FieldName   string
 }
-type CSVrowPartFieldsPositions []FieldPosition     // Field
-type CSVrowPartsPositions []string                 // Part
-type CSVrowPartsPositionsInternal []PartPrefixCode // Part
-type CSVrowPartsPositionsExternal []PartPrefixCode // Part
-// type CSVrowPartsFieldsPositions map[string]CSVrowPartFieldsPositions         // Row: partname vs partFieldsPositions
+type CSVrowPartFieldsPositions []FieldPosition                               // Field
+type CSVrowPartsPositions []string                                           // Part
+type CSVrowPartsPositionsInternal []PartPrefixCode                           // Part
+type CSVrowPartsPositionsExternal []PartPrefixCode                           // Part
 type CSVrowPartsFieldsPositions map[PartPrefixCode]CSVrowPartFieldsPositions // Row: partname vs partFieldsPositions
 
 // Table fields values
 type CSVrowField struct {
 	FieldID   string
-	FieldName string // Maybe not needed here. Must construct general list of fieldPrefix:fieldIDs vs FieldName
+	FieldName string // Currently not needed here (will consume more memory). Alternative construct general list of fieldPrefix:fieldIDs vs FieldName
 	Value     string
 }
 type CSVrowPart map[string]CSVrowField    // FieldID:CSVrowField

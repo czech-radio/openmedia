@@ -9,7 +9,6 @@ import (
 )
 
 func TestXMLqueryFromPath(t *testing.T) {
-	// path := "/Radio Rundown/<OM_RECORD>/Hourly Rundown/<OM_RECORD>"
 	path := "/Radio Rundown/<OM_RECORD>/*Hourly Rundown/<OM_RECORD>"
 	res := XMLqueryFromPath(path)
 	fmt.Println(res)
@@ -22,7 +21,6 @@ func TestTransformXML(t *testing.T) {
 	src_file := filepath.Join(
 		testerConfig.TestDataSource, "rundowns_valid",
 		"RD_00-12_Pohoda_-_Fri_06_01_2023_orig.xml")
-	// src_file := filepath.Join(TEMP_DIR_TEST_SRC, "rundowns_valid", "RD_00-12_Pohoda_-_Fri_06_01_2023_orig_wo_header.xml")
 	srcFile, err := os.Open(src_file)
 	if err != nil {
 		t.Error(err)

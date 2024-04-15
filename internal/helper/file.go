@@ -1,13 +1,16 @@
 package helper
 
 import (
+	"encoding/csv"
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"log/slog"
 	"os"
 	"path/filepath"
 
+	"github.com/xuri/excelize/v2"
 	enc_unicode "golang.org/x/text/encoding/unicode"
 )
 
@@ -55,9 +58,9 @@ func CopyFile(
 
 	// Create the destination file in the destination directory for writing
 	if !overwrite && PathExists(dst_file_path) {
-		// return fmt.Errorf("destion path exists: %s", dst_file_path)
 		return fmt.Errorf(
-			"err: %w, filepath: %s", ErrFilePathExists, dst_file_path,
+			"err: %w, filepath: %s",
+			ErrFilePathExists, dst_file_path,
 		)
 	}
 	dstFile, err := os.Create(dst_file_path)
@@ -97,4 +100,33 @@ func ProcessedFileRename(originalPath string) error {
 		return fmt.Errorf("Error renaming file: %s", err)
 	}
 	return nil
+}
+
+func ReadCSVfile(filePath string) ([][]string, error) {
+	file, err := os.Open("Students.csv")
+	if err != nil {
+		log.Fatal("Error while reading the file", err)
+	}
+	defer file.Close()
+	reader := csv.NewReader(file)
+	// reads all the records from the CSV file and return [][]string
+	return reader.ReadAll()
+}
+
+func ReadExcelFile(filePath, sheetName string) (
+	rows [][]string, err error) {
+	f, err := excelize.OpenFile(filePath)
+	if err != nil {
+		return nil, err
+	}
+
+	defer func() {
+		// Close the spreadsheet.
+		if err := f.Close(); err != nil {
+			rows = nil
+		}
+	}()
+	// cell, err := f.GetCellValue("Sheet1", "B2")
+	// Get all the rows in the Sheet1.
+	return f.GetRows(sheetName)
 }

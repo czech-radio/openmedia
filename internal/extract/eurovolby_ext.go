@@ -1,7 +1,5 @@
 package extract
 
-// import i "github/czech-radio/openmedia-archive/internal"
-
 import (
 	ar "github/czech-radio/openmedia-archive/internal/archive"
 )
@@ -43,7 +41,6 @@ var EXTeuroVolby = OMextractors{
 		ObjectAttrsNames: []string{"TemplateName"},
 		PartPrefixCode:   FieldPrefix_StoryHead,
 		FieldIDs:         ProductionFieldsRadioStory,
-		// KeepWhenZeroSubnodes: true,
 	},
 	// {
 	// PartPrefixCode: FieldPrefix_ComputedID,

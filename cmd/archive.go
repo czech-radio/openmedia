@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	internal "github/czech-radio/openmedia-archive/internal/archive"
+	ar "github/czech-radio/openmedia-archive/internal/archive"
 	"github/czech-radio/openmedia-archive/internal/helper"
 	"log/slog"
 )
@@ -24,7 +24,7 @@ type ConfigArchive struct {
 
 func RunArchive(
 	rootCfg *ConfigRoot, createCfg *ConfigArchive) {
-	options := internal.ArchiveOptions{}
+	options := ar.ArchiveOptions{}
 	// internal.CopyFields(createCfg, &options)
 	helper.CopyFields(createCfg, &options)
 	slog.Info("effective subcommand options", "options", options)
@@ -37,7 +37,7 @@ func RunArchive(
 	}
 	helper.DirectoryIsReadableOrPanic(options.SourceDirectory)
 	helper.DirectoryIsReadableOrPanic(options.DestinationDirectory)
-	process := internal.Archive{Options: options}
+	process := ar.Archive{Options: options}
 	err := process.Folder()
 	if err != nil {
 		helper.Errors.ExitWithCode(err)

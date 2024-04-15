@@ -18,7 +18,6 @@ type ArchiveFolder struct {
 	Files              []string
 }
 
-type FileName string
 type PackageName string
 
 type ArchivePackage struct {
@@ -61,7 +60,6 @@ func (af *ArchiveFolder) FolderListing(
 		for _, wtc := range af.PackageTypes {
 			switch wtc {
 			case ar.WorkerTypeZIPminified, ar.WorkerTypeZIPoriginal:
-				// af.InferEncoding(wtc)
 				enc := ar.InferEncoding(wtc)
 				af.XMLencoding = enc
 				ok, _ := ArchivePackageMatch(filePath, wtc, filterRange)
@@ -74,7 +72,8 @@ func (af *ArchiveFolder) FolderListing(
 					slog.Debug(
 						"package matched", "package", filePath)
 					packageName := PackageName(filePath)
-					af.PackagesNamesOrder = append(af.PackagesNamesOrder, packageName)
+					af.PackagesNamesOrder = append(
+						af.PackagesNamesOrder, packageName)
 				}
 			}
 		}

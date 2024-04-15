@@ -42,15 +42,15 @@ func (e *Extractor) TransformEurovolby() {
 }
 
 // NOTE: docasne nepouzite bude dospecifikovano
-// func (e *Extractor) TransformCodedFields() {
-// 	e.TransformField(
-// 		FieldPrefix_StoryHead,
-// 		"5081", GetRadioName)
+func (e *Extractor) TransformCodedFields() {
+	e.TransformField(
+		FieldPrefix_StoryHead,
+		"5081", GetRadioName, false)
 
-// 	e.TransformField(
-// 		FieldPrefix_ContactItemHead,
-// 		"5088", GetGenderName)
-// }
+	e.TransformField(
+		FieldPrefix_ContactItemHead,
+		"5088", GetGenderName, false)
+}
 
 func (e *Extractor) TransformProduction() {
 	// Convert dates
@@ -101,6 +101,7 @@ func (e *Extractor) TransformProduction() {
 	e.TransformField(FieldPrefix_StoryHead, "ObjectID", TransformObjectID, false)
 	e.TransformField(FieldPrefix_StoryKategory, "ObjectID", TransformObjectID, false)
 	e.TransformField(FieldPrefix_SubHead, "ObjectID", TransformObjectID, false)
+	e.ComputeName()
 }
 
 func (e *Extractor) TransformMock() {

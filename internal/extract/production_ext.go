@@ -72,7 +72,7 @@ var EXTproduction = OMextractors{
 	},
 	OMextractor{
 		PartPrefixCode: FieldPrefix_ComputedID,
-		FieldIDs:       []string{"ID"},
+		FieldIDs:       []string{"ID", "jmeno_spojene"},
 	},
 }
 

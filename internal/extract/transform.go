@@ -222,9 +222,7 @@ func (e *Extractor) TransformDateToTime(
 }
 
 func ParseXMLdate(input string) (time.Time, error) {
-	// layout := "20060102T150405.000"
 	layout := "20060102T150405.000"
-	// parsedTime, err := time.Parse(layout, input)
 	parsedTime, err := time.Parse(layout, input)
 	if err != nil {
 		slog.Error(err.Error())
@@ -254,11 +252,10 @@ func TransformEmptyToNoContain(input string) (string, error) {
 
 func TransformShortenField(input string) (string, error) {
 	targetLength := 248
-	// targetLength := 10
 	if len(input) <= targetLength {
 		return input, nil
 	} else {
-		// Shorten the string to 249 characters
+		// Shorten the string to specified characters
 		return input[:targetLength], nil
 	}
 }
@@ -286,6 +283,30 @@ func (row CSVrow) ConsructRecordIDs() string {
 		fmt.Fprintf(&sb, "/%s", value)
 	}
 	return sb.String()
+}
+
+func (e *Extractor) ComputeName() {
+	targetFieldID := "jmeno_spojene"
+	for i := range e.CSVtable.Rows {
+		part, ok := e.CSVtable.Rows[i].CSVrow[FieldPrefix_ContactItemHead]
+		if !ok {
+			continue
+		}
+		jmeno := part["421"].Value
+		prijmeni := part["422"].Value
+		slog.Warn("FUCK", jmeno, prijmeni)
+		dstPart, ok := e.CSVtable.Rows[i].CSVrow[FieldPrefix_ComputedID]
+		if !ok {
+			dstPart = make(CSVrowPart)
+		}
+		field := CSVrowField{
+			FieldID:   targetFieldID,
+			FieldName: "",
+			Value:     fmt.Sprintf("%s %s", prijmeni, jmeno),
+		}
+		dstPart[targetFieldID] = field
+		e.CSVtable.Rows[i].CSVrow[FieldPrefix_ComputedID] = dstPart
+	}
 }
 
 func (e *Extractor) ComputeIndex() {
@@ -472,8 +493,6 @@ func (row CSVrow) ConstructID() string {
 	nazev := partStoryHead["8"].Value
 	zacatek := partStoryHead["1004"].Value
 	konec := partStoryHead["1003"].Value
-	// out := fmt.Sprintf("%s/%s/%s - %s/%s",
-	// stanice, datum, zacatek, konec, nazev)
 	out := fmt.Sprintf("%s/%s/%s/%s - %s/%s",
 		stanice, blok, datum, zacatek, konec, nazev)
 	return out

@@ -68,11 +68,11 @@ func (tc *TesterConfig) InitMain() {
 			tc.WaitAdd()
 		}
 		go tc.WaitForSignal()
-		slog.Warn("waiting for signal")
 	}
 }
 
 func (tc *TesterConfig) WaitForSignal() {
+	slog.Warn("waiting for signal")
 	sig := <-tc.sigChan
 	slog.Warn("interrupting", "signal", sig.String())
 	switch sig {

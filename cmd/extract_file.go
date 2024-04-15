@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	internal "github/czech-radio/openmedia-archive/internal/archive"
+	ar "github/czech-radio/openmedia-archive/internal/archive"
 	"github/czech-radio/openmedia-archive/internal/extract"
 	"github/czech-radio/openmedia-archive/internal/helper"
 )
@@ -18,7 +18,7 @@ func RunExtractFile(rootCfg *ConfigRoot, filterCfg *ConfigExtractFile) {
 	// filePath := "/home/jk/CRO/CRO_BASE/openmedia-archive_backup/Archive/control/control_UTF8_RD_13-17_Plus_Tuesday_W01_2024_01_02.xml"
 	af := extract.ArchiveFile{}
 	err := af.Init(
-		internal.WorkerTypeRundownXMLutf16le, filePath)
+		ar.WorkerTypeRundownXMLutf16le, filePath)
 	// internal.WorkerTypeRundownXMLutf8, filePath)
 	if err != nil {
 		helper.Errors.ExitWithCode(err)

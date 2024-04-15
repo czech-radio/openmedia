@@ -1,8 +1,7 @@
 package cmd
 
 import (
-	// "github/czech-radio/openmedia-archive/internal"
-	internal "github/czech-radio/openmedia-archive/internal/archive"
+	ar "github/czech-radio/openmedia-archive/internal/archive"
 	"github/czech-radio/openmedia-archive/internal/extract"
 	"github/czech-radio/openmedia-archive/internal/helper"
 	"time"
@@ -34,8 +33,8 @@ type ConfigExtractArchive struct {
 
 func RunExtractArchive(rootCfg *ConfigRoot, cfg *ConfigExtractArchive) {
 
-	workerTypes := []internal.WorkerTypeCode{
-		internal.WorkerTypeZIPoriginal}
+	workerTypes := []ar.WorkerTypeCode{
+		ar.WorkerTypeZIPoriginal}
 	// internal.WorkerTypeZIPminified}
 	arf := extract.ArchiveFolder{
 		PackageTypes: workerTypes,
@@ -56,7 +55,7 @@ func RunExtractArchive(rootCfg *ConfigRoot, cfg *ConfigExtractArchive) {
 
 	radioNames := map[string]bool{
 		// "Radiožurnál": true,
-		// "Plus": true,
+		"Plus": true,
 		// "Dvojka": true,
 		// "ČRo_Vysočina": true,
 		// "ČRo_Karlovy_Vary": true,

@@ -88,7 +88,7 @@ func (apf *ArchivePackageFile) ExtractByXMLquery(
 	var extractor Extractor
 	extractor.Init(openMedia, q.Extractors, CSVdelim)
 
-	// add default row
+	// Add default row
 	// extractor.CSVtable.Rows[0].CSVrow[FieldPrefix_ComputedRID] = make(CSVrowPart)
 	// extractor.CSVtable.Rows[0].CSVrow[FieldPrefix_ComputedRID]["FileName"] = field
 

@@ -99,8 +99,6 @@ var RadioRundownNameRegex = regexp.MustCompile(`(\d\d-\d\d) ([\p{L}\s?]*)`)
 
 func (r *OMmetaInfo) ParseRadioRundownName(rundownName string) {
 	// e.g.: "05-09 ČRo Karlovy Vary - Wed, 04.03.2020"
-	//TODO: match result against map of code vs radio name
-	// var unparsedFields []string
 	var radioName string
 	var hoursRange string
 	matches := RadioRundownNameRegex.FindStringSubmatch(rundownName)
