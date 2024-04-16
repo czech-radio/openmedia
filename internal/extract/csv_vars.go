@@ -13,6 +13,7 @@ const (
 
 const (
 	FieldPrefix_RadioRec PartPrefixCode = iota
+	FieldPrefix_RadioHead
 	FieldPrefix_HourlyHead
 	FieldPrefix_HourlyRec
 	FieldPrefix_SubHead
@@ -38,6 +39,7 @@ type PartsPrefixMap = map[PartPrefixCode]PartPrefix
 
 var PartsPrefixMapProduction = PartsPrefixMap{
 	FieldPrefix_RadioRec:         {"Radio-REC", "radio"},
+	FieldPrefix_RadioHead:        {"Radio-HED", "radio"},
 	FieldPrefix_HourlyHead:       {"Hourly-HED", "blok"},
 	FieldPrefix_HourlyRec:        {"Hourly-REC", "blok"},
 	FieldPrefix_SubHead:          {"Sub-HED", "SP"},
@@ -58,6 +60,7 @@ type FieldsIDsNames map[string]string
 
 var FieldsIDsNamesProduction = FieldsIDsNames{
 	"1":            "cas_vytvoreni",
+	"1000":         "zacatek",
 	"1002":         "planovana_stopaz",
 	"1003":         "cas_konce",
 	"1004":         "cas_zacatku",

@@ -66,6 +66,9 @@ declare -a golang_tools=(
   #
   ### 'gotestsum': 'go test' runner with output optimized for humans, JUnit XML for CI integration, and a summary of the test results.  'https://github.com/gotestyourself/gotestsum'
   'gotest.tools/gotestsum@latest'
+
+  ### 'gotests': https://github.com/cweill/gotests
+  'github.com/cweill/gotests/gotests@latest'
 )
 
 declare -a golang_packages=(

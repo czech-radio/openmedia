@@ -113,13 +113,12 @@ func ReadCSVfile(filePath string) ([][]string, error) {
 	return reader.ReadAll()
 }
 
-func ReadExcelFile(filePath, sheetName string) (
+func ReadExcelFileSheet(filePath, sheetName string) (
 	rows [][]string, err error) {
 	f, err := excelize.OpenFile(filePath)
 	if err != nil {
 		return nil, err
 	}
-
 	defer func() {
 		// Close the spreadsheet.
 		if err := f.Close(); err != nil {
@@ -129,4 +128,22 @@ func ReadExcelFile(filePath, sheetName string) (
 	// cell, err := f.GetCellValue("Sheet1", "B2")
 	// Get all the rows in the Sheet1.
 	return f.GetRows(sheetName)
+}
+
+func MapExcelSheetColumn(
+	filePath, sheetName string, columnNumber int,
+) (map[string]bool, error) {
+	res := make(map[string]bool)
+	rows, err := ReadExcelFileSheet(filePath, sheetName)
+	if err != nil {
+		return nil, err
+	}
+	for i, row := range rows {
+		if i < 1 {
+			// omit header
+			continue
+		}
+		res[row[columnNumber]] = true
+	}
+	return res, nil
 }

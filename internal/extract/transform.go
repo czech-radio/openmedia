@@ -18,8 +18,6 @@ const (
 	TransformerEurovolby
 )
 
-// var ExtractorTransformerCodeMap map[ExtractorTransformerCode]
-
 func (e *Extractor) Transform(code TransformerCode) {
 	switch code {
 	case TransformerMock:
@@ -58,7 +56,8 @@ func (e *Extractor) UniqueRows() {
 }
 
 func (e *Extractor) FilterByPartAndFieldID(
-	partCode PartPrefixCode, fieldID string, fieldValuePatern string) []int {
+	partCode PartPrefixCode, fieldID string,
+	fieldValuePatern string) []int {
 	var res []int
 	re := regexp.MustCompile(fieldValuePatern)
 	for i, row := range e.CSVtable.Rows {
@@ -170,6 +169,14 @@ func TransformObjectID(objectID string) (string, error) {
 	return fmt.Sprintf("ID_%s", objectID), nil
 }
 
+func TransformTimeDate(dateString string) (string, error) {
+	date, err := ParseXMLdate(dateString)
+	if err != nil {
+		return "", err
+	}
+	return date.Format("2006-01-02 15:04:05"), nil
+}
+
 func TransformStopaz(stopaz string) (string, error) {
 	var sign string
 	milliSeconds, err := strconv.ParseInt(stopaz, 10, 64)
@@ -209,8 +216,11 @@ func (e *Extractor) TransformDateToTime(
 			continue
 		}
 		field.Value = fmt.Sprintf(
-			// "%02d:%02d:%02d,%03d", date.Hour(), date.Minute(), date.Second(), date.Nanosecond()/1000000)
-			"%02d:%02d:%02d", date.Hour(), date.Minute(), date.Second())
+			// "%02d:%02d:%02d,%03d",
+			// date.Hour(), date.Minute(), date.Second(), date.Nanosecond()/1000000)
+			"%02d:%02d:%02d",
+			date.Hour(), date.Minute(), date.Second(),
+		)
 		part[fieldID] = field
 
 		datestr := fmt.Sprintf("%02d.%02d.%04d", date.Day(), date.Month(), date.Year())

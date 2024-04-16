@@ -38,6 +38,7 @@ type ArchiveFolderQuery struct {
 	PrintHeader       bool
 	CSVdelim          string
 	Transformer       TransformerCode
+	FilterColumns     []FilterColumn
 }
 
 func (af *ArchiveFolder) FolderListing(

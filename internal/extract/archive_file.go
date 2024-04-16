@@ -100,6 +100,7 @@ func (apf *ArchivePackageFile) ExtractByXMLquery(
 		extractor.UniqueRows()
 	}
 	extractor.Transform(q.Transformer)
+	extractor.FiltersRun(q.FilterColumns)
 	extractor.PrintTableRowsToCSV(q.PrintHeader, q.CSVdelim)
 	return nil
 }

@@ -43,38 +43,54 @@ func RunExtractArchive(rootCfg *ConfigRoot, cfg *ConfigExtractArchive) {
 	// DateFrom
 	// dateFrom, _ := helper.CzechDateToUTC(2024, 2, 1, 0)
 	// dateFrom, _ := helper.CzechDateToUTC(2024, 3, 1, 0)
-	// dateFrom, _ := helper.CzechDateToUTC(2023, 12, 1, 0)
+	dateFrom, _ := helper.CzechDateToUTC(2023, 12, 1, 0)
 	// dateFrom, _ := helper.CzechDateToUTC(2024, 3, 25, 0)
-	dateFrom, _ := helper.CzechDateToUTC(2024, 3, 31, 0)
+	// dateFrom, _ := helper.CzechDateToUTC(2024, 3, 31, 0)
 
 	// DateTo
+	dateTo, _ := helper.CzechDateToUTC(2024, 2, 1, 0)
 	// dateTo, _ := helper.CzechDateToUTC(2024, 3, 1, 0)
-	dateTo, _ := helper.CzechDateToUTC(2024, 4, 1, 0)
+	// dateTo, _ := helper.CzechDateToUTC(2024, 4, 1, 0)
 
 	filterRange := [2]time.Time{dateFrom, dateTo}
 
 	radioNames := map[string]bool{
 		// "Radiožurnál": true,
-		"Plus": true,
+		// "Plus": true,
 		// "Dvojka": true,
 		// "ČRo_Vysočina": true,
 		// "ČRo_Karlovy_Vary": true,
 		// "ČRo_Brno": true,
 	}
 
+	// Filter columns
+	var filterColumns []extract.FilterColumn
+	filterFile := "/home/jk/CRO/CRO_BASE/openmedia-archive_backup/openmedia_filter/filtrace - zadání.xlsx"
+	values, err := helper.MapExcelSheetColumn(filterFile, "seznam", 0)
+	if err != nil {
+		helper.Errors.ExitWithCode(err)
+	}
+	filter := extract.FilterCodeMap[extract.FilterCodeMatchPersonName]
+	filter.FileWithValues = filterFile
+	filter.Values = values
+	filterColumns = append(filterColumns, filter)
+
+	// Build query
 	query := extract.ArchiveFolderQuery{
 		RadioNames:  radioNames,
 		DateRange:   filterRange,
 		Extractors:  extract.EXTproduction,
 		Transformer: extract.TransformerProduction,
 		// Extractors: internal.EXTeuroVolby,
-		CSVdelim: cfg.CSVdelim,
+		FilterColumns: filterColumns,
+		CSVdelim:      cfg.CSVdelim,
 	}
 
+	// Query run on folder
 	srcFolder := "/mnt/remote/cro/export-avo/Rundowns"
 	// srcFolder := "/home/jk/CRO/CRO_BASE/openmedia-archive_backup/Archive/"
 
-	err := arf.FolderMap(
+	err = arf.FolderMap(
 		srcFolder, true, &query)
 	if err != nil {
 		helper.Errors.ExitWithCode(err)
