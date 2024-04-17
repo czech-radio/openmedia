@@ -15,13 +15,13 @@ import (
 
 type TesterConfig struct {
 	// Config
-	CurrentDir          string
 	TestDataSource      string
 	TempDir             string
 	TempDataSource      string
 	TempDataDestination string
 
 	// Internals
+	currentDir      string
 	testType        string
 	initializedTemp bool
 	initializedMain bool
@@ -51,11 +51,11 @@ func (tc *TesterConfig) InitMain() {
 		if err != nil {
 			panic(err)
 		}
-		tc.CurrentDir = curDir
+		tc.currentDir = curDir
 		SetLogLevel(level, "json")
 		tc.testType = os.Getenv("GO_TEST_TYPE")
 		flag.Parse()
-		slog.Warn("main initialized")
+		slog.Warn("test config initialized")
 		tc.sigChan = make(chan os.Signal, 1)
 		tc.WaitGroup = new(sync.WaitGroup)
 		signal.Notify(
@@ -85,7 +85,7 @@ func (tc *TesterConfig) WaitForSignal() {
 	case syscall.SIGILL:
 		slog.Error("bad instruction")
 		if tc.testType == "manual" {
-			slog.Error("bad instruction witing", "count", tc.WaitCount)
+			slog.Error("bad instruction, waiting", "count", tc.WaitCount)
 			<-tc.sigChan
 		}
 	case syscall.SIGHUP:
@@ -96,7 +96,7 @@ func (tc *TesterConfig) WaitForSignal() {
 
 func (tc *TesterConfig) InitTempSrc(needsTemp bool) {
 	if needsTemp && !tc.initializedTemp {
-		slog.Debug("preparing test directory", "curdir", tc.CurrentDir)
+		slog.Debug("preparing test directory", "curdir", tc.currentDir)
 		tc.TempDir = DirectoryCreateTemporaryOrPanic("openmedia")
 		tc.TempDataSource = filepath.Join(tc.TempDir, "SRC")
 		tc.TempDataDestination = filepath.Join(tc.TempDir, "DST")
