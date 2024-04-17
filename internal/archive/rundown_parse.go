@@ -88,7 +88,7 @@ func (om OPENMEDIA) ParseRadioRundnownFields() (OMmetaInfo, error) {
 		for _, attr := range field.Attrs {
 			switch attr.Value {
 			case "Čas začátku": // FieldID: 1004
-				// case "Čas vytvoření": // FiledID: 1
+				// case "Čas vytvoření": // FieldID: 1
 				metaInfo.Date, err = strftime.Parse("%Y%m%dT%H%M%S", field.OM_DATETIME)
 			case "Název":
 				metaInfo.ParseRadioRundownName(field.OM_STRING)
