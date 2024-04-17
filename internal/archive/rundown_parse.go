@@ -62,7 +62,10 @@ func (om OPENMEDIA) ParseContactFields() (OMmetaInfo, error) {
 	for _, attr := range om.OM_OBJECT.OM_UPLINK.Attrs {
 		switch attr.Name.Local {
 		case "FileName":
-			// NOTE: Some contact files may have this field same even though they filename in filesystem is different. It can result in dupes in zip package. When there are dupes in package it does not mean it is corupted or that the data cannot be extracted. Only fuse mount of package cannot be used as it returns error there are duplicate files in archive.
+			// NOTE: Some contact files may have this field same even though they filename in filesystem is different. 
+			// It can result in dupes in zip package. When there are dupes in package it does not mean it is corupted 
+			// or that the data cannot be extracted. Only fuse mount of package cannot be used as it returns error there 
+			// are duplicate files in archive.
 			xmlFileNameValue = attr.Value
 		}
 	}
