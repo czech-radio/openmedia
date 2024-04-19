@@ -5,7 +5,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github/czech-radio/openmedia-archive/internal/helper"
+	"github/czech-radio/openmedia/internal/helper"
 
 	"io"
 	"log/slog"

@@ -1,6 +1,6 @@
 package extract
 
-import ar "github/czech-radio/openmedia-archive/internal/archive"
+import ar "github/czech-radio/openmedia/internal/archive"
 
 var EXTmock = OMextractors{
 	{

@@ -6,7 +6,7 @@ import (
 	"bytes"
 	"encoding/xml"
 	"fmt"
-	"github/czech-radio/openmedia-archive/internal/helper"
+	"github/czech-radio/openmedia/internal/helper"
 	"io"
 	"io/fs"
 	"os"

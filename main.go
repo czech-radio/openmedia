@@ -22,7 +22,7 @@ THE SOFTWARE.
 package main
 
 import (
-	"github/czech-radio/openmedia-archive/cmd"
+	"github/czech-radio/openmedia/cmd"
 )
 
 func main() {

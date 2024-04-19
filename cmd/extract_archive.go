@@ -1,9 +1,9 @@
 package cmd
 
 import (
-	ar "github/czech-radio/openmedia-archive/internal/archive"
-	"github/czech-radio/openmedia-archive/internal/extract"
-	"github/czech-radio/openmedia-archive/internal/helper"
+	ar "github/czech-radio/openmedia/internal/archive"
+	"github/czech-radio/openmedia/internal/extract"
+	"github/czech-radio/openmedia/internal/helper"
 	"time"
 )
 
@@ -65,7 +65,7 @@ func RunExtractArchive(rootCfg *ConfigRoot, cfg *ConfigExtractArchive) {
 
 	// Filter columns
 	var filterColumns []extract.FilterColumn
-	filterFile := "/home/jk/CRO/CRO_BASE/openmedia-archive_backup/openmedia_filter/filtrace - zadání.xlsx"
+	filterFile := "/home/jk/CRO/CRO_BASE/openmedia_backup/openmedia_filter/filtrace - zadání.xlsx"
 	values, err := helper.MapExcelSheetColumn(filterFile, "seznam", 0)
 	if err != nil {
 		helper.Errors.ExitWithCode(err)
@@ -88,7 +88,7 @@ func RunExtractArchive(rootCfg *ConfigRoot, cfg *ConfigExtractArchive) {
 
 	// Query run on folder
 	srcFolder := "/mnt/remote/cro/export-avo/Rundowns"
-	// srcFolder := "/home/jk/CRO/CRO_BASE/openmedia-archive_backup/Archive/"
+	// srcFolder := "/home/jk/CRO/CRO_BASE/openmedia_backup/Archive/"
 
 	err = arf.FolderMap(
 		srcFolder, true, &query)

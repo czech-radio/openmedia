@@ -4,7 +4,7 @@ package cmd
 import (
 	"flag"
 	"fmt"
-	"github/czech-radio/openmedia-archive/internal/helper"
+	"github/czech-radio/openmedia/internal/helper"
 	"log/slog"
 )
 

@@ -3,7 +3,7 @@ package internal
 import (
 	"errors"
 	"fmt"
-	"github/czech-radio/openmedia-archive/internal/helper"
+	"github/czech-radio/openmedia/internal/helper"
 	"log/slog"
 	"path/filepath"
 	"regexp"

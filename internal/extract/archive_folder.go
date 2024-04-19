@@ -2,8 +2,8 @@ package extract
 
 import (
 	"archive/zip"
-	ar "github/czech-radio/openmedia-archive/internal/archive"
-	"github/czech-radio/openmedia-archive/internal/helper"
+	ar "github/czech-radio/openmedia/internal/archive"
+	"github/czech-radio/openmedia/internal/helper"
 	"io/fs"
 	"log/slog"
 	"path/filepath"
