@@ -14,7 +14,6 @@ jobs:
     strategy:
       matrix:
         go-version: ['1.21']
-        # go-version: ['1.21', '1.21.x' ]
     permissions:
       contents: write
     steps:
@@ -26,19 +25,19 @@ jobs:
         uses: actions/setup-go@v4
         with:
           go-version: ${{ matrix.go-version }}
-          cache: false
+          cache: false 
           # cache-dependency-path: go.sum
       - name: Display Go version
         run: go version
-      - name: Test vet package
+      - name: Lint the package
         run: go vet -v ./...
-      - name: Test Go package
+      - name: Test the package
         run: go test -v ./...
-      - name: Build package with bash script
+      - name: Build the package
         run: ./scripts/build.sh
-      - name: Debug working directory
+      - name: Log the working directory
         run: pwd
-      - name: Debug list files
+      - name: Log the existing files
         run: ls -la
-      - name: test run binary
+      - name: Test the executable file
         run: eval "./${{ env.PACKAGE_NAME }} -V"
