@@ -1,18 +1,14 @@
 #!/bin/bash
-#
-### Go test
+
 Go_test_all(){
   # go vet -v ./...
   go test -vet=all -v ./...
 }
 
-### Go build
 Go_build(){
   go build main.go
 }
 
-
-### GIT
 Git_push(){
   All
   read -p 'Continue push to git? (y): ' cont

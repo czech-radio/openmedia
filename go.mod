@@ -1,4 +1,4 @@
-module github/czech-radio/openmedia-archive
+module github/czech-radio/openmedia
 
 go 1.20
 

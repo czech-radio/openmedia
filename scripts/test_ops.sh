@@ -1,8 +1,6 @@
 #!/bin/bash
 SCRIPT_PATH="${BASH_SOURCE[0]:-$0}"
 SCRIPT_DIR="${SCRIPT_PATH%/*}"
-# TEST_CMD="go test -v "
-# TEST_CMD="${HOME}/go/bin/gotestsum --format testname "
 
 Go_test_debug(){
   go clean -testcache

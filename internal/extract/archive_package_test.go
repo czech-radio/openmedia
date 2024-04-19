@@ -2,7 +2,7 @@ package extract
 
 import (
 	"fmt"
-	ar "github/czech-radio/openmedia-archive/internal/archive"
+	ar "github/czech-radio/openmedia/internal/archive"
 	"testing"
 	"time"
 )

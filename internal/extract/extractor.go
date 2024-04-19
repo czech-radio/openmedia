@@ -1,7 +1,7 @@
 package extract
 
 import (
-	ar "github/czech-radio/openmedia-archive/internal/archive"
+	ar "github/czech-radio/openmedia/internal/archive"
 	"log/slog"
 	"path/filepath"
 

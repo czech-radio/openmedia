@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	ar "github/czech-radio/openmedia-archive/internal/archive"
-	"github/czech-radio/openmedia-archive/internal/helper"
+	ar "github/czech-radio/openmedia/internal/archive"
+	"github/czech-radio/openmedia/internal/helper"
 	"log/slog"
 )
 
