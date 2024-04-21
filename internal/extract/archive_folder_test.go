@@ -1,6 +1,6 @@
 package extract
 
-// var srcFolder = "/home/jk/CRO/CRO_BASE/openmedia-archive_backup/Archive/"
+// var srcFolder = "/home/jk/CRO/CRO_BASE/openmedia_backup/Archive/"
 
 // func TestArchiveFolderListing(t *testing.T) {
 // 	// skipTest(t)

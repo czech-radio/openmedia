@@ -1,3 +1,4 @@
+// Package extract manages extraction of data from Openmedia rundowns archive (zip packaged rundown xml files) or standalone xml rundown files.
 package extract
 
 import (
@@ -71,14 +72,6 @@ func ExtractNodesFields(
 		newTable.Rows = append(newTable.Rows, &newRowNode)
 	}
 	return newTable
-}
-
-func NodeGetParent(node *xmlquery.Node, levelUp int) *xmlquery.Node {
-	resultNode := node
-	for i := 0; i <= levelUp; i++ {
-		resultNode = resultNode.Parent
-	}
-	return resultNode
 }
 
 func NodeToCSVrowPart(node *xmlquery.Node, ext OMextractor) CSVrowPart {

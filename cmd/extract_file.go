@@ -13,9 +13,9 @@ type ConfigExtractFile struct {
 }
 
 func RunExtractFile(rootCfg *ConfigRoot, filterCfg *ConfigExtractFile) {
-	// filePath := "/home/jk/CRO/CRO_BASE/openmedia-archive_backup/Archive/control/control_UTF16_RD_13-17_Plus_Tuesday_W01_2024_01_02.xml"
-	filePath := "/home/jk/CRO/CRO_BASE/openmedia-archive_backup/Archive/control2/RD_18-24_Radiožurnál_Friday_W09_2024_03_01_utf16le.xml"
-	// filePath := "/home/jk/CRO/CRO_BASE/openmedia-archive_backup/Archive/control/control_UTF8_RD_13-17_Plus_Tuesday_W01_2024_01_02.xml"
+	// filePath := "/home/jk/CRO/CRO_BASE/openmedia_backup/Archive/control/control_UTF16_RD_13-17_Plus_Tuesday_W01_2024_01_02.xml"
+	filePath := "/home/jk/CRO/CRO_BASE/openmedia_backup/Archive/control2/RD_18-24_Radiožurnál_Friday_W09_2024_03_01_utf16le.xml"
+	// filePath := "/home/jk/CRO/CRO_BASE/openmedia_backup/Archive/control/control_UTF8_RD_13-17_Plus_Tuesday_W01_2024_01_02.xml"
 	af := extract.ArchiveFile{}
 	err := af.Init(
 		ar.WorkerTypeRundownXMLutf16le, filePath)
