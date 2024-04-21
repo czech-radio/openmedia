@@ -3,14 +3,32 @@ package extract
 import (
 	"fmt"
 	ar "github/czech-radio/openmedia/internal/archive"
+	"github/czech-radio/openmedia/internal/helper"
 	"path/filepath"
 	"testing"
 )
 
+var testerConfig = helper.TesterConfig{
+	TestDataSource: "../../test/testdata",
+}
+
+func TestMain(m *testing.M) {
+	testerConfig.TesterMain(m)
+}
+
+func TestSomething(t *testing.T) {
+	defer testerConfig.RecoverPanic(t)
+	testerConfig.InitTest(t)
+	testerConfig.PrintResult("fuck you")
+}
+
 func TestXmlQueryFields(t *testing.T) {
+	defer testerConfig.RecoverPanic(t)
+	testerConfig.InitTest(t)
 	ids := []string{"1", "2"}
 	res := ar.XMLqueryFields("/OM_HEADER/OM_FIELD", ids)
 	fmt.Println(res)
+	// testerConfig.PrintResult(res)
 }
 
 func TestXmlQuery(t *testing.T) {

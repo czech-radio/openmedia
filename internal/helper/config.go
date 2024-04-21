@@ -30,7 +30,8 @@ func SetField(rv reflect.Value, value any) error {
 	return nil
 }
 
-func GetStringValueByPriority(longFlagValue, shortFlagValue, envValue, defaultValue string) string {
+func GetStringValueByPriority(
+	longFlagValue, shortFlagValue, envValue, defaultValue string) string {
 	res := defaultValue
 	if longFlagValue != defaultValue {
 		res = longFlagValue
@@ -41,13 +42,15 @@ func GetStringValueByPriority(longFlagValue, shortFlagValue, envValue, defaultVa
 	return res
 }
 
-func GetBoolValueByPriority(longFlagValue, shortFlagValue, envValue, defaultValue bool) bool {
+func GetBoolValueByPriority(
+	longFlagValue, shortFlagValue, envValue, defaultValue bool) bool {
 	res := XOR(defaultValue, shortFlagValue)
 	res = XOR(res, longFlagValue)
 	return res
 }
 
-func GetIntValueByPriority(longFlagValue, shortFlagValue, envValue, defaultValue int) int {
+func GetIntValueByPriority(
+	longFlagValue, shortFlagValue, envValue, defaultValue int) int {
 	res := defaultValue
 	if longFlagValue != defaultValue {
 		res = longFlagValue

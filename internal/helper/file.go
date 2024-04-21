@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"log"
 	"log/slog"
 	"os"
@@ -45,11 +46,13 @@ func CopyFile(
 	src_file_path, dst_file_path string,
 	overwrite bool, verbose bool,
 ) error {
-	slog.Debug(
-		"copying file",
-		"source_file", src_file_path,
-		"dst_file", dst_file_path,
-	)
+	if verbose {
+		slog.Debug(
+			"copying file",
+			"source_file", src_file_path,
+			"dst_file", dst_file_path,
+		)
+	}
 	srcFile, err := os.Open(src_file_path)
 	if err != nil {
 		return err
@@ -57,7 +60,11 @@ func CopyFile(
 	defer srcFile.Close()
 
 	// Create the destination file in the destination directory for writing
-	if !overwrite && PathExists(dst_file_path) {
+	pathExists, err := PathExists(dst_file_path)
+	if err != nil {
+		return err
+	}
+	if !overwrite && pathExists {
 		return fmt.Errorf(
 			"err: %w, filepath: %s",
 			ErrFilePathExists, dst_file_path,
@@ -78,17 +85,17 @@ func CopyFile(
 
 // FileExists: returns true if file exists, false when the filePath doesnot exists, error when it is directory
 func FileExists(filePath string) (bool, error) {
-	info, err := os.Stat(filePath)
-	if err != nil {
-		if os.IsNotExist(err) {
-			return false, nil
+	fileInfo, err := os.Stat(filePath)
+	if err == nil {
+		if fileInfo.IsDir() {
+			return false, fmt.Errorf("specified path is a directory, not a file: %s", filePath)
 		}
-		return false, err
+		return true, nil
 	}
-	if info.IsDir() {
-		return false, fmt.Errorf("specified path is a directory, not a zip file")
+	if errors.Is(err, fs.ErrNotExist) {
+		return false, nil
 	}
-	return true, nil
+	return false, err
 }
 
 func ProcessedFileRename(originalPath string) error {

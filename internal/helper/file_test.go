@@ -1,19 +1,43 @@
 package helper
 
-// func TestReadExcelFileSheet(t *testing.T) {
-// 	srcFile := "/home/jk/CRO/CRO_BASE/openmedia_backup/openmedia_filter/filtrace - zadání.xlsx"
-// 	rows, err := ReadExcelFileSheet(srcFile, "seznam")
-// 	if err != nil {
-// 		t.Error(err)
-// 	}
-// 	fmt.Println(rows)
-// }
+import (
+	"testing"
+)
 
-// func TestMapExcelSheetColumn(t *testing.T) {
-// 	srcFile := "/home/jk/CRO/CRO_BASE/openmedia_backup/openmedia_filter/filtrace - zadání.xlsx"
-// 	column, err := MapExcelSheetColumn(srcFile, "seznam", 0)
-// 	if err != nil {
-// 		t.Error(err)
-// 	}
-// 	fmt.Println(column)
-// }
+func TestFileExists(t *testing.T) {
+	defer testerConfig.RecoverPanic(t)
+	testerConfig.InitTest(t, "helper")
+
+	tp := testerConfig.TempSourcePathGeter("helper")
+	// Prepare test pairs
+	type args struct {
+		filePath string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    bool
+		wantErr bool
+	}{
+		{"file_exits", args{tp("some_file.txt")}, true, false},
+		{"file_not_exits", args{tp("nonexisten_file.txt")}, false, false},
+	}
+
+	// Run tests
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := FileExists(tt.args.filePath)
+			if (err != nil) != tt.wantErr {
+				t.Errorf(
+					"FileExists() error = %v, wantErr %v, args %v",
+					err, tt.wantErr, tt.args)
+				return
+			}
+			if got != tt.want {
+				t.Errorf(
+					"FileExists() = %v, want %v, args %v",
+					got, tt.want, tt.args)
+			}
+		})
+	}
+}

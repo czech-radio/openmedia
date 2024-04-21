@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
-	"path/filepath"
 	"testing"
 )
 
@@ -15,13 +14,14 @@ func TestXMLqueryFromPath(t *testing.T) {
 }
 
 func TestTransformXML(t *testing.T) {
+	testSubdir := "rundowns_valid"
 	defer testerConfig.RecoverPanic(t)
-	testerConfig.InitTest(t, true)
+	testerConfig.InitTest(t, testSubdir)
+	tp := testerConfig.TempSourcePathGeter(testSubdir)
 
-	src_file := filepath.Join(
-		testerConfig.TestDataSource, "rundowns_valid",
-		"RD_00-12_Pohoda_-_Fri_06_01_2023_orig.xml")
-	srcFile, err := os.Open(src_file)
+	src_file := "RD_00-12_Pohoda_-_Fri_06_01_2023_orig.xml"
+	fmt.Println("kek", tp(src_file))
+	srcFile, err := os.Open(tp(src_file))
 	if err != nil {
 		t.Error(err)
 	}
@@ -43,19 +43,20 @@ func TestTransformXML(t *testing.T) {
 }
 
 func Test_ValidateFilesInDirectory(t *testing.T) {
+	validfiles := "rundowns_valid"
 	defer testerConfig.RecoverPanic(t)
-	testerConfig.InitTest(t, true)
-
-	valid := "rundowns_valid"
-	srcPath := filepath.Join(testerConfig.TempDataSource, valid)
+	testerConfig.InitTest(t, validfiles)
+	tp := testerConfig.TempSourcePathGeter(validfiles)
+	srcPath := tp("")
 
 	_, err := ValidateFilesInDirectory(srcPath, true)
 	if err != nil {
 		t.Error(err)
 	}
 
-	invalid := "rundowns_invalid"
-	srcPath = filepath.Join(testerConfig.TempDataSource, invalid)
+	invalidfiles := "rundowns_invalid"
+	tp = testerConfig.TempSourcePathGeter(invalidfiles)
+	srcPath = tp("")
 	_, err = ValidateFilesInDirectory(srcPath, true)
 	if err == nil {
 		t.Error("failed to catch error")

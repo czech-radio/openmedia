@@ -18,16 +18,12 @@ var testerConfig = helper.TesterConfig{
 }
 
 func TestMain(m *testing.M) {
-	testerConfig.InitMain()
-	exitCode := m.Run()
-	slog.Debug("exit code", "code", exitCode)
-	testerConfig.WaitGroup.Wait()
-	testerConfig.CleanuUP()
+	testerConfig.TesterMain(m)
 }
 
 func TestAABnofail(t *testing.T) {
 	defer testerConfig.RecoverPanic(t)
-	testerConfig.InitTest(t, false)
+	testerConfig.InitTest(t)
 	helper.Sleeper(2, "s")
 }
 
@@ -82,7 +78,7 @@ func Test_ParseUplink(t *testing.T) {
 
 func Test_ProcessFolder(t *testing.T) {
 	defer testerConfig.RecoverPanic(t)
-	testerConfig.InitTest(t, true)
+	testerConfig.InitTest(t, "rundowns_mix")
 
 	subDir := "rundowns_mix"
 	srcDir := filepath.Join(
@@ -107,7 +103,7 @@ func Test_ProcessFolder(t *testing.T) {
 
 func Test_ProcessFolderInvalid(t *testing.T) {
 	defer testerConfig.RecoverPanic(t)
-	testerConfig.InitTest(t, true)
+	testerConfig.InitTest(t)
 
 	subDir := "rundowns_invalid"
 	srcDir := filepath.Join(
@@ -132,7 +128,7 @@ func Test_ProcessFolderInvalid(t *testing.T) {
 
 func Test_ProcessFolderComplexNoDupes(t *testing.T) {
 	defer testerConfig.RecoverPanic(t)
-	testerConfig.InitTest(t, true)
+	testerConfig.InitTest(t)
 
 	subDir := "rundowns_complex_nodupes"
 	srcDir := filepath.Join(
@@ -159,7 +155,7 @@ func Test_ProcessFolderComplexNoDupes(t *testing.T) {
 
 func Test_ProcessFolderComplexDupes(t *testing.T) {
 	defer testerConfig.RecoverPanic(t)
-	testerConfig.InitTest(t, true)
+	testerConfig.InitTest(t)
 
 	subDir := "rundowns_complex_dupes"
 	srcDir := filepath.Join(
@@ -187,7 +183,7 @@ func Test_ProcessFolderComplexDupes(t *testing.T) {
 
 func Test_ProcessFolderComplexDupesSame(t *testing.T) {
 	defer testerConfig.RecoverPanic(t)
-	testerConfig.InitTest(t, true)
+	testerConfig.InitTest(t)
 
 	subDir := "rundowns_complex_dupes"
 	srcDir := filepath.Join(
@@ -212,7 +208,7 @@ func Test_ProcessFolderComplexDupesSame(t *testing.T) {
 
 func Test_ProcessFolderRundownsAppend(t *testing.T) {
 	defer testerConfig.RecoverPanic(t)
-	testerConfig.InitTest(t, true)
+	testerConfig.InitTest(t)
 
 	subDir := "rundowns_append"
 	srcDir := filepath.Join(
@@ -250,7 +246,7 @@ func Test_ProcessFolderRundownsAppend(t *testing.T) {
 
 func Test_ProcessFolderDate(t *testing.T) {
 	defer testerConfig.RecoverPanic(t)
-	testerConfig.InitTest(t, true)
+	testerConfig.InitTest(t)
 
 	subDir := "rundowns_date"
 	srcDir := filepath.Join(

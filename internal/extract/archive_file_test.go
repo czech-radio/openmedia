@@ -1,22 +1,16 @@
 package extract
 
-import (
-	"github/czech-radio/openmedia/internal/helper"
-	"log/slog"
-	"testing"
-)
+// var testerConfig = helper.TesterConfig{
+// 	TestDataSource: "../../test/testdata",
+// }
 
-var testerConfig = helper.TesterConfig{
-	TestDataSource: "../../test/testdata",
-}
-
-func TestMain(m *testing.M) {
-	testerConfig.InitMain()
-	exitCode := m.Run()
-	slog.Debug("exit code", "code", exitCode)
-	testerConfig.WaitGroup.Wait()
-	testerConfig.CleanuUP()
-}
+// func TestMain(m *testing.M) {
+// 	testerConfig.InitMain()
+// 	exitCode := m.Run()
+// 	slog.Debug("exit code", "code", exitCode)
+// 	testerConfig.WaitGroup.Wait()
+// 	testerConfig.CleanuUP()
+// }
 
 // func TestXMLqueryFile(t *testing.T) {
 

@@ -3,7 +3,6 @@ package helper
 import (
 	"errors"
 	"os"
-	"path/filepath"
 	"testing"
 )
 
@@ -28,12 +27,13 @@ func Test_DirectoryCreateInRam(t *testing.T) {
 }
 
 func Test_DirectoryCopy(t *testing.T) {
+	testSubdir := "rundowns_complex_dupes"
 	defer testerConfig.RecoverPanic(t)
-	testerConfig.InitTest(t, true)
-	srcDir := filepath.Join(
-		testerConfig.TempDataSource, "rundowns_complex_dupes")
-	dstDir := filepath.Join(
-		testerConfig.TempDataDestination, "DirectoryCopy")
+	testerConfig.InitTest(t, testSubdir)
+	tpSrc := testerConfig.TempSourcePathGeter(testSubdir)
+	srcDir := tpSrc("")
+	tpDst := testerConfig.TempDestinationPathGeter(testSubdir)
+	dstDir := tpDst("")
 
 	// Test copy matching files
 	err := DirectoryCopy(

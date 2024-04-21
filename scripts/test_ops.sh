@@ -20,7 +20,8 @@ Go_test_run(){
   local path="${SCRIPT_DIR}/../${path}/..."
   local test_pattern
   test_pattern="${2:-''}"
-  GO_TEST_TYPE="manual" GOLOGLEVEL=10 go test -v "$path" -run "$test_pattern"
+  test_opts="${3}"
+  GO_TEST_TYPE="manual" GOLOGLEVEL=0 go test -v "$path" -run "$test_pattern" "${test_opts}"
 }
 
 Go_test_auto(){
@@ -29,7 +30,8 @@ Go_test_auto(){
   local path="${SCRIPT_DIR}/../${path}/..."
   local test_pattern
   test_pattern="${2:-''}"
-  GOLOGLEVEL=-4 go test -v "$path" -run "$test_pattern"
+  test_opts="${3}"
+  GOLOGLEVEL=10 go test -v "$path" -run "$test_pattern" "${test_opts}"
 }
 
 Go_delve(){

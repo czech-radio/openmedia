@@ -2,6 +2,7 @@ package helper
 
 import (
 	"flag"
+	"fmt"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -11,11 +12,11 @@ import (
 	"testing"
 )
 
-// TODO: add t.Error() to recover
-
+// TODO: maybe add t.Error() to recover
 type TesterConfig struct {
 	// Config
 	TestDataSource      string
+	TempDirName         string
 	TempDir             string
 	TempDataSource      string
 	TempDataDestination string
@@ -29,6 +30,14 @@ type TesterConfig struct {
 	sigChan         chan os.Signal
 	WaitCount       int
 	WaitGroup       *sync.WaitGroup
+}
+
+func (tc *TesterConfig) TesterMain(m *testing.M) {
+	tc.InitMain()
+	exitCode := m.Run()
+	slog.Debug("exit code", "code", exitCode)
+	tc.WaitGroup.Wait()
+	tc.CleanuUP()
 }
 
 func (tc *TesterConfig) WaitAdd() {
@@ -94,16 +103,35 @@ func (tc *TesterConfig) WaitForSignal() {
 	tc.WaitDone()
 }
 
-func (tc *TesterConfig) InitTempSrc(needsTemp bool) {
-	if needsTemp && !tc.initializedTemp {
-		slog.Debug("preparing test directory", "curdir", tc.currentDir)
-		tc.TempDir = DirectoryCreateTemporaryOrPanic("openmedia")
-		tc.TempDataSource = filepath.Join(tc.TempDir, "SRC")
-		tc.TempDataDestination = filepath.Join(tc.TempDir, "DST")
+func (tc *TesterConfig) InitTempSrc(
+	testSubdir ...string) {
+	fmt.Println("curdir", tc.currentDir)
+	if len(testSubdir) == 0 {
+		return
+	}
+	if !tc.initializedTemp {
+		tc.TempDir = DirectoryCreateTemporaryOrPanic(tc.TempDirName)
+		packageName := filepath.Base(tc.currentDir)
+		tc.TempDataSource = filepath.Join(tc.TempDir, packageName, "SRC")
+		tc.TempDataDestination = filepath.Join(tc.TempDir, packageName, "DST")
 		tc.initializedTemp = true
+	}
+	for _, s := range testSubdir {
+		if s == "" {
+			panic(
+				"empty string passed as subdirectory is not allowed as safety measure")
+		}
+		srcDir := filepath.Join(tc.TestDataSource, s)
+		dstDir := filepath.Join(tc.TempDataSource, s)
+		ok, err := DirectoryExists(dstDir)
+		if err != nil {
+			panic(err)
+		}
+		if ok {
+			continue
+		}
 		err_copy := DirectoryCopy(
-			tc.TestDataSource,
-			tc.TempDataSource,
+			srcDir, dstDir,
 			true, false, "", false,
 		)
 		if err_copy != nil {
@@ -118,23 +146,42 @@ func (tc *TesterConfig) CleanuUP() {
 	}
 }
 
+func (tc *TesterConfig) TempSourcePathGeter(tempSubdir string) func(string) string {
+	return func(relPath string) string {
+		return filepath.Join(
+			tc.TempDataSource, tempSubdir, relPath)
+	}
+}
+
+func (tc *TesterConfig) TempDestinationPathGeter(tempSubdir string) func(string) string {
+	return func(relPath string) string {
+		return filepath.Join(
+			tc.TempDataDestination, tempSubdir, relPath)
+	}
+}
+
+func (tc *TesterConfig) PrintResult(a ...any) {
+	if tc.testType == "manual" {
+		fmt.Println(a...)
+	}
+}
+
 func (tc *TesterConfig) InitTest(
-	t *testing.T, needsTemp bool) {
+	t *testing.T, testSubdir ...string) {
 	if tc.failed {
 		t.SkipNow()
 		return
 	}
-	if testing.Short() && needsTemp {
+	if testing.Short() && len(testSubdir) == 0 {
 		t.SkipNow()
 		return
 	}
-	tc.InitTempSrc(needsTemp)
+	tc.InitTempSrc(testSubdir...)
 	tc.WaitAdd()
 }
 
 func (tc *TesterConfig) RecoverPanic(t *testing.T) {
-	// TODO: add t.Error(err)
-	// TODO: do not print result when running auto test
+	// TODO: maybe add t.Error(err)
 	if t.Skipped() {
 		return
 	}

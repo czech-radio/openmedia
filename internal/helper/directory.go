@@ -1,6 +1,7 @@
 package helper
 
 import (
+	"errors"
 	"fmt"
 	"io/fs"
 	"log/slog"
@@ -10,9 +11,25 @@ import (
 	"runtime"
 )
 
-func PathExists(fs_path string) bool {
+func PathExists(fs_path string) (bool, error) {
 	_, err := os.Stat(fs_path)
-	return !os.IsNotExist(err)
+	if errors.Is(err, fs.ErrNotExist) {
+		return false, nil
+	}
+	return false, err
+}
+
+func DirectoryExists(fs_path string) (bool, error) {
+	fileInfo, err := os.Stat(fs_path)
+	if err == nil {
+		if fileInfo.IsDir() {
+			return true, nil
+		}
+	}
+	if errors.Is(err, fs.ErrNotExist) {
+		return false, nil
+	}
+	return false, err
 }
 
 func ListDirFiles(dir string) ([]string, error) {
@@ -127,25 +144,33 @@ func DirectoryCopy(
 	}
 
 	walk_func := func(fs_path string, d fs.DirEntry) error {
+		// Get current relative from src_dir
+		relDir, err := filepath.Rel(src_dir, fs_path)
+		if err != nil {
+			return err
+		}
+		srcFile := filepath.Join(fs_path, d.Name())
+		dstDir := filepath.Join(dst_dir, relDir)
 		if d.Type().IsRegular() {
-			// Get current relative from src_dir
-			relDir, err := filepath.Rel(src_dir, fs_path)
-			if err != nil {
-				return err
-			}
-			srcFile := filepath.Join(fs_path, d.Name())
-			dstDir := filepath.Join(dst_dir, relDir)
 			dstFile := filepath.Join(dstDir, d.Name())
 			if regex_patt != nil && !regex_patt.MatchString(srcFile) {
 				return nil
 			}
-
 			if err := os.MkdirAll(dstDir, 0700); err != nil {
 				return err
 			}
-			slog.Debug("created", "path", dstDir)
+			if verbose {
+				slog.Debug("created", "path", dstDir)
+			}
 			err = CopyFile(srcFile, dstFile, overwrite, verbose)
 			if err != nil {
+				return err
+			}
+		}
+		if d.Type().IsDir() {
+			// also copy empty directory
+			dst := filepath.Join(dstDir, d.Name())
+			if err := os.MkdirAll(dst, 0700); err != nil {
 				return err
 			}
 		}
