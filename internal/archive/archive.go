@@ -17,6 +17,7 @@ import (
 
 var ArchiveTimeZone, _ = time.LoadLocation("")
 
+// WorkerTypeCode represents the selected line of processing.
 type WorkerTypeCode int
 
 const (
