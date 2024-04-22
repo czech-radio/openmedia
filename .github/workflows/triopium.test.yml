@@ -1,0 +1,43 @@
+name: main
+
+on:
+  push:
+    branches:
+      - triopim.test 
+  pull_request:
+    branches:
+      - triopim.test
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go-version: ['1.21']
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set env
+        run: echo "PACKAGE_NAME=${PWD##*/}" >> "$GITHUB_ENV"
+      - run: echo "${{ env.PACKAGE_NAME }}"
+      - name: Setup Go ${{ matrix.go-version }}
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ matrix.go-version }}
+          cache: false 
+          # cache-dependency-path: go.sum
+      - name: Display Go version
+        run: go version
+      - name: Lint the package
+        run: go vet -v ./...
+      - name: Test the package
+        run: go test -v ./...
+      - name: Build the package
+        run: ./scripts/build.sh
+      - name: Log the working directory
+        run: pwd
+      - name: Log the existing files
+        run: ls -la
+      - name: Test the executable file
+        run: eval "./${{ env.PACKAGE_NAME }} -V"
