@@ -22,13 +22,13 @@ func TestCmdArchive(t *testing.T) {
 	testerConfig.InitTest(t, testSubdir)
 	// tpd := testerConfig.TempDestinationPathGeter(testSubdir)
 	// dstFile := tpd("openmedia")
-
+	testerConfig.WaitAdd()
 	cmd := exec.Command("go", "run", "../main.go")
 	res, err := cmd.CombinedOutput()
-	// err := cmd.Run()
 	fmt.Println(string(res))
 	if err != nil {
 		panic(err)
 		// t.Error(err)
 	}
+	testerConfig.WaitDone()
 }
