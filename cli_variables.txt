@@ -1,0 +1,23 @@
+commands:
+- extractArchive: extract zip files in folder
+- extractFolder: extract rundowns in folder
+- extractFile: extract specified rundownfile
+
+variables:
+- sourcefilepath:
+	[minifiedzip,originalzip,utf8file(s),utf16lefile(s),combinations?]
+- file_output:
+	[csv,xlsx,combinations?],[eurovolby,production,contacts...]
+- header
+	[none,simple,complex]
+- transform:
+	[codedFields,production,eurovolby]
+- daterange:
+	[from,to,from+to,isoWeeks,months,weekdays]
+- radionames:
+	[all,list_of_specified_radios]
+- filters:
+	filter_source_file
+	[csv,xlsx] NOTE: with xlsx sheet name must be provided
+	filter_type [contact_names,...]
+
