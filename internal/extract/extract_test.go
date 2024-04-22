@@ -9,6 +9,7 @@ import (
 )
 
 var testerConfig = helper.TesterConfig{
+	TempDirName:    "openmedia",
 	TestDataSource: "../../test/testdata",
 }
 
@@ -19,6 +20,12 @@ func TestMain(m *testing.M) {
 func TestSomething(t *testing.T) {
 	defer testerConfig.RecoverPanic(t)
 	testerConfig.InitTest(t)
+	testerConfig.PrintResult("hello world")
+}
+
+func TestSomethingWithDir(t *testing.T) {
+	defer testerConfig.RecoverPanic(t)
+	testerConfig.InitTest(t, "helper")
 	testerConfig.PrintResult("hello world")
 }
 

@@ -2,7 +2,7 @@
 package extract
 
 import (
-	archive "github/czech-radio/openmedia/internal/archive"
+	ar "github/czech-radio/openmedia/internal/archive"
 	"github/czech-radio/openmedia/internal/helper"
 	"io"
 	"log/slog"
@@ -16,7 +16,7 @@ import (
 // TODO: Try using CSVrowPart map[string]*CSVrowField insted of  map[string]CSVrowField. So the "copy of parent row" can be made parRow:=map[FieldID]&Field. Every row or its parts based on parent row will reference same value of common fields. So it can be changed/transformed globaly for whole table. Transforming operations must be done on whole column. If not the column will be contamineted and no furher global transform on column can be made easily without iterating over whole column. The pros of using field pointer is speed and less memory allocations.
 func ExpandTableRows(table CSVtable, extr OMextractor) (CSVtable, error) {
 	var newTable CSVtable
-	objquery := archive.XMLqueryFromPath(extr.ObjectPath)
+	objquery := ar.XMLqueryFromPath(extr.ObjectPath)
 	slog.Debug("object query", "query", objquery)
 	slog.Debug("table length", "count", len(table.Rows))
 	for _, row := range table.Rows {
@@ -85,7 +85,7 @@ func NodeToCSVrowPart(node *xmlquery.Node, ext OMextractor) CSVrowPart {
 func NodeGetAttributes(
 	node *xmlquery.Node, part CSVrowPart, ext OMextractor) CSVrowPart {
 	for _, attrName := range ext.ObjectAttrsNames {
-		attrVal, _ := archive.GetFieldValueByName(node.Attr, attrName)
+		attrVal, _ := ar.GetFieldValueByName(node.Attr, attrName)
 		field := CSVrowField{
 			FieldID: attrName,
 			// FieldName: fieldName,
@@ -100,7 +100,7 @@ func NodeGetAttributes(
 func NodeGetFields(
 	node *xmlquery.Node, part CSVrowPart, ext OMextractor) CSVrowPart {
 	// Object FieldIDs
-	attrQuery := archive.XMLbuildAttrQuery("FieldID", ext.FieldIDs)
+	attrQuery := ar.XMLbuildAttrQuery("FieldID", ext.FieldIDs)
 	if attrQuery == "" {
 		return part //empty row
 	}
@@ -116,7 +116,7 @@ func NodeGetFields(
 		return part
 	}
 	for _, f := range fields {
-		fieldID, _ := archive.GetFieldValueByName(f.Attr, "FieldID")
+		fieldID, _ := ar.GetFieldValueByName(f.Attr, "FieldID")
 		// fieldName, _ := GetFieldValueByName(f.Attr, "FieldID")
 		field := CSVrowField{
 			FieldID: fieldID,
@@ -135,7 +135,7 @@ func XMLparalelQuery(extractors []OMextractor) string {
 	for _, e := range extractors {
 		objects = append(objects, e.ObjectPath)
 	}
-	query = archive.XMLbuildAttrQuery("TemplateName", objects)
+	query = ar.XMLbuildAttrQuery("TemplateName", objects)
 	return query
 }
 
