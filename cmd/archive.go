@@ -8,7 +8,6 @@ import (
 
 // NOTE: Consider define command options in map[string][]string
 // cmdmap[command_name]=["source_dir","i","","directory to be processed]
-// TODO: Add test for commands. (dont know how to avoid circular dependency)
 
 type ConfigArchive struct {
 	SourceDirectory          string `cmd:"source_directory; i; ; directory to be processed"`
