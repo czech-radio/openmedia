@@ -1,6 +1,7 @@
 package helper
 
 import (
+	"io"
 	"reflect"
 	"strings"
 	"testing"
@@ -23,7 +24,7 @@ var ExampleXmlLevels = `
 func TestNodeGetParent(t *testing.T) {
 	// Prepare test pairs
 	reader := strings.NewReader(ExampleXmlLevels)
-	baseNode, err := XMLgetBaseNode(reader)
+	baseNode, err := XMLgetBaseNode(reader, "root")
 	if err != nil {
 		t.Error(err)
 	}
@@ -50,6 +51,44 @@ func TestNodeGetParent(t *testing.T) {
 				t.Errorf(
 					"NodeGetParent() = %v, want %v",
 					got, tt.want)
+			}
+		})
+	}
+}
+
+var ExampleXMLrundown = `<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE OPENMEDIA SYSTEM "ann_objects.dtd">
+<OPENMEDIA>
+  <OM_SERVER/>
+  <OM_OBJECT SystemID="3fc88f5c-ef6b-44fa-bdef-002c69855f16" ObjectID="0000000200da1b00" DocumentURN="urn:openmedia:3fc88f5c-ef6b-44fa-bdef-002c69855f16:0000000200DA1B00" DirectoryID="00000002007dbae5" InternalType="1" TemplateID="fffffffa00001022" TemplateType="1" TemplateName="Radio Rundown">
+    <OM_HEADER>
+    </OM_HEADER>
+  </OM_OBJECT>
+</OPENMEDIA>
+`
+
+func TestXMLgetBaseNode(t *testing.T) {
+	type args struct {
+		breader io.Reader
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{"openmedia_xml",
+			args{strings.NewReader(ExampleXMLrundown)}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := XMLgetBaseNode(
+				tt.args.breader, "/OPENMEDIA")
+			if (err != nil) != tt.wantErr {
+				t.Errorf(
+					"XMLgetBaseNode() error = %v, wantErr %v",
+					err, tt.wantErr,
+				)
+				return
 			}
 		})
 	}

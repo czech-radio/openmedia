@@ -46,7 +46,8 @@ func (af *ArchiveFile) Init(wt ar.WorkerTypeCode, filePath string) error {
 	}
 	af.Reader = breader
 
-	baseNode, err := helper.XMLgetBaseNode(af.Reader)
+	// baseNode, err := helper.XMLgetBaseNode(af.Reader)
+	baseNode, err := XMLgetOpenmediaBaseNode(af.Reader)
 	if err != nil {
 		return err
 	}
@@ -79,14 +80,14 @@ func (apf *ArchivePackageFile) ExtractByXMLquery(
 	if err != nil {
 		return err
 	}
-	// Parse base xml node
-	openMedia, err := ar.XmlFindBaseOpenMediaNode(dataReader)
+	// baseNode, err := helper.XMLgetBaseNode(dataReader)
+	baseNode, err := XMLgetOpenmediaBaseNode(dataReader)
 	if err != nil {
 		return err
 	}
 	// Extract specfied object fields
 	var extractor Extractor
-	extractor.Init(openMedia, q.Extractors, CSVdelim)
+	extractor.Init(baseNode, q.Extractors, CSVdelim)
 
 	// Add default row
 	// extractor.CSVtable.Rows[0].CSVrow[FieldPrefix_ComputedRID] = make(CSVrowPart)

@@ -4,6 +4,7 @@ package extract
 import (
 	archive "github/czech-radio/openmedia/internal/archive"
 	"github/czech-radio/openmedia/internal/helper"
+	"io"
 	"log/slog"
 	"strings"
 
@@ -136,4 +137,8 @@ func XMLparalelQuery(extractors []OMextractor) string {
 	}
 	query = archive.XMLbuildAttrQuery("TemplateName", objects)
 	return query
+}
+
+func XMLgetOpenmediaBaseNode(reader io.Reader) (*xmlquery.Node, error) {
+	return helper.XMLgetBaseNode(reader, "/OPENMEDIA")
 }
