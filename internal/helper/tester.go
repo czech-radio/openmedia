@@ -123,12 +123,16 @@ func (tc *TesterConfig) InitTempSrc(
 		}
 		srcDir := filepath.Join(tc.TestDataSource, s)
 		dstDir := filepath.Join(tc.TempDataSource, s)
-		ok, err := DirectoryExists(dstDir)
-		if err != nil {
-			panic(err)
+		ok, err1 := DirectoryExists(srcDir)
+		if err1 != nil || !ok {
+			panic(err1)
 		}
+		ok, err2 := DirectoryExists(dstDir)
 		if ok {
 			continue
+		}
+		if err2 != nil {
+			panic(err2)
 		}
 		err_copy := DirectoryCopy(
 			srcDir, dstDir,
@@ -148,7 +152,12 @@ func (tc *TesterConfig) CleanuUP() {
 
 func (tc *TesterConfig) TempSourcePathGeter(tempSubdir string) func(string) string {
 	return func(relPath string) string {
+		// var rel string
+		// if relPath == "" || relPath == "." {
+		// rel = string(os.PathSeparator)
+		// }
 		return filepath.Join(
+			// tc.TempDataSource, tempSubdir, rel)
 			tc.TempDataSource, tempSubdir, relPath)
 	}
 }
@@ -178,6 +187,7 @@ func (tc *TesterConfig) InitTest(
 	}
 	tc.InitTempSrc(testSubdir...)
 	tc.WaitAdd()
+	slog.Warn("test initialized", "name", t.Name())
 }
 
 func (tc *TesterConfig) RecoverPanic(t *testing.T) {

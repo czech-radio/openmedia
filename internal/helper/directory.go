@@ -16,7 +16,10 @@ func PathExists(fs_path string) (bool, error) {
 	if errors.Is(err, fs.ErrNotExist) {
 		return false, nil
 	}
-	return false, err
+	if err != nil {
+		return false, err
+	}
+	return true, err
 }
 
 func DirectoryExists(fs_path string) (bool, error) {
@@ -25,10 +28,16 @@ func DirectoryExists(fs_path string) (bool, error) {
 		if fileInfo.IsDir() {
 			return true, nil
 		}
+		// is something else
+		return true, fmt.Errorf(
+			"path is not directory: %s", fs_path)
 	}
+	// path does not exists
 	if errors.Is(err, fs.ErrNotExist) {
 		return false, nil
 	}
+
+	// unknown filesystem error
 	return false, err
 }
 
