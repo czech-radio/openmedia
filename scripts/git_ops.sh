@@ -53,7 +53,7 @@ Git_update_tag(){
 
   ### push tags
   git add .
-  git co -m 
+  git co -m "new version/tag: $tag_name" 
   git tag -d "$tag_name"
   git push --delete origin "$tag_name"
   sleep 1
