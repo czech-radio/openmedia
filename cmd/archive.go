@@ -1,3 +1,4 @@
+// Package cmd implements cli commands which manages manipulating with Openmedia rundown xml files
 package cmd
 
 import (

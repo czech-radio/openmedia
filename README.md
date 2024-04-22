@@ -38,24 +38,24 @@ Use `opendmedia-archive -h` to see all available options.
 - Production mode: Halts when unprocessable file encountered.
 
   ```bash
-  openmedia-archive -i <SOURCE_FOLDER> -o <OUTPUT_FOLDER>
+  openmedia -i <SOURCE_FOLDER> -o <OUTPUT_FOLDER>
   ```
 
 - Dry run mode: output files will be created in a temporary directory
 
   ```bash
-  openmedia-archive -n -i <SOURCE_FOLDER> [-o <OUTPUT_FOLDER>]
+  openmedia -n -i <SOURCE_FOLDER> [-o <OUTPUT_FOLDER>]
   ```
 
 - Continue processing folder when unprocessable file encountered
   (useful for example in dry-mode).
   
   ```bash
-  openmedia-archive -ifr -i <SOURCE_FOLDER> -o <OUTPUT_FOLDER>
+  openmedia -ifr -i <SOURCE_FOLDER> -o <OUTPUT_FOLDER>
   ```
 
   ```bash
-  openmedia-archive -n -ifr -i <SOURCE_FOLDER> [-o <OUTPUT_FOLDER>]
+  openmedia -n -ifr -i <SOURCE_FOLDER> [-o <OUTPUT_FOLDER>]
   ```
 
 - By default, we log in structured JSON e.g.
