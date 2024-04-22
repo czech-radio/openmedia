@@ -24,11 +24,10 @@ type OMextractor struct {
 	FieldsPrefix     string
 
 	// Internals
-	KeepInputRow            bool
-	PreserveParentNode      bool // Add fields to input row
-	PreserveParentNodeLevel int
-	KeepWhenZeroSubnodes    bool
-	FieldIDsMap             map[string]bool
+	KeepInputRow         bool
+	ResultNodeGoUpLevels int
+	KeepWhenZeroSubnodes bool
+	FieldIDsMap          map[string]bool
 }
 
 type OMextractors []OMextractor

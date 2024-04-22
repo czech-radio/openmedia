@@ -57,7 +57,7 @@ var EXTmock = OMextractors{
 		ObjectAttrsNames:     []string{"TemplateName"},
 		PartPrefixCode:       FieldPrefix_StoryKategory,
 		KeepWhenZeroSubnodes: true,
-		PreserveParentNode:   true,
+		ResultNodeGoUpLevels: 1,
 	},
 	{
 		ObjectPath:           "Audioclip",

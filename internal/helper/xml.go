@@ -1,14 +1,13 @@
 package helper
 
 import (
-	"fmt"
 	"io"
 
 	"github.com/antchfx/xmlquery"
 )
 
-// NodeGetParent go up in xmltree acording to level. If level greater than top most node, return top most node
-func NodeGetParent(node *xmlquery.Node, levelUp int) (*xmlquery.Node, int) {
+// XMLnodeLevelUp go up in xmltree acording to level. If level greater than top most node, return top most node
+func XMLnodeLevelUp(node *xmlquery.Node, levelUp int) (*xmlquery.Node, int) {
 	var levelUpCount int
 	resultNode := node
 	if levelUp == 0 {
@@ -16,7 +15,6 @@ func NodeGetParent(node *xmlquery.Node, levelUp int) (*xmlquery.Node, int) {
 	}
 	for i := 0; i < levelUp; i++ {
 		subRes := resultNode.Parent
-		fmt.Printf("%d: %+v\n", i, subRes)
 		if subRes.Parent == nil {
 			break
 		}

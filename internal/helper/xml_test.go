@@ -44,7 +44,7 @@ func TestNodeGetParent(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, _ := NodeGetParent(tt.args.node, tt.args.levelUp)
+			got, _ := XMLnodeLevelUp(tt.args.node, tt.args.levelUp)
 			ok := reflect.DeepEqual(got, tt.want)
 			if !ok {
 				t.Errorf(

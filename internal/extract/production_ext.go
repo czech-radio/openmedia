@@ -10,11 +10,11 @@ var EXTproduction = OMextractors{
 		FieldIDs:       []string{"FileName", "C-RID", "C-index"},
 	},
 	OMextractor{
-		ObjectPath:         "/Radio Rundown",
-		FieldsPath:         ar.TemplateHeaderFieldPath,
-		FieldIDs:           []string{"5081"},
-		PartPrefixCode:     FieldPrefix_RadioHead,
-		PreserveParentNode: true,
+		ObjectPath:           "/Radio Rundown",
+		FieldsPath:           ar.TemplateHeaderFieldPath,
+		FieldIDs:             []string{"5081"},
+		PartPrefixCode:       FieldPrefix_RadioHead,
+		ResultNodeGoUpLevels: 1,
 	},
 	OMextractor{
 		ObjectPath:       "/Radio Rundown/<OM_RECORD>",
@@ -60,7 +60,7 @@ var EXTproduction = OMextractors{
 		ObjectAttrsNames:     []string{"TemplateName", "ObjectID"},
 		PartPrefixCode:       FieldPrefix_StoryKategory,
 		KeepWhenZeroSubnodes: true,
-		PreserveParentNode:   true,
+		ResultNodeGoUpLevels: 1,
 	},
 	OMextractor{
 		ObjectPath: "/Audioclip",

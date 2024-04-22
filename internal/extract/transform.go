@@ -304,7 +304,6 @@ func (e *Extractor) ComputeName() {
 		}
 		jmeno := part["421"].Value
 		prijmeni := part["422"].Value
-		slog.Warn("FUCK", jmeno, prijmeni)
 		dstPart, ok := e.CSVtable.Rows[i].CSVrow[FieldPrefix_ComputedID]
 		if !ok {
 			dstPart = make(CSVrowPart)

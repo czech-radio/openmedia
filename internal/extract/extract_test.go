@@ -19,7 +19,7 @@ func TestMain(m *testing.M) {
 func TestSomething(t *testing.T) {
 	defer testerConfig.RecoverPanic(t)
 	testerConfig.InitTest(t)
-	testerConfig.PrintResult("fuck you")
+	testerConfig.PrintResult("hello world")
 }
 
 func TestXmlQueryFields(t *testing.T) {
