@@ -1,6 +1,7 @@
 package helper
 
 import (
+	"errors"
 	"os"
 	"testing"
 )
@@ -20,34 +21,52 @@ func Test_CurrentDir(t *testing.T) {
 	}
 }
 
-// func Test_DirectoryCreateInRam(t *testing.T) {
-// 	directory := DirectoryCreateInRam("golang_test")
-// 	defer os.RemoveAll(directory)
-// }
+func TestCreateDirectory(t *testing.T) {
+	testSubdir := "helper"
+	defer testerConfig.RecoverPanic(t)
+	testerConfig.InitTest(t, testSubdir)
+	tpDst := testerConfig.TempDestinationPathGeter(testSubdir)
+	dstDir := tpDst("hello/jello")
+	err := os.MkdirAll(dstDir, 0700)
+	if err != nil {
+		t.Error(err)
+	}
+	dstDir = tpDst("")
+	err = os.MkdirAll(dstDir, 0700)
+	if err != nil {
+		t.Error(err)
+	}
+}
 
-// func Test_DirectoryCopy(t *testing.T) {
-// 	testSubdir := "rundowns_complex_dupes"
-// 	defer testerConfig.RecoverPanic(t)
-// 	testerConfig.InitTest(t, testSubdir)
-// 	tpSrc := testerConfig.TempSourcePathGeter(testSubdir)
-// 	srcDir := tpSrc("")
-// 	tpDst := testerConfig.TempDestinationPathGeter(testSubdir)
-// 	dstDir := tpDst("")
+func Test_DirectoryCreateInRam(t *testing.T) {
+	directory := DirectoryCreateInRam("golang_test")
+	defer os.RemoveAll(directory)
+}
 
-// 	// Test copy matching files
-// 	err := DirectoryCopy(
-// 		srcDir, dstDir,
-// 		true, false, "hello", false)
-// 	if err != nil {
-// 		t.Error(err)
-// 	}
-// 	// Test copy recursive and overwrite destination files
-// 	err = DirectoryCopy(
-// 		srcDir, dstDir, true, true, "", false)
-// 	if err != nil && errors.Unwrap(err) != ErrFilePathExists {
-// 		t.Error(err)
-// 	}
-// }
+func Test_DirectoryCopy(t *testing.T) {
+	testSubdir := "helper"
+	defer testerConfig.RecoverPanic(t)
+	testerConfig.InitTest(t, testSubdir)
+	tpSrc := testerConfig.TempSourcePathGeter(testSubdir)
+	srcDir := tpSrc("")
+	tpDst := testerConfig.TempDestinationPathGeter(testSubdir)
+	dstDir := tpDst("")
+
+	// Test copy matching files
+	err := DirectoryCopy(
+		srcDir, dstDir,
+		true, false, "hello", false)
+	if err != nil {
+		t.Error(err)
+	}
+
+	// Test copy recursive and overwrite destination files
+	err = DirectoryCopy(
+		srcDir, dstDir, true, true, "", false)
+	if err != nil && errors.Unwrap(err) != ErrFilePathExists {
+		t.Error(err)
+	}
+}
 
 func TestPathExists(t *testing.T) {
 	testSubdir := "helper"
@@ -71,7 +90,7 @@ func TestPathExists(t *testing.T) {
 		{"path_not_exists_dir", args{tpSrc("kek/")},
 			false, false},
 		{"path_not_exists_file", args{tpSrc("kek")},
-			false, false},
+			false, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -114,7 +133,7 @@ func TestDirectoryExists(t *testing.T) {
 		{"path_not_exists_dir", args{tpSrc("kek/")},
 			false, false},
 		{"path_not_exists_file", args{tpSrc("kek")},
-			false, false},
+			false, true},
 	}
 
 	for _, tt := range tests {

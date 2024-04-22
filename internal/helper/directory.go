@@ -151,7 +151,8 @@ func DirectoryCopy(
 	if path_regex != "" {
 		regex_patt = regexp.MustCompile(path_regex)
 	}
-
+	// TODO: add count of copied/overwritten files or directories
+	// var dirCount, fileCount int
 	walk_func := func(fs_path string, d fs.DirEntry) error {
 		// Get current relative from src_dir
 		relDir, err := filepath.Rel(src_dir, fs_path)
@@ -165,7 +166,8 @@ func DirectoryCopy(
 			if regex_patt != nil && !regex_patt.MatchString(srcFile) {
 				return nil
 			}
-			if err := os.MkdirAll(dstDir, 0700); err != nil {
+			err := os.MkdirAll(dstDir, 0700)
+			if err != nil {
 				return err
 			}
 			if verbose {
