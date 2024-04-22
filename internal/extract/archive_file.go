@@ -46,11 +46,11 @@ func (af *ArchiveFile) Init(wt ar.WorkerTypeCode, filePath string) error {
 	}
 	af.Reader = breader
 
-	openMedia, err := ar.XmlFindBaseOpenMediaNode(af.Reader)
+	baseNode, err := helper.XMLgetBaseNode(af.Reader)
 	if err != nil {
 		return err
 	}
-	af.BaseNode = openMedia
+	af.BaseNode = baseNode
 	return nil
 }
 
