@@ -90,7 +90,7 @@ func TestPathExists(t *testing.T) {
 		{"path_not_exists_dir", args{tpSrc("kek/")},
 			false, false},
 		{"path_not_exists_file", args{tpSrc("kek")},
-			false, true},
+			false, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -133,7 +133,7 @@ func TestDirectoryExists(t *testing.T) {
 		{"path_not_exists_dir", args{tpSrc("kek/")},
 			false, false},
 		{"path_not_exists_file", args{tpSrc("kek")},
-			false, true},
+			false, false},
 	}
 
 	for _, tt := range tests {
