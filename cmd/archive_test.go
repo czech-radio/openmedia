@@ -30,8 +30,8 @@ func TestCmdArchive2(t *testing.T) {
 	cmd := exec.Command("go", "run", "../main.go")
 	res, err := cmd.CombinedOutput()
 	if err != nil {
-		// panic(err)
-		t.Error(err)
+		panic(err)
+		// t.Error(err)
 	}
 	fmt.Println(string(res))
 }
