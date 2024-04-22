@@ -105,7 +105,6 @@ func (tc *TesterConfig) WaitForSignal() {
 
 func (tc *TesterConfig) InitTempSrc(
 	testSubdir ...string) {
-	fmt.Println("curdir", tc.currentDir)
 	if len(testSubdir) == 0 {
 		return
 	}
@@ -185,8 +184,8 @@ func (tc *TesterConfig) InitTest(
 		t.SkipNow()
 		return
 	}
-	tc.InitTempSrc(testSubdir...)
 	tc.WaitAdd()
+	tc.InitTempSrc(testSubdir...)
 	slog.Warn("test initialized", "name", t.Name())
 }
 

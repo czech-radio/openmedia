@@ -35,3 +35,9 @@ func TestCmdArchive2(t *testing.T) {
 	}
 	fmt.Println(string(res))
 }
+
+func TestCmdArchive3(t *testing.T) {
+	testSubdir := "cmd"
+	defer testerConfig.RecoverPanic(t)
+	testerConfig.InitTest(t, testSubdir)
+}
