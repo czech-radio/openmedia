@@ -38,12 +38,12 @@ type PartPrefix struct {
 type PartsPrefixMap = map[PartPrefixCode]PartPrefix
 
 var PartsPrefixMapProduction = PartsPrefixMap{
-	FieldPrefix_RadioRec:         {"Radio-REC", "radio"},
-	FieldPrefix_RadioHead:        {"Radio-HED", "radio"},
-	FieldPrefix_HourlyHead:       {"Hourly-HED", "blok"},
-	FieldPrefix_HourlyRec:        {"Hourly-REC", "blok"},
-	FieldPrefix_SubHead:          {"Sub-HED", "SP"},
-	FieldPrefix_SubRec:           {"Sub-REC", "SP-REC"},
+	FieldPrefix_RadioRec:         {"Radio-REC", "RR"},
+	FieldPrefix_RadioHead:        {"Radio-HED", "RR"},
+	FieldPrefix_HourlyHead:       {"Hourly-HED", "HR"},
+	FieldPrefix_HourlyRec:        {"Hourly-REC", "HR"},
+	FieldPrefix_SubHead:          {"Sub-HED", "SR"},
+	FieldPrefix_SubRec:           {"Sub-REC", "SR"},
 	FieldPrefix_StoryHead:        {"Story-HED", ""},
 	FieldPrefix_StoryRec:         {"Story-REC", ""},
 	FieldPrefix_StoryKategory:    {"Story-Cat", "CAST"},

@@ -177,6 +177,18 @@ func TransformTimeDate(dateString string) (string, error) {
 	return date.Format("2006-01-02 15:04:05"), nil
 }
 
+// RD_00-05_Radiožurnál_Sunday_W13_2024_03_31.xml
+var temaregex = regexp.MustCompile(`(\d\d)-`)
+
+func TransformTema(tema string) (string, error) {
+	var sb strings.Builder
+	res := temaregex.FindAllStringSubmatch(tema, -1)
+	for _, r := range res {
+		fmt.Fprintf(&sb, "%s;", r[1])
+	}
+	return sb.String(), nil
+}
+
 func TransformStopaz(stopaz string) (string, error) {
 	var sign string
 	milliSeconds, err := strconv.ParseInt(stopaz, 10, 64)

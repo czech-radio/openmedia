@@ -31,7 +31,6 @@ func TestCmdArchive2(t *testing.T) {
 	res, err := cmd.CombinedOutput()
 	if err != nil {
 		panic(err)
-		// t.Error(err)
 	}
 	fmt.Println(string(res))
 }
