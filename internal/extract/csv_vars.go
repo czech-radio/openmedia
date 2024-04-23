@@ -26,7 +26,7 @@ const (
 	FieldPrefix_ContactItemRec
 	FieldPrefix_StoryKategory
 	FieldPrefix_Record
-	FieldPrefix_ComputedID
+	FieldPrfix_ComputedKON
 	FieldPrefix_ComputedKategory
 	FieldPrefix_ComputedRID
 )
@@ -37,6 +37,7 @@ type PartPrefix struct {
 
 type PartsPrefixMap = map[PartPrefixCode]PartPrefix
 
+// PartsPrefixMapProduction is a map which translates internal column header (prefix/sufix) name to name used in analytics. It represents the part of row which coresponds to one xml OM_OBJECT.
 var PartsPrefixMapProduction = PartsPrefixMap{
 	FieldPrefix_RadioRec:         {"Radio-REC", "RR"},
 	FieldPrefix_RadioHead:        {"Radio-HED", "RR"},
@@ -51,55 +52,57 @@ var PartsPrefixMapProduction = PartsPrefixMap{
 	FieldPrefix_AudioClipRec:     {"Audio-REC", "AUD"},
 	FieldPrefix_ContactItemHead:  {"Contact-HED", "KON"},
 	FieldPrefix_ContactItemRec:   {"Contact-REC", "KON"},
-	FieldPrefix_ComputedID:       {"Comp-ID", "ID"},
+	FieldPrfix_ComputedKON:       {"Comp-KON", "KON"},
 	FieldPrefix_ComputedKategory: {"Comp-Cat", "kategory"},
-	FieldPrefix_ComputedRID:      {"Comp-RID", ""},
+	FieldPrefix_ComputedRID:      {"Comp-RID", "HLP"},
 }
 
 type FieldsIDsNames map[string]string
 
 var FieldsIDsNamesProduction = FieldsIDsNames{
-	"1":            "cas_vytvoreni",
-	"1000":         "zacatek",
-	"1002":         "planovana_stopaz",
-	"1003":         "cas_konce",
-	"1004":         "cas_zacatku",
-	"1005":         "stopaz",
-	"1010":         "spoctena_stopaz",
-	"1029":         "korekce",
-	"1035":         "cas_textu",
-	"1036":         "audio_stopaz",
-	"12":           "redakce",
-	"16":           "druh",
-	"321":          "format",
-	"38":           "stopaz",
-	"421":          "jmeno",
-	"422":          "prijmeni",
-	"423":          "spolecnost",
-	"424":          "funkce",
-	"5":            "vytvoril",
-	"5015":         "strana",
-	"5016":         "tema",
-	"5070":         "schvalil_redakce",
-	"5071":         "schvalil_stanice",
-	"5072":         "incode",
-	"5079":         "cil_vyroby",
-	"5081":         "stanice",
-	"5082":         "itemcode",
-	"5087":         "ID",
-	"5088":         "pohlavi",
-	"6":            "autor",
-	"8":            "nazev",
-	"ID":           "compID",
-	"RecordID":     "RID",
-	"TemplateName": "kategorie",
-	"datum":        "datum",
-	"kategory":     "kategory",
-	"C-RID":        "RID",
-	"C-index":      "index",
-	"ObjectID":     "ObjectID",
-	"FileName":     "FileName",
-	"filtered":     "filtered",
+	"1":             "cas_vytvoreni",
+	"1000":          "datum",
+	"1002":          "planovana_stopaz",
+	"1003":          "cas_konce",
+	"1004":          "cas_zacatku",
+	"1005":          "stopaz",
+	"1010":          "spoctena_stopaz",
+	"1029":          "korekce",
+	"1035":          "cas_textu",
+	"1036":          "audio_stopaz",
+	"12":            "redakce",
+	"16":            "druh",
+	"321":           "format",
+	"38":            "stopaz",
+	"421":           "jmeno",
+	"422":           "prijmeni",
+	"423":           "spolecnost",
+	"424":           "funkce",
+	"5":             "vytvoril",
+	"5015":          "strana",
+	"5016":          "tema",
+	"5070":          "schvalil_redakce",
+	"5071":          "schvalil_stanice",
+	"5072":          "incode",
+	"5079":          "cil_vyroby",
+	"5081":          "stanice",
+	"5082":          "itemcode",
+	"5087":          "ID",
+	"5088":          "pohlavi",
+	"6":             "autor",
+	"8":             "nazev",
+	"ID":            "compID",
+	"RecordID":      "RID",
+	"TemplateName":  "kategorie",
+	"datum":         "datum",
+	"kategory":      "kategory",
+	"C-RID":         "RID",
+	"C-index":       "index",
+	"ObjectID":      "ObjectID",
+	"FileName":      "FileName",
+	"filtered":      "filtered",
+	"region":        "region",
+	"jmeno_spojene": "jmeno_spojene",
 }
 
 var FieldsIDsNamesProductionLong = FieldsIDsNames{

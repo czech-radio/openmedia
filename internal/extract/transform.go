@@ -15,6 +15,7 @@ const (
 	TransformerMock TransformerCode = iota
 	TransformerCodedFields
 	TransformerProduction
+	TransformerProductionCSV
 	TransformerEurovolby
 )
 
@@ -26,6 +27,8 @@ func (e *Extractor) Transform(code TransformerCode) {
 		e.TransformCodedFields()
 	case TransformerProduction:
 		e.TransformProduction()
+	case TransformerProductionCSV:
+		e.TransformProductionCSV()
 	case TransformerEurovolby:
 		e.TransformEurovolby()
 	}
@@ -316,7 +319,7 @@ func (e *Extractor) ComputeName() {
 		}
 		jmeno := part["421"].Value
 		prijmeni := part["422"].Value
-		dstPart, ok := e.CSVtable.Rows[i].CSVrow[FieldPrefix_ComputedID]
+		dstPart, ok := e.CSVtable.Rows[i].CSVrow[FieldPrfix_ComputedKON]
 		if !ok {
 			dstPart = make(CSVrowPart)
 		}
@@ -326,7 +329,7 @@ func (e *Extractor) ComputeName() {
 			Value:     fmt.Sprintf("%s %s", prijmeni, jmeno),
 		}
 		dstPart[targetFieldID] = field
-		e.CSVtable.Rows[i].CSVrow[FieldPrefix_ComputedID] = dstPart
+		e.CSVtable.Rows[i].CSVrow[FieldPrfix_ComputedKON] = dstPart
 	}
 }
 
@@ -487,7 +490,7 @@ func (e *Extractor) ComputeID() {
 		}
 		part := make(CSVrowPart)
 		part[targetFieldID] = field
-		e.CSVtable.Rows[i].CSVrow[FieldPrefix_ComputedID] = part
+		e.CSVtable.Rows[i].CSVrow[FieldPrfix_ComputedKON] = part
 	}
 }
 

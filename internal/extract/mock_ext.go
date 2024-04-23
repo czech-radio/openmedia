@@ -74,7 +74,7 @@ var EXTmock = OMextractors{
 		KeepWhenZeroSubnodes: true,
 	},
 	{
-		PartPrefixCode: FieldPrefix_ComputedID,
+		PartPrefixCode: FieldPrfix_ComputedKON,
 		FieldIDs:       []string{"ID"},
 	},
 }
