@@ -3,7 +3,12 @@ package extract
 func (e *Extractor) TransformProductionCSV() {
 	e.TransformField(FieldPrefix_StoryHead,
 		"5016", TransformTema, false)
+	e.TransformField(FieldPrefix_SubHead,
+		"ObjectID", TransformEmptyToNoContain, true)
+	e.TransformField(FieldPrefix_StoryKategory,
+		"TemplateName", TransformEmptyToNoContain, true)
 	e.ComputeName()
+	e.ComputeIndex()
 }
 
 func (e *Extractor) TransformProduction() {
@@ -53,7 +58,7 @@ func (e *Extractor) TransformProduction() {
 		"TemplateName", TransformEmptyToNoContain, true)
 	e.TransformField(FieldPrefix_StoryKategory,
 		"TemplateName", TransformEmptyToNoContain, true)
-	e.ComputeIndex()
+	e.ComputeIndexOld()
 
 	e.TransformField(FieldPrefix_HourlyHead,
 		"ObjectID", TransformObjectID, false)

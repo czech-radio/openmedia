@@ -241,6 +241,7 @@ func (part CSVrowPart) CastToCSV(
 	delim string,
 ) {
 	specVal := CSVspecialValues[CSVspecialValueChildNotFound]
+	// specVal := CSVspecialValues[CSVspecialValueEmptyString]
 	for _, pos := range fieldsPosition {
 		field, ok := part[pos.FieldID]
 		if !ok {

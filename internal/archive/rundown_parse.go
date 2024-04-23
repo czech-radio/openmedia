@@ -8,6 +8,10 @@ import (
 	"github.com/ncruces/go-strftime"
 )
 
+const (
+	DateLayout_RundownDate = "20060102T150405.000"
+)
+
 type OMmetaInfo struct {
 	Date        time.Time
 	Name        string

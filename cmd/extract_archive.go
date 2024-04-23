@@ -59,6 +59,7 @@ func RunExtractArchive(rootCfg *ConfigRoot, cfg *ConfigExtractArchive) {
 	// TEST VZOR
 	dateFrom, _ := helper.CzechDateToUTC(2024, 1, 2, 15)
 	dateTo, _ := helper.CzechDateToUTC(2024, 1, 2, 17)
+	// dateTo, _ := helper.CzechDateToUTC(2024, 1, 3, 5)
 
 	filterRange := [2]time.Time{dateFrom, dateTo}
 

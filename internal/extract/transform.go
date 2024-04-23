@@ -2,6 +2,7 @@ package extract
 
 import (
 	"fmt"
+	ar "github/czech-radio/openmedia/internal/archive"
 	"log/slog"
 	"regexp"
 	"strconv"
@@ -247,10 +248,9 @@ func (e *Extractor) TransformDateToTime(
 }
 
 func ParseXMLdate(input string) (time.Time, error) {
-	layout := "20060102T150405.000"
+	layout := ar.DateLayout_RundownDate
 	parsedTime, err := time.Parse(layout, input)
 	if err != nil {
-		slog.Error(err.Error())
 		return parsedTime, err
 	}
 	return parsedTime, err
@@ -266,13 +266,13 @@ func TransformEmptyString(input string) string {
 
 func TransformEmptyToNoContain(input string) (string, error) {
 	childVal := CSVspecialValues[CSVspecialValueChildNotFound]
-	if input == childVal {
-		return CSVspecialValues[CSVspecialValueParentNotFound], nil
+	parentVal := CSVspecialValues[CSVspecialValueParentNotFound]
+	out := input
+	switch input {
+	case childVal, parentVal, "":
+		out = CSVspecialValues[CSVspecialValueParentNotFound]
 	}
-	if input == "" {
-		return CSVspecialValues[CSVspecialValueParentNotFound], nil
-	}
-	return input, nil
+	return out, nil
 }
 
 func TransformShortenField(input string) (string, error) {
@@ -332,8 +332,78 @@ func (e *Extractor) ComputeName() {
 		e.CSVtable.Rows[i].CSVrow[FieldPrfix_ComputedKON] = dstPart
 	}
 }
-
 func (e *Extractor) ComputeIndex() {
+	targetFieldID := "C-index"
+	var value string
+	indexComponents := IndexComponents{}
+	for i, row := range e.CSVtable.Rows {
+		dstPart, ok := row.CSVrow[FieldPrefix_ComputedRID]
+		if !ok {
+			dstPart = make(CSVrowPart)
+		}
+		value, indexComponents = ComputeIndexCreate(
+			row.CSVrow, indexComponents)
+		field := CSVrowField{
+			FieldID:   targetFieldID,
+			FieldName: "",
+			Value:     value,
+		}
+		dstPart[targetFieldID] = field
+		e.CSVtable.Rows[i].CSVrow[FieldPrefix_ComputedRID] = dstPart
+	}
+}
+
+type IndexComponents struct {
+	RundownIndex, BlockIndex, StoryIndex int
+	RundownPrev, BlockPrev, StoryPrev    string
+}
+
+func ComputeIndexCreate(
+	row CSVrow, comps IndexComponents) (
+	string, IndexComponents) {
+	// var indexBlock int
+	_, nazev, _ := GetPartAndField(
+		row, FieldPrefix_RadioHead, "8")
+	_, stanice, _ := GetPartAndField(
+		row, FieldPrefix_RadioHead, "5081")
+	_, dateTime, _ := GetPartAndField(
+		row, FieldPrefix_RadioHead, "1000")
+	_, story, _ := GetPartAndField(
+		row, FieldPrefix_StoryHead, "ObjectID")
+	date, err := ParseXMLdate(dateTime.Value)
+	var dateStr string
+	if err == nil {
+		dateStr = date.Format("2006-01-02")
+	}
+	if err != nil {
+		dateStr = dateTime.Value
+	}
+	_, blok, _ := GetPartAndField(
+		row, FieldPrefix_HourlyHead, "8")
+	if comps.RundownPrev != nazev.Value {
+		comps.BlockIndex = 0
+		comps.StoryIndex = 0
+		comps.RundownPrev = nazev.Value
+	}
+	if comps.BlockPrev != blok.Value {
+		comps.BlockIndex++
+		comps.StoryIndex = 0
+		comps.BlockPrev = blok.Value
+	}
+
+	if comps.StoryPrev != story.Value {
+		comps.StoryIndex++
+		comps.StoryPrev = story.Value
+	}
+
+	res := fmt.Sprintf(
+		"%s/%s/%s/%02d/%02d",
+		stanice.Value, dateStr, blok.Value,
+		comps.BlockIndex, comps.StoryIndex)
+	return res, comps
+}
+
+func (e *Extractor) ComputeIndexOld() {
 	targetFieldID := "C-index"
 	prevIDs := []string{"", "", "", ""}
 	prevPos := []int{0, 0, 0}
@@ -344,10 +414,10 @@ func (e *Extractor) ComputeIndex() {
 			dstPart = make(CSVrowPart)
 		}
 		if i == 0 {
-			index, prevIDs, _ = ComputeIndexCreate(row.CSVrow, prevIDs, prevPos)
+			index, prevIDs, _ = ComputeIndexCreateOld(row.CSVrow, prevIDs, prevPos)
 		}
 		if i > 0 {
-			index, prevIDs, prevPos = ComputeIndexCreate(row.CSVrow, prevIDs, prevPos)
+			index, prevIDs, prevPos = ComputeIndexCreateOld(row.CSVrow, prevIDs, prevPos)
 		}
 		field := CSVrowField{
 			FieldID:   targetFieldID,
@@ -359,7 +429,7 @@ func (e *Extractor) ComputeIndex() {
 	}
 }
 
-func ComputeIndexCreate(
+func ComputeIndexCreateOld(
 	row CSVrow, prevIDs []string, prevPos []int) (string, []string, []int) {
 	_, blok, _ := GetPartAndField(
 		row, FieldPrefix_HourlyHead, "8")
