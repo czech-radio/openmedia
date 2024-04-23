@@ -129,6 +129,10 @@ func NodeGetFields(
 	return part
 }
 
+// RowPartMarkNotPossible
+// func RowPartMarkNotPossible(part CSVrowPart, ext OMextractor) {
+// }
+
 func XMLparalelQuery(extractors []OMextractor) string {
 	var query string
 	objects := []string{}

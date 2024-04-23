@@ -45,7 +45,8 @@ func (e *Extractor) FiltersRun(filters []FilterColumn) {
 func (e *Extractor) FilterMatchPersonName(f FilterColumn) {
 	for i, row := range e.CSVtable.Rows {
 		matches, altValue := FieldValueMatchesValidValues(
-			row.CSVrow, f.PartCodeCheck, f.FieldIDcheck, f.Values)
+			row.CSVrow, f.PartCodeCheck, f.FieldIDcheck, f.Values,
+		)
 		part, ok := e.CSVtable.Rows[i].CSVrow[f.PartCodeMark]
 		if !ok {
 			part = make(CSVrowPart)
@@ -65,8 +66,7 @@ func (e *Extractor) FilterMatchPersonName(f FilterColumn) {
 			Value:     mark,
 		}
 		part[f.FieldIDmark] = field
-		// no need, but to be sure
-		// e.CSVtable.Rows[i].CSVrow[f.PartCodeMark] = part
+		e.CSVtable.Rows[i].CSVrow[f.PartCodeMark] = part
 	}
 }
 

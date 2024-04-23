@@ -264,6 +264,30 @@ func TransformEmptyString(input string) string {
 	return input
 }
 
+// TransformEmptyRowPart transform whole row part fields to special value if
+// the part was not extracted from xml.
+func (e *Extractor) TransformEmptyRowPart() {
+	specValNotPossible := CSVspecialValues[CSVspecialValueNotPossible]
+	for _, row := range e.CSVtable.Rows {
+		for _, partCode := range e.CSVrowPartsPositionsInternal {
+			_, ok := row.CSVrow[partCode]
+			if ok {
+				continue
+			}
+			part := make(CSVrowPart)
+			fields := e.CSVrowPartsFieldsPositions[partCode]
+			for _, field := range fields {
+				part[field.FieldID] = CSVrowField{
+					FieldID:   field.FieldID,
+					FieldName: "",
+					Value:     specValNotPossible,
+				}
+			}
+			row.CSVrow[partCode] = part
+		}
+	}
+}
+
 func TransformEmptyToNoContain(input string) (string, error) {
 	childVal := CSVspecialValues[CSVspecialValueChildNotFound]
 	parentVal := CSVspecialValues[CSVspecialValueParentNotFound]
@@ -332,6 +356,7 @@ func (e *Extractor) ComputeName() {
 		e.CSVtable.Rows[i].CSVrow[FieldPrfix_ComputedKON] = dstPart
 	}
 }
+
 func (e *Extractor) ComputeIndex() {
 	targetFieldID := "C-index"
 	var value string
