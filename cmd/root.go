@@ -17,7 +17,7 @@ var (
 
 // VersionInfo Binary version info
 var VersionInfo = helper.VersionInfo{
-	Version:   "0.9.9",
+	Version:   "0.9.10",
 	GitTag:    BuildGitTag,
 	GitCommit: BuildGitCommit,
 }
