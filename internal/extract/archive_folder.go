@@ -12,7 +12,7 @@ import (
 
 type ArchiveFolder struct {
 	PackageTypes       []ar.WorkerTypeCode
-	XMLencoding        helper.FileEncodingNumber
+	XMLencoding        helper.FileEncodingCode
 	PackagesNamesOrder []PackageName
 	Packages           map[PackageName]*ArchivePackage
 	Files              []string

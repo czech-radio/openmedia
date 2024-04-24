@@ -23,7 +23,8 @@ func RunExtractFolder(
 		slog.Error(err.Error())
 		return
 	}
-	header := true
+	internalHeader := false
+	externalHeader := true
 	for i, filePath := range files {
 		af := extract.ArchiveFile{}
 		err := af.Init(ar.WorkerTypeCode(opts.WorkerType), filePath)
@@ -35,9 +36,11 @@ func RunExtractFolder(
 			helper.Errors.ExitWithCode(err)
 		}
 		af.Extractor.TransformProduction()
-		af.Extractor.PrintTableRowsToCSV(header, "\t")
+		af.Extractor.PrintTableRowsToCSV(
+			internalHeader, externalHeader, "\t")
 		if i == 0 {
-			header = false
+			internalHeader = false
+			externalHeader = false
 		}
 	}
 }

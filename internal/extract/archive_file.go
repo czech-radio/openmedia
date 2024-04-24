@@ -46,7 +46,6 @@ func (af *ArchiveFile) Init(wt ar.WorkerTypeCode, filePath string) error {
 	}
 	af.Reader = breader
 
-	// baseNode, err := helper.XMLgetBaseNode(af.Reader)
 	baseNode, err := XMLgetOpenmediaBaseNode(af.Reader)
 	if err != nil {
 		return err
@@ -73,7 +72,7 @@ func (af *ArchiveFile) ExtractByXMLquery(extrs OMextractors) error {
 }
 
 func (apf *ArchivePackageFile) ExtractByXMLquery(
-	enc helper.FileEncodingNumber, q *ArchiveFolderQuery) error {
+	enc helper.FileEncodingCode, q *ArchiveFolderQuery) error {
 	var err error
 	// Extract file from zip
 	dataReader, err := ar.ZipXmlFileDecodeData(apf.Reader, enc)
@@ -103,12 +102,15 @@ func (apf *ArchivePackageFile) ExtractByXMLquery(
 	extractor.TransformEmptyRowPart()
 	extractor.Transform(q.Transformer)
 	extractor.FiltersRun(q.FilterColumns)
-	extractor.PrintTableRowsToCSV(q.PrintHeader, q.CSVdelim)
+
+	// rowsIDx := extractor.FilterByPartAndFieldID(FieldPrefix_HourlyHead, "8", "13:00-14:00")
+	// extractor.PrintTableRowsToCSV(false, true, "\t", rowsIDx)
+	extractor.PrintTableRowsToCSV(false, true, "\t")
 	return nil
 }
 
 func (apf *ArchivePackageFile) ExtractByParser(
-	enc helper.FileEncodingNumber, q *ArchiveFolderQuery) error {
+	enc helper.FileEncodingCode, q *ArchiveFolderQuery) error {
 	dr, err := ar.ZipXmlFileDecodeData(apf.Reader, enc)
 	if err != nil {
 		return err

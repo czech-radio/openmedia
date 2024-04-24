@@ -17,17 +17,19 @@ import (
 
 var ErrFilePathExists = errors.New("file path exists")
 
-type FileEncodingNumber int
+// FileEncodingCode is code, which specifies the file encoding.
+type FileEncodingCode int
 
 const (
-	UNKNOWN FileEncodingNumber = iota
+	UNKNOWN FileEncodingCode = iota
 	UTF8
 	UTF16le
 	UTF16be
 )
 
+// HandleFileEncoding read file according to specified file encoding code.
 func HandleFileEncoding(
-	enc FileEncodingNumber, ioReaderCloser io.ReadCloser) ([]byte, error) {
+	enc FileEncodingCode, ioReaderCloser io.ReadCloser) ([]byte, error) {
 	var data []byte
 	var err error
 	switch enc {
@@ -42,35 +44,36 @@ func HandleFileEncoding(
 	return data, err
 }
 
+// CopyFile copies file from source path to destination path.
 func CopyFile(
-	src_file_path, dst_file_path string,
+	srcFilePath, dstFilePath string,
 	overwrite bool, verbose bool,
 ) error {
 	if verbose {
 		slog.Debug(
 			"copying file",
-			"source_file", src_file_path,
-			"dst_file", dst_file_path,
+			"source_file", srcFilePath,
+			"dst_file", dstFilePath,
 		)
 	}
-	srcFile, err := os.Open(src_file_path)
+	srcFile, err := os.Open(srcFilePath)
 	if err != nil {
 		return err
 	}
 	defer srcFile.Close()
 
 	// Create the destination file in the destination directory for writing
-	pathExists, err := PathExists(dst_file_path)
+	pathExists, err := PathExists(dstFilePath)
 	if err != nil {
 		return err
 	}
 	if !overwrite && pathExists {
 		return fmt.Errorf(
 			"err: %w, filepath: %s",
-			ErrFilePathExists, dst_file_path,
+			ErrFilePathExists, dstFilePath,
 		)
 	}
-	dstFile, err := os.Create(dst_file_path)
+	dstFile, err := os.Create(dstFilePath)
 	if err != nil {
 		return err
 	}
@@ -98,6 +101,7 @@ func FileExists(filePath string) (bool, error) {
 	return false, err
 }
 
+// ProcessedFileRename adds prfix to original filepath.
 func ProcessedFileRename(originalPath string) error {
 	fileName := filepath.Base(originalPath)
 	directory := filepath.Dir(originalPath)
@@ -109,6 +113,7 @@ func ProcessedFileRename(originalPath string) error {
 	return nil
 }
 
+// ReadCSVfile
 func ReadCSVfile(filePath string) ([][]string, error) {
 	file, err := os.Open("Students.csv")
 	if err != nil {
@@ -120,6 +125,7 @@ func ReadCSVfile(filePath string) ([][]string, error) {
 	return reader.ReadAll()
 }
 
+// ReadExcelFileSheet
 func ReadExcelFileSheet(filePath, sheetName string) (
 	rows [][]string, err error) {
 	f, err := excelize.OpenFile(filePath)
@@ -137,6 +143,7 @@ func ReadExcelFileSheet(filePath, sheetName string) (
 	return f.GetRows(sheetName)
 }
 
+// MapExcelSheetColumn reads specified specified excel file sheet and creates map from the specified column. Useful to check whether column contains specific value(s).
 func MapExcelSheetColumn(
 	filePath, sheetName string, columnNumber int,
 ) (map[string]bool, error) {

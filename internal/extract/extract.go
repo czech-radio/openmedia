@@ -99,10 +99,10 @@ func NodeGetAttributes(
 
 func NodeGetFields(
 	node *xmlquery.Node, part CSVrowPart, ext OMextractor) CSVrowPart {
-	// Object FieldIDs
+	// Query object FieldIDs
 	attrQuery := ar.XMLbuildAttrQuery("FieldID", ext.FieldIDs)
-	if attrQuery == "" {
-		return part //empty row
+	if attrQuery == "" { // No fields found
+		return part
 	}
 	query := ext.FieldsPath + attrQuery
 	slog.Debug("query fields", "query", query)
@@ -117,7 +117,6 @@ func NodeGetFields(
 	}
 	for _, f := range fields {
 		fieldID, _ := ar.GetFieldValueByName(f.Attr, "FieldID")
-		// fieldName, _ := GetFieldValueByName(f.Attr, "FieldID")
 		field := CSVrowField{
 			FieldID: fieldID,
 			// FieldName: fieldName,
@@ -128,10 +127,6 @@ func NodeGetFields(
 	}
 	return part
 }
-
-// RowPartMarkNotPossible
-// func RowPartMarkNotPossible(part CSVrowPart, ext OMextractor) {
-// }
 
 func XMLparalelQuery(extractors []OMextractor) string {
 	var query string

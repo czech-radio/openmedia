@@ -3,6 +3,8 @@ package extract
 func (e *Extractor) TransformProductionCSV() {
 	e.TransformField(FieldPrefix_StoryHead,
 		"5016", TransformTema, false)
+	e.TransformField(FieldPrefix_ContactItemHead,
+		"5016", TransformTema, false)
 	e.TransformField(FieldPrefix_SubHead,
 		"ObjectID", TransformEmptyToNoContain, true)
 	e.TransformField(FieldPrefix_StoryKategory,

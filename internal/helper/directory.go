@@ -11,8 +11,9 @@ import (
 	"runtime"
 )
 
-func PathExists(fs_path string) (bool, error) {
-	_, err := os.Stat(fs_path)
+// PathExists report whether path exitst
+func PathExists(fileSystemPath string) (bool, error) {
+	_, err := os.Stat(fileSystemPath)
 	if errors.Is(err, fs.ErrNotExist) {
 		return false, nil
 	}
@@ -22,15 +23,17 @@ func PathExists(fs_path string) (bool, error) {
 	return true, err
 }
 
-func DirectoryExists(fs_path string) (bool, error) {
-	fileInfo, err := os.Stat(fs_path)
+// DirectoryExists report wheter path exists and is directory. Returns error
+// when path exists and is not directory
+func DirectoryExists(fileSystemPath string) (bool, error) {
+	fileInfo, err := os.Stat(fileSystemPath)
 	if err == nil {
 		if fileInfo.IsDir() {
 			return true, nil
 		}
 		// is something else
 		return true, fmt.Errorf(
-			"path is not directory: %s", fs_path)
+			"path is not directory: %s", fileSystemPath)
 	}
 	// path does not exists
 	if errors.Is(err, fs.ErrNotExist) {
@@ -41,6 +44,7 @@ func DirectoryExists(fs_path string) (bool, error) {
 	return false, err
 }
 
+// ListDirFiles list files inside directory
 func ListDirFiles(dir string) ([]string, error) {
 	files := []string{}
 	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
@@ -48,7 +52,7 @@ func ListDirFiles(dir string) ([]string, error) {
 			return err
 		}
 		if !info.IsDir() {
-			// If it's a file, print its path
+			// If it's a file
 			files = append(files, path)
 		}
 		return nil
@@ -57,9 +61,10 @@ func ListDirFiles(dir string) ([]string, error) {
 	return files, err
 }
 
-func DirectoryIsReadableOrPanic(file_path string) {
+// DirectoryIsReadableOrPanic report whether selected path is directory and is readable with current permission or panic.
+func DirectoryIsReadableOrPanic(fileSystemPath string) {
 	// Get file info
-	fileInfo, err := os.Stat(file_path)
+	fileInfo, err := os.Stat(fileSystemPath)
 	if err != nil {
 		panic(err)
 	}
@@ -80,16 +85,17 @@ func DirectoryIsReadableOrPanic(file_path string) {
 			// 0500 & 0400 -> 100000000
 			// 0100 & 0400 -> 000000000
 			// 0000 & 0400 -> 000000000 -> 0
-			panic(fmt.Sprintf(errmsg, file_path, fileInfo.Mode()))
+			panic(fmt.Sprintf(errmsg, fileSystemPath, fileInfo.Mode()))
 		}
 	case "windows":
 		if fileInfo.Mode()&os.ModePerm == 0 {
-			panic(fmt.Sprintf(errmsg, file_path, fileInfo.Mode()))
+			panic(fmt.Sprintf(errmsg, fileSystemPath, fileInfo.Mode()))
 		}
 	}
 	// NOTE: Not accounting for ACL or xattrs
 }
 
+// DirectoryCreateInRam
 func DirectoryCreateInRam(base_name string) string {
 	filepath, err := os.MkdirTemp("/dev/shm", base_name)
 	if err != nil {
@@ -98,6 +104,7 @@ func DirectoryCreateInRam(base_name string) string {
 	return filepath
 }
 
+// DirectoryDeleteOrPanic
 func DirectoryDeleteOrPanic(directory string) {
 	err := os.RemoveAll(directory)
 	if err == nil {
@@ -108,6 +115,7 @@ func DirectoryDeleteOrPanic(directory string) {
 	}
 }
 
+// DirectoryTraverse
 func DirectoryTraverse(
 	directory string,
 	fn func(directory string, d fs.DirEntry) error,
@@ -139,28 +147,29 @@ func DirectoryTraverse(
 	return nil
 }
 
+// DirectoryCopy copies directory contents from source directory to destination directory
 func DirectoryCopy(
-	src_dir string,
-	dst_dir string,
+	srcDir string,
+	dstDir string,
 	recurse bool,
 	overwrite bool,
-	path_regex string,
+	pathRegex string,
 	verbose bool,
 ) error {
 	var regex_patt *regexp.Regexp
-	if path_regex != "" {
-		regex_patt = regexp.MustCompile(path_regex)
+	if pathRegex != "" {
+		regex_patt = regexp.MustCompile(pathRegex)
 	}
 	// TODO: add count of copied/overwritten files or directories
 	// var dirCount, fileCount int
 	walk_func := func(fs_path string, d fs.DirEntry) error {
 		// Get current relative from src_dir
-		relDir, err := filepath.Rel(src_dir, fs_path)
+		relDir, err := filepath.Rel(srcDir, fs_path)
 		if err != nil {
 			return err
 		}
 		srcFile := filepath.Join(fs_path, d.Name())
-		dstDir := filepath.Join(dst_dir, relDir)
+		dstDir := filepath.Join(dstDir, relDir)
 		if d.Type().IsRegular() {
 			dstFile := filepath.Join(dstDir, d.Name())
 			if regex_patt != nil && !regex_patt.MatchString(srcFile) {
@@ -187,21 +196,22 @@ func DirectoryCopy(
 		}
 		return nil
 	}
-	err := DirectoryTraverse(src_dir, walk_func, recurse)
+	err := DirectoryTraverse(srcDir, walk_func, recurse)
 	return err
 }
 
-func DirectoryCreateTemporaryOrPanic(base_name string) string {
+// DirectoryCreateTemporaryOrPanic create temporary directory. Resulting name of directory will be baseDirName+random_string
+func DirectoryCreateTemporaryOrPanic(baseDirName string) string {
 	var err error
 	var file_path string
 	switch runtime.GOOS {
 	case "linux":
 		// Create temp directory in RAM
 		// file_path, err = os.MkdirTemp("/dev/shm", base_name)
-		file_path, err = os.MkdirTemp("/tmp/", base_name)
+		file_path, err = os.MkdirTemp("/tmp/", baseDirName)
 	default:
 		// Create temp directory in system default temp directory
-		file_path, err = os.MkdirTemp("", base_name)
+		file_path, err = os.MkdirTemp("", baseDirName)
 	}
 	if err != nil {
 		panic(err)

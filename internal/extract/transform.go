@@ -405,6 +405,7 @@ func ComputeIndexCreate(
 	}
 	_, blok, _ := GetPartAndField(
 		row, FieldPrefix_HourlyHead, "8")
+
 	if comps.RundownPrev != nazev.Value {
 		comps.BlockIndex = 0
 		comps.StoryIndex = 0
@@ -423,7 +424,8 @@ func ComputeIndexCreate(
 
 	res := fmt.Sprintf(
 		"%s/%s/%s/%02d/%02d",
-		stanice.Value, dateStr, blok.Value,
+		stanice.Value, dateStr, nazev.Value[0:5],
+		// stanice.Value, dateStr, blok.Value,
 		comps.BlockIndex, comps.StoryIndex)
 	return res, comps
 }

@@ -261,19 +261,20 @@ func (part CSVrowPart) CastToCSV(
 	}
 }
 
-func (e *Extractor) CSVheaderPrint() {
-	fmt.Println(e.CSVheaderInternal)
-	fmt.Println(e.CSVheaderExternal)
+func (e *Extractor) CSVheaderPrint(internal, external bool) {
+	if internal {
+		fmt.Println(e.CSVheaderInternal)
+	}
+	if external {
+		fmt.Println(e.CSVheaderExternal)
+	}
 }
 
 func (e *Extractor) PrintTableRowsToCSV(
-	header bool, delim string, rowsIndexes ...[]int) {
+	internalHeader, externalHeader bool,
+	delim string, rowsIndexes ...[]int) {
 	var sb strings.Builder
-	// Print header
-	if header {
-		e.CSVheaderPrint()
-	}
-
+	e.CSVheaderPrint(internalHeader, externalHeader)
 	if len(rowsIndexes) > 1 {
 		slog.Error("not implemented multiple indexes' slices")
 	}
