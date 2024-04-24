@@ -45,18 +45,27 @@ func RunExtractArchive(rootCfg *ConfigRoot, cfg *ConfigExtractArchive) {
 	// dateFrom, _ := helper.CzechDateToUTC(2024, 3, 1, 0)
 	// dateFrom, _ := helper.CzechDateToUTC(2023, 12, 1, 0)
 	// dateFrom, _ := helper.CzechDateToUTC(2024, 3, 25, 0)
-	dateFrom, _ := helper.CzechDateToUTC(2024, 3, 31, 0)
+	// dateFrom, _ := helper.CzechDateToUTC(2024, 3, 31, 0)
 
 	// DateTo
 	// dateTo, _ := helper.CzechDateToUTC(2024, 2, 1, 0)
 	// dateTo, _ := helper.CzechDateToUTC(2024, 3, 1, 0)
-	dateTo, _ := helper.CzechDateToUTC(2024, 4, 1, 0)
+	// dateTo, _ := helper.CzechDateToUTC(2024, 4, 1, 0)
+
+	// TEST WEEK 13
+	// dateFrom, _ := helper.CzechDateToUTC(2024, 3, 25, 0)
+	// dateTo, _ := helper.CzechDateToUTC(2024, 4, 1, 0)
+
+	// TEST VZOR
+	dateFrom, _ := helper.CzechDateToUTC(2024, 1, 2, 15)
+	dateTo, _ := helper.CzechDateToUTC(2024, 1, 2, 17)
+	// dateTo, _ := helper.CzechDateToUTC(2024, 1, 3, 5)
 
 	filterRange := [2]time.Time{dateFrom, dateTo}
 
 	radioNames := map[string]bool{
-		"Radiožurnál": true,
-		// "Plus": true,
+		// "Radiožurnál": true,
+		"Plus": true,
 		// "Dvojka": true,
 		// "ČRo_Vysočina": true,
 		// "ČRo_Karlovy_Vary": true,
@@ -78,10 +87,11 @@ func RunExtractArchive(rootCfg *ConfigRoot, cfg *ConfigExtractArchive) {
 
 	// Build query
 	query := extract.ArchiveFolderQuery{
-		RadioNames:  radioNames,
-		DateRange:   filterRange,
-		Extractors:  extract.EXTproduction,
-		Transformer: extract.TransformerProduction,
+		RadioNames: radioNames,
+		DateRange:  filterRange,
+		Extractors: extract.EXTproduction,
+		// Transformer: extract.TransformerProduction,
+		Transformer: extract.TransformerProductionCSV,
 		// Extractors: internal.EXTeuroVolby,
 		FilterColumns: filterColumns,
 		CSVdelim:      cfg.CSVdelim,

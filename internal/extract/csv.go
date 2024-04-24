@@ -240,11 +240,16 @@ func (part CSVrowPart) CastToCSV(
 	fieldsPosition CSVrowPartFieldsPositions,
 	delim string,
 ) {
-	specVal := CSVspecialValues[CSVspecialValueChildNotFound]
+	// specValNotPossible := CSVspecialValues[CSVspecialValueChildNotFound]
+	specValEmpty := CSVspecialValues[CSVspecialValueEmptyString]
 	for _, pos := range fieldsPosition {
+		// if part == nil {
+		// fmt.Fprintf(builder, "%s%s", specValNotPossible, delim)
+		// continue
+		// }
 		field, ok := part[pos.FieldID]
 		if !ok {
-			value := specVal
+			value := specValEmpty
 			fmt.Fprintf(builder, "%s%s", value, delim)
 			continue
 		}
@@ -276,7 +281,6 @@ func (e *Extractor) PrintTableRowsToCSV(
 	// Print specified rows
 	if len(rowsIndexes) == 1 {
 		for _, index := range rowsIndexes[0] {
-			// e.CSVtable[index].PrintRowToCSV(
 			e.CSVtable.Rows[index].CastToCSV(
 				&sb, e.CSVrowPartsPositionsInternal,
 				e.CSVrowPartsFieldsPositions,
