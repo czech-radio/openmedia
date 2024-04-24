@@ -195,9 +195,10 @@ func TransformTema(tema string) (string, error) {
 
 func TransformStopaz(stopaz string) (string, error) {
 	var sign string
+	// specValNotValid := CSVspecialValues[CSVspecialValueNotValid]
 	milliSeconds, err := strconv.ParseInt(stopaz, 10, 64)
 	if err != nil {
-		return "", err
+		return stopaz, err
 	}
 	if milliSeconds < 0 {
 		milliSeconds = -milliSeconds

@@ -155,6 +155,7 @@ const (
 	CSVspecialValueEmptyString = iota
 	CSVspecialValueNotPossible
 	CSVspecialValueNotContain
+	CSVspecialValueNotValid
 	CSVspecialValueChildNotFound
 	CSVspecialValueParentNotFound
 )
@@ -163,6 +164,7 @@ var CSVspecialValues = map[CSVspecialValueCode]string{
 	CSVspecialValueEmptyString:    "(NS)", // (NEUVEDENO)
 	CSVspecialValueNotPossible:    "(NP)", // (NELZE)
 	CSVspecialValueNotContain:     "(NC)",
+	CSVspecialValueNotValid:       "(NV)",
 	CSVspecialValueChildNotFound:  "(NP)", // (NELZE)
 	CSVspecialValueParentNotFound: "(NC)", // (NEOBSAHUJE)
 }
