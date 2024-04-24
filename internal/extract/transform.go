@@ -343,7 +343,7 @@ func (e *Extractor) ComputeName() {
 		}
 		jmeno := part["421"].Value
 		prijmeni := part["422"].Value
-		dstPart, ok := e.CSVtable.Rows[i].CSVrow[FieldPrfix_ComputedKON]
+		dstPart, ok := e.CSVtable.Rows[i].CSVrow[FieldPrefix_ComputedKON]
 		if !ok {
 			dstPart = make(CSVrowPart)
 		}
@@ -353,7 +353,7 @@ func (e *Extractor) ComputeName() {
 			Value:     fmt.Sprintf("%s %s", prijmeni, jmeno),
 		}
 		dstPart[targetFieldID] = field
-		e.CSVtable.Rows[i].CSVrow[FieldPrfix_ComputedKON] = dstPart
+		e.CSVtable.Rows[i].CSVrow[FieldPrefix_ComputedKON] = dstPart
 	}
 }
 
@@ -405,6 +405,7 @@ func ComputeIndexCreate(
 	}
 	_, blok, _ := GetPartAndField(
 		row, FieldPrefix_HourlyHead, "8")
+
 	if comps.RundownPrev != nazev.Value {
 		comps.BlockIndex = 0
 		comps.StoryIndex = 0
@@ -423,7 +424,8 @@ func ComputeIndexCreate(
 
 	res := fmt.Sprintf(
 		"%s/%s/%s/%02d/%02d",
-		stanice.Value, dateStr, blok.Value,
+		stanice.Value, dateStr, nazev.Value[0:5],
+		// stanice.Value, dateStr, blok.Value,
 		comps.BlockIndex, comps.StoryIndex)
 	return res, comps
 }
@@ -585,7 +587,7 @@ func (e *Extractor) ComputeID() {
 		}
 		part := make(CSVrowPart)
 		part[targetFieldID] = field
-		e.CSVtable.Rows[i].CSVrow[FieldPrfix_ComputedKON] = part
+		e.CSVtable.Rows[i].CSVrow[FieldPrefix_ComputedKON] = part
 	}
 }
 

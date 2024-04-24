@@ -329,7 +329,7 @@ func XMLqueryFields(fieldsPath string, IDs []string) string {
 }
 
 func HandleXMLfileHeader(
-	enc helper.FileEncodingNumber, data []byte) (*bytes.Reader, error) {
+	enc helper.FileEncodingCode, data []byte) (*bytes.Reader, error) {
 	var err error
 	breader := bytes.NewReader(data)
 	switch enc {
@@ -345,7 +345,7 @@ func HandleXMLfileHeader(
 	return breader, err
 }
 
-func ZipFileExtractData(zf *zip.File, enc helper.FileEncodingNumber) ([]byte, error) {
+func ZipFileExtractData(zf *zip.File, enc helper.FileEncodingCode) ([]byte, error) {
 	fileHandle, err := zf.Open()
 	if err != nil {
 		return nil, err
@@ -354,7 +354,7 @@ func ZipFileExtractData(zf *zip.File, enc helper.FileEncodingNumber) ([]byte, er
 	return helper.HandleFileEncoding(enc, fileHandle)
 }
 
-func ZipXmlFileDecodeData(zf *zip.File, enc helper.FileEncodingNumber) (*bytes.Reader, error) {
+func ZipXmlFileDecodeData(zf *zip.File, enc helper.FileEncodingCode) (*bytes.Reader, error) {
 	data, err := ZipFileExtractData(zf, enc)
 	if err != nil {
 		return nil, err

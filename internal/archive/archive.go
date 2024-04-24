@@ -40,8 +40,8 @@ var WorkerTypeMap = map[WorkerTypeCode]string{
 	WorkerTypeCSVprodukce:             "PRODUKCE.csv",
 }
 
-func InferEncoding(wtc WorkerTypeCode) helper.FileEncodingNumber {
-	var enc helper.FileEncodingNumber
+func InferEncoding(wtc WorkerTypeCode) helper.FileEncodingCode {
+	var enc helper.FileEncodingCode
 	switch wtc {
 	case WorkerTypeZIPminified, WorkerTypeRundownXMLutf8:
 		enc = helper.UTF8

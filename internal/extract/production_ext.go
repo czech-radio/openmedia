@@ -79,7 +79,7 @@ var EXTproduction = OMextractors{
 		KeepWhenZeroSubnodes: true,
 	},
 	OMextractor{
-		PartPrefixCode: FieldPrfix_ComputedKON,
+		PartPrefixCode: FieldPrefix_ComputedKON,
 		FieldIDs:       []string{"jmeno_spojene"},
 	},
 }

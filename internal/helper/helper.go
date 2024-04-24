@@ -17,7 +17,7 @@ type VersionInfo struct {
 	BuildTime string
 }
 
-// XOR
+// XOR returns logical XOR from input booleans.
 func XOR(a, b bool) bool {
 	return (a || b) && !(a && b)
 }
@@ -25,7 +25,7 @@ func XOR(a, b bool) bool {
 // UNUSED
 func UNUSED(x ...interface{}) {}
 
-// TraceFunction
+// TraceFunction returns file name, function name and file line in code. Depth specifies depth of call stack. Higher depth number goes up the call stack.
 func TraceFunction(depth int) (string, string, int) {
 	pc, fileName, line, ok := runtime.Caller(depth)
 	details := runtime.FuncForPC(pc)
@@ -36,10 +36,12 @@ func TraceFunction(depth int) (string, string, int) {
 	return "", "", -1
 }
 
-func GetPackageName(vr any) string {
-	return reflect.TypeOf(vr).PkgPath()
+// GetPackageName gets package name from input object, where the object resides
+func GetPackageName(object any) string {
+	return reflect.TypeOf(object).PkgPath()
 }
 
+// GetCommonPath returns common path of two paths.
 func GetCommonPath(filePath, relPath string) (string, error) {
 	var res string
 	res, err := filepath.Abs(filePath)

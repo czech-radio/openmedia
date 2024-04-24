@@ -21,7 +21,7 @@ type FilterColumn struct {
 var FilterCodeMap = map[FilterCode]FilterColumn{
 	FilterCodeMatchPersonName: {
 		FilterCodeMatchPersonName,
-		FieldPrfix_ComputedKON, "jmeno_spojene",
+		FieldPrefix_ComputedKON, "jmeno_spojene",
 		FieldPrefix_ContactItemHead, "filtered", "", nil},
 }
 

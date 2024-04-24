@@ -26,7 +26,7 @@ const (
 	FieldPrefix_ContactItemRec
 	FieldPrefix_StoryKategory
 	FieldPrefix_Record
-	FieldPrfix_ComputedKON
+	FieldPrefix_ComputedKON
 	FieldPrefix_ComputedKategory
 	FieldPrefix_ComputedRID
 )
@@ -52,7 +52,7 @@ var PartsPrefixMapProduction = PartsPrefixMap{
 	FieldPrefix_AudioClipRec:     {"Audio-REC", "AUD"},
 	FieldPrefix_ContactItemHead:  {"Contact-HED", "KON"},
 	FieldPrefix_ContactItemRec:   {"Contact-REC", "KON"},
-	FieldPrfix_ComputedKON:       {"Comp-KON", "KON"},
+	FieldPrefix_ComputedKON:      {"Comp-KON", "KON"},
 	FieldPrefix_ComputedKategory: {"Comp-Cat", "kategory"},
 	FieldPrefix_ComputedRID:      {"Comp-RID", "HLP"},
 }

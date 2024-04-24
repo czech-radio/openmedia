@@ -10,7 +10,7 @@ import (
 
 // List of errors
 // /usr/lib/go/src/syscall/zerrors_linux_amd64.go:1490
-
+// ControlFlowAction
 type ControlFlowAction int
 
 const (
@@ -19,7 +19,7 @@ const (
 	Break
 )
 
-// Error codes for os.Exit
+// ErrorCode codes for os.Exit
 type ErrorCode int8
 
 const (
