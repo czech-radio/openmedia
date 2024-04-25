@@ -38,23 +38,17 @@ type OMextractor struct {
 // OMextractors
 type OMextractors []OMextractor
 
-// Extractor
+// Extractor holds the data needed to extract specified XML tree to table/array and export the table as CSV, XLSX or print it to standard output
 type Extractor struct {
 	OMextractors
 	BaseNode *xmlquery.Node
 	CSVdelim string
 
+	RowPartsPositions
 	RowPartsFieldsPositions
-	RowPartsPositionsInternal
-	RowPartsPositionsExternal
-
-	CSVheaders          map[string]Row
-	CSVheadersPositions []CSVheaderCodeName
-	CSVheaderInternal   string
-	CSVheaderExternal   string
-
+	CSVheaderInternal string
+	CSVheaderExternal string
 	TableXML
-	TablesXML
 }
 
 func (e *Extractor) Init(
@@ -69,28 +63,16 @@ func (e *Extractor) Init(
 	e.CSVtableBuildHeader(CSVdelim)
 	e.OMextractors.KeepInputRowsChecker()
 	e.OMextractors.MapFieldsPath()
-	e.TableXML.Rows = []*RowNode{{baseNode, Row{}}}
+	e.TableXML.Rows = []*RowNode{{baseNode, RowParts{}}}
 }
 
 func (e *Extractor) MapRowParts() {
-	var prefixesInternal, prefixesExternal []RowPartCode
+	var prefixesInternal []RowPartCode
 	for _, extr := range e.OMextractors {
-		// prefix := PartsPrefixMapProduction[extr.PartPrefixCode]
 		prefixesInternal = append(
 			prefixesInternal, extr.PartPrefixCode)
-		prefixesExternal = append(
-			prefixesExternal, extr.PartPrefixCode)
-		if len(extr.OrExt) > 0 {
-			for _, subExt := range extr.OrExt {
-				prefixesInternal = append(
-					prefixesInternal, subExt.PartPrefixCode)
-				prefixesExternal = append(
-					prefixesExternal, subExt.PartPrefixCode)
-			}
-		}
 	}
-	e.RowPartsPositionsExternal = prefixesExternal
-	e.RowPartsPositionsInternal = prefixesInternal
+	e.RowPartsPositions = prefixesInternal
 }
 
 func (e *Extractor) MapRowPartsFieldsPositions() {
@@ -99,13 +81,6 @@ func (e *Extractor) MapRowPartsFieldsPositions() {
 	for _, extr := range e.OMextractors {
 		fp := GetPartFieldsPositions(extr)
 		partsPos[extr.PartPrefixCode] = append(partsPos[extr.PartPrefixCode], fp...)
-		if len(extr.OrExt) > 0 {
-			for _, subExt := range extr.OrExt {
-				fp := GetPartFieldsPositions(subExt)
-				partsPos[subExt.PartPrefixCode] = append(
-					partsPos[subExt.PartPrefixCode], fp...)
-			}
-		}
 	}
 	e.RowPartsFieldsPositions = partsPos
 }
@@ -133,7 +108,7 @@ func GetPartFieldsPositions(extr OMextractor) RowPartFieldsPositions {
 	prefix := RowPartsCodeMapProduction[extr.PartPrefixCode].Internal
 	// Object Attributes
 	for _, attr := range extr.ObjectAttrsNames {
-		fp := FieldPosition{
+		fp := RowPartFieldPosition{
 			RowPartName: prefix,
 			FieldID:     attr,
 			FieldName:   "",
@@ -142,7 +117,7 @@ func GetPartFieldsPositions(extr OMextractor) RowPartFieldsPositions {
 	}
 	// Object FieldsID
 	for _, fi := range extr.FieldIDs {
-		fp := FieldPosition{
+		fp := RowPartFieldPosition{
 			RowPartName: prefix,
 			FieldID:     fi,
 			FieldName:   "",

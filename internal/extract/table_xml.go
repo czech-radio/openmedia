@@ -7,34 +7,40 @@ import (
 	"github.com/antchfx/xmlquery"
 )
 
-// Table fields positions
-type FieldPosition struct {
+// RowPartFieldPosition represents/describe general field in specific column
+type RowPartFieldPosition struct {
 	RowPartName string
 	FieldID     string
 	FieldName   string
 }
 
-type RowPartFieldsPositions []FieldPosition                         // Field
-type RowPartsPositions []string                                     // Part
-type RowPartsPositionsInternal []RowPartCode                        // Part
-type RowPartsPositionsExternal []RowPartCode                        // Part
+// RowPartFieldsPositions
+type RowPartFieldsPositions []RowPartFieldPosition // Field
+
+// RowPartsPositions
+type RowPartsPositions []RowPartCode
+
+// type RowPartsPositionsExternal []RowPartCode                        // Part
 type RowPartsFieldsPositions map[RowPartCode]RowPartFieldsPositions // Row: partname vs partFieldsPositions
 
+// RowField
 type RowField struct {
 	FieldID   string
 	FieldName string // Currently not needed here (will consume more memory). Alternative construct general list of fieldPrefix:fieldIDs vs FieldName
 	Value     string
 }
 
+// RowPart
 type RowPart map[string]RowField // FieldID:CSVrowField
-type Row map[RowPartCode]RowPart // Whole CSV line PartPrefix:RowPart
+
+// RowParts
+type RowParts map[RowPartCode]RowPart // Whole CSV line PartPrefix:RowPart
+
+// RowNode
 type RowNode struct {
 	Node *xmlquery.Node
-	Row
+	RowParts
 }
-
-// TableXMLheaders
-type TableXMLheaders map[CSVheaderCodeName]Row
 
 // UniqueRow
 type UniqueRow struct {

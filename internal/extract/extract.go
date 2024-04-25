@@ -24,7 +24,7 @@ func ExpandTableRows(table TableXML, extr OMextractor) (TableXML, error) {
 		subNodes := xmlquery.Find(row.Node, objquery)
 		subNodesCount := len(subNodes)
 
-		prow := CopyRow(row.Row)
+		prow := CopyRow(row.RowParts)
 		newRow := &RowNode{row.Node, prow}
 		if len(subNodes) == 0 && extr.KeepWhenZeroSubnodes {
 			slog.Debug("subnodes not_found",
@@ -41,8 +41,8 @@ func ExpandTableRows(table TableXML, extr OMextractor) (TableXML, error) {
 }
 
 // CopyRow
-func CopyRow(inputRow Row) Row {
-	newRow := make(Row)
+func CopyRow(inputRow RowParts) RowParts {
+	newRow := make(RowParts)
 	for ai, a := range inputRow {
 		newRow[ai] = make(RowPart)
 		for bi, b := range a {
@@ -60,15 +60,15 @@ func ExtractNodesFields(
 ) TableXML {
 	var newTable TableXML
 	for _, subNode := range subNodes {
-		parentRowCopy := CopyRow(parentRow.Row)
+		parentRowCopy := CopyRow(parentRow.RowParts)
 		part := NodeToCSVrowPart(subNode, extr)
 		newRowNode := RowNode{}
 		parentNode, _ := helper.XMLnodeLevelUp(
 			subNode, extr.ResultNodeGoUpLevels,
 		)
 		newRowNode.Node = parentNode
-		newRowNode.Row = parentRowCopy
-		newRowNode.Row[extr.PartPrefixCode] = part
+		newRowNode.RowParts = parentRowCopy
+		newRowNode.RowParts[extr.PartPrefixCode] = part
 		newTable.Rows = append(newTable.Rows, &newRowNode)
 	}
 	return newTable

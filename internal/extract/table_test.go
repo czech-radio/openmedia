@@ -33,7 +33,7 @@ func TestRowPrintToCSV(t *testing.T) {
 		"id_Sek": {"id_Sek", "n_Sek", "peper"},
 		"id_Tak": {"id_Tak", "n_Tak", "chilli"},
 	}
-	row := Row{
+	row := RowParts{
 		RowPartCode_SubHead:   rowPart1,
 		RowPartCode_StoryHead: rowPart2,
 	}
@@ -51,7 +51,7 @@ func TestRowPrintToCSV(t *testing.T) {
 		RowPartCode_SubHead:   partFieldPos2,
 		RowPartCode_StoryHead: partFieldPos1,
 	}
-	partsPos := RowPartsPositionsInternal{
+	partsPos := RowPartsPositions{
 		RowPartCode_SubHead, RowPartCode_StoryHead,
 	}
 

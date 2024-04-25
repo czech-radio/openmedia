@@ -43,9 +43,9 @@ func (e *Extractor) UniqueRows() {
 	}
 	for i, row := range e.TableXML.Rows {
 		rowBuilder := strings.Builder{}
-		row.Row.CSVrowBuild(
+		row.RowParts.CSVrowBuild(
 			&rowBuilder,
-			e.RowPartsPositionsInternal,
+			e.RowPartsPositions,
 			e.RowPartsFieldsPositions, CSVdelim)
 		rowStr := rowBuilder.String()
 		_, ok := e.TableXML.UniqueRows[rowStr]
@@ -68,7 +68,7 @@ func (e *Extractor) FilterByPartAndFieldID(
 	var res []int
 	re := regexp.MustCompile(fieldValuePatern)
 	for i, row := range e.TableXML.Rows {
-		part, ok := row.Row[partCode]
+		part, ok := row.RowParts[partCode]
 		if !ok {
 			slog.Debug(
 				"filter not effective", "reason", "partname not found",
@@ -127,7 +127,7 @@ func GetGenderName(genderCode string) (string, error) {
 
 // GetRowPartAndField
 func GetRowPartAndField(
-	row Row, partCode RowPartCode,
+	row RowParts, partCode RowPartCode,
 	fieldID string) (
 	RowPart, RowField, bool) {
 	part, ok := row[partCode]
@@ -151,7 +151,7 @@ func (e *Extractor) TransformColumnFields(
 	partName := RowPartsCodeMapProduction[partCode].Internal
 
 	for i, row := range e.TableXML.Rows {
-		part, ok := row.Row[partCode]
+		part, ok := row.RowParts[partCode]
 		if !ok && !force {
 			slog.Debug("row part name not found",
 				"partName", partName)
@@ -166,11 +166,11 @@ func (e *Extractor) TransformColumnFields(
 			slog.Debug(err.Error())
 			continue
 		}
-		if e.TableXML.Rows[i].Row[partCode] == nil {
-			e.TableXML.Rows[i].Row[partCode] = make(RowPart)
+		if e.TableXML.Rows[i].RowParts[partCode] == nil {
+			e.TableXML.Rows[i].RowParts[partCode] = make(RowPart)
 		}
 		field.Value = name
-		e.TableXML.Rows[i].Row[partCode][fieldID] = field
+		e.TableXML.Rows[i].RowParts[partCode][fieldID] = field
 	}
 }
 
@@ -186,6 +186,8 @@ func (e *Extractor) TransformColumnsFields(
 }
 
 func (e *Extractor) TransformHeaderExternal(rowPartCode, fieldID, newName string) {
+	// fmt.Println()
+	// e.TableXML.CSVwriterLocal.Grow
 	// rowPart, fieldID := GetRowPartAndField(e.CSVtable, rowPartCode, fieldID)
 }
 
@@ -250,7 +252,7 @@ func (e *Extractor) TransformDateToTime(
 	prefixCode RowPartCode, fieldID string, addDate bool) {
 	for _, row := range e.TableXML.Rows {
 		part, field, ok := GetRowPartAndField(
-			row.Row, prefixCode, fieldID)
+			row.RowParts, prefixCode, fieldID)
 		if !ok {
 			continue
 		}
@@ -299,8 +301,8 @@ func TransformEmptyString(input string) string {
 func (e *Extractor) TransformEmptyRowPart() {
 	specValNotPossible := RowFieldValueCodeMap[RowFieldValueNotPossible]
 	for _, row := range e.TableXML.Rows {
-		for _, partCode := range e.RowPartsPositionsInternal {
-			_, ok := row.Row[partCode]
+		for _, partCode := range e.RowPartsPositions {
+			_, ok := row.RowParts[partCode]
 			if ok {
 				continue
 			}
@@ -313,7 +315,7 @@ func (e *Extractor) TransformEmptyRowPart() {
 					Value:     specValNotPossible,
 				}
 			}
-			row.Row[partCode] = part
+			row.RowParts[partCode] = part
 		}
 	}
 }
@@ -344,7 +346,7 @@ func TransformShortenField(input string) (string, error) {
 // FIELD CONSTRUCTERS/COMPUTERS
 
 // ConsructRecordIDs
-func (row Row) ConsructRecordIDs() string {
+func (row RowParts) ConsructRecordIDs() string {
 	prefixes := []RowPartCode{
 		RowPartCode_RadioRec,
 		RowPartCode_HourlyRec,
@@ -370,13 +372,13 @@ func (row Row) ConsructRecordIDs() string {
 func (e *Extractor) ComputeName() {
 	targetFieldID := "jmeno_spojene"
 	for i := range e.TableXML.Rows {
-		part, ok := e.TableXML.Rows[i].Row[RowPartCode_ContactItemHead]
+		part, ok := e.TableXML.Rows[i].RowParts[RowPartCode_ContactItemHead]
 		if !ok {
 			continue
 		}
 		jmeno := part["421"].Value
 		prijmeni := part["422"].Value
-		dstPart, ok := e.TableXML.Rows[i].Row[RowPartCode_ComputedKON]
+		dstPart, ok := e.TableXML.Rows[i].RowParts[RowPartCode_ComputedKON]
 		if !ok {
 			dstPart = make(RowPart)
 		}
@@ -386,7 +388,7 @@ func (e *Extractor) ComputeName() {
 			Value:     fmt.Sprintf("%s %s", prijmeni, jmeno),
 		}
 		dstPart[targetFieldID] = field
-		e.TableXML.Rows[i].Row[RowPartCode_ComputedKON] = dstPart
+		e.TableXML.Rows[i].RowParts[RowPartCode_ComputedKON] = dstPart
 	}
 }
 
@@ -396,19 +398,19 @@ func (e *Extractor) ComputeIndex() {
 	var value string
 	indexComponents := IndexComponents{}
 	for i, row := range e.TableXML.Rows {
-		dstPart, ok := row.Row[RowPartCode_ComputedRID]
+		dstPart, ok := row.RowParts[RowPartCode_ComputedRID]
 		if !ok {
 			dstPart = make(RowPart)
 		}
 		value, indexComponents = ComputeIndexCreate(
-			row.Row, indexComponents)
+			row.RowParts, indexComponents)
 		field := RowField{
 			FieldID:   targetFieldID,
 			FieldName: "",
 			Value:     value,
 		}
 		dstPart[targetFieldID] = field
-		e.TableXML.Rows[i].Row[RowPartCode_ComputedRID] = dstPart
+		e.TableXML.Rows[i].RowParts[RowPartCode_ComputedRID] = dstPart
 	}
 }
 
@@ -420,7 +422,7 @@ type IndexComponents struct {
 
 // ComputeIndexCreate
 func ComputeIndexCreate(
-	row Row, comps IndexComponents) (
+	row RowParts, comps IndexComponents) (
 	string, IndexComponents) {
 	// var indexBlock int
 	_, nazev, _ := GetRowPartAndField(
@@ -473,15 +475,15 @@ func (e *Extractor) ComputeIndexOld() {
 	prevPos := []int{0, 0, 0}
 	var index string
 	for i, row := range e.TableXML.Rows {
-		dstPart, ok := e.TableXML.Rows[i].Row[RowPartCode_ComputedRID]
+		dstPart, ok := e.TableXML.Rows[i].RowParts[RowPartCode_ComputedRID]
 		if !ok {
 			dstPart = make(RowPart)
 		}
 		if i == 0 {
-			index, prevIDs, _ = ComputeIndexCreateOld(row.Row, prevIDs, prevPos)
+			index, prevIDs, _ = ComputeIndexCreateOld(row.RowParts, prevIDs, prevPos)
 		}
 		if i > 0 {
-			index, prevIDs, prevPos = ComputeIndexCreateOld(row.Row, prevIDs, prevPos)
+			index, prevIDs, prevPos = ComputeIndexCreateOld(row.RowParts, prevIDs, prevPos)
 		}
 		field := RowField{
 			FieldID:   targetFieldID,
@@ -489,13 +491,13 @@ func (e *Extractor) ComputeIndexOld() {
 			Value:     index,
 		}
 		dstPart[targetFieldID] = field
-		e.TableXML.Rows[i].Row[RowPartCode_ComputedRID] = dstPart
+		e.TableXML.Rows[i].RowParts[RowPartCode_ComputedRID] = dstPart
 	}
 }
 
 // ComputeIndexCreateOld
 func ComputeIndexCreateOld(
-	row Row, prevIDs []string, prevPos []int) (string, []string, []int) {
+	row RowParts, prevIDs []string, prevPos []int) (string, []string, []int) {
 	_, blok, _ := GetRowPartAndField(
 		row, RowPartCode_HourlyHead, "8")
 	_, sub, _ := GetRowPartAndField(
@@ -537,7 +539,7 @@ skip_sub:
 
 func ComputeIndexCreateB(
 	// Story order
-	row Row, prevIDs []string, prevPos []int) (string, []string, []int) {
+	row RowParts, prevIDs []string, prevPos []int) (string, []string, []int) {
 	_, blok, _ := GetRowPartAndField(
 		row, RowPartCode_HourlyHead, "8")
 	_, sub, _ := GetRowPartAndField(
@@ -580,12 +582,12 @@ func (e *Extractor) ComputeRecordIDs(removeSrcColumns bool) {
 			FieldName: "",
 			Value:     id,
 		}
-		part, ok := e.TableXML.Rows[i].Row[RowPartCode_ComputedRID]
+		part, ok := e.TableXML.Rows[i].RowParts[RowPartCode_ComputedRID]
 		if !ok {
 			part = make(RowPart)
 		}
 		part[targetFieldID] = field
-		e.TableXML.Rows[i].Row[RowPartCode_ComputedRID] = part
+		e.TableXML.Rows[i].RowParts[RowPartCode_ComputedRID] = part
 	}
 	if removeSrcColumns {
 		e.RemoveColumn(
@@ -608,12 +610,12 @@ func (e *Extractor) SetFileNameColumn() {
 			FieldName: "",
 			Value:     e.TableXML.SrcFilePath,
 		}
-		part, ok := e.TableXML.Rows[i].Row[RowPartCode_ComputedRID]
+		part, ok := e.TableXML.Rows[i].RowParts[RowPartCode_ComputedRID]
 		if !ok {
 			part = make(RowPart)
 		}
 		part[targetFieldID] = field
-		e.TableXML.Rows[i].Row[RowPartCode_ComputedRID] = part
+		e.TableXML.Rows[i].RowParts[RowPartCode_ComputedRID] = part
 	}
 }
 
@@ -629,12 +631,12 @@ func (e *Extractor) ComputeID() {
 		}
 		part := make(RowPart)
 		part[targetFieldID] = field
-		e.TableXML.Rows[i].Row[RowPartCode_ComputedKON] = part
+		e.TableXML.Rows[i].RowParts[RowPartCode_ComputedKON] = part
 	}
 }
 
 // ConstructID
-func (row Row) ConstructID() string {
+func (row RowParts) ConstructID() string {
 	partStoryHead, ok := row[RowPartCode_StoryHead]
 	if !ok {
 		return ""

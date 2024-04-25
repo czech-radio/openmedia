@@ -5,14 +5,6 @@ type RowPartCode int
 
 var CSVdelim = "\t"
 
-// CSVheaderCodeName
-type CSVheaderCodeName int
-
-const (
-	CSVheaderInternal CSVheaderCodeName = iota
-	CSVheaderExternal
-)
-
 const (
 	RowPartCode_RadioRec RowPartCode = iota
 	RowPartCode_RadioHead

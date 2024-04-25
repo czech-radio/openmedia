@@ -49,9 +49,9 @@ func (e *Extractor) FiltersRun(filters []FilterColumn) {
 func (e *Extractor) FilterMatchPersonName(f FilterColumn) {
 	for i, row := range e.TableXML.Rows {
 		matches, altValue := FieldValueMatchesValidValues(
-			row.Row, f.PartCodeCheck, f.FieldIDcheck, f.Values,
+			row.RowParts, f.PartCodeCheck, f.FieldIDcheck, f.Values,
 		)
-		part, ok := e.TableXML.Rows[i].Row[f.PartCodeMark]
+		part, ok := e.TableXML.Rows[i].RowParts[f.PartCodeMark]
 		if !ok {
 			part = make(RowPart)
 		}
@@ -70,13 +70,13 @@ func (e *Extractor) FilterMatchPersonName(f FilterColumn) {
 			Value:     mark,
 		}
 		part[f.FieldIDmark] = field
-		e.TableXML.Rows[i].Row[f.PartCodeMark] = part
+		e.TableXML.Rows[i].RowParts[f.PartCodeMark] = part
 	}
 }
 
 // FieldValueMatchesValidValues
 func FieldValueMatchesValidValues(
-	row Row, partCode RowPartCode, fieldID string,
+	row RowParts, partCode RowPartCode, fieldID string,
 	validValues map[string]bool) (bool, string) {
 	_, field, ok := GetRowPartAndField(row, partCode, fieldID)
 	notFound := RowFieldValueCodeMap[RowFieldValueChildNotFound]
