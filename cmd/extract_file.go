@@ -32,5 +32,5 @@ func RunExtractFile(rootCfg *ConfigRoot, filterCfg *ConfigExtractFile) {
 	af.Extractor.TransformProduction()
 	// af.Extractor.TransformEurovolby()
 	// af.Extractor.TransformTest()
-	af.Extractor.CSVtablePrint(false, true, "\t")
+	af.Extractor.CSVtablePrintDirect(false, true, "\t")
 }

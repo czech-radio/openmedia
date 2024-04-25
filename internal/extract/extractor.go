@@ -1,6 +1,7 @@
 package extract
 
 import (
+	"fmt"
 	ar "github/czech-radio/openmedia/internal/archive"
 	"log/slog"
 	"path/filepath"
@@ -42,13 +43,17 @@ type OMextractors []OMextractor
 type Extractor struct {
 	OMextractors
 	BaseNode *xmlquery.Node
-	CSVdelim string
 
 	RowPartsPositions
 	RowPartsFieldsPositions
+
+	TableXML
+	HeaderInternal []string
+	HeaderExternal []string
+
+	CSVdelim          string
 	CSVheaderInternal string
 	CSVheaderExternal string
-	TableXML
 }
 
 func (e *Extractor) Init(
@@ -60,7 +65,8 @@ func (e *Extractor) Init(
 	e.BaseNode = baseNode
 	e.MapRowParts()
 	e.MapRowPartsFieldsPositions()
-	e.CSVtableBuildHeader(CSVdelim)
+	e.HeaderBuild()
+	// e.CSVtableBuildHeader(CSVdelim)
 	e.OMextractors.KeepInputRowsChecker()
 	e.OMextractors.MapFieldsPath()
 	e.TableXML.Rows = []*RowNode{{baseNode, RowParts{}}}
@@ -83,6 +89,21 @@ func (e *Extractor) MapRowPartsFieldsPositions() {
 		partsPos[extr.PartPrefixCode] = append(partsPos[extr.PartPrefixCode], fp...)
 	}
 	e.RowPartsFieldsPositions = partsPos
+}
+
+func (e *Extractor) HeaderBuild() {
+	for _, partPrefixCode := range e.RowPartsPositions {
+		rowPart := e.RowPartsFieldsPositions[partPrefixCode]
+		for _, field := range rowPart {
+			internal := HeaderColumnInternalCreate(
+				partPrefixCode, field.FieldID, "")
+			e.HeaderInternal = append(e.HeaderInternal, internal)
+			external := HeaderColumnExternalCreate(
+				partPrefixCode, field.FieldID, "",
+			)
+			e.HeaderExternal = append(e.HeaderExternal, external)
+		}
+	}
 }
 
 func (e *Extractor) ExtractTable(fileName string) error {
@@ -180,4 +201,22 @@ func (extrs OMextractors) MapFieldsPath() {
 // GetLastPartOfObjectPath
 func GetLastPartOfObjectPath(path string) string {
 	return filepath.Base(path)
+}
+
+// HeaderColumnInternalCreate
+func HeaderColumnInternalCreate(
+	rowPartCode RowPartCode, fieldID string, delim string) string {
+	prefix := RowPartsCodeMapProduction[rowPartCode]
+	return fmt.Sprintf("%s_%s%s", prefix.Internal, fieldID, delim)
+}
+
+// HeaderColumnExternalCreate
+func HeaderColumnExternalCreate(
+	rowPartCode RowPartCode, fieldID, delim string) string {
+	prefix := RowPartsCodeMapProduction[rowPartCode]
+	if prefix.External == "" {
+		return fieldID
+	}
+	fieldName := FieldsIDsNamesProduction[fieldID]
+	return fmt.Sprintf("%s_%s%s", fieldName, prefix.External, delim)
 }

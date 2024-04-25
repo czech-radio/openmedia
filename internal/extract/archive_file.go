@@ -84,7 +84,6 @@ func (apf *ArchivePackageFile) ExtractByXMLquery(
 	if err != nil {
 		return err
 	}
-	// baseNode, err := helper.XMLgetBaseNode(dataReader)
 	baseNode, err := XMLgetOpenmediaBaseNode(dataReader)
 	if err != nil {
 		return err
@@ -92,10 +91,6 @@ func (apf *ArchivePackageFile) ExtractByXMLquery(
 	// Extract specfied object fields
 	var extractor Extractor
 	extractor.Init(baseNode, q.Extractors, CSVdelim)
-
-	// Add default row
-	// extractor.CSVtable.Rows[0].CSVrow[FieldPrefix_ComputedRID] = make(CSVrowPart)
-	// extractor.CSVtable.Rows[0].CSVrow[FieldPrefix_ComputedRID]["FileName"] = field
 
 	err = extractor.ExtractTable(apf.Reader.Name)
 	if err != nil {
@@ -110,7 +105,7 @@ func (apf *ArchivePackageFile) ExtractByXMLquery(
 
 	// rowsIDx := extractor.FilterByPartAndFieldID(FieldPrefix_HourlyHead, "8", "13:00-14:00")
 	// extractor.PrintTableRowsToCSV(false, true, "\t", rowsIDx)
-	extractor.CSVtablePrint(false, true, "\t")
+	extractor.CSVtablePrintDirect(false, true, "\t")
 	return nil
 }
 

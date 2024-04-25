@@ -2,6 +2,7 @@ package extract
 
 import (
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/antchfx/xmlquery"
@@ -51,8 +52,7 @@ type UniqueRow struct {
 // TableXML
 type TableXML struct {
 	Rows              []*RowNode
-	Headers           []string
-	CSVrowsFiltered   []int
+	RowsFiltered      []int
 	RowPartsPositions []RowPartCode
 	RowPartsFieldsPositions
 
@@ -70,4 +70,10 @@ type TablesXML struct {
 	Tables          map[string]*TableXML // fileName:CSVtable
 	CSVwriterGlobal *strings.Builder
 	DstFileGlobal   *os.File
+}
+
+// ConstructDestinationFilePath
+func ConstructDestinationFilePath(srcPath string) string {
+	srcDir, name := filepath.Split(srcPath)
+	return filepath.Join(srcDir, "export"+name+".csv")
 }

@@ -5,7 +5,6 @@ import (
 	"github/czech-radio/openmedia/internal/helper"
 	"log/slog"
 	"os"
-	"path/filepath"
 	"strings"
 )
 
@@ -14,40 +13,20 @@ func (e *Extractor) CSVtableBuildHeader(delim string) {
 	var builderInternal strings.Builder
 	var builderExternal strings.Builder
 	for _, partPrefixCode := range e.RowPartsPositions {
-		prefix := RowPartsCodeMapProduction[partPrefixCode]
-
 		rowPart := e.RowPartsFieldsPositions[partPrefixCode]
 		for _, field := range rowPart {
-			fmt.Fprintf(
-				&builderInternal, "%s_%s%s",
-				prefix.Internal, field.FieldID, delim,
+			internal := HeaderColumnInternalCreate(
+				partPrefixCode, field.FieldID, e.CSVdelim,
 			)
-			fieldName := FieldsIDsNamesProduction[field.FieldID]
-			externalName := BuildHeaderNameExternal(
-				partPrefixCode, fieldName)
-			fmt.Fprintf(
-				&builderExternal, "%s%s", externalName, delim,
+			fmt.Fprint(&builderInternal, internal)
+			external := HeaderColumnExternalCreate(
+				partPrefixCode, field.FieldID, e.CSVdelim,
 			)
+			fmt.Fprint(&builderExternal, external)
 		}
 	}
 	e.CSVheaderInternal = builderInternal.String()
 	e.CSVheaderExternal = builderExternal.String()
-}
-
-// BuildHeaderNameExternal
-func BuildHeaderNameExternal(
-	rowPartCode RowPartCode, fieldName string) string {
-	prefix := RowPartsCodeMapProduction[rowPartCode]
-	if prefix.External == "" {
-		return fieldName
-	}
-	return fmt.Sprintf("%s_%s", fieldName, prefix.External)
-}
-
-// ConstructDstFilePath
-func ConstructDstFilePath(srcPath string) string {
-	srcDir, name := filepath.Split(srcPath)
-	return filepath.Join(srcDir, "export"+name+".csv")
 }
 
 // CSVtableSaveToFile
@@ -63,11 +42,6 @@ func (table *TableXML) CSVtableSaveToFile(dstFilePath string) (int, error) {
 // CSVtableBuild
 func (table *TableXML) CSVtableBuild(
 	header bool, delim string, rowsIndexes ...[]int) {
-	// Print header
-	if header {
-		table.CSVheadersBuild(table.Headers...)
-	}
-
 	if len(rowsIndexes) > 1 {
 		slog.Error("not implemented multiple indexes' slices")
 	}
@@ -99,15 +73,6 @@ func (table *TableXML) CSVtableBuild(
 	slog.Debug("lines casted to CSV", "count", count)
 }
 
-// CSVheadersBuild
-func (table *TableXML) CSVheadersBuild(headers ...string) {
-	for _, header := range headers {
-		if header != "" {
-			table.CSVwriterLocal.WriteString(header)
-		}
-	}
-}
-
 // CSVrowBuild
 func (row RowParts) CSVrowBuild(
 	builder *strings.Builder,
@@ -129,20 +94,14 @@ func (part RowPart) CSVrowPartBuild(
 	fieldsPosition RowPartFieldsPositions,
 	delim string,
 ) {
-	// specValNotPossible := CSVspecialValues[CSVspecialValueChildNotFound]
 	specValEmpty := RowFieldValueCodeMap[RowFieldValueEmptyString]
 	for _, pos := range fieldsPosition {
-		// if part == nil {
-		// fmt.Fprintf(builder, "%s%s", specValNotPossible, delim)
-		// continue
-		// }
 		field, ok := part[pos.FieldID]
 		if !ok {
 			value := specValEmpty
 			fmt.Fprintf(builder, "%s%s", value, delim)
 			continue
 		}
-
 		value := strings.TrimSpace(field.Value)
 		value = TransformEmptyString(value)
 		value = helper.EscapeCSVdelim(value)
@@ -150,22 +109,22 @@ func (part RowPart) CSVrowPartBuild(
 	}
 }
 
-// CSVheaderPrint
-func (e *Extractor) CSVheaderPrint(internal, external bool) {
+// CSVheaderPrintDirect
+func (e *Extractor) CSVheaderPrintDirect(internal, external bool) {
 	if internal {
-		fmt.Println(e.CSVheaderInternal)
+		fmt.Println(strings.Join(e.HeaderInternal, e.CSVdelim))
 	}
 	if external {
-		fmt.Println(e.CSVheaderExternal)
+		fmt.Println(strings.Join(e.HeaderExternal, e.CSVdelim))
 	}
 }
 
-// CSVtablePrint
-func (e *Extractor) CSVtablePrint(
+// CSVtablePrintDirect
+func (e *Extractor) CSVtablePrintDirect(
 	internalHeader, externalHeader bool,
 	delim string, rowsIndexes ...[]int) {
 	var sb strings.Builder
-	e.CSVheaderPrint(internalHeader, externalHeader)
+	e.CSVheaderPrintDirect(internalHeader, externalHeader)
 
 	if len(rowsIndexes) > 1 {
 		slog.Error("not implemented for multiple indexes' slices")
