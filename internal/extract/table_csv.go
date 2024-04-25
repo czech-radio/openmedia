@@ -8,27 +8,6 @@ import (
 	"strings"
 )
 
-// CSVtableBuildHeader
-func (e *Extractor) CSVtableBuildHeader(delim string) {
-	var builderInternal strings.Builder
-	var builderExternal strings.Builder
-	for _, partPrefixCode := range e.RowPartsPositions {
-		rowPart := e.RowPartsFieldsPositions[partPrefixCode]
-		for _, field := range rowPart {
-			internal := HeaderColumnInternalCreate(
-				partPrefixCode, field.FieldID, e.CSVdelim,
-			)
-			fmt.Fprint(&builderInternal, internal)
-			external := HeaderColumnExternalCreate(
-				partPrefixCode, field.FieldID, e.CSVdelim,
-			)
-			fmt.Fprint(&builderExternal, external)
-		}
-	}
-	e.CSVheaderInternal = builderInternal.String()
-	e.CSVheaderExternal = builderExternal.String()
-}
-
 // CSVtableSaveToFile
 func (table *TableXML) CSVtableSaveToFile(dstFilePath string) (int, error) {
 	outputFile, err := os.OpenFile(dstFilePath, os.O_RDWR|os.O_CREATE, 0600)

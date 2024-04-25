@@ -104,7 +104,7 @@ func (e *Extractor) RemoveColumn(
 		newPos = append(newPos, pos)
 	}
 	e.RowPartsFieldsPositions[fieldPrefix] = newPos
-	e.CSVtableBuildHeader(CSVdelim)
+	e.HeaderBuild()
 }
 
 // GETERS
