@@ -20,6 +20,7 @@ func Sleeper(duration int, time_unit string) {
 	}
 }
 
+// IsOlderThanOneISOweek
 func IsOlderThanOneISOweek(dateToCheck, dateNow time.Time) bool {
 	year_check, week_check := dateToCheck.ISOWeek()
 	year_now, week_now := dateNow.ISOWeek()
@@ -29,11 +30,13 @@ func IsOlderThanOneISOweek(dateToCheck, dateNow time.Time) bool {
 	return week_check < week_now
 }
 
+// TimeCurrent
 func TimeCurrent() string {
 	tm := time.Now()
 	return strftime.Format("%FT%T", tm)
 }
 
+// DateRangesIntersection
 func DateRangesIntersection(rA, rB [2]time.Time) ([2]time.Time, bool) {
 	resrange := [2]time.Time{}
 
@@ -70,6 +73,7 @@ func DateRangesIntersection(rA, rB [2]time.Time) ([2]time.Time, bool) {
 	return resrange, true
 }
 
+// DateInRange
 func DateInRange(interval [2]time.Time, dateToCheck time.Time) bool {
 	if interval[0].Before(dateToCheck) && interval[1].After(dateToCheck) {
 		return true
@@ -83,6 +87,7 @@ func DateInRange(interval [2]time.Time, dateToCheck time.Time) bool {
 	return false
 }
 
+// CzechDateToUTC
 func CzechDateToUTC(year, month, day, hour int) (
 	time.Time, error) {
 	var res time.Time

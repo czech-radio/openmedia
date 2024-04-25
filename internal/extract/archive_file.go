@@ -13,6 +13,7 @@ import (
 	"github.com/antchfx/xmlquery"
 )
 
+// ArchiveFile
 type ArchiveFile struct {
 	Reader      *bytes.Reader
 	Tables      map[ar.WorkerTypeCode]CSVtable
@@ -23,6 +24,7 @@ type ArchiveFile struct {
 	Extractor
 }
 
+// Init
 func (af *ArchiveFile) Init(wt ar.WorkerTypeCode, filePath string) error {
 	wr := ar.WorkerTypeMap[wt]
 	instructions := strings.Split(wr, "_")
@@ -54,11 +56,13 @@ func (af *ArchiveFile) Init(wt ar.WorkerTypeCode, filePath string) error {
 	return nil
 }
 
+// ArchivePackageFile
 type ArchivePackageFile struct {
 	Reader *zip.File
 	Tables map[ar.WorkerTypeCode]CSVtable
 }
 
+// ExtractByXMLquery
 func (af *ArchiveFile) ExtractByXMLquery(extrs OMextractors) error {
 	// Extract specfied object fields
 	var extractor Extractor
@@ -71,6 +75,7 @@ func (af *ArchiveFile) ExtractByXMLquery(extrs OMextractors) error {
 	return nil
 }
 
+// ExtractByXMLquery
 func (apf *ArchivePackageFile) ExtractByXMLquery(
 	enc helper.FileEncodingCode, q *ArchiveFolderQuery) error {
 	var err error
@@ -109,6 +114,7 @@ func (apf *ArchivePackageFile) ExtractByXMLquery(
 	return nil
 }
 
+// ExtractByParser
 func (apf *ArchivePackageFile) ExtractByParser(
 	enc helper.FileEncodingCode, q *ArchiveFolderQuery) error {
 	dr, err := ar.ZipXmlFileDecodeData(apf.Reader, enc)

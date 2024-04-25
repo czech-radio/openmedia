@@ -10,6 +10,7 @@ import (
 	"time"
 )
 
+// ArchiveFolder
 type ArchiveFolder struct {
 	PackageTypes       []ar.WorkerTypeCode
 	XMLencoding        helper.FileEncodingCode
@@ -18,8 +19,10 @@ type ArchiveFolder struct {
 	Files              []string
 }
 
+// PackageName
 type PackageName string
 
+// ArchivePackage
 type ArchivePackage struct {
 	PackageName       PackageName
 	PackageReader     *zip.ReadCloser
@@ -27,6 +30,7 @@ type ArchivePackage struct {
 	PacakgeFilesOrder []string
 }
 
+// ArchiveFolderQuery
 type ArchiveFolderQuery struct {
 	RadioNames        map[string]bool
 	DateRange         [2]time.Time
@@ -41,6 +45,7 @@ type ArchiveFolderQuery struct {
 	FilterColumns     []FilterColumn
 }
 
+// FolderListing
 func (af *ArchiveFolder) FolderListing(
 	rootDir string, recursive bool,
 	filterRange [2]time.Time) error {
@@ -109,6 +114,7 @@ func (af *ArchiveFolder) FolderMap(
 	return nil
 }
 
+// FolderExtract
 func (af *ArchiveFolder) FolderExtract(
 	query *ArchiveFolderQuery) {
 	query.PrintHeader = true

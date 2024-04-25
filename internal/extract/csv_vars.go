@@ -1,9 +1,11 @@
 package extract
 
-type PartPrefixCode int
+// RowPartCode
+type RowPartCode int
 
 var CSVdelim = "\t"
 
+// CSVheaderCodeName
 type CSVheaderCodeName int
 
 const (
@@ -12,49 +14,50 @@ const (
 )
 
 const (
-	FieldPrefix_RadioRec PartPrefixCode = iota
-	FieldPrefix_RadioHead
-	FieldPrefix_HourlyHead
-	FieldPrefix_HourlyRec
-	FieldPrefix_SubHead
-	FieldPrefix_SubRec
-	FieldPrefix_StoryHead
-	FieldPrefix_StoryRec
-	FieldPrefix_AudioClipHead
-	FieldPrefix_AudioClipRec
-	FieldPrefix_ContactItemHead
-	FieldPrefix_ContactItemRec
-	FieldPrefix_StoryKategory
-	FieldPrefix_Record
-	FieldPrefix_ComputedKON
-	FieldPrefix_ComputedKategory
-	FieldPrefix_ComputedRID
+	RowPartCode_RadioRec RowPartCode = iota
+	RowPartCode_RadioHead
+	RowPartCode_HourlyHead
+	RowPartCode_HourlyRec
+	RowPartCode_SubHead
+	RowPartCode_SubRec
+	RowPartCode_StoryHead
+	RowPartCode_StoryRec
+	RowPartCode_AudioClipHead
+	RowPartCode_AudioClipRec
+	RowPartCode_ContactItemHead
+	RowPartCode_ContactItemRec
+	RowPartCode_StoryKategory
+	RowPartCode_Record
+	RowPartCode_ComputedKON
+	RowPartCode_ComputedKategory
+	RowPartCode_ComputedRID
 )
 
+// PartPrefix
 type PartPrefix struct {
 	Internal, External string
 }
 
-type PartsPrefixMap = map[PartPrefixCode]PartPrefix
+type PartsPrefixMap = map[RowPartCode]PartPrefix
 
 // PartsPrefixMapProduction is a map which translates internal column header (prefix/sufix) name to name used in analytics. It represents the part of row which coresponds to one xml OM_OBJECT.
 var PartsPrefixMapProduction = PartsPrefixMap{
-	FieldPrefix_RadioRec:         {"Radio-REC", "RR"},
-	FieldPrefix_RadioHead:        {"Radio-HED", "RR"},
-	FieldPrefix_HourlyHead:       {"Hourly-HED", "HR"},
-	FieldPrefix_HourlyRec:        {"Hourly-REC", "HR"},
-	FieldPrefix_SubHead:          {"Sub-HED", "SR"},
-	FieldPrefix_SubRec:           {"Sub-REC", "SR"},
-	FieldPrefix_StoryHead:        {"Story-HED", ""},
-	FieldPrefix_StoryRec:         {"Story-REC", ""},
-	FieldPrefix_StoryKategory:    {"Story-Cat", "CAST"},
-	FieldPrefix_AudioClipHead:    {"Audio-HED", "AUD"},
-	FieldPrefix_AudioClipRec:     {"Audio-REC", "AUD"},
-	FieldPrefix_ContactItemHead:  {"Contact-HED", "KON"},
-	FieldPrefix_ContactItemRec:   {"Contact-REC", "KON"},
-	FieldPrefix_ComputedKON:      {"Comp-KON", "KON"},
-	FieldPrefix_ComputedKategory: {"Comp-Cat", "kategory"},
-	FieldPrefix_ComputedRID:      {"Comp-RID", "HLP"},
+	RowPartCode_RadioRec:         {"Radio-REC", "RR"},
+	RowPartCode_RadioHead:        {"Radio-HED", "RR"},
+	RowPartCode_HourlyHead:       {"Hourly-HED", "HR"},
+	RowPartCode_HourlyRec:        {"Hourly-REC", "HR"},
+	RowPartCode_SubHead:          {"Sub-HED", "SR"},
+	RowPartCode_SubRec:           {"Sub-REC", "SR"},
+	RowPartCode_StoryHead:        {"Story-HED", ""},
+	RowPartCode_StoryRec:         {"Story-REC", ""},
+	RowPartCode_StoryKategory:    {"Story-Cat", "CAST"},
+	RowPartCode_AudioClipHead:    {"Audio-HED", "AUD"},
+	RowPartCode_AudioClipRec:     {"Audio-REC", "AUD"},
+	RowPartCode_ContactItemHead:  {"Contact-HED", "KON"},
+	RowPartCode_ContactItemRec:   {"Contact-REC", "KON"},
+	RowPartCode_ComputedKON:      {"Comp-KON", "KON"},
+	RowPartCode_ComputedKategory: {"Comp-Cat", "kategory"},
+	RowPartCode_ComputedRID:      {"Comp-RID", "HLP"},
 }
 
 type FieldsIDsNames map[string]string

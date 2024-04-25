@@ -12,6 +12,7 @@ import (
 	"testing"
 )
 
+// TesterConfig
 // TODO: maybe add t.Error() to recover
 type TesterConfig struct {
 	// Config
@@ -32,6 +33,7 @@ type TesterConfig struct {
 	WaitGroup       *sync.WaitGroup
 }
 
+// TesterMain
 func (tc *TesterConfig) TesterMain(m *testing.M) {
 	tc.InitMain()
 	exitCode := m.Run()
@@ -40,18 +42,21 @@ func (tc *TesterConfig) TesterMain(m *testing.M) {
 	tc.CleanuUP()
 }
 
+// WaitAdd
 func (tc *TesterConfig) WaitAdd() {
 	tc.WaitCount++
 	tc.WaitGroup.Add(1)
 	slog.Warn("wait count", "count", tc.WaitCount)
 }
 
+// WaitDone
 func (tc *TesterConfig) WaitDone() {
 	tc.WaitGroup.Done()
 	tc.WaitCount--
 	slog.Warn("wait count", "count", tc.WaitCount)
 }
 
+// InitMain
 func (tc *TesterConfig) InitMain() {
 	if !tc.initializedMain {
 		tc.initializedMain = true
@@ -80,6 +85,7 @@ func (tc *TesterConfig) InitMain() {
 	}
 }
 
+// WaitForSignal
 func (tc *TesterConfig) WaitForSignal() {
 	slog.Warn("waiting for signal")
 	sig := <-tc.sigChan
@@ -103,6 +109,7 @@ func (tc *TesterConfig) WaitForSignal() {
 	tc.WaitDone()
 }
 
+// InitTempSrc
 func (tc *TesterConfig) InitTempSrc(
 	testSubdir ...string) {
 	if len(testSubdir) == 0 {
@@ -143,12 +150,14 @@ func (tc *TesterConfig) InitTempSrc(
 	}
 }
 
+// CleanuUP
 func (tc *TesterConfig) CleanuUP() {
 	if tc.initializedTemp {
 		DirectoryDeleteOrPanic(tc.TempDir)
 	}
 }
 
+// TempSourcePathGeter
 func (tc *TesterConfig) TempSourcePathGeter(tempSubdir string) func(string) string {
 	return func(relPath string) string {
 		// var rel string
@@ -161,6 +170,7 @@ func (tc *TesterConfig) TempSourcePathGeter(tempSubdir string) func(string) stri
 	}
 }
 
+// TempDestinationPathGeter
 func (tc *TesterConfig) TempDestinationPathGeter(tempSubdir string) func(string) string {
 	return func(relPath string) string {
 		return filepath.Join(
@@ -168,12 +178,14 @@ func (tc *TesterConfig) TempDestinationPathGeter(tempSubdir string) func(string)
 	}
 }
 
+// PrintResult
 func (tc *TesterConfig) PrintResult(a ...any) {
 	if tc.testType == "manual" {
 		fmt.Println(a...)
 	}
 }
 
+// InitTest
 func (tc *TesterConfig) InitTest(
 	t *testing.T, testSubdir ...string) {
 	if tc.failed {
@@ -189,6 +201,7 @@ func (tc *TesterConfig) InitTest(
 	slog.Warn("test initialized", "name", t.Name())
 }
 
+// RecoverPanic
 func (tc *TesterConfig) RecoverPanic(t *testing.T) {
 	// TODO: maybe add t.Error(err)
 	if t.Skipped() {

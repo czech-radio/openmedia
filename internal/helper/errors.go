@@ -54,6 +54,7 @@ var Errors ErrorsCodeMap = ErrorsCodeMap{
 	// ErrCodeDataFormat: "file has incompatible format",
 }
 
+// ErrorWrap
 func ErrorWrap(fieldName, fieldValue string, err error) error {
 	if err != nil {
 		return fmt.Errorf("%s: %s, %w", fieldName, fieldValue, err)
@@ -61,10 +62,12 @@ func ErrorWrap(fieldName, fieldValue string, err error) error {
 	return nil
 }
 
+// CodeMsg
 func (ecm ErrorsCodeMap) CodeMsg(code ErrorCode) string {
 	return ecm[code]
 }
 
+// ErrorBaseMessage
 func (ecm ErrorsCodeMap) ErrorBaseMessage(err error) string {
 	var baseErr error = err
 	var unwrapErr error
@@ -83,6 +86,7 @@ func (ecm ErrorsCodeMap) ErrorBaseMessage(err error) string {
 	return baseErr.Error()
 }
 
+// ErrorCode
 func (ecm ErrorsCodeMap) ErrorCode(err error) ErrorCode {
 	var resultCode ErrorCode
 	var resultCodeFound bool
@@ -100,6 +104,7 @@ func (ecm ErrorsCodeMap) ErrorCode(err error) ErrorCode {
 	return resultCode
 }
 
+// ExitWithCode
 func (ecm ErrorsCodeMap) ExitWithCode(err error) {
 	code := ecm.ErrorCode(err)
 	if err != nil {
@@ -113,28 +118,34 @@ type ErrorsAgregate struct {
 	Messages []string
 }
 
+// MessageAdd
 func (ea *ErrorsAgregate) MessageAdd(msg string) {
 	if msg != "" {
 		ea.Messages = append(ea.Messages, msg)
 	}
 }
 
+// MessagesJoin
 func (ea *ErrorsAgregate) MessagesJoin() string {
 	return strings.Join(ea.Messages, ", ")
 }
 
+// ErrorAdd
 func (ea *ErrorsAgregate) ErrorAdd(err error) {
 	if err != nil {
 		ea.Errors = append(ea.Errors, err)
 	}
 }
 
+// GetError
 func (ea *ErrorsAgregate) GetError() {
 }
 
+// GetMessage
 func (ea *ErrorsAgregate) GetMessage() {
 }
 
+// ErrorAppend
 func ErrorAppend(errs []error, err error) []error {
 	var resErrs []error
 	for _, e := range errs {

@@ -18,6 +18,7 @@ import (
 // '2020_W05_MINIFIED.zip/RD_00-12_Vltava_Sunday_W05_2020_02_02.xml'
 var packageNameRegex = regexp.MustCompile(`(\d\d\d\d)_W(\d\d)_(\s*.*)`)
 
+// ArchivePackageNameParse
 func ArchivePackageNameParse(packageName string) (time.Time, time.Time, string, error) {
 	//NOTE: What zone is the date given in rundowns? isoweek.Startime(1985, 1, time.UTC)
 	// isoweek.StartDate
@@ -35,6 +36,7 @@ func ArchivePackageNameParse(packageName string) (time.Time, time.Time, string, 
 	return dateFrom, dateTo, packageType, nil
 }
 
+// ArchivePackageMatch
 func ArchivePackageMatch(
 	packageName string, wtc ar.WorkerTypeCode, filterRange [2]time.Time) (bool, error) {
 	wtcTypeName, ok := ar.WorkerTypeMap[wtc]
@@ -61,6 +63,7 @@ func ArchivePackageMatch(
 var packageFileNameRegex = regexp.MustCompile(
 	`^(RD)_(\d\d)-(\d\d)_(.*)_W(\d\d)_(\d\d\d\d)_(\d\d)_(\d\d).xml$`)
 
+// RundownName
 type RundownName struct {
 	Type          string
 	DateRange     [2]time.Time
@@ -69,6 +72,7 @@ type RundownName struct {
 	WeekDay       time.Weekday
 }
 
+// ArchivePackageFilenameParse
 func ArchivePackageFilenameParse(fileName string) (RundownName, error) {
 	var out RundownName
 	res := packageFileNameRegex.FindStringSubmatch(fileName)
@@ -122,7 +126,10 @@ func ArchivePackageFilenameParse(fileName string) (RundownName, error) {
 	return out, nil
 }
 
-func ArchivePackageFileMatch(nestedFileName string, q *ArchiveFolderQuery) (bool, error) {
+// ArchivePackageFileMatch
+func ArchivePackageFileMatch(
+	nestedFileName string, q *ArchiveFolderQuery) (
+	bool, error) {
 	if q == nil {
 		return false, nil
 	}
@@ -156,7 +163,9 @@ func ArchivePackageFileMatch(nestedFileName string, q *ArchiveFolderQuery) (bool
 	return true, nil
 }
 
-func PackageMap(packageName PackageName, q *ArchiveFolderQuery) (
+// PackageMap
+func PackageMap(
+	packageName PackageName, q *ArchiveFolderQuery) (
 	*ArchivePackage, int, error) {
 	zipr, err := zip.OpenReader(string(packageName))
 	var count int

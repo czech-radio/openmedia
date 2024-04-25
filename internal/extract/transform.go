@@ -20,6 +20,7 @@ const (
 	TransformerEurovolby
 )
 
+// Transform
 func (e *Extractor) Transform(code TransformerCode) {
 	switch code {
 	case TransformerMock:
@@ -35,6 +36,7 @@ func (e *Extractor) Transform(code TransformerCode) {
 	}
 }
 
+// UniqueRows
 func (e *Extractor) UniqueRows() {
 	if e.CSVtable.UniqueRows == nil {
 		e.CSVtable.UniqueRows = make(map[string]int)
@@ -59,8 +61,9 @@ func (e *Extractor) UniqueRows() {
 	)
 }
 
+// FilterByPartAndFieldID
 func (e *Extractor) FilterByPartAndFieldID(
-	partCode PartPrefixCode, fieldID string,
+	partCode RowPartCode, fieldID string,
 	fieldValuePatern string) []int {
 	var res []int
 	re := regexp.MustCompile(fieldValuePatern)
@@ -89,8 +92,9 @@ func (e *Extractor) FilterByPartAndFieldID(
 	return res
 }
 
+// RemoveColumn
 func (e *Extractor) RemoveColumn(
-	fieldPrefix PartPrefixCode, fieldID string) {
+	fieldPrefix RowPartCode, fieldID string) {
 	var newPos CSVrowPartFieldsPositions
 	positions := e.CSVrowPartsFieldsPositions[fieldPrefix]
 	for _, pos := range positions {
@@ -112,6 +116,7 @@ func GetRadioName(radioCode string) (string, error) {
 	return names.Croapp_shortTitle, nil
 }
 
+// GetGenderName
 func GetGenderName(genderCode string) (string, error) {
 	gender, ok := GenderCodes[genderCode]
 	if !ok {
@@ -120,8 +125,9 @@ func GetGenderName(genderCode string) (string, error) {
 	return gender, nil
 }
 
+// GetPartAndField
 func GetPartAndField(
-	row CSVrow, partCode PartPrefixCode,
+	row CSVrow, partCode RowPartCode,
 	fieldID string) (
 	CSVrowPart, CSVrowField, bool) {
 	part, ok := row[partCode]
@@ -136,9 +142,11 @@ func GetPartAndField(
 	return part, field, ok
 }
 
-// Transformers
-func (e *Extractor) TransformField(
-	partCode PartPrefixCode, fieldID string,
+// TRANSFORMERS
+
+// TransformColumnFields transform specified column fields with tranformer function. Force will transform field even if it is missing.
+func (e *Extractor) TransformColumnFields(
+	partCode RowPartCode, fieldID string,
 	fun func(string) (string, error), force bool) {
 	partName := PartsPrefixMapProduction[partCode].Internal
 
@@ -166,6 +174,18 @@ func (e *Extractor) TransformField(
 	}
 }
 
+// TransformColumnsFields
+func (e *Extractor) TransformColumnsFields(
+	fun func(string) (string, error),
+	force bool, fieldIDs ...string) {
+	for partCode := range e.CSVrowPartsFieldsPositions {
+		for _, field := range fieldIDs {
+			e.TransformColumnFields(partCode, field, fun, force)
+		}
+	}
+}
+
+// TransformObjectID
 func TransformObjectID(objectID string) (string, error) {
 	if objectID == "" || objectID == CSVspecialValues[CSVspecialValueChildNotFound] {
 		return objectID, nil
@@ -173,6 +193,7 @@ func TransformObjectID(objectID string) (string, error) {
 	return fmt.Sprintf("ID_%s", objectID), nil
 }
 
+// TransformTimeDate
 func TransformTimeDate(dateString string) (string, error) {
 	date, err := ParseXMLdate(dateString)
 	if err != nil {
@@ -184,6 +205,7 @@ func TransformTimeDate(dateString string) (string, error) {
 // RD_00-05_Radiožurnál_Sunday_W13_2024_03_31.xml
 var temaregex = regexp.MustCompile(`(\d\d)-`)
 
+// TransformTema
 func TransformTema(tema string) (string, error) {
 	var sb strings.Builder
 	res := temaregex.FindAllStringSubmatch(tema, -1)
@@ -193,9 +215,9 @@ func TransformTema(tema string) (string, error) {
 	return sb.String(), nil
 }
 
+// TransformStopaz
 func TransformStopaz(stopaz string) (string, error) {
 	var sign string
-	// specValNotValid := CSVspecialValues[CSVspecialValueNotValid]
 	milliSeconds, err := strconv.ParseInt(stopaz, 10, 64)
 	if err != nil {
 		return stopaz, err
@@ -219,8 +241,9 @@ func TransformStopaz(stopaz string) (string, error) {
 	return value, nil
 }
 
+// TransformDateToTime
 func (e *Extractor) TransformDateToTime(
-	prefixCode PartPrefixCode, fieldID string, addDate bool) {
+	prefixCode RowPartCode, fieldID string, addDate bool) {
 	for _, row := range e.CSVtable.Rows {
 		part, field, ok := GetPartAndField(
 			row.CSVrow, prefixCode, fieldID)
@@ -248,6 +271,7 @@ func (e *Extractor) TransformDateToTime(
 	}
 }
 
+// ParseXMLdate
 func ParseXMLdate(input string) (time.Time, error) {
 	layout := ar.DateLayout_RundownDate
 	parsedTime, err := time.Parse(layout, input)
@@ -257,6 +281,7 @@ func ParseXMLdate(input string) (time.Time, error) {
 	return parsedTime, err
 }
 
+// TransformEmptyString
 func TransformEmptyString(input string) string {
 	value := CSVspecialValues[CSVspecialValueEmptyString]
 	if input == "" {
@@ -289,6 +314,7 @@ func (e *Extractor) TransformEmptyRowPart() {
 	}
 }
 
+// TransformEmptyToNoContain
 func TransformEmptyToNoContain(input string) (string, error) {
 	childVal := CSVspecialValues[CSVspecialValueChildNotFound]
 	parentVal := CSVspecialValues[CSVspecialValueParentNotFound]
@@ -300,6 +326,7 @@ func TransformEmptyToNoContain(input string) (string, error) {
 	return out, nil
 }
 
+// TransformShortenField
 func TransformShortenField(input string) (string, error) {
 	targetLength := 248
 	if len(input) <= targetLength {
@@ -310,14 +337,15 @@ func TransformShortenField(input string) (string, error) {
 	}
 }
 
-// Field constructers/computers
+// FIELD CONSTRUCTERS/COMPUTERS
 
+// ConsructRecordIDs
 func (row CSVrow) ConsructRecordIDs() string {
-	prefixes := []PartPrefixCode{
-		FieldPrefix_RadioRec,
-		FieldPrefix_HourlyRec,
-		FieldPrefix_SubRec,
-		FieldPrefix_StoryRec,
+	prefixes := []RowPartCode{
+		RowPartCode_RadioRec,
+		RowPartCode_HourlyRec,
+		RowPartCode_SubRec,
+		RowPartCode_StoryRec,
 	}
 	var sb strings.Builder
 	var value string
@@ -338,13 +366,13 @@ func (row CSVrow) ConsructRecordIDs() string {
 func (e *Extractor) ComputeName() {
 	targetFieldID := "jmeno_spojene"
 	for i := range e.CSVtable.Rows {
-		part, ok := e.CSVtable.Rows[i].CSVrow[FieldPrefix_ContactItemHead]
+		part, ok := e.CSVtable.Rows[i].CSVrow[RowPartCode_ContactItemHead]
 		if !ok {
 			continue
 		}
 		jmeno := part["421"].Value
 		prijmeni := part["422"].Value
-		dstPart, ok := e.CSVtable.Rows[i].CSVrow[FieldPrefix_ComputedKON]
+		dstPart, ok := e.CSVtable.Rows[i].CSVrow[RowPartCode_ComputedKON]
 		if !ok {
 			dstPart = make(CSVrowPart)
 		}
@@ -354,16 +382,17 @@ func (e *Extractor) ComputeName() {
 			Value:     fmt.Sprintf("%s %s", prijmeni, jmeno),
 		}
 		dstPart[targetFieldID] = field
-		e.CSVtable.Rows[i].CSVrow[FieldPrefix_ComputedKON] = dstPart
+		e.CSVtable.Rows[i].CSVrow[RowPartCode_ComputedKON] = dstPart
 	}
 }
 
+// ComputeIndex
 func (e *Extractor) ComputeIndex() {
 	targetFieldID := "C-index"
 	var value string
 	indexComponents := IndexComponents{}
 	for i, row := range e.CSVtable.Rows {
-		dstPart, ok := row.CSVrow[FieldPrefix_ComputedRID]
+		dstPart, ok := row.CSVrow[RowPartCode_ComputedRID]
 		if !ok {
 			dstPart = make(CSVrowPart)
 		}
@@ -375,27 +404,29 @@ func (e *Extractor) ComputeIndex() {
 			Value:     value,
 		}
 		dstPart[targetFieldID] = field
-		e.CSVtable.Rows[i].CSVrow[FieldPrefix_ComputedRID] = dstPart
+		e.CSVtable.Rows[i].CSVrow[RowPartCode_ComputedRID] = dstPart
 	}
 }
 
+// IndexComponents
 type IndexComponents struct {
 	RundownIndex, BlockIndex, StoryIndex int
 	RundownPrev, BlockPrev, StoryPrev    string
 }
 
+// ComputeIndexCreate
 func ComputeIndexCreate(
 	row CSVrow, comps IndexComponents) (
 	string, IndexComponents) {
 	// var indexBlock int
 	_, nazev, _ := GetPartAndField(
-		row, FieldPrefix_RadioHead, "8")
+		row, RowPartCode_RadioHead, "8")
 	_, stanice, _ := GetPartAndField(
-		row, FieldPrefix_RadioHead, "5081")
+		row, RowPartCode_RadioHead, "5081")
 	_, dateTime, _ := GetPartAndField(
-		row, FieldPrefix_RadioHead, "1000")
+		row, RowPartCode_RadioHead, "1000")
 	_, story, _ := GetPartAndField(
-		row, FieldPrefix_StoryHead, "ObjectID")
+		row, RowPartCode_StoryHead, "ObjectID")
 	date, err := ParseXMLdate(dateTime.Value)
 	var dateStr string
 	if err == nil {
@@ -405,7 +436,7 @@ func ComputeIndexCreate(
 		dateStr = dateTime.Value
 	}
 	_, blok, _ := GetPartAndField(
-		row, FieldPrefix_HourlyHead, "8")
+		row, RowPartCode_HourlyHead, "8")
 
 	if comps.RundownPrev != nazev.Value {
 		comps.BlockIndex = 0
@@ -431,13 +462,14 @@ func ComputeIndexCreate(
 	return res, comps
 }
 
+// ComputeIndexOld
 func (e *Extractor) ComputeIndexOld() {
 	targetFieldID := "C-index"
 	prevIDs := []string{"", "", "", ""}
 	prevPos := []int{0, 0, 0}
 	var index string
 	for i, row := range e.CSVtable.Rows {
-		dstPart, ok := e.CSVtable.Rows[i].CSVrow[FieldPrefix_ComputedRID]
+		dstPart, ok := e.CSVtable.Rows[i].CSVrow[RowPartCode_ComputedRID]
 		if !ok {
 			dstPart = make(CSVrowPart)
 		}
@@ -453,20 +485,21 @@ func (e *Extractor) ComputeIndexOld() {
 			Value:     index,
 		}
 		dstPart[targetFieldID] = field
-		e.CSVtable.Rows[i].CSVrow[FieldPrefix_ComputedRID] = dstPart
+		e.CSVtable.Rows[i].CSVrow[RowPartCode_ComputedRID] = dstPart
 	}
 }
 
+// ComputeIndexCreateOld
 func ComputeIndexCreateOld(
 	row CSVrow, prevIDs []string, prevPos []int) (string, []string, []int) {
 	_, blok, _ := GetPartAndField(
-		row, FieldPrefix_HourlyHead, "8")
+		row, RowPartCode_HourlyHead, "8")
 	_, sub, _ := GetPartAndField(
-		row, FieldPrefix_SubHead, "ObjectID")
+		row, RowPartCode_SubHead, "ObjectID")
 	_, story, _ := GetPartAndField(
-		row, FieldPrefix_StoryHead, "ObjectID")
+		row, RowPartCode_StoryHead, "ObjectID")
 	_, storyPart, _ := GetPartAndField(
-		row, FieldPrefix_StoryKategory, "ObjectID")
+		row, RowPartCode_StoryKategory, "ObjectID")
 	// slog.Warn("compare", "cur", blok.Value, "prev", prevIDs[0])
 	if sub.Value == prevIDs[0] {
 		goto skip_sub
@@ -502,13 +535,13 @@ func ComputeIndexCreateB(
 	// Story order
 	row CSVrow, prevIDs []string, prevPos []int) (string, []string, []int) {
 	_, blok, _ := GetPartAndField(
-		row, FieldPrefix_HourlyHead, "8")
+		row, RowPartCode_HourlyHead, "8")
 	_, sub, _ := GetPartAndField(
-		row, FieldPrefix_SubHead, "ObjectID")
+		row, RowPartCode_SubHead, "ObjectID")
 	_, story, _ := GetPartAndField(
-		row, FieldPrefix_StoryHead, "ObjectID")
+		row, RowPartCode_StoryHead, "ObjectID")
 	_, storyPart, _ := GetPartAndField(
-		row, FieldPrefix_StoryKategory, "ObjectID")
+		row, RowPartCode_StoryKategory, "ObjectID")
 	// slog.Warn("compare", "cur", blok.Value, "prev", prevIDs[0])
 	if story.Value != prevIDs[2] {
 		prevPos[0]++
@@ -518,6 +551,7 @@ func ComputeIndexCreateB(
 	return index, prev, prevPos
 }
 
+// ComputeIndexCast
 func ComputeIndexCast(blok string, pos []int) string {
 	var index strings.Builder
 	if len(blok) > 5 {
@@ -532,6 +566,7 @@ func ComputeIndexCast(blok string, pos []int) string {
 	return index.String()
 }
 
+// ComputeRecordIDs
 func (e *Extractor) ComputeRecordIDs(removeSrcColumns bool) {
 	targetFieldID := "C-RID"
 	for i, row := range e.CSVtable.Rows {
@@ -541,25 +576,26 @@ func (e *Extractor) ComputeRecordIDs(removeSrcColumns bool) {
 			FieldName: "",
 			Value:     id,
 		}
-		part, ok := e.CSVtable.Rows[i].CSVrow[FieldPrefix_ComputedRID]
+		part, ok := e.CSVtable.Rows[i].CSVrow[RowPartCode_ComputedRID]
 		if !ok {
 			part = make(CSVrowPart)
 		}
 		part[targetFieldID] = field
-		e.CSVtable.Rows[i].CSVrow[FieldPrefix_ComputedRID] = part
+		e.CSVtable.Rows[i].CSVrow[RowPartCode_ComputedRID] = part
 	}
 	if removeSrcColumns {
 		e.RemoveColumn(
-			FieldPrefix_RadioRec, "RecordID")
+			RowPartCode_RadioRec, "RecordID")
 		e.RemoveColumn(
-			FieldPrefix_HourlyRec, "RecordID")
+			RowPartCode_HourlyRec, "RecordID")
 		e.RemoveColumn(
-			FieldPrefix_SubRec, "RecordID")
+			RowPartCode_SubRec, "RecordID")
 		e.RemoveColumn(
-			FieldPrefix_StoryRec, "RecordID")
+			RowPartCode_StoryRec, "RecordID")
 	}
 }
 
+// SetFileNameColumn
 func (e *Extractor) SetFileNameColumn() {
 	targetFieldID := "FileName"
 	for i := range e.CSVtable.Rows {
@@ -568,15 +604,16 @@ func (e *Extractor) SetFileNameColumn() {
 			FieldName: "",
 			Value:     e.CSVtable.SrcFilePath,
 		}
-		part, ok := e.CSVtable.Rows[i].CSVrow[FieldPrefix_ComputedRID]
+		part, ok := e.CSVtable.Rows[i].CSVrow[RowPartCode_ComputedRID]
 		if !ok {
 			part = make(CSVrowPart)
 		}
 		part[targetFieldID] = field
-		e.CSVtable.Rows[i].CSVrow[FieldPrefix_ComputedRID] = part
+		e.CSVtable.Rows[i].CSVrow[RowPartCode_ComputedRID] = part
 	}
 }
 
+// ComputeID
 func (e *Extractor) ComputeID() {
 	targetFieldID := "ID"
 	for i, row := range e.CSVtable.Rows {
@@ -588,16 +625,17 @@ func (e *Extractor) ComputeID() {
 		}
 		part := make(CSVrowPart)
 		part[targetFieldID] = field
-		e.CSVtable.Rows[i].CSVrow[FieldPrefix_ComputedKON] = part
+		e.CSVtable.Rows[i].CSVrow[RowPartCode_ComputedKON] = part
 	}
 }
 
+// ConstructID
 func (row CSVrow) ConstructID() string {
-	partStoryHead, ok := row[FieldPrefix_StoryHead]
+	partStoryHead, ok := row[RowPartCode_StoryHead]
 	if !ok {
 		return ""
 	}
-	partHourlyHead, ok := row[FieldPrefix_HourlyHead]
+	partHourlyHead, ok := row[RowPartCode_HourlyHead]
 	if !ok {
 		return ""
 	}

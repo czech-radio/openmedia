@@ -8,11 +8,12 @@ const (
 	FilterCodeMatchPersonName FilterCode = iota
 )
 
+// FilterColumn
 type FilterColumn struct {
 	FilterName     FilterCode
-	PartCodeCheck  PartPrefixCode
+	PartCodeCheck  RowPartCode
 	FieldIDcheck   string
-	PartCodeMark   PartPrefixCode
+	PartCodeMark   RowPartCode
 	FieldIDmark    string
 	FileWithValues string
 	Values         map[string]bool
@@ -21,10 +22,11 @@ type FilterColumn struct {
 var FilterCodeMap = map[FilterCode]FilterColumn{
 	FilterCodeMatchPersonName: {
 		FilterCodeMatchPersonName,
-		FieldPrefix_ComputedKON, "jmeno_spojene",
-		FieldPrefix_ContactItemHead, "filtered", "", nil},
+		RowPartCode_ComputedKON, "jmeno_spojene",
+		RowPartCode_ContactItemHead, "filtered", "", nil},
 }
 
+// FilterRun
 func (e *Extractor) FilterRun(f FilterColumn) {
 	switch f.FilterName {
 	case FilterCodeMatchPersonName:
@@ -32,6 +34,7 @@ func (e *Extractor) FilterRun(f FilterColumn) {
 	}
 }
 
+// FiltersRun
 func (e *Extractor) FiltersRun(filters []FilterColumn) {
 	if filters == nil {
 		slog.Debug("no filters to filter column specified")
@@ -42,6 +45,7 @@ func (e *Extractor) FiltersRun(filters []FilterColumn) {
 	}
 }
 
+// FilterMatchPersonName
 func (e *Extractor) FilterMatchPersonName(f FilterColumn) {
 	for i, row := range e.CSVtable.Rows {
 		matches, altValue := FieldValueMatchesValidValues(
@@ -70,8 +74,9 @@ func (e *Extractor) FilterMatchPersonName(f FilterColumn) {
 	}
 }
 
+// FieldValueMatchesValidValues
 func FieldValueMatchesValidValues(
-	row CSVrow, partCode PartPrefixCode, fieldID string,
+	row CSVrow, partCode RowPartCode, fieldID string,
 	validValues map[string]bool) (bool, string) {
 	_, field, ok := GetPartAndField(row, partCode, fieldID)
 	notFound := CSVspecialValues[CSVspecialValueChildNotFound]

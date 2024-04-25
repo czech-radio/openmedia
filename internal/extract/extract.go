@@ -40,6 +40,7 @@ func ExpandTableRows(table CSVtable, extr OMextractor) (CSVtable, error) {
 	return newTable, nil
 }
 
+// CopyRow
 func CopyRow(inputRow CSVrow) CSVrow {
 	newRow := make(CSVrow)
 	for ai, a := range inputRow {
@@ -51,6 +52,7 @@ func CopyRow(inputRow CSVrow) CSVrow {
 	return newRow
 }
 
+// ExtractNodesFields
 func ExtractNodesFields(
 	parentRow *CSVrowNode,
 	subNodes []*xmlquery.Node,
@@ -72,6 +74,7 @@ func ExtractNodesFields(
 	return newTable
 }
 
+// NodeToCSVrowPart
 func NodeToCSVrowPart(node *xmlquery.Node, ext OMextractor) CSVrowPart {
 	fieldCount := len(ext.ObjectAttrsNames) + len(ext.FieldIDs)
 	part := make(CSVrowPart, fieldCount)
@@ -82,6 +85,7 @@ func NodeToCSVrowPart(node *xmlquery.Node, ext OMextractor) CSVrowPart {
 	return part
 }
 
+// NodeGetAttributes
 func NodeGetAttributes(
 	node *xmlquery.Node, part CSVrowPart, ext OMextractor) CSVrowPart {
 	for _, attrName := range ext.ObjectAttrsNames {

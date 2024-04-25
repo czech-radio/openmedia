@@ -13,15 +13,15 @@ import (
 
 // Table fields positions
 type FieldPosition struct {
-	FieldPrefix string
-	FieldID     string
-	FieldName   string
+	RowPart   string
+	FieldID   string
+	FieldName string
 }
-type CSVrowPartFieldsPositions []FieldPosition                               // Field
-type CSVrowPartsPositions []string                                           // Part
-type CSVrowPartsPositionsInternal []PartPrefixCode                           // Part
-type CSVrowPartsPositionsExternal []PartPrefixCode                           // Part
-type CSVrowPartsFieldsPositions map[PartPrefixCode]CSVrowPartFieldsPositions // Row: partname vs partFieldsPositions
+type CSVrowPartFieldsPositions []FieldPosition                            // Field
+type CSVrowPartsPositions []string                                        // Part
+type CSVrowPartsPositionsInternal []RowPartCode                           // Part
+type CSVrowPartsPositionsExternal []RowPartCode                           // Part
+type CSVrowPartsFieldsPositions map[RowPartCode]CSVrowPartFieldsPositions // Row: partname vs partFieldsPositions
 
 // Table fields values
 type CSVrowField struct {
@@ -29,25 +29,28 @@ type CSVrowField struct {
 	FieldName string // Currently not needed here (will consume more memory). Alternative construct general list of fieldPrefix:fieldIDs vs FieldName
 	Value     string
 }
-type CSVrowPart map[string]CSVrowField    // FieldID:CSVrowField
-type CSVrow map[PartPrefixCode]CSVrowPart // Whole CSV line PartPrefix:RowPart
+type CSVrowPart map[string]CSVrowField // FieldID:CSVrowField
+type CSVrow map[RowPartCode]CSVrowPart // Whole CSV line PartPrefix:RowPart
 type CSVrowNode struct {
 	Node *xmlquery.Node
 	CSVrow
 }
 
+// CSVheaders
 type CSVheaders map[CSVheaderCodeName]CSVrow
 
+// UniqueRow
 type UniqueRow struct {
 	Count         int
 	TablePosition int
 }
 
+// CSVtable
 type CSVtable struct {
 	Rows              []*CSVrowNode
 	Headers           []string
 	CSVrowsFiltered   []int
-	RowPartsPositions []PartPrefixCode
+	RowPartsPositions []RowPartCode
 	CSVrowPartsFieldsPositions
 
 	UniqueRowsOrder []int
@@ -58,6 +61,7 @@ type CSVtable struct {
 	SrcFilePath    string
 }
 
+// CSVtables
 type CSVtables struct {
 	TablesPositions map[int]string       // pos:fileName
 	Tables          map[string]*CSVtable // fileName:CSVtable
@@ -65,8 +69,9 @@ type CSVtables struct {
 	DstFileGlobal   *os.File
 }
 
+// BuildHeaderNameExternal
 func BuildHeaderNameExternal(
-	prefixCode PartPrefixCode, fieldName string) string {
+	prefixCode RowPartCode, fieldName string) string {
 	prefix := PartsPrefixMapProduction[prefixCode]
 	if prefix.External == "" {
 		return fieldName
@@ -74,6 +79,7 @@ func BuildHeaderNameExternal(
 	return fmt.Sprintf("%s_%s", fieldName, prefix.External)
 }
 
+// CreateTablesHeader
 func (e *Extractor) CreateTablesHeader(delim string) {
 	var builderInternal strings.Builder
 	var builderExternal strings.Builder
@@ -98,6 +104,7 @@ func (e *Extractor) CreateTablesHeader(delim string) {
 	e.CSVheaderExternal = builderExternal.String()
 }
 
+// CastTablesToCSV
 func (e *Extractor) CastTablesToCSV(
 	header bool, delim string, separateTables bool) {
 	if !separateTables {
@@ -119,6 +126,7 @@ func (e *Extractor) CastTablesToCSV(
 	}
 }
 
+// SaveTablesToFile
 func (e *Extractor) SaveTablesToFile(
 	separateTables bool, dstFilePath string) error {
 	if !separateTables {
@@ -161,11 +169,13 @@ func (e *Extractor) SaveTablesToFile(
 	return nil
 }
 
+// ConstructDstFilePath
 func ConstructDstFilePath(srcPath string) string {
 	srcDir, name := filepath.Split(srcPath)
 	return filepath.Join(srcDir, "export"+name+".csv")
 }
 
+// SaveTableToFile
 func (table *CSVtable) SaveTableToFile(dstFilePath string) (int, error) {
 	outputFile, err := os.OpenFile(dstFilePath, os.O_RDWR|os.O_CREATE, 0600)
 	if err != nil {
@@ -175,6 +185,7 @@ func (table *CSVtable) SaveTableToFile(dstFilePath string) (int, error) {
 	return outputFile.WriteString(table.CSVwriterLocal.String())
 }
 
+// CastTableToCSV
 func (table *CSVtable) CastTableToCSV(
 	header bool, delim string, rowsIndexes ...[]int) {
 	// Print header
@@ -213,6 +224,7 @@ func (table *CSVtable) CastTableToCSV(
 	slog.Debug("lines casted to CSV", "count", count)
 }
 
+// CastHeaderToCSV
 func (table *CSVtable) CastHeaderToCSV(headers ...string) {
 	for _, header := range headers {
 		if header != "" {
@@ -221,6 +233,7 @@ func (table *CSVtable) CastHeaderToCSV(headers ...string) {
 	}
 }
 
+// CastToCSV
 func (row CSVrow) CastToCSV(
 	builder *strings.Builder,
 	partsPos CSVrowPartsPositionsInternal,
@@ -235,6 +248,7 @@ func (row CSVrow) CastToCSV(
 	fmt.Fprintf(builder, "%s", "\n")
 }
 
+// CastToCSV
 func (part CSVrowPart) CastToCSV(
 	builder *strings.Builder,
 	fieldsPosition CSVrowPartFieldsPositions,
@@ -261,6 +275,7 @@ func (part CSVrowPart) CastToCSV(
 	}
 }
 
+// CSVheaderPrint
 func (e *Extractor) CSVheaderPrint(internal, external bool) {
 	if internal {
 		fmt.Println(e.CSVheaderInternal)
@@ -270,6 +285,7 @@ func (e *Extractor) CSVheaderPrint(internal, external bool) {
 	}
 }
 
+// PrintTableRowsToCSV
 func (e *Extractor) PrintTableRowsToCSV(
 	internalHeader, externalHeader bool,
 	delim string, rowsIndexes ...[]int) {

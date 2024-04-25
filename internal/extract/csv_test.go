@@ -34,8 +34,8 @@ func TestRowPrintToCSV(t *testing.T) {
 		"id_Tak": {"id_Tak", "n_Tak", "chilli"},
 	}
 	row := CSVrow{
-		FieldPrefix_SubHead:   rowPart1,
-		FieldPrefix_StoryHead: rowPart2,
+		RowPartCode_SubHead:   rowPart1,
+		RowPartCode_StoryHead: rowPart2,
 	}
 
 	partFieldPos1 := CSVrowPartFieldsPositions{
@@ -48,11 +48,11 @@ func TestRowPrintToCSV(t *testing.T) {
 	}
 
 	partsFieldsPos := CSVrowPartsFieldsPositions{
-		FieldPrefix_SubHead:   partFieldPos2,
-		FieldPrefix_StoryHead: partFieldPos1,
+		RowPartCode_SubHead:   partFieldPos2,
+		RowPartCode_StoryHead: partFieldPos1,
 	}
 	partsPos := CSVrowPartsPositionsInternal{
-		FieldPrefix_SubHead, FieldPrefix_StoryHead,
+		RowPartCode_SubHead, RowPartCode_StoryHead,
 	}
 
 	row.CastToCSV(&builder, partsPos, partsFieldsPos, CSVdelim)

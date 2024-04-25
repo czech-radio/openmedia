@@ -5,14 +5,19 @@ import (
 	"log/slog"
 	"path/filepath"
 
+	// github
 	"github.com/antchfx/xmlquery"
 )
 
+// ObjectAttributes
 type ObjectAttributes = map[string]string
-type UniqueValues = map[string]int // value vs count
 
+// UniqueValues
+type UniqueValues = map[string]int // value vs count
+// CSVrowFields
 type CSVrowFields = []CSVrowField
 
+// OMextractor
 type OMextractor struct {
 	OrExt []OMextractor
 
@@ -20,7 +25,7 @@ type OMextractor struct {
 	ObjectAttrsNames []string
 	FieldsPath       string
 	FieldIDs         []string
-	PartPrefixCode   PartPrefixCode
+	PartPrefixCode   RowPartCode
 	FieldsPrefix     string
 
 	// Internals
@@ -30,8 +35,10 @@ type OMextractor struct {
 	FieldIDsMap          map[string]bool
 }
 
+// OMextractors
 type OMextractors []OMextractor
 
+// Extractor
 type Extractor struct {
 	OMextractors
 	BaseNode *xmlquery.Node
@@ -66,7 +73,7 @@ func (e *Extractor) Init(
 }
 
 func (e *Extractor) MapRowParts() {
-	var prefixesInternal, prefixesExternal []PartPrefixCode
+	var prefixesInternal, prefixesExternal []RowPartCode
 	for _, extr := range e.OMextractors {
 		// prefix := PartsPrefixMapProduction[extr.PartPrefixCode]
 		prefixesInternal = append(
@@ -120,30 +127,32 @@ func (e *Extractor) ExtractTable(fileName string) error {
 	return nil
 }
 
+// GetPartFieldsPositions
 func GetPartFieldsPositions(extr OMextractor) CSVrowPartFieldsPositions {
 	fieldsPositions := make(CSVrowPartFieldsPositions, 0, len(extr.FieldIDs))
 	prefix := PartsPrefixMapProduction[extr.PartPrefixCode].Internal
 	// Object Attributes
 	for _, attr := range extr.ObjectAttrsNames {
 		fp := FieldPosition{
-			FieldPrefix: prefix,
-			FieldID:     attr,
-			FieldName:   "",
+			RowPart:   prefix,
+			FieldID:   attr,
+			FieldName: "",
 		}
 		fieldsPositions = append(fieldsPositions, fp)
 	}
 	// Object FieldsID
 	for _, fi := range extr.FieldIDs {
 		fp := FieldPosition{
-			FieldPrefix: prefix,
-			FieldID:     fi,
-			FieldName:   "",
+			RowPart:   prefix,
+			FieldID:   fi,
+			FieldName: "",
 		}
 		fieldsPositions = append(fieldsPositions, fp)
 	}
 	return fieldsPositions
 }
 
+// MapFields
 func (extr *OMextractor) MapFields() {
 	extr.FieldIDsMap = make(map[string]bool, len(extr.FieldIDs))
 	for _, id := range extr.FieldIDs {
@@ -151,6 +160,7 @@ func (extr *OMextractor) MapFields() {
 	}
 }
 
+// KeepInputRowsChecker
 func (extrs OMextractors) KeepInputRowsChecker() {
 	// Check if there is following extractor referencing same object as current extractor
 	eCount := len(extrs)
@@ -173,6 +183,7 @@ func (extrs OMextractors) KeepInputRowsChecker() {
 	}
 }
 
+// MapFieldsPath
 func (extrs OMextractors) MapFieldsPath() {
 	for i, extr := range extrs {
 		if extr.ObjectPath == "" {
@@ -191,6 +202,7 @@ func (extrs OMextractors) MapFieldsPath() {
 	}
 }
 
+// GetLastPartOfObjectPath
 func GetLastPartOfObjectPath(path string) string {
 	return filepath.Base(path)
 }
