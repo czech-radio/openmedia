@@ -59,9 +59,9 @@ type TableXML struct {
 	UniqueRowsOrder []int
 	UniqueRows      map[string]int
 
-	CSVwriterLocal *strings.Builder
-	DstFilePath    string
 	SrcFilePath    string
+	DstFilePath    string
+	CSVwriterLocal *strings.Builder
 }
 
 // TablesXML

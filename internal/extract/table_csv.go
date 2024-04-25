@@ -8,49 +8,7 @@ import (
 	"strings"
 )
 
-// CSVtableSaveToFile
-func (table *TableXML) CSVtableSaveToFile(dstFilePath string) (int, error) {
-	outputFile, err := os.OpenFile(dstFilePath, os.O_RDWR|os.O_CREATE, 0600)
-	if err != nil {
-		return 0, err
-	}
-	defer outputFile.Close()
-	return outputFile.WriteString(table.CSVwriterLocal.String())
-}
-
-// CSVtableBuild
-func (table *TableXML) CSVtableBuild(
-	header bool, delim string, rowsIndexes ...[]int) {
-	if len(rowsIndexes) > 1 {
-		slog.Error("not implemented multiple indexes' slices")
-	}
-	var count int
-	// TODO: simplify for one loop
-	// Print specified rows
-	if len(rowsIndexes) == 1 {
-		for _, index := range rowsIndexes[0] {
-			table.Rows[index].CSVrowBuild(
-				table.CSVwriterLocal, table.RowPartsPositions,
-				table.RowPartsFieldsPositions,
-				delim,
-			)
-			count++
-		}
-		slog.Debug("lines casted to CSV", "count", count)
-		return
-	}
-
-	// Print whole table
-	for _, row := range table.Rows {
-		row.CSVrowBuild(
-			table.CSVwriterLocal, table.RowPartsPositions,
-			table.RowPartsFieldsPositions,
-			delim,
-		)
-		count++
-	}
-	slog.Debug("lines casted to CSV", "count", count)
-}
+// csv.NewWriter() would be alternative
 
 // CSVrowBuild
 func (row RowParts) CSVrowBuild(
@@ -88,42 +46,74 @@ func (part RowPart) CSVrowPartBuild(
 	}
 }
 
-// CSVheaderPrintDirect
-func (e *Extractor) CSVheaderPrintDirect(internal, external bool) {
+func (e *Extractor) CSVheaderBuild(internal, external bool) {
+	if e.TableXML.CSVwriterLocal == nil {
+		e.TableXML.CSVwriterLocal = new(strings.Builder)
+	}
+	sb := e.TableXML.CSVwriterLocal
 	if internal {
-		fmt.Println(strings.Join(e.HeaderInternal, e.CSVdelim))
+		iheader := strings.Join(e.HeaderInternal, e.CSVdelim)
+		fmt.Fprintln(sb, iheader)
 	}
 	if external {
-		fmt.Println(strings.Join(e.HeaderExternal, e.CSVdelim))
+		eheader := strings.Join(e.HeaderExternal, e.CSVdelim)
+		fmt.Fprintln(sb, eheader)
 	}
 }
 
-// CSVtablePrintDirect
-func (e *Extractor) CSVtablePrintDirect(
+func (e *Extractor) CSVtableBuild(
 	internalHeader, externalHeader bool,
-	delim string, rowsIndexes ...[]int) {
-	var sb strings.Builder
+	delim string, rowsIndexes ...[]int) int {
 	var rowsCount int
+	if e.TableXML.CSVwriterLocal == nil {
+		e.TableXML.CSVwriterLocal = new(strings.Builder)
+	}
+	sb := e.TableXML.CSVwriterLocal
+	if len(rowsIndexes) > 1 {
+		panic("not implemented for multiple indexes' slices")
+	}
 	switch len(rowsIndexes) {
 	case 0:
+		e.CSVheaderBuild(internalHeader, externalHeader)
 		for i := 0; i < len(e.TableXML.Rows); i++ {
 			e.TableXML.Rows[i].CSVrowBuild(
-				&sb, e.RowPartsPositions, e.RowPartsFieldsPositions, delim,
+				sb, e.RowPartsPositions, e.RowPartsFieldsPositions, delim,
 			)
 			rowsCount++
 		}
 	case 1:
+		e.CSVheaderBuild(internalHeader, externalHeader)
 		for _, index := range rowsIndexes[0] {
 			e.TableXML.Rows[index].CSVrowBuild(
-				&sb, e.RowPartsPositions, e.RowPartsFieldsPositions, delim,
+				sb, e.RowPartsPositions, e.RowPartsFieldsPositions, delim,
 			)
 			rowsCount++
 		}
-	default:
-		slog.Error("not implemented for multiple indexes' slices")
+	}
+	return rowsCount
+}
+
+func (e *Extractor) CSVtableOutput(dstFile string) {
+	if dstFile == "" {
+		fmt.Print(e.TableXML.CSVwriterLocal)
 		return
 	}
-	e.CSVheaderPrintDirect(internalHeader, externalHeader)
-	fmt.Print(sb.String())
-	slog.Warn("lines printed", "count", rowsCount)
+}
+
+// CSVtableWrite
+func (e *Extractor) CSVtableWrite(dstFilePath string) {
+	if dstFilePath == "" {
+		fmt.Println(e.TableXML.CSVwriterLocal)
+		return
+	}
+	outputFile, err := os.OpenFile(dstFilePath, os.O_RDWR|os.O_CREATE, 0600)
+	if err != nil {
+		panic(err)
+	}
+	defer outputFile.Close()
+	n, err := outputFile.WriteString(e.TableXML.CSVwriterLocal.String())
+	if err != nil {
+		panic(err)
+	}
+	slog.Warn("written bytes to file", "fileName", dstFilePath, "bytesCount", n)
 }

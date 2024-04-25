@@ -102,10 +102,14 @@ func (apf *ArchivePackageFile) ExtractByXMLquery(
 	extractor.TransformEmptyRowPart()
 	extractor.Transform(q.Transformer)
 	extractor.FiltersRun(q.FilterColumns)
+	extractor.CSVtableBuild(false, true, "\t")
+	extractor.CSVtableWrite("")
+	extractor.CSVtableWrite("/tmp/out/test_output.csv")
 
 	// rowsIDx := extractor.FilterByPartAndFieldID(RowPartCode_HourlyHead, "8", "13:00-14:00")
 	// extractor.CSVtablePrintDirect(false, true, "\t", rowsIDx)
-	extractor.CSVtablePrintDirect(false, true, "\t")
+	// extractor.CSVtablePrintDirect(false, true, "\t")
+	// extractor.CSVtablePrintDirect(true, true, "\t")
 	return nil
 }
 
