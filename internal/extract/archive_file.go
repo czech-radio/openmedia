@@ -103,8 +103,8 @@ func (apf *ArchivePackageFile) ExtractByXMLquery(
 	extractor.Transform(q.Transformer)
 	extractor.FiltersRun(q.FilterColumns)
 
-	// rowsIDx := extractor.FilterByPartAndFieldID(FieldPrefix_HourlyHead, "8", "13:00-14:00")
-	// extractor.PrintTableRowsToCSV(false, true, "\t", rowsIDx)
+	// rowsIDx := extractor.FilterByPartAndFieldID(RowPartCode_HourlyHead, "8", "13:00-14:00")
+	// extractor.CSVtablePrintDirect(false, true, "\t", rowsIDx)
 	extractor.CSVtablePrintDirect(false, true, "\t")
 	return nil
 }

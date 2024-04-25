@@ -66,7 +66,6 @@ func (e *Extractor) Init(
 	e.MapRowParts()
 	e.MapRowPartsFieldsPositions()
 	e.HeaderBuild()
-	// e.CSVtableBuildHeader(CSVdelim)
 	e.OMextractors.KeepInputRowsChecker()
 	e.OMextractors.MapFieldsPath()
 	e.TableXML.Rows = []*RowNode{{baseNode, RowParts{}}}

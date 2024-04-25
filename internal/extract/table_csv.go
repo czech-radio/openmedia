@@ -124,39 +124,27 @@ func (e *Extractor) CSVtablePrintDirect(
 	internalHeader, externalHeader bool,
 	delim string, rowsIndexes ...[]int) {
 	var sb strings.Builder
-	e.CSVheaderPrintDirect(internalHeader, externalHeader)
-
-	if len(rowsIndexes) > 1 {
-		slog.Error("not implemented for multiple indexes' slices")
-	}
-
-	var count int
-	// Print specified rows
-	if len(rowsIndexes) == 1 {
+	var rowsCount int
+	switch len(rowsIndexes) {
+	case 0:
+		for i := 0; i < len(e.TableXML.Rows); i++ {
+			e.TableXML.Rows[i].CSVrowBuild(
+				&sb, e.RowPartsPositions, e.RowPartsFieldsPositions, delim,
+			)
+			rowsCount++
+		}
+	case 1:
 		for _, index := range rowsIndexes[0] {
 			e.TableXML.Rows[index].CSVrowBuild(
-				&sb,
-				e.RowPartsPositions,
-				e.RowPartsFieldsPositions,
-				delim,
+				&sb, e.RowPartsPositions, e.RowPartsFieldsPositions, delim,
 			)
-			count++
+			rowsCount++
 		}
-		fmt.Print(sb.String())
-		slog.Debug("lines printed", "count", count)
+	default:
+		slog.Error("not implemented for multiple indexes' slices")
 		return
 	}
-
-	// Print whole table
-	for _, row := range e.TableXML.Rows {
-		row.CSVrowBuild(
-			&sb,
-			e.RowPartsPositions,
-			e.RowPartsFieldsPositions,
-			delim,
-		)
-		count++
-	}
+	e.CSVheaderPrintDirect(internalHeader, externalHeader)
 	fmt.Print(sb.String())
-	slog.Warn("lines printed", "count", count)
+	slog.Warn("lines printed", "count", rowsCount)
 }
