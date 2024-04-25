@@ -9,13 +9,13 @@ func TestExtractorInit(t *testing.T) {
 	var ex Extractor
 	// ex.Init(nil, EXTproduction, CSVdelim)
 	ex.Init(nil, EXTmock, "\t")
-	fmt.Println("prefixesInternal", ex.CSVrowPartsPositionsInternal)
-	fmt.Println("prefixesExternal", ex.CSVrowPartsPositionsExternal)
-	fmt.Println("partsFieldsPos", ex.CSVrowPartsFieldsPositions)
+	fmt.Println("prefixesInternal", ex.RowPartsPositionsInternal)
+	fmt.Println("prefixesExternal", ex.RowPartsPositionsExternal)
+	fmt.Println("partsFieldsPos", ex.RowPartsFieldsPositions)
 	fmt.Println("fieldsHeaderInternal", ex.CSVheaderInternal)
 	fmt.Println("fieldsHeaderExternal", ex.CSVheaderExternal)
 	// fmt.Printf("extractores: %+v\n", ex.OMextractors)
-	fmt.Printf("part codes: %+v\n", ex.CSVrowPartsPositionsExternal)
+	fmt.Printf("part codes: %+v\n", ex.RowPartsPositionsExternal)
 	// out, _ := json.MarshalIndent(ex, "", "\t")
 	// fmt.Println("extractor:", string(out))
 }

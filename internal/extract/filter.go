@@ -47,13 +47,13 @@ func (e *Extractor) FiltersRun(filters []FilterColumn) {
 
 // FilterMatchPersonName
 func (e *Extractor) FilterMatchPersonName(f FilterColumn) {
-	for i, row := range e.CSVtable.Rows {
+	for i, row := range e.TableXML.Rows {
 		matches, altValue := FieldValueMatchesValidValues(
-			row.CSVrow, f.PartCodeCheck, f.FieldIDcheck, f.Values,
+			row.Row, f.PartCodeCheck, f.FieldIDcheck, f.Values,
 		)
-		part, ok := e.CSVtable.Rows[i].CSVrow[f.PartCodeMark]
+		part, ok := e.TableXML.Rows[i].Row[f.PartCodeMark]
 		if !ok {
-			part = make(CSVrowPart)
+			part = make(RowPart)
 		}
 		var mark string
 		if matches {
@@ -64,22 +64,22 @@ func (e *Extractor) FilterMatchPersonName(f FilterColumn) {
 		if altValue != "" {
 			mark = altValue
 		}
-		field := CSVrowField{
+		field := RowField{
 			FieldID:   f.FieldIDmark,
 			FieldName: "",
 			Value:     mark,
 		}
 		part[f.FieldIDmark] = field
-		e.CSVtable.Rows[i].CSVrow[f.PartCodeMark] = part
+		e.TableXML.Rows[i].Row[f.PartCodeMark] = part
 	}
 }
 
 // FieldValueMatchesValidValues
 func FieldValueMatchesValidValues(
-	row CSVrow, partCode RowPartCode, fieldID string,
+	row Row, partCode RowPartCode, fieldID string,
 	validValues map[string]bool) (bool, string) {
-	_, field, ok := GetPartAndField(row, partCode, fieldID)
-	notFound := CSVspecialValues[CSVspecialValueChildNotFound]
+	_, field, ok := GetRowPartAndField(row, partCode, fieldID)
+	notFound := RowFieldValueCodeMap[RowFieldValueChildNotFound]
 	if !ok {
 		return false, notFound
 	}

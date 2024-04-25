@@ -16,7 +16,7 @@ import (
 // ArchiveFile
 type ArchiveFile struct {
 	Reader      *bytes.Reader
-	Tables      map[ar.WorkerTypeCode]CSVtable
+	Tables      map[ar.WorkerTypeCode]TableXML
 	Encoding    string
 	RundownType string
 	FilePath    string
@@ -59,7 +59,7 @@ func (af *ArchiveFile) Init(wt ar.WorkerTypeCode, filePath string) error {
 // ArchivePackageFile
 type ArchivePackageFile struct {
 	Reader *zip.File
-	Tables map[ar.WorkerTypeCode]CSVtable
+	Tables map[ar.WorkerTypeCode]TableXML
 }
 
 // ExtractByXMLquery
@@ -110,7 +110,7 @@ func (apf *ArchivePackageFile) ExtractByXMLquery(
 
 	// rowsIDx := extractor.FilterByPartAndFieldID(FieldPrefix_HourlyHead, "8", "13:00-14:00")
 	// extractor.PrintTableRowsToCSV(false, true, "\t", rowsIDx)
-	extractor.PrintTableRowsToCSV(false, true, "\t")
+	extractor.CSVtablePrint(false, true, "\t")
 	return nil
 }
 

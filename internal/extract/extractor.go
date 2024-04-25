@@ -15,7 +15,7 @@ type ObjectAttributes = map[string]string
 // UniqueValues
 type UniqueValues = map[string]int // value vs count
 // CSVrowFields
-type CSVrowFields = []CSVrowField
+type CSVrowFields = []RowField
 
 // OMextractor
 type OMextractor struct {
@@ -44,17 +44,17 @@ type Extractor struct {
 	BaseNode *xmlquery.Node
 	CSVdelim string
 
-	CSVrowPartsFieldsPositions
-	CSVrowPartsPositionsInternal
-	CSVrowPartsPositionsExternal
+	RowPartsFieldsPositions
+	RowPartsPositionsInternal
+	RowPartsPositionsExternal
 
-	CSVheaders          map[string]CSVrow
+	CSVheaders          map[string]Row
 	CSVheadersPositions []CSVheaderCodeName
 	CSVheaderInternal   string
 	CSVheaderExternal   string
 
-	CSVtable
-	CSVtables
+	TableXML
+	TablesXML
 }
 
 func (e *Extractor) Init(
@@ -66,10 +66,10 @@ func (e *Extractor) Init(
 	e.BaseNode = baseNode
 	e.MapRowParts()
 	e.MapRowPartsFieldsPositions()
-	e.CreateTablesHeader(CSVdelim)
+	e.CSVtableBuildHeader(CSVdelim)
 	e.OMextractors.KeepInputRowsChecker()
 	e.OMextractors.MapFieldsPath()
-	e.CSVtable.Rows = []*CSVrowNode{{baseNode, CSVrow{}}}
+	e.TableXML.Rows = []*RowNode{{baseNode, Row{}}}
 }
 
 func (e *Extractor) MapRowParts() {
@@ -89,13 +89,13 @@ func (e *Extractor) MapRowParts() {
 			}
 		}
 	}
-	e.CSVrowPartsPositionsExternal = prefixesExternal
-	e.CSVrowPartsPositionsInternal = prefixesInternal
+	e.RowPartsPositionsExternal = prefixesExternal
+	e.RowPartsPositionsInternal = prefixesInternal
 }
 
 func (e *Extractor) MapRowPartsFieldsPositions() {
 	extCount := len(e.OMextractors)
-	partsPos := make(CSVrowPartsFieldsPositions, extCount)
+	partsPos := make(RowPartsFieldsPositions, extCount)
 	for _, extr := range e.OMextractors {
 		fp := GetPartFieldsPositions(extr)
 		partsPos[extr.PartPrefixCode] = append(partsPos[extr.PartPrefixCode], fp...)
@@ -107,7 +107,7 @@ func (e *Extractor) MapRowPartsFieldsPositions() {
 			}
 		}
 	}
-	e.CSVrowPartsFieldsPositions = partsPos
+	e.RowPartsFieldsPositions = partsPos
 }
 
 func (e *Extractor) ExtractTable(fileName string) error {
@@ -116,9 +116,9 @@ func (e *Extractor) ExtractTable(fileName string) error {
 			slog.Debug("extractor not extracted", "cause", "empty object")
 			continue
 		}
-		rows, err := ExpandTableRows(e.CSVtable, extr)
-		e.CSVtable = rows
-		e.CSVtable.SrcFilePath = fileName
+		rows, err := ExpandTableRows(e.TableXML, extr)
+		e.TableXML = rows
+		e.TableXML.SrcFilePath = fileName
 		if err != nil {
 			return err
 		}
@@ -128,24 +128,24 @@ func (e *Extractor) ExtractTable(fileName string) error {
 }
 
 // GetPartFieldsPositions
-func GetPartFieldsPositions(extr OMextractor) CSVrowPartFieldsPositions {
-	fieldsPositions := make(CSVrowPartFieldsPositions, 0, len(extr.FieldIDs))
-	prefix := PartsPrefixMapProduction[extr.PartPrefixCode].Internal
+func GetPartFieldsPositions(extr OMextractor) RowPartFieldsPositions {
+	fieldsPositions := make(RowPartFieldsPositions, 0, len(extr.FieldIDs))
+	prefix := RowPartsCodeMapProduction[extr.PartPrefixCode].Internal
 	// Object Attributes
 	for _, attr := range extr.ObjectAttrsNames {
 		fp := FieldPosition{
-			RowPart:   prefix,
-			FieldID:   attr,
-			FieldName: "",
+			RowPartName: prefix,
+			FieldID:     attr,
+			FieldName:   "",
 		}
 		fieldsPositions = append(fieldsPositions, fp)
 	}
 	// Object FieldsID
 	for _, fi := range extr.FieldIDs {
 		fp := FieldPosition{
-			RowPart:   prefix,
-			FieldID:   fi,
-			FieldName: "",
+			RowPartName: prefix,
+			FieldID:     fi,
+			FieldName:   "",
 		}
 		fieldsPositions = append(fieldsPositions, fp)
 	}

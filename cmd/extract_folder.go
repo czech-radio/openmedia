@@ -36,7 +36,7 @@ func RunExtractFolder(
 			helper.Errors.ExitWithCode(err)
 		}
 		af.Extractor.TransformProduction()
-		af.Extractor.PrintTableRowsToCSV(
+		af.Extractor.CSVtablePrint(
 			internalHeader, externalHeader, "\t")
 		if i == 0 {
 			internalHeader = false

@@ -7,86 +7,16 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-
-	"github.com/antchfx/xmlquery"
 )
 
-// Table fields positions
-type FieldPosition struct {
-	RowPart   string
-	FieldID   string
-	FieldName string
-}
-type CSVrowPartFieldsPositions []FieldPosition                            // Field
-type CSVrowPartsPositions []string                                        // Part
-type CSVrowPartsPositionsInternal []RowPartCode                           // Part
-type CSVrowPartsPositionsExternal []RowPartCode                           // Part
-type CSVrowPartsFieldsPositions map[RowPartCode]CSVrowPartFieldsPositions // Row: partname vs partFieldsPositions
-
-// Table fields values
-type CSVrowField struct {
-	FieldID   string
-	FieldName string // Currently not needed here (will consume more memory). Alternative construct general list of fieldPrefix:fieldIDs vs FieldName
-	Value     string
-}
-type CSVrowPart map[string]CSVrowField // FieldID:CSVrowField
-type CSVrow map[RowPartCode]CSVrowPart // Whole CSV line PartPrefix:RowPart
-type CSVrowNode struct {
-	Node *xmlquery.Node
-	CSVrow
-}
-
-// CSVheaders
-type CSVheaders map[CSVheaderCodeName]CSVrow
-
-// UniqueRow
-type UniqueRow struct {
-	Count         int
-	TablePosition int
-}
-
-// CSVtable
-type CSVtable struct {
-	Rows              []*CSVrowNode
-	Headers           []string
-	CSVrowsFiltered   []int
-	RowPartsPositions []RowPartCode
-	CSVrowPartsFieldsPositions
-
-	UniqueRowsOrder []int
-	UniqueRows      map[string]int
-
-	CSVwriterLocal *strings.Builder
-	DstFilePath    string
-	SrcFilePath    string
-}
-
-// CSVtables
-type CSVtables struct {
-	TablesPositions map[int]string       // pos:fileName
-	Tables          map[string]*CSVtable // fileName:CSVtable
-	CSVwriterGlobal *strings.Builder
-	DstFileGlobal   *os.File
-}
-
-// BuildHeaderNameExternal
-func BuildHeaderNameExternal(
-	prefixCode RowPartCode, fieldName string) string {
-	prefix := PartsPrefixMapProduction[prefixCode]
-	if prefix.External == "" {
-		return fieldName
-	}
-	return fmt.Sprintf("%s_%s", fieldName, prefix.External)
-}
-
-// CreateTablesHeader
-func (e *Extractor) CreateTablesHeader(delim string) {
+// CSVtableBuildHeader
+func (e *Extractor) CSVtableBuildHeader(delim string) {
 	var builderInternal strings.Builder
 	var builderExternal strings.Builder
-	for _, partPrefixCode := range e.CSVrowPartsPositionsInternal {
-		prefix := PartsPrefixMapProduction[partPrefixCode]
+	for _, partPrefixCode := range e.RowPartsPositionsInternal {
+		prefix := RowPartsCodeMapProduction[partPrefixCode]
 
-		rowPart := e.CSVrowPartsFieldsPositions[partPrefixCode]
+		rowPart := e.RowPartsFieldsPositions[partPrefixCode]
 		for _, field := range rowPart {
 			fmt.Fprintf(
 				&builderInternal, "%s_%s%s",
@@ -104,8 +34,8 @@ func (e *Extractor) CreateTablesHeader(delim string) {
 	e.CSVheaderExternal = builderExternal.String()
 }
 
-// CastTablesToCSV
-func (e *Extractor) CastTablesToCSV(
+// CSVtablesBuild
+func (e *Extractor) CSVtablesBuild(
 	header bool, delim string, separateTables bool) {
 	if !separateTables {
 		e.CSVwriterGlobal = new(strings.Builder)
@@ -116,11 +46,11 @@ func (e *Extractor) CastTablesToCSV(
 		e.CSVwriterGlobal.WriteString(e.CSVheaderExternal)
 	}
 
-	for i, table := range e.Tables {
+	for i, table := range e.TablesXML.Tables {
 		if separateTables && header {
-			table.CastTableToCSV(header, delim)
+			table.CSVtableBuild(header, delim)
 		}
-		table.CastTableToCSV(header, delim)
+		table.CSVtableBuild(header, delim)
 		slog.Debug(
 			"casting table to CSV", "current", i, "count", len(e.Tables))
 	}
@@ -169,14 +99,24 @@ func (e *Extractor) SaveTablesToFile(
 	return nil
 }
 
+// BuildHeaderNameExternal
+func BuildHeaderNameExternal(
+	rowPartCode RowPartCode, fieldName string) string {
+	prefix := RowPartsCodeMapProduction[rowPartCode]
+	if prefix.External == "" {
+		return fieldName
+	}
+	return fmt.Sprintf("%s_%s", fieldName, prefix.External)
+}
+
 // ConstructDstFilePath
 func ConstructDstFilePath(srcPath string) string {
 	srcDir, name := filepath.Split(srcPath)
 	return filepath.Join(srcDir, "export"+name+".csv")
 }
 
-// SaveTableToFile
-func (table *CSVtable) SaveTableToFile(dstFilePath string) (int, error) {
+// CSVtableSaveToFile
+func (table *TableXML) CSVtableSaveToFile(dstFilePath string) (int, error) {
 	outputFile, err := os.OpenFile(dstFilePath, os.O_RDWR|os.O_CREATE, 0600)
 	if err != nil {
 		return 0, err
@@ -185,12 +125,12 @@ func (table *CSVtable) SaveTableToFile(dstFilePath string) (int, error) {
 	return outputFile.WriteString(table.CSVwriterLocal.String())
 }
 
-// CastTableToCSV
-func (table *CSVtable) CastTableToCSV(
+// CSVtableBuild
+func (table *TableXML) CSVtableBuild(
 	header bool, delim string, rowsIndexes ...[]int) {
 	// Print header
 	if header {
-		table.CastHeaderToCSV(table.Headers...)
+		table.CSVheadersBuild(table.Headers...)
 	}
 
 	if len(rowsIndexes) > 1 {
@@ -201,9 +141,9 @@ func (table *CSVtable) CastTableToCSV(
 	// Print specified rows
 	if len(rowsIndexes) == 1 {
 		for _, index := range rowsIndexes[0] {
-			table.Rows[index].CastToCSV(
+			table.Rows[index].CSVrowBuild(
 				table.CSVwriterLocal, table.RowPartsPositions,
-				table.CSVrowPartsFieldsPositions,
+				table.RowPartsFieldsPositions,
 				delim,
 			)
 			count++
@@ -214,9 +154,9 @@ func (table *CSVtable) CastTableToCSV(
 
 	// Print whole table
 	for _, row := range table.Rows {
-		row.CastToCSV(
+		row.CSVrowBuild(
 			table.CSVwriterLocal, table.RowPartsPositions,
-			table.CSVrowPartsFieldsPositions,
+			table.RowPartsFieldsPositions,
 			delim,
 		)
 		count++
@@ -224,8 +164,8 @@ func (table *CSVtable) CastTableToCSV(
 	slog.Debug("lines casted to CSV", "count", count)
 }
 
-// CastHeaderToCSV
-func (table *CSVtable) CastHeaderToCSV(headers ...string) {
+// CSVheadersBuild
+func (table *TableXML) CSVheadersBuild(headers ...string) {
 	for _, header := range headers {
 		if header != "" {
 			table.CSVwriterLocal.WriteString(header)
@@ -233,29 +173,29 @@ func (table *CSVtable) CastHeaderToCSV(headers ...string) {
 	}
 }
 
-// CastToCSV
-func (row CSVrow) CastToCSV(
+// CSVrowBuild
+func (row Row) CSVrowBuild(
 	builder *strings.Builder,
-	partsPos CSVrowPartsPositionsInternal,
-	partsFieldsPos CSVrowPartsFieldsPositions,
+	partsPos RowPartsPositionsInternal,
+	partsFieldsPos RowPartsFieldsPositions,
 	delim string,
 ) {
 	for _, pos := range partsPos {
 		fieldsPos := partsFieldsPos[pos]
 		part := row[pos]
-		part.CastToCSV(builder, fieldsPos, delim)
+		part.CSVrowPartBuild(builder, fieldsPos, delim)
 	}
 	fmt.Fprintf(builder, "%s", "\n")
 }
 
-// CastToCSV
-func (part CSVrowPart) CastToCSV(
+// CSVrowPartBuild
+func (part RowPart) CSVrowPartBuild(
 	builder *strings.Builder,
-	fieldsPosition CSVrowPartFieldsPositions,
+	fieldsPosition RowPartFieldsPositions,
 	delim string,
 ) {
 	// specValNotPossible := CSVspecialValues[CSVspecialValueChildNotFound]
-	specValEmpty := CSVspecialValues[CSVspecialValueEmptyString]
+	specValEmpty := RowFieldValueCodeMap[RowFieldValueEmptyString]
 	for _, pos := range fieldsPosition {
 		// if part == nil {
 		// fmt.Fprintf(builder, "%s%s", specValNotPossible, delim)
@@ -285,22 +225,25 @@ func (e *Extractor) CSVheaderPrint(internal, external bool) {
 	}
 }
 
-// PrintTableRowsToCSV
-func (e *Extractor) PrintTableRowsToCSV(
+// CSVtablePrint
+func (e *Extractor) CSVtablePrint(
 	internalHeader, externalHeader bool,
 	delim string, rowsIndexes ...[]int) {
 	var sb strings.Builder
 	e.CSVheaderPrint(internalHeader, externalHeader)
+
 	if len(rowsIndexes) > 1 {
-		slog.Error("not implemented multiple indexes' slices")
+		slog.Error("not implemented for multiple indexes' slices")
 	}
+
 	var count int
 	// Print specified rows
 	if len(rowsIndexes) == 1 {
 		for _, index := range rowsIndexes[0] {
-			e.CSVtable.Rows[index].CastToCSV(
-				&sb, e.CSVrowPartsPositionsInternal,
-				e.CSVrowPartsFieldsPositions,
+			e.TableXML.Rows[index].CSVrowBuild(
+				&sb,
+				e.RowPartsPositionsInternal,
+				e.RowPartsFieldsPositions,
 				delim,
 			)
 			count++
@@ -311,10 +254,11 @@ func (e *Extractor) PrintTableRowsToCSV(
 	}
 
 	// Print whole table
-	for _, row := range e.CSVtable.Rows {
-		row.CastToCSV(
-			&sb, e.CSVrowPartsPositionsInternal,
-			e.CSVrowPartsFieldsPositions,
+	for _, row := range e.TableXML.Rows {
+		row.CSVrowBuild(
+			&sb,
+			e.RowPartsPositionsInternal,
+			e.RowPartsFieldsPositions,
 			delim,
 		)
 		count++

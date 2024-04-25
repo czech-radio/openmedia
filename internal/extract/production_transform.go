@@ -13,6 +13,10 @@ func (e *Extractor) TransformProductionCSV() {
 	e.TransformColumnFields(RowPartCode_StoryKategory,
 		"TemplateName", TransformEmptyToNoContain, true)
 
+	// Stopaz
+	stopazFields := []string{"38", "1002", "1005", "1010", "1036"}
+	e.TransformColumnsFields(ValidateStopaz, false, stopazFields...)
+
 	e.ComputeName()
 	e.ComputeIndex()
 }

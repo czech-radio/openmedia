@@ -8,53 +8,53 @@ import (
 
 func TestPartPrintToCSV(t *testing.T) {
 	var builder strings.Builder
-	rowPart := CSVrowPart{
+	rowPart := RowPart{
 		"id_Kek": {"id_Kek", "n_Kek", "kardamon"},
 		"id_Sek": {"id_Sek", "n_Sek", "cinnamon"},
 		"id_Tak": {"id_Tak", "n_Tak", "vanilin"},
 	}
-	partsPos := CSVrowPartFieldsPositions{
+	partsPos := RowPartFieldsPositions{
 		{"KAK", "id_Sek", "Nevim"},
 		{"KAK", "id_Tak", "NoName"},
 	}
-	rowPart.CastToCSV(&builder, partsPos, CSVdelim)
+	rowPart.CSVrowPartBuild(&builder, partsPos, CSVdelim)
 	fmt.Println(builder.String())
 }
 
 func TestRowPrintToCSV(t *testing.T) {
 	var builder strings.Builder
-	rowPart1 := CSVrowPart{
+	rowPart1 := RowPart{
 		"id_Kek": {"id_Kek", "n_Kek", "kardamon"},
 		"id_Sek": {"id_Sek", "n_Sek", "cinnamon"},
 		"id_Tak": {"id_Tak", "n_Tak", "vanilin"},
 	}
-	rowPart2 := CSVrowPart{
+	rowPart2 := RowPart{
 		"id_Kek": {"id_Kek", "n_Kek", "cumin"},
 		"id_Sek": {"id_Sek", "n_Sek", "peper"},
 		"id_Tak": {"id_Tak", "n_Tak", "chilli"},
 	}
-	row := CSVrow{
+	row := Row{
 		RowPartCode_SubHead:   rowPart1,
 		RowPartCode_StoryHead: rowPart2,
 	}
 
-	partFieldPos1 := CSVrowPartFieldsPositions{
+	partFieldPos1 := RowPartFieldsPositions{
 		{"A", "id_Sek", "Nevim"},
 		{"A", "id_Tak", "NoName"},
 	}
-	partFieldPos2 := CSVrowPartFieldsPositions{
+	partFieldPos2 := RowPartFieldsPositions{
 		{"B", "id_Sek", "Nevim"},
 		{"B", "id_Tak", "NoName"},
 	}
 
-	partsFieldsPos := CSVrowPartsFieldsPositions{
+	partsFieldsPos := RowPartsFieldsPositions{
 		RowPartCode_SubHead:   partFieldPos2,
 		RowPartCode_StoryHead: partFieldPos1,
 	}
-	partsPos := CSVrowPartsPositionsInternal{
+	partsPos := RowPartsPositionsInternal{
 		RowPartCode_SubHead, RowPartCode_StoryHead,
 	}
 
-	row.CastToCSV(&builder, partsPos, partsFieldsPos, CSVdelim)
+	row.CSVrowBuild(&builder, partsPos, partsFieldsPos, CSVdelim)
 	fmt.Println(builder.String())
 }

@@ -33,15 +33,15 @@ const (
 	RowPartCode_ComputedRID
 )
 
-// PartPrefix
-type PartPrefix struct {
+// RowPartName
+type RowPartName struct {
 	Internal, External string
 }
 
-type PartsPrefixMap = map[RowPartCode]PartPrefix
+type PartsPrefixMap = map[RowPartCode]RowPartName
 
-// PartsPrefixMapProduction is a map which translates internal column header (prefix/sufix) name to name used in analytics. It represents the part of row which coresponds to one xml OM_OBJECT.
-var PartsPrefixMapProduction = PartsPrefixMap{
+// RowPartsCodeMapProduction is a map which translates internal column header (prefix/sufix) name to name used in analytics. It represents the part of row which coresponds to one xml OM_OBJECT.
+var RowPartsCodeMapProduction = PartsPrefixMap{
 	RowPartCode_RadioRec:         {"Radio-REC", "RR"},
 	RowPartCode_RadioHead:        {"Radio-HED", "RR"},
 	RowPartCode_HourlyHead:       {"Hourly-HED", "HR"},
@@ -142,37 +142,27 @@ var FieldsIDsNamesProductionLong = FieldsIDsNames{
 	"1035":         "Čas textu",
 }
 
-type CSVspecialValueCode int
-
-// (NS)	Všechny buňky, které je možné vyplnit skrze formuláře (příspěvku, audia, kontaktu, subrundownu) a které ovšem vyplněny nejsou, přepíšeme hodnotou "(NS)", tj. "not specified".
-// (NC)	Jestliže příspěvek neobsahuje žádnou část, sloupec [kategorie_CAST]bude obsahovat hodnotu "(NC)".
-// Jestliže příspěvek není součástí žádného subrundownu, sloupec [kategorie_SP]bude obsahovat hodnotu "(NC)".
-// (NP)	Jestliže příspěvek neobsahuje žádnou část, pak všechny další sloupce, které se týkají částí příspěvku (audia i kontaktu) budou obsahovat hodnotu "(NP)". (S výjimkou sloupce [kategorie_CAST], který bude obsahovat hodnotu "(NC)" - viz výše).
-// Jestliže příspěvek obsahuje audio, sloupce týkající se kontaktu budou vyplněny hodnotou "(NP)". Jestliže příspěvek obsahuje kontakt, sloupce týkající se audia budou vyplněny hodnotou "(NP)".
-// Jestliže příspěvek není součástí žádného subrundownu, všechny sloupce týkající se subrundownu budou vyplněny hodnotou "(NP)". (S výjimkou sloupce [kategorie_SP], který bude obsahovat hodnotu "(NC)" - viz výše).
-
-// Později
-// (NV)	Pro potřeby validace dat pak v další fázi práce na analýze produkce přibyde hodnota (NV), tj. "not valid" či "invalid". Ta bude označovat buňky vyplněné neplatnou hodntodou, takže místo [redakce] = "banán" tam pak bude [redakce] = "(NV)". Vedle toho bude seznam těch přepsaných hodnot s jejich četnostmi, takže tam pak bude k proměnné [stanice] údaj "banán" = 1krát.
+type RowFieldValueCode int
 
 const (
-	CSVspecialValueEmptyString = iota
-	CSVspecialValueNotPossible
-	CSVspecialValueNotContain
-	CSVspecialValueNotValid
-	CSVspecialValueChildNotFound
-	CSVspecialValueParentNotFound
+	RowFieldValueEmptyString = iota
+	RowFieldValueNotPossible
+	RowFieldValueNotContain
+	RowFieldValueNotValid
+	RowFieldValueChildNotFound
+	RowFieldValueParentNotFound
 )
 
-var CSVspecialValues = map[CSVspecialValueCode]string{
-	CSVspecialValueEmptyString:    "(NS)", // (NEUVEDENO)
-	CSVspecialValueNotPossible:    "(NP)", // (NELZE)
-	CSVspecialValueNotContain:     "(NC)",
-	CSVspecialValueNotValid:       "(NV)",
-	CSVspecialValueChildNotFound:  "(NP)", // (NELZE)
-	CSVspecialValueParentNotFound: "(NC)", // (NEOBSAHUJE)
+var RowFieldValueCodeMap = map[RowFieldValueCode]string{
+	RowFieldValueEmptyString:    "(NS)", // (NOT SPECIFIED), (NEUVEDENO)
+	RowFieldValueNotPossible:    "(NP)", // (NOT POSSIBLE), (NELZE)
+	RowFieldValueNotContain:     "(NC)", // (NOT CONTAIN), (NEOBSAHUJE)
+	RowFieldValueNotValid:       "(NV)", // (NOT VALID), (INVALID)
+	RowFieldValueChildNotFound:  "(NP)", // (NOT POSIBLE), (NELZE)
+	RowFieldValueParentNotFound: "(NC)", // (NOT CONTAIN), (NEOBSAHUJE)
 }
 
-type Radio struct {
+type RadioSationIDs struct {
 	Openmedia_stanice string
 	Openmedia_ID      string
 	Croapp_code       string
@@ -180,7 +170,7 @@ type Radio struct {
 	Croapp_ID         string
 }
 
-type RadioCodesMap map[string]Radio
+type RadioCodesMap map[string]RadioSationIDs
 
 var RadioCodes = RadioCodesMap{
 	"5": {"CRo-Český rozhlas", "5", "", "", ""},

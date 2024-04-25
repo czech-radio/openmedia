@@ -14,8 +14,8 @@ import (
 // ExpandTableRows parse additional data from xml for each row. Multiple rows none,one or more rows may be created from one original row.
 // Deep copy must be used here or at least in function which takes it as parameter and wants to modify it.
 // TODO: Try using CSVrowPart map[string]*CSVrowField insted of  map[string]CSVrowField. So the "copy of parent row" can be made parRow:=map[FieldID]&Field. Every row or its parts based on parent row will reference same value of common fields. So it can be changed/transformed globaly for whole table. Transforming operations must be done on whole column. If not the column will be contamineted and no furher global transform on column can be made easily without iterating over whole column. The pros of using field pointer is speed and less memory allocations.
-func ExpandTableRows(table CSVtable, extr OMextractor) (CSVtable, error) {
-	var newTable CSVtable
+func ExpandTableRows(table TableXML, extr OMextractor) (TableXML, error) {
+	var newTable TableXML
 	objquery := ar.XMLqueryFromPath(extr.ObjectPath)
 	slog.Debug("object query", "query", objquery)
 	slog.Debug("table length", "count", len(table.Rows))
@@ -24,8 +24,8 @@ func ExpandTableRows(table CSVtable, extr OMextractor) (CSVtable, error) {
 		subNodes := xmlquery.Find(row.Node, objquery)
 		subNodesCount := len(subNodes)
 
-		prow := CopyRow(row.CSVrow)
-		newRow := &CSVrowNode{row.Node, prow}
+		prow := CopyRow(row.Row)
+		newRow := &RowNode{row.Node, prow}
 		if len(subNodes) == 0 && extr.KeepWhenZeroSubnodes {
 			slog.Debug("subnodes not_found",
 				"objquery", objquery, "parent", row.Node.Data)
@@ -41,10 +41,10 @@ func ExpandTableRows(table CSVtable, extr OMextractor) (CSVtable, error) {
 }
 
 // CopyRow
-func CopyRow(inputRow CSVrow) CSVrow {
-	newRow := make(CSVrow)
+func CopyRow(inputRow Row) Row {
+	newRow := make(Row)
 	for ai, a := range inputRow {
-		newRow[ai] = make(CSVrowPart)
+		newRow[ai] = make(RowPart)
 		for bi, b := range a {
 			newRow[ai][bi] = b
 		}
@@ -54,30 +54,30 @@ func CopyRow(inputRow CSVrow) CSVrow {
 
 // ExtractNodesFields
 func ExtractNodesFields(
-	parentRow *CSVrowNode,
+	parentRow *RowNode,
 	subNodes []*xmlquery.Node,
 	extr OMextractor,
-) CSVtable {
-	var newTable CSVtable
+) TableXML {
+	var newTable TableXML
 	for _, subNode := range subNodes {
-		parentRowCopy := CopyRow(parentRow.CSVrow)
+		parentRowCopy := CopyRow(parentRow.Row)
 		part := NodeToCSVrowPart(subNode, extr)
-		newRowNode := CSVrowNode{}
+		newRowNode := RowNode{}
 		parentNode, _ := helper.XMLnodeLevelUp(
 			subNode, extr.ResultNodeGoUpLevels,
 		)
 		newRowNode.Node = parentNode
-		newRowNode.CSVrow = parentRowCopy
-		newRowNode.CSVrow[extr.PartPrefixCode] = part
+		newRowNode.Row = parentRowCopy
+		newRowNode.Row[extr.PartPrefixCode] = part
 		newTable.Rows = append(newTable.Rows, &newRowNode)
 	}
 	return newTable
 }
 
 // NodeToCSVrowPart
-func NodeToCSVrowPart(node *xmlquery.Node, ext OMextractor) CSVrowPart {
+func NodeToCSVrowPart(node *xmlquery.Node, ext OMextractor) RowPart {
 	fieldCount := len(ext.ObjectAttrsNames) + len(ext.FieldIDs)
-	part := make(CSVrowPart, fieldCount)
+	part := make(RowPart, fieldCount)
 	// Object attibutes
 	part = NodeGetAttributes(node, part, ext)
 	// Object FieldIDs
@@ -87,10 +87,10 @@ func NodeToCSVrowPart(node *xmlquery.Node, ext OMextractor) CSVrowPart {
 
 // NodeGetAttributes
 func NodeGetAttributes(
-	node *xmlquery.Node, part CSVrowPart, ext OMextractor) CSVrowPart {
+	node *xmlquery.Node, part RowPart, ext OMextractor) RowPart {
 	for _, attrName := range ext.ObjectAttrsNames {
 		attrVal, _ := ar.GetFieldValueByName(node.Attr, attrName)
-		field := CSVrowField{
+		field := RowField{
 			FieldID: attrName,
 			// FieldName: fieldName,
 			// or send it to map[Prefix]map[FieldID]FieldName so it does not take memory
@@ -102,7 +102,7 @@ func NodeGetAttributes(
 }
 
 func NodeGetFields(
-	node *xmlquery.Node, part CSVrowPart, ext OMextractor) CSVrowPart {
+	node *xmlquery.Node, part RowPart, ext OMextractor) RowPart {
 	// Query object FieldIDs
 	attrQuery := ar.XMLbuildAttrQuery("FieldID", ext.FieldIDs)
 	if attrQuery == "" { // No fields found
@@ -121,7 +121,7 @@ func NodeGetFields(
 	}
 	for _, f := range fields {
 		fieldID, _ := ar.GetFieldValueByName(f.Attr, "FieldID")
-		field := CSVrowField{
+		field := RowField{
 			FieldID: fieldID,
 			// FieldName: fieldName,
 			// or send it to map[Prefix]map[FieldID]FieldName
