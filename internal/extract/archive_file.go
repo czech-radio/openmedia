@@ -8,6 +8,7 @@ import (
 	ar "github/czech-radio/openmedia/internal/archive"
 	"github/czech-radio/openmedia/internal/helper"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/antchfx/xmlquery"
@@ -102,9 +103,20 @@ func (apf *ArchivePackageFile) ExtractByXMLquery(
 	extractor.TransformEmptyRowPart()
 	extractor.Transform(q.Transformer)
 	extractor.FiltersRun(q.FilterColumns)
-	extractor.CSVtableBuild(false, true, "\t")
-	extractor.CSVtableWrite("")
-	extractor.CSVtableWrite("/tmp/out/test_output.csv")
+
+	dstDir := "not_specified"
+
+	// csvWithHeader := filepath.Join(dstDir, "test_with_header.csv")
+	// csvWithHeader := filepath.Join(dstDir, "W13_with_header.csv")
+	csvWithHeader := filepath.Join(dstDir, "W13_with_header.csv")
+	extractor.CSVtableBuild(q.PrintHeader, q.PrintHeader, "\t", true)
+	extractor.CSVtableWrite(csvWithHeader)
+
+	// csvWOheader := filepath.Join(dstDir, "test_wo_header.csv")
+	// csvWOheader := filepath.Join(dstDir, "W13_wo_header.csv")
+	csvWOheader := filepath.Join(dstDir, "W13_wo_header.csv")
+	extractor.CSVtableBuild(false, q.PrintHeader, "\t", true)
+	extractor.CSVtableWrite(csvWOheader)
 
 	// rowsIDx := extractor.FilterByPartAndFieldID(RowPartCode_HourlyHead, "8", "13:00-14:00")
 	// extractor.CSVtablePrintDirect(false, true, "\t", rowsIDx)

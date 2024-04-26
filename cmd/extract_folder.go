@@ -37,7 +37,7 @@ func RunExtractFolder(
 		}
 		af.Extractor.TransformProduction()
 		af.Extractor.CSVtableBuild(
-			internalHeader, externalHeader, "\t")
+			internalHeader, externalHeader, "\t", true)
 		if i == 0 {
 			internalHeader = false
 			externalHeader = false

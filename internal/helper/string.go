@@ -44,3 +44,7 @@ func XMLprint(node *xmlquery.Node) {
 	ex := xmlfmt.FormatXML(node.OutputXML(true), "", "\t")
 	fmt.Println(ex)
 }
+
+func FirstLetterToLowercase(input string) string {
+	return strings.ToLower(input[0:1]) + input[1:]
+}

@@ -185,10 +185,20 @@ func (e *Extractor) TransformColumnsFields(
 	}
 }
 
-func (e *Extractor) TransformHeaderExternal(rowPartCode, fieldID, newName string) {
-	// fmt.Println()
-	// e.TableXML.CSVwriterLocal.Grow
-	// rowPart, fieldID := GetRowPartAndField(e.CSVtable, rowPartCode, fieldID)
+func (e *Extractor) TransformHeaderExternal(
+	rowPartCode RowPartCode, fieldID, newName string) {
+	part, ok := e.RowPartsFieldsPositions[rowPartCode]
+	if !ok {
+		return
+	}
+	for i, f := range part {
+		if f.FieldID == fieldID {
+			part[i].FieldName = newName
+		}
+	}
+	e.HeaderBuild()
+	// slog.Warn("fucked", "external", e.HeaderExternal)
+	// helper.Sleeper(10, "s")
 }
 
 // TransformObjectID
@@ -215,6 +225,9 @@ var temaregex = regexp.MustCompile(`(\d\d)-`)
 func TransformTema(tema string) (string, error) {
 	var sb strings.Builder
 	res := temaregex.FindAllStringSubmatch(tema, -1)
+	if len(res) == 0 {
+		return tema, nil
+	}
 	for _, r := range res {
 		fmt.Fprintf(&sb, "%s;", r[1])
 	}

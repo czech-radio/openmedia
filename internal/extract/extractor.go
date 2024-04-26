@@ -88,36 +88,52 @@ func (e *Extractor) MapRowPartsFieldsPositions() {
 }
 
 func (e *Extractor) HeaderBuild() {
+	var newInternal, newExternal []string
 	for _, partPrefixCode := range e.RowPartsPositions {
 		rowPart := e.RowPartsFieldsPositions[partPrefixCode]
-		for _, field := range rowPart {
-			internal := HeaderColumnInternalCreate(
-				partPrefixCode, field.FieldID, "")
-			e.HeaderInternal = append(e.HeaderInternal, internal)
-			external := HeaderColumnExternalCreate(
-				partPrefixCode, field.FieldID, "",
-			)
-			e.HeaderExternal = append(e.HeaderExternal, external)
+		for i := range rowPart {
+			internal := e.HeaderColumnInternalCreate(
+				partPrefixCode, rowPart[i].FieldID, "")
+			newInternal = append(newInternal, internal)
+
+			external := e.HeaderColumnExternalCreate(
+				partPrefixCode, rowPart[i].FieldID, "")
+			newExternal = append(newExternal, external)
 		}
 	}
+	e.HeaderInternal = newInternal
+	e.HeaderExternal = newExternal
 }
 
 // HeaderColumnInternalCreate
-func HeaderColumnInternalCreate(
+func (e *Extractor) HeaderColumnInternalCreate(
 	rowPartCode RowPartCode, fieldID string, delim string) string {
 	prefix := RowPartsCodeMapProduction[rowPartCode]
 	return fmt.Sprintf("%s_%s%s", prefix.Internal, fieldID, delim)
 }
 
 // HeaderColumnExternalCreate
-func HeaderColumnExternalCreate(
+func (e *Extractor) HeaderColumnExternalCreate(
 	rowPartCode RowPartCode, fieldID, delim string) string {
 	prefix := RowPartsCodeMapProduction[rowPartCode]
-	fieldName := FieldsIDsNamesProduction[fieldID]
-	if prefix.External == "" {
-		return fieldName
+	part := e.RowPartsFieldsPositions[rowPartCode]
+	var resName string
+	for _, field := range part {
+		if field.FieldID != fieldID {
+			continue
+		}
+		if field.FieldName != "" {
+			resName = field.FieldName
+			break
+		}
 	}
-	return fmt.Sprintf("%s_%s%s", fieldName, prefix.External, delim)
+	if resName == "" {
+		resName = FieldsIDsNamesProduction[fieldID]
+	}
+	if prefix.External == "" {
+		return resName
+	}
+	return fmt.Sprintf("%s_%s%s", resName, prefix.External, delim)
 }
 
 func (e *Extractor) ExtractTable(fileName string) error {

@@ -32,17 +32,18 @@ func (part RowPart) CSVrowPartBuild(
 	delim string,
 ) {
 	specValEmpty := RowFieldValueCodeMap[RowFieldValueEmptyString]
+	formatUse := "%s" + delim
 	for _, pos := range fieldsPosition {
 		field, ok := part[pos.FieldID]
 		if !ok {
 			value := specValEmpty
-			fmt.Fprintf(builder, "%s%s", value, delim)
+			fmt.Fprintf(builder, formatUse, value)
 			continue
 		}
 		value := strings.TrimSpace(field.Value)
 		value = TransformEmptyString(value)
 		value = helper.EscapeCSVdelim(value)
-		fmt.Fprintf(builder, "%s%s", value, delim)
+		fmt.Fprintf(builder, formatUse, value)
 	}
 }
 
@@ -63,9 +64,12 @@ func (e *Extractor) CSVheaderBuild(internal, external bool) {
 
 func (e *Extractor) CSVtableBuild(
 	internalHeader, externalHeader bool,
-	delim string, rowsIndexes ...[]int) int {
+	delim string, clearBuilder bool, rowsIndexes ...[]int) int {
 	var rowsCount int
 	if e.TableXML.CSVwriterLocal == nil {
+		e.TableXML.CSVwriterLocal = new(strings.Builder)
+	}
+	if clearBuilder {
 		e.TableXML.CSVwriterLocal = new(strings.Builder)
 	}
 	sb := e.TableXML.CSVwriterLocal
@@ -106,7 +110,7 @@ func (e *Extractor) CSVtableWrite(dstFilePath string) {
 		fmt.Println(e.TableXML.CSVwriterLocal)
 		return
 	}
-	outputFile, err := os.OpenFile(dstFilePath, os.O_RDWR|os.O_CREATE, 0600)
+	outputFile, err := os.OpenFile(dstFilePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0600)
 	if err != nil {
 		panic(err)
 	}

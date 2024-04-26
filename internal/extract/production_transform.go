@@ -19,6 +19,7 @@ func (e *Extractor) TransformProductionCSV() {
 
 	e.ComputeName()
 	e.ComputeIndex()
+	e.TransformHeaderExternal(RowPartCode_HourlyHead, "1000", "planovany_zacatek")
 }
 
 // TransformProduction

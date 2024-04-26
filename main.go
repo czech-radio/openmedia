@@ -26,5 +26,6 @@ import (
 )
 
 func main() {
-	cmd.RunRoot()
+	// cmd.RunRoot()
+	cmd.RunRootAlt()
 }

@@ -53,19 +53,18 @@ func RunExtractArchive(rootCfg *ConfigRoot, cfg *ConfigExtractArchive) {
 	// dateTo, _ := helper.CzechDateToUTC(2024, 4, 1, 0)
 
 	// TEST WEEK 13
-	// dateFrom, _ := helper.CzechDateToUTC(2024, 3, 25, 0)
-	// dateTo, _ := helper.CzechDateToUTC(2024, 4, 1, 0)
+	dateFrom, _ := helper.CzechDateToUTC(2024, 3, 25, 0)
+	dateTo, _ := helper.CzechDateToUTC(2024, 4, 1, 0)
 
 	// TEST VZOR
-	dateFrom, _ := helper.CzechDateToUTC(2024, 1, 2, 15)
-	dateTo, _ := helper.CzechDateToUTC(2024, 1, 2, 17)
-	// dateTo, _ := helper.CzechDateToUTC(2024, 1, 3, 5)
+	// dateFrom, _ := helper.CzechDateToUTC(2024, 1, 2, 15)
+	// dateTo, _ := helper.CzechDateToUTC(2024, 1, 2, 17)
 
 	filterRange := [2]time.Time{dateFrom, dateTo}
 
 	radioNames := map[string]bool{
 		// "Radiožurnál": true,
-		"Plus": true,
+		// "Plus": true,
 		// "Dvojka": true,
 		// "ČRo_Vysočina": true,
 		// "ČRo_Karlovy_Vary": true,
