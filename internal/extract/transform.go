@@ -107,6 +107,30 @@ func (e *Extractor) RemoveColumn(
 	e.HeaderBuild()
 }
 
+// AddColumn
+func (e *Extractor) AddColumn(fieldPrefix RowPartCode, fieldID string) {
+	positions := e.RowPartsFieldsPositions[fieldPrefix]
+	var newPos RowPartFieldsPositions
+	alreadyContains := false
+	for _, pos := range positions {
+		if pos.FieldID == fieldID {
+			alreadyContains = true
+		}
+		newPos = append(newPos, pos)
+	}
+	if !alreadyContains {
+		slog.Warn("fuck column added")
+		fieldPos := RowPartFieldPosition{
+			RowPartName: "",
+			FieldID:     fieldID,
+			FieldName:   "",
+		}
+		newPos = append(newPos, fieldPos)
+	}
+	e.RowPartsFieldsPositions[fieldPrefix] = newPos
+	e.HeaderBuild()
+}
+
 // GETERS
 func GetRadioName(radioCode string) (string, error) {
 	names, ok := RadioCodes[radioCode]
@@ -550,6 +574,7 @@ skip_sub:
 	return index, prev, prevPos
 }
 
+// ComputeIndexCreateB
 func ComputeIndexCreateB(
 	// Story order
 	row RowParts, prevIDs []string, prevPos []int) (string, []string, []int) {

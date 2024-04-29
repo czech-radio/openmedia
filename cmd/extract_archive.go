@@ -53,19 +53,19 @@ func RunExtractArchive(rootCfg *ConfigRoot, cfg *ConfigExtractArchive) {
 	// dateTo, _ := helper.CzechDateToUTC(2024, 4, 1, 0)
 
 	// TEST WEEK 13
-	dateFrom, _ := helper.CzechDateToUTC(2024, 3, 25, 0)
-	dateTo, _ := helper.CzechDateToUTC(2024, 4, 1, 0)
+	// dateFrom, _ := helper.CzechDateToUTC(2024, 3, 25, 0)
+	// dateTo, _ := helper.CzechDateToUTC(2024, 4, 1, 0)
 
 	// TEST VZOR
-	// dateFrom, _ := helper.CzechDateToUTC(2024, 1, 2, 15)
-	// dateTo, _ := helper.CzechDateToUTC(2024, 1, 2, 17)
+	dateFrom, _ := helper.CzechDateToUTC(2024, 1, 2, 15)
+	dateTo, _ := helper.CzechDateToUTC(2024, 1, 2, 17)
 
 	filterRange := [2]time.Time{dateFrom, dateTo}
 
 	radioNames := map[string]bool{
 		// "Radiožurnál": true,
-		// "Plus": true,
-		// "Dvojka": true,
+		"Plus":   true,
+		"Dvojka": true,
 		// "ČRo_Vysočina": true,
 		// "ČRo_Karlovy_Vary": true,
 		// "ČRo_Brno": true,
@@ -73,15 +73,15 @@ func RunExtractArchive(rootCfg *ConfigRoot, cfg *ConfigExtractArchive) {
 
 	// Filter columns
 	var filterColumns []extract.FilterColumn
+	filterFile := "/home/jk/CRO/CRO_BASE/openmedia_backup/filters/eurovolby - zadání.xlsx"
 	// filterFile := "/home/jk/CRO/CRO_BASE/openmedia_backup/filters/filtrace - zadání.xlsx"
-	filterFile := "/home/jk/CRO/CRO_BASE/openmedia_backup/filters/filtrace - zadání.xlsx"
-	values, err := helper.MapExcelSheetColumn(filterFile, "seznam", 0)
-	if err != nil {
-		helper.Errors.ExitWithCode(err)
-	}
+	// values, err := helper.MapExcelSheetColumn(filterFile, "seznam", 0)
+	// if err != nil {
+	// 	helper.Errors.ExitWithCode(err)
+	// }
 	filter := extract.FilterCodeMap[extract.FilterCodeMatchPersonName]
 	filter.FileWithValues = filterFile
-	filter.Values = values
+	// filter.Values = values
 	filterColumns = append(filterColumns, filter)
 
 	// Build query
@@ -90,20 +90,46 @@ func RunExtractArchive(rootCfg *ConfigRoot, cfg *ConfigExtractArchive) {
 		DateRange:  filterRange,
 		Extractors: extract.EXTproduction,
 		// Transformer: extract.TransformerProduction,
-		Transformer: extract.TransformerProductionCSV,
+		// Transformer: extract.TransformerProductionCSV,
 		// Extractors: internal.EXTeuroVolby,
-		FilterColumns: filterColumns,
-		CSVdelim:      cfg.CSVdelim,
+		// FilterColumns: filterColumns,
+		CSVdelim: cfg.CSVdelim,
 	}
 
 	// Query run on folder
 	srcFolder := "/mnt/remote/cro/export-avo/Rundowns"
 	// srcFolder := "/home/jk/CRO/CRO_BASE/openmedia_backup/Archive/"
 
-	err = arf.FolderMap(
+	// dstDir := "/tmp/out/"
+	dstFile1 := "/tmp/out/test_wheader.csv"
+	dstFile2 := "/tmp/out/test_woheader.csv"
+	err := arf.FolderMap(
 		srcFolder, true, &query)
 	if err != nil {
 		helper.Errors.ExitWithCode(err)
 	}
-	arf.FolderExtract(&query)
+	ext := arf.FolderExtract(&query)
+
+	// Transfor
+	ext.TransformEmptyRowPart()
+	ext.TransformProductionCSV()
+	// ext.TransformEmptyRowPart()
+	// ext.FiltersRun()
+	// extractor.Transform(q.Transformer)
+	// ext.FilterColumns()
+
+	// Prebuild
+	ext.CSVtableBuild(false, false, query.CSVdelim, false)
+
+	// with internal header
+	ext.CSVheaderBuild(true, true)
+	ext.CSVheaderWrite(dstFile1)
+	ext.CSVtableWrite(dstFile1)
+
+	// without header
+	ext.CSVheaderBuild(false, true)
+	ext.CSVheaderWrite(dstFile2)
+	ext.CSVtableWrite(dstFile2)
+
+	// excel
 }

@@ -17,9 +17,12 @@ func (e *Extractor) TransformProductionCSV() {
 	stopazFields := []string{"38", "1002", "1005", "1010", "1036"}
 	e.TransformColumnsFields(ValidateStopaz, false, stopazFields...)
 
-	e.ComputeName()
+	// e.ComputeName()
 	e.ComputeIndex()
 	e.TransformHeaderExternal(RowPartCode_HourlyHead, "1000", "planovany_zacatek")
+
+	// add field column
+	e.AddColumn(RowPartCode_HourlyHead, "kek")
 }
 
 // TransformProduction

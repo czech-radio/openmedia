@@ -43,6 +43,8 @@ type ArchiveFolderQuery struct {
 	CSVdelim          string
 	Transformer       TransformerCode
 	FilterColumns     []FilterColumn
+	OtputFileName     string
+	OtputDir          string
 }
 
 // FolderListing
@@ -116,8 +118,9 @@ func (af *ArchiveFolder) FolderMap(
 
 // FolderExtract
 func (af *ArchiveFolder) FolderExtract(
-	query *ArchiveFolderQuery) {
-	query.PrintHeader = true
+	query *ArchiveFolderQuery) *Extractor {
+	var extMain Extractor
+	extMain.Init(nil, query.Extractors, query.CSVdelim)
 	for _, packageName := range af.PackagesNamesOrder {
 		slog.Warn("proccessing package", "package", packageName)
 		archivePackage := af.Packages[packageName]
@@ -127,11 +130,15 @@ func (af *ArchiveFolder) FolderExtract(
 				"proccessing package", "package", packageName,
 				"file", file.Reader.Name,
 			)
-			err := file.ExtractByXMLquery(af.XMLencoding, query)
+			ext, err := file.ExtractByXMLquery(af.XMLencoding, query)
 			if err != nil {
 				slog.Error(err.Error())
 			}
-			query.PrintHeader = false
+			ext.TableXML.NullXMLnode()
+			slog.Warn("extracted lines", "count", len(ext.TableXML.Rows))
+			extMain.TableXML.Rows = append(
+				extMain.TableXML.Rows, ext.TableXML.Rows...)
 		}
 	}
+	return &extMain
 }

@@ -21,7 +21,7 @@ type RowPartFieldsPositions []RowPartFieldPosition // Field
 // RowPartsPositions
 type RowPartsPositions []RowPartCode
 
-// type RowPartsPositionsExternal []RowPartCode                        // Part
+// type RowPartsPositionsExternal []RowPartCode                        // Alternative
 type RowPartsFieldsPositions map[RowPartCode]RowPartFieldsPositions // Row: partname vs partFieldsPositions
 
 // RowField
@@ -59,9 +59,11 @@ type TableXML struct {
 	UniqueRowsOrder []int
 	UniqueRows      map[string]int
 
-	SrcFilePath    string
-	DstFilePath    string
-	CSVwriterLocal *strings.Builder
+	TableRows            RowParts
+	SrcFilePath          string
+	DstFilePath          string
+	CSVtableWriterLocal  *strings.Builder
+	CSVheaderWriterLocal *strings.Builder
 }
 
 // TablesXML
@@ -76,4 +78,10 @@ type TablesXML struct {
 func ConstructDestinationFilePath(srcPath string) string {
 	srcDir, name := filepath.Split(srcPath)
 	return filepath.Join(srcDir, "export"+name+".csv")
+}
+
+func (t *TableXML) NullXMLnode() {
+	for i := range t.Rows {
+		t.Rows[i].Node = nil
+	}
 }

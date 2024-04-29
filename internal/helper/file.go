@@ -11,7 +11,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/xuri/excelize/v2"
 	enc_unicode "golang.org/x/text/encoding/unicode"
 )
 
@@ -123,41 +122,4 @@ func ReadCSVfile(filePath string) ([][]string, error) {
 	reader := csv.NewReader(file)
 	// reads all the records from the CSV file and return [][]string
 	return reader.ReadAll()
-}
-
-// ReadExcelFileSheet
-func ReadExcelFileSheet(filePath, sheetName string) (
-	rows [][]string, err error) {
-	f, err := excelize.OpenFile(filePath)
-	if err != nil {
-		return nil, err
-	}
-	defer func() {
-		// Close the spreadsheet.
-		if err := f.Close(); err != nil {
-			rows = nil
-		}
-	}()
-	// cell, err := f.GetCellValue("Sheet1", "B2")
-	// Get all the rows in the Sheet1.
-	return f.GetRows(sheetName)
-}
-
-// MapExcelSheetColumn reads specified specified excel file sheet and creates map from the specified column. Useful to check whether column contains specific value(s).
-func MapExcelSheetColumn(
-	filePath, sheetName string, columnNumber int,
-) (map[string]bool, error) {
-	res := make(map[string]bool)
-	rows, err := ReadExcelFileSheet(filePath, sheetName)
-	if err != nil {
-		return nil, err
-	}
-	for i, row := range rows {
-		if i < 1 {
-			// omit header
-			continue
-		}
-		res[row[columnNumber]] = true
-	}
-	return res, nil
 }

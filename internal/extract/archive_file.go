@@ -8,7 +8,6 @@ import (
 	ar "github/czech-radio/openmedia/internal/archive"
 	"github/czech-radio/openmedia/internal/helper"
 	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/antchfx/xmlquery"
@@ -78,16 +77,16 @@ func (af *ArchiveFile) ExtractByXMLquery(extrs OMextractors) error {
 
 // ExtractByXMLquery
 func (apf *ArchivePackageFile) ExtractByXMLquery(
-	enc helper.FileEncodingCode, q *ArchiveFolderQuery) error {
+	enc helper.FileEncodingCode, q *ArchiveFolderQuery) (*Extractor, error) {
 	var err error
 	// Extract file from zip
 	dataReader, err := ar.ZipXmlFileDecodeData(apf.Reader, enc)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	baseNode, err := XMLgetOpenmediaBaseNode(dataReader)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	// Extract specfied object fields
 	var extractor Extractor
@@ -95,34 +94,15 @@ func (apf *ArchivePackageFile) ExtractByXMLquery(
 
 	err = extractor.ExtractTable(apf.Reader.Name)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if q.ComputeUniqueRows {
 		extractor.UniqueRows()
 	}
-	extractor.TransformEmptyRowPart()
-	extractor.Transform(q.Transformer)
-	extractor.FiltersRun(q.FilterColumns)
-
-	dstDir := "not_specified"
-
-	// csvWithHeader := filepath.Join(dstDir, "test_with_header.csv")
-	// csvWithHeader := filepath.Join(dstDir, "W13_with_header.csv")
-	csvWithHeader := filepath.Join(dstDir, "W13_with_header.csv")
-	extractor.CSVtableBuild(q.PrintHeader, q.PrintHeader, "\t", true)
-	extractor.CSVtableWrite(csvWithHeader)
-
-	// csvWOheader := filepath.Join(dstDir, "test_wo_header.csv")
-	// csvWOheader := filepath.Join(dstDir, "W13_wo_header.csv")
-	csvWOheader := filepath.Join(dstDir, "W13_wo_header.csv")
-	extractor.CSVtableBuild(false, q.PrintHeader, "\t", true)
-	extractor.CSVtableWrite(csvWOheader)
-
-	// rowsIDx := extractor.FilterByPartAndFieldID(RowPartCode_HourlyHead, "8", "13:00-14:00")
-	// extractor.CSVtablePrintDirect(false, true, "\t", rowsIDx)
-	// extractor.CSVtablePrintDirect(false, true, "\t")
-	// extractor.CSVtablePrintDirect(true, true, "\t")
-	return nil
+	// extractor.TransformEmptyRowPart()
+	// extractor.Transform(q.Transformer)
+	// extractor.FiltersRun(q.FilterColumns)
+	return &extractor, nil
 }
 
 // ExtractByParser

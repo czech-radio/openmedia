@@ -65,7 +65,9 @@ func (e *Extractor) Init(
 	e.MapRowPartsFieldsPositions()
 	e.HeaderBuild()
 	e.OMextractors.MapFieldsPath()
-	e.TableXML.Rows = []*RowNode{{baseNode, RowParts{}}}
+	if baseNode != nil {
+		e.TableXML.Rows = []*RowNode{{baseNode, RowParts{}}}
+	}
 }
 
 func (e *Extractor) MapRowParts() {

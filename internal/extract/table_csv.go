@@ -17,11 +17,19 @@ func (row RowParts) CSVrowBuild(
 	partsFieldsPos RowPartsFieldsPositions,
 	delim string,
 ) {
-	for _, pos := range partsPos {
+	count := len(partsPos)
+	for i, pos := range partsPos {
 		fieldsPos := partsFieldsPos[pos]
 		part := row[pos]
 		part.CSVrowPartBuild(builder, fieldsPos, delim)
+		if len(fieldsPos) == 0 {
+			continue
+		}
+		if i < count-1 {
+			fmt.Fprintf(builder, "%s", "\t")
+		}
 	}
+	// end the line
 	fmt.Fprintf(builder, "%s", "\n")
 }
 
@@ -32,8 +40,12 @@ func (part RowPart) CSVrowPartBuild(
 	delim string,
 ) {
 	specValEmpty := RowFieldValueCodeMap[RowFieldValueEmptyString]
+	count := len(fieldsPosition)
 	formatUse := "%s" + delim
-	for _, pos := range fieldsPosition {
+	for i, pos := range fieldsPosition {
+		if i == count-1 || count == 1 {
+			formatUse = "%s"
+		}
 		field, ok := part[pos.FieldID]
 		if !ok {
 			value := specValEmpty
@@ -48,10 +60,10 @@ func (part RowPart) CSVrowPartBuild(
 }
 
 func (e *Extractor) CSVheaderBuild(internal, external bool) {
-	if e.TableXML.CSVwriterLocal == nil {
-		e.TableXML.CSVwriterLocal = new(strings.Builder)
-	}
-	sb := e.TableXML.CSVwriterLocal
+	// if e.TableXML.CSVheaderWriterLocal == nil {
+	e.TableXML.CSVheaderWriterLocal = new(strings.Builder)
+	// }
+	sb := e.TableXML.CSVheaderWriterLocal
 	if internal {
 		iheader := strings.Join(e.HeaderInternal, e.CSVdelim)
 		fmt.Fprintln(sb, iheader)
@@ -66,18 +78,19 @@ func (e *Extractor) CSVtableBuild(
 	internalHeader, externalHeader bool,
 	delim string, clearBuilder bool, rowsIndexes ...[]int) int {
 	var rowsCount int
-	if e.TableXML.CSVwriterLocal == nil {
-		e.TableXML.CSVwriterLocal = new(strings.Builder)
+	if e.TableXML.CSVtableWriterLocal == nil {
+		e.TableXML.CSVtableWriterLocal = new(strings.Builder)
 	}
 	if clearBuilder {
-		e.TableXML.CSVwriterLocal = new(strings.Builder)
+		e.TableXML.CSVtableWriterLocal = new(strings.Builder)
 	}
-	sb := e.TableXML.CSVwriterLocal
+	sb := e.TableXML.CSVtableWriterLocal
 	if len(rowsIndexes) > 1 {
 		panic("not implemented for multiple indexes' slices")
 	}
 	switch len(rowsIndexes) {
 	case 0:
+		// Build all rows
 		e.CSVheaderBuild(internalHeader, externalHeader)
 		for i := 0; i < len(e.TableXML.Rows); i++ {
 			e.TableXML.Rows[i].CSVrowBuild(
@@ -85,6 +98,7 @@ func (e *Extractor) CSVtableBuild(
 			)
 			rowsCount++
 		}
+		// Build only specified rows in indexes slice
 	case 1:
 		e.CSVheaderBuild(internalHeader, externalHeader)
 		for _, index := range rowsIndexes[0] {
@@ -99,7 +113,7 @@ func (e *Extractor) CSVtableBuild(
 
 func (e *Extractor) CSVtableOutput(dstFile string) {
 	if dstFile == "" {
-		fmt.Print(e.TableXML.CSVwriterLocal)
+		fmt.Print(e.TableXML.CSVtableWriterLocal)
 		return
 	}
 }
@@ -107,7 +121,7 @@ func (e *Extractor) CSVtableOutput(dstFile string) {
 // CSVtableWrite
 func (e *Extractor) CSVtableWrite(dstFilePath string) {
 	if dstFilePath == "" {
-		fmt.Println(e.TableXML.CSVwriterLocal)
+		fmt.Println(e.TableXML.CSVtableWriterLocal)
 		return
 	}
 	outputFile, err := os.OpenFile(dstFilePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0600)
@@ -115,7 +129,24 @@ func (e *Extractor) CSVtableWrite(dstFilePath string) {
 		panic(err)
 	}
 	defer outputFile.Close()
-	n, err := outputFile.WriteString(e.TableXML.CSVwriterLocal.String())
+	n, err := outputFile.WriteString(e.TableXML.CSVtableWriterLocal.String())
+	if err != nil {
+		panic(err)
+	}
+	slog.Warn("written bytes to file", "fileName", dstFilePath, "bytesCount", n)
+}
+
+func (e *Extractor) CSVheaderWrite(dstFilePath string) {
+	if dstFilePath == "" {
+		fmt.Println(e.TableXML.CSVheaderWriterLocal)
+		return
+	}
+	outputFile, err := os.OpenFile(dstFilePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0600)
+	if err != nil {
+		panic(err)
+	}
+	defer outputFile.Close()
+	n, err := outputFile.WriteString(e.TableXML.CSVheaderWriterLocal.String())
 	if err != nil {
 		panic(err)
 	}
