@@ -30,7 +30,7 @@ func (e *Extractor) Transform(code TransformerCode) {
 	case TransformerProduction:
 		e.TransformProduction()
 	case TransformerProductionCSV:
-		e.TransformProductionCSV()
+		e.TransformBase()
 	case TransformerEurovolby:
 		e.TransformEurovolby()
 	}
@@ -109,6 +109,7 @@ func (e *Extractor) RemoveColumn(
 
 // AddColumn
 func (e *Extractor) AddColumn(fieldPrefix RowPartCode, fieldID string) {
+	// NOTE: new part with new fieldPrefix will not be added. Currently must be specified in []OMextractors
 	positions := e.RowPartsFieldsPositions[fieldPrefix]
 	var newPos RowPartFieldsPositions
 	alreadyContains := false
@@ -119,7 +120,6 @@ func (e *Extractor) AddColumn(fieldPrefix RowPartCode, fieldID string) {
 		newPos = append(newPos, pos)
 	}
 	if !alreadyContains {
-		slog.Warn("fuck column added")
 		fieldPos := RowPartFieldPosition{
 			RowPartName: "",
 			FieldID:     fieldID,
@@ -227,7 +227,8 @@ func (e *Extractor) TransformHeaderExternal(
 
 // TransformObjectID
 func TransformObjectID(objectID string) (string, error) {
-	if objectID == "" || objectID == RowFieldValueCodeMap[RowFieldValueChildNotFound] {
+	specVal := CheckIfMapContainsKeyValue(RowFieldSpecialValueCodeMap, objectID)
+	if objectID == "" || specVal {
 		return objectID, nil
 	}
 	return fmt.Sprintf("ID_%s", objectID), nil
@@ -310,6 +311,7 @@ func (e *Extractor) TransformDateToTime(
 		if addDate {
 			field.Value = datestr
 			part["datum"] = field
+			e.AddColumn(prefixCode, "datum")
 		}
 	}
 }
@@ -326,7 +328,7 @@ func ParseXMLdate(input string) (time.Time, error) {
 
 // TransformEmptyString
 func TransformEmptyString(input string) string {
-	value := RowFieldValueCodeMap[RowFieldValueEmptyString]
+	value := RowFieldSpecialValueCodeMap[RowFieldValueEmptyString]
 	if input == "" {
 		return value
 	}
@@ -336,7 +338,7 @@ func TransformEmptyString(input string) string {
 // TransformEmptyRowPart transform whole row part fields to special value if
 // the part was not extracted from xml.
 func (e *Extractor) TransformEmptyRowPart() {
-	specValNotPossible := RowFieldValueCodeMap[RowFieldValueNotPossible]
+	specValNotPossible := RowFieldSpecialValueCodeMap[RowFieldValueNotPossible]
 	for _, row := range e.TableXML.Rows {
 		for _, partCode := range e.RowPartsPositions {
 			_, ok := row.RowParts[partCode]
@@ -359,12 +361,12 @@ func (e *Extractor) TransformEmptyRowPart() {
 
 // TransformEmptyToNoContain
 func TransformEmptyToNoContain(input string) (string, error) {
-	childVal := RowFieldValueCodeMap[RowFieldValueChildNotFound]
-	parentVal := RowFieldValueCodeMap[RowFieldValueParentNotFound]
+	childVal := RowFieldSpecialValueCodeMap[RowFieldValueChildNotFound]
+	parentVal := RowFieldSpecialValueCodeMap[RowFieldValueParentNotFound]
 	out := input
 	switch input {
 	case childVal, parentVal, "":
-		out = RowFieldValueCodeMap[RowFieldValueParentNotFound]
+		out = RowFieldSpecialValueCodeMap[RowFieldValueParentNotFound]
 	}
 	return out, nil
 }
@@ -406,8 +408,11 @@ func (row RowParts) ConsructRecordIDs() string {
 	return sb.String()
 }
 
-func (e *Extractor) ComputeName() {
-	targetFieldID := "jmeno_spojene"
+func (e *Extractor) ComputeJoinNameAndSurname(
+	newColumnRowPart RowPartCode, newColumnName string) {
+	// targetFieldID := "jmeno_spojene"
+	targetFieldID := newColumnName
+	e.AddColumn(newColumnRowPart, newColumnName)
 	for i := range e.TableXML.Rows {
 		part, ok := e.TableXML.Rows[i].RowParts[RowPartCode_ContactItemHead]
 		if !ok {
@@ -415,7 +420,8 @@ func (e *Extractor) ComputeName() {
 		}
 		jmeno := part["421"].Value
 		prijmeni := part["422"].Value
-		dstPart, ok := e.TableXML.Rows[i].RowParts[RowPartCode_ComputedKON]
+		// dstPart, ok := e.TableXML.Rows[i].RowParts[RowPartCode_ComputedKON]
+		dstPart, ok := e.TableXML.Rows[i].RowParts[newColumnRowPart]
 		if !ok {
 			dstPart = make(RowPart)
 		}
@@ -425,7 +431,8 @@ func (e *Extractor) ComputeName() {
 			Value:     fmt.Sprintf("%s %s", prijmeni, jmeno),
 		}
 		dstPart[targetFieldID] = field
-		e.TableXML.Rows[i].RowParts[RowPartCode_ComputedKON] = dstPart
+		e.TableXML.Rows[i].RowParts[newColumnRowPart] = dstPart
+		// e.TableXML.Rows[i].RowParts[RowPartCode_ComputedKON] = dstPart
 	}
 }
 

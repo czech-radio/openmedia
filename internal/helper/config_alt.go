@@ -1,7 +1,6 @@
 package helper
 
 import (
-	"encoding/json"
 	"flag"
 	"fmt"
 	"log/slog"
@@ -9,90 +8,8 @@ import (
 	"strconv"
 )
 
-type FlagOption struct {
-	FlagDescription
-	AllovedValues []any
-	FuncMatch     func(any) bool `json:"omit"`
-}
-
-type FlagDescription struct {
-	LongFlag   string
-	ShortFlag  string
-	Default    string
-	Type       string
-	Descripton string
-}
-
-type OptsDec struct {
-	Long, Short, Default interface{}
-	Alloved              interface{}
-}
-
-type Subcommands map[string]func()
-
-type CommandConfig struct {
-	OptsMap map[string][5]interface{}
-	Opts    []FlagOption
-	Subs    Subcommands
-}
-
-func (cc *CommandConfig) Init() {
-	cc.DeclareFlags()
-	rcfg := &RootCfg{}
-	err := cc.ParseFlags(rcfg)
-	if err != nil {
-		panic(err)
-	}
-	SetLogLevel(strconv.Itoa(rcfg.Verbose), rcfg.LogType)
-	if flag.NArg() < 1 {
-		fmt.Println("version to do")
-		// VersionInfoPrint()
-		return
-	}
-}
-
-func (cc *CommandConfig) RunRoot() {
-	flag.Parse()
-	res, err := json.Marshal(cc)
-	if err != nil {
-		slog.Info("cannot marshal config")
-	} else {
-		slog.Info("root config", "config", res)
-	}
-	cc.RunSub()
-	// run()
-	// _ = run
-	// slog.Info("root config", "config", cc)
-	// fmt.Printf("config %+v\n", cc.ParseFlags)
-}
-
-// err = flag.CommandLine.Parse(flag.Args()[1:])
-func (cc *CommandConfig) RunSub() {
-	subcmd := flag.Arg(0)
-	slog.Info("subcommand called", "subcommand", subcmd)
-	sub, ok := cc.Subs[subcmd]
-	if !ok {
-		panic(fmt.Errorf("unknown subcommand: %s", subcmd))
-	}
-	_ = sub
-}
-
-func (cc *CommandConfig) AddSub(subName string, subF func()) {
-	if cc.Subs == nil {
-		cc.Subs = make(Subcommands)
-	}
-	cc.Subs[subName] = subF
-}
-
-func (cc *CommandConfig) AddOption(
-	long, short, defValue, typeValue, descr string,
-	alloved []any, funcM func(any) bool) {
-	opt := FlagOption{
-		FlagDescription: FlagDescription{
-			long, short, defValue, typeValue, descr,
-		}, AllovedValues: alloved, FuncMatch: funcM}
-	cc.Opts = append(cc.Opts, opt)
-}
+// TODO: print usage for all commands at once using run main.go and all subcmds with help
+// TODO: implement validate flag value by function (check alloved values)
 
 type RootCfg struct {
 	Version     bool
@@ -126,6 +43,97 @@ var CommandRoot = CommandConfig{
 	},
 }
 
+type CommandConfig struct {
+	OptsMap map[string][5]interface{}
+	Opts    []FlagOption
+	Subs    Subcommands
+	Values  interface{}
+}
+
+type FlagOption struct {
+	FlagDescription
+	AllovedValues []any
+	FuncMatch     func(any) bool `json:"-"`
+}
+
+type FlagDescription struct {
+	LongFlag   string
+	ShortFlag  string
+	Default    string
+	Type       string
+	Descripton string
+}
+
+type OptsDec struct {
+	Long, Short, Default interface{}
+	Alloved              interface{}
+}
+
+type Subcommands map[string]func()
+
+func (cc *CommandConfig) Init() {
+	cc.DeclareFlags()
+	rcfg := &RootCfg{}
+	flag.Parse()
+	err := cc.ParseFlags(rcfg)
+	if err != nil {
+		panic(err)
+	}
+	SetLogLevel(strconv.Itoa(rcfg.Verbose), rcfg.LogType)
+	cc.Values = rcfg
+	if flag.NArg() < 1 {
+		fmt.Println("version to do")
+		// VersionInfoPrint()
+		return
+	}
+	slog.Info("root config", "config", cc.Values)
+}
+
+func (cc *CommandConfig) RunRoot() {
+	subCmdName := flag.Arg(0)
+	if subCmdName == "" {
+		return
+	}
+	subCmdFunc, ok := cc.Subs[subCmdName]
+	if !ok {
+		panic(fmt.Errorf("unknown subcommand: %s", subCmdName))
+	}
+	subCmdFunc()
+}
+
+func (cc *CommandConfig) RunSub(intf interface{}) {
+	subcmd := flag.Arg(0)
+	slog.Info("subcommand called", "subcommand", subcmd)
+	FlagsUsage = fmt.Sprintf("subcommand: %s\n", subcmd)
+	cc.DeclareFlags()
+	err := flag.CommandLine.Parse(flag.Args()[1:])
+	if err != nil {
+		panic(err)
+	}
+	flag.Parse()
+	err = cc.ParseFlags(intf)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func (cc *CommandConfig) AddSub(subName string, subF func()) {
+	if cc.Subs == nil {
+		cc.Subs = make(Subcommands)
+	}
+	cc.Subs[subName] = subF
+}
+
+func (cc *CommandConfig) AddOption(
+	long, short, defValue, typeValue, descr string,
+	alloved []any, funcM func(any) bool) {
+	opt := FlagOption{
+		FlagDescription: FlagDescription{
+			long, short, defValue, typeValue, descr,
+		}, AllovedValues: alloved, FuncMatch: funcM}
+	cc.Opts = append(cc.Opts, opt)
+}
+
 func (opt FlagDescription) Error(err error) {
 	if err == nil {
 		return
@@ -135,24 +143,16 @@ func (opt FlagDescription) Error(err error) {
 	panic(errMsg)
 }
 
-func (cc *CommandConfig) DeclareFlags() {
-	cc.OptsMap = make(map[string][5]interface{})
-	for i := range cc.Opts {
-		res := cc.Opts[i].DeclareFlag()
-		name := cc.Opts[i].LongFlag
-		cc.OptsMap[name] = res
-	}
-	flag.Usage = Usage
-	// flag.Parse()
-}
-
-func CheckValAlloved(flagName string, inp any, alloved interface{}) {
+func CheckAllovedValues(flagName string, inp any, alloved interface{}) {
 	var match bool
 	if alloved == nil {
-		match = true
+		return
 	}
 	switch t := alloved.(type) {
 	case []interface{}:
+		if len(t) == 0 {
+			return
+		}
 		for _, i := range alloved.([]interface{}) {
 			if inp == i {
 				match = true
@@ -175,11 +175,21 @@ func (opt *FlagOption) DeclareUsage() {
 	fd := opt.FlagDescription
 	if opt.AllovedValues == nil {
 		format := "-%s, -%s\n\t%s\n\n"
-		flagsUsage += fmt.Sprintf(format, fd.ShortFlag, fd.LongFlag, fd.Descripton)
+		FlagsUsage += fmt.Sprintf(format, fd.ShortFlag, fd.LongFlag, fd.Descripton)
 	} else {
 		format := "-%s, -%s\n\t%s\n\t%v\n\n"
-		flagsUsage += fmt.Sprintf(format, fd.ShortFlag, fd.LongFlag, fd.Descripton, opt.AllovedValues)
+		FlagsUsage += fmt.Sprintf(format, fd.ShortFlag, fd.LongFlag, fd.Descripton, opt.AllovedValues)
 	}
+}
+
+func (cc *CommandConfig) DeclareFlags() {
+	cc.OptsMap = make(map[string][5]interface{})
+	for i := range cc.Opts {
+		res := cc.Opts[i].DeclareFlag()
+		name := cc.Opts[i].LongFlag
+		cc.OptsMap[name] = res
+	}
+	flag.Usage = Usage
 }
 
 func (opt *FlagOption) DeclareFlag() [5]interface{} {
@@ -235,20 +245,22 @@ func (cc *CommandConfig) ParseFlags(iface interface{}) error {
 		case "int":
 			vals := []int{*long.(*int), *short.(*int), *def.(*int)}
 			res := GetIntValuePriority(vals...)
-			CheckValAlloved(optName, res, alloved)
+			CheckAllovedValues(optName, res, alloved)
 			vofe.Field(i).SetInt(int64(res))
 		case "string":
 			vals := []string{*long.(*string), *short.(*string), def.(string)}
 			res := GetStringValuePriority(vals...)
-			CheckValAlloved(optName, res, alloved)
+			CheckAllovedValues(optName, res, alloved)
 			vofe.Field(i).SetString(res)
 		default:
 			panic("flag type not implemented")
 		}
 	}
+	flag.Parse()
 	return nil
 }
 
+// OPTION GETERS
 // GetBoolValuePriority return value according to priority. Priority is given in desceding. Last value is default value.
 func GetBoolValuePriority(vals ...bool) bool {
 	count := len(vals) - 1

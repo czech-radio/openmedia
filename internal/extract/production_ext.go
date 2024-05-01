@@ -78,10 +78,10 @@ var EXTproduction = OMextractors{
 		PartPrefixCode:       RowPartCode_ContactItemHead,
 		KeepWhenZeroSubnodes: true,
 	},
-	// OMextractor{
-	// PartPrefixCode: RowPartCode_ComputedKON,
-	// FieldIDs:       []string{"jmeno_spojene"},
-	// },
+	OMextractor{
+		PartPrefixCode: RowPartCode_ComputedKON,
+		// FieldIDs:       []string{"jmeno_spojene"},
+	},
 }
 
 //"/Radio Rundown",

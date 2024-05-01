@@ -39,7 +39,7 @@ func (part RowPart) CSVrowPartBuild(
 	fieldsPosition RowPartFieldsPositions,
 	delim string,
 ) {
-	specValEmpty := RowFieldValueCodeMap[RowFieldValueEmptyString]
+	specValEmpty := RowFieldSpecialValueCodeMap[RowFieldValueEmptyString]
 	count := len(fieldsPosition)
 	formatUse := "%s" + delim
 	for i, pos := range fieldsPosition {

@@ -55,49 +55,51 @@ var RowPartsCodeMapProduction = PartsPrefixMap{
 type FieldsIDsNames map[string]string
 
 var FieldsIDsNamesProduction = FieldsIDsNames{
-	"1":             "cas_vytvoreni",
-	"1000":          "datum",
-	"1002":          "planovana_stopaz",
-	"1003":          "cas_konce",
-	"1004":          "cas_zacatku",
-	"1005":          "stopaz",
-	"1010":          "spoctena_stopaz",
-	"1029":          "korekce",
-	"1035":          "cas_textu",
-	"1036":          "audio_stopaz",
-	"12":            "redakce",
-	"16":            "druh",
-	"321":           "format",
-	"38":            "stopaz",
-	"421":           "jmeno",
-	"422":           "prijmeni",
-	"423":           "spolecnost",
-	"424":           "funkce",
-	"5":             "vytvoril",
-	"5015":          "strana",
-	"5016":          "tema",
-	"5070":          "schvalil_redakce",
-	"5071":          "schvalil_stanice",
-	"5072":          "incode",
-	"5079":          "cil_vyroby",
-	"5081":          "stanice",
-	"5082":          "itemcode",
-	"5087":          "ID",
-	"5088":          "pohlavi",
-	"6":             "autor",
-	"8":             "nazev",
-	"ID":            "compID",
-	"RecordID":      "RID",
-	"TemplateName":  "kategorie",
-	"datum":         "datum",
-	"kategory":      "kategory",
-	"C-RID":         "RID",
-	"C-index":       "index",
-	"ObjectID":      "ObjectID",
-	"FileName":      "FileName",
-	"filtered":      "filtered",
-	"region":        "region",
-	"jmeno_spojene": "jmeno_spojene",
+	"1":                "cas_vytvoreni",
+	"1000":             "datum",
+	"1002":             "planovana_stopaz",
+	"1003":             "cas_konce",
+	"1004":             "cas_zacatku",
+	"1005":             "stopaz",
+	"1010":             "spoctena_stopaz",
+	"1029":             "korekce",
+	"1035":             "cas_textu",
+	"1036":             "audio_stopaz",
+	"12":               "redakce",
+	"16":               "druh",
+	"321":              "format",
+	"38":               "stopaz",
+	"421":              "jmeno",
+	"422":              "prijmeni",
+	"423":              "spolecnost",
+	"424":              "funkce",
+	"5":                "vytvoril",
+	"5015":             "strana",
+	"5016":             "tema",
+	"5070":             "schvalil_redakce",
+	"5071":             "schvalil_stanice",
+	"5072":             "incode",
+	"5079":             "cil_vyroby",
+	"5081":             "stanice",
+	"5082":             "itemcode",
+	"5087":             "ID",
+	"5088":             "pohlavi",
+	"6":                "autor",
+	"8":                "nazev",
+	"ID":               "compID",
+	"RecordID":         "RID",
+	"TemplateName":     "kategorie",
+	"datum":            "datum",
+	"kategory":         "kategory",
+	"C-RID":            "RID",
+	"C-index":          "index",
+	"ObjectID":         "ObjectID",
+	"FileName":         "FileName",
+	"filtered":         "filtered",
+	"region":           "region",
+	"jmeno_spojene":    "jmeno_spojene",
+	"name_match":       "name_match",
+	"name&party_match": "kontrola_strany",
 }
 
 var FieldsIDsNamesProductionLong = FieldsIDsNames{
@@ -145,13 +147,22 @@ const (
 	RowFieldValueParentNotFound
 )
 
-var RowFieldValueCodeMap = map[RowFieldValueCode]string{
+var RowFieldSpecialValueCodeMap = map[RowFieldValueCode]string{
 	RowFieldValueEmptyString:    "(NS)", // (NOT SPECIFIED), (NEUVEDENO)
 	RowFieldValueNotPossible:    "(NP)", // (NOT POSSIBLE), (NELZE)
 	RowFieldValueNotContain:     "(NC)", // (NOT CONTAIN), (NEOBSAHUJE)
 	RowFieldValueNotValid:       "(NV)", // (NOT VALID), (INVALID)
 	RowFieldValueChildNotFound:  "(NP)", // (NOT POSIBLE), (NELZE)
 	RowFieldValueParentNotFound: "(NC)", // (NOT CONTAIN), (NEOBSAHUJE)
+}
+
+func CheckIfMapContainsKeyValue(inMap map[RowFieldValueCode]string, value string) bool {
+	for _, spec := range inMap {
+		if spec == value {
+			return true
+		}
+	}
+	return false
 }
 
 type RadioSationIDs struct {

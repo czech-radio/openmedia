@@ -1,20 +1,24 @@
 package cmd
 
 import (
-	"fmt"
 	"github/czech-radio/openmedia/internal/helper"
 )
 
-var CommandExtAlt = helper.CommandConfig{}
+var ExtAlt = helper.CommandConfig{}
 
-func CommandExtAltOpts() {
-	add := CommandExtAlt.AddOption
+func ExtAltOpts() {
+	add := ExtAlt.AddOption
 	add("sourceFile", "sf", "", "string", "Source rundown file.",
 		nil, nil)
 }
 
-func RunExtAlt() {
-	fmt.Println("running sub")
-	// CommandExtAltOpts()
-	// CommandExtAlt.DeclareFlags()
+type ExtAltCfg struct {
+	SourceFile string
+}
+
+var my = ExtAltCfg{}
+
+func ExtAltRun() {
+	ExtAltOpts()
+	ExtAlt.RunSub(&my)
 }

@@ -4,6 +4,7 @@ import (
 	ar "github/czech-radio/openmedia/internal/archive"
 	"github/czech-radio/openmedia/internal/extract"
 	"github/czech-radio/openmedia/internal/helper"
+	"path/filepath"
 	"time"
 )
 
@@ -52,57 +53,49 @@ func RunExtractArchive(rootCfg *ConfigRoot, cfg *ConfigExtractArchive) {
 	// dateTo, _ := helper.CzechDateToUTC(2024, 3, 1, 0)
 	// dateTo, _ := helper.CzechDateToUTC(2024, 4, 1, 0)
 
+	// LEDEN-BREZEN
+	dateFrom, _ := helper.CzechDateToUTC(2024, 1, 1, 0)
+	dateTo, _ := helper.CzechDateToUTC(2024, 3, 1, 0)
+
 	// TEST WEEK 13
 	// dateFrom, _ := helper.CzechDateToUTC(2024, 3, 25, 0)
 	// dateTo, _ := helper.CzechDateToUTC(2024, 4, 1, 0)
 
 	// TEST VZOR
-	dateFrom, _ := helper.CzechDateToUTC(2024, 1, 2, 15)
-	dateTo, _ := helper.CzechDateToUTC(2024, 1, 2, 17)
+	// dateFrom, _ := helper.CzechDateToUTC(2024, 1, 2, 15)
+	// dateTo, _ := helper.CzechDateToUTC(2024, 1, 2, 17)
 
 	filterRange := [2]time.Time{dateFrom, dateTo}
 
 	radioNames := map[string]bool{
 		// "Radiožurnál": true,
-		"Plus":   true,
-		"Dvojka": true,
+		// "Plus": true,
+		// "Dvojka": true,
 		// "ČRo_Vysočina": true,
 		// "ČRo_Karlovy_Vary": true,
 		// "ČRo_Brno": true,
 	}
-
-	// Filter columns
-	var filterColumns []extract.FilterColumn
-	filterFile := "/home/jk/CRO/CRO_BASE/openmedia_backup/filters/eurovolby - zadání.xlsx"
-	// filterFile := "/home/jk/CRO/CRO_BASE/openmedia_backup/filters/filtrace - zadání.xlsx"
-	// values, err := helper.MapExcelSheetColumn(filterFile, "seznam", 0)
-	// if err != nil {
-	// 	helper.Errors.ExitWithCode(err)
-	// }
-	filter := extract.FilterCodeMap[extract.FilterCodeMatchPersonName]
-	filter.FileWithValues = filterFile
-	// filter.Values = values
-	filterColumns = append(filterColumns, filter)
+	// expRange := "test"
+	// expRange := "W13"
+	expRange := "2024_leden_unor"
 
 	// Build query
 	query := extract.ArchiveFolderQuery{
 		RadioNames: radioNames,
 		DateRange:  filterRange,
 		Extractors: extract.EXTproduction,
-		// Transformer: extract.TransformerProduction,
-		// Transformer: extract.TransformerProductionCSV,
 		// Extractors: internal.EXTeuroVolby,
-		// FilterColumns: filterColumns,
 		CSVdelim: cfg.CSVdelim,
 	}
 
 	// Query run on folder
 	srcFolder := "/mnt/remote/cro/export-avo/Rundowns"
 	// srcFolder := "/home/jk/CRO/CRO_BASE/openmedia_backup/Archive/"
+	dstDir := "/mnt/remote/cro/R/GŘ/Strategický rozvoj/Analytická sekce/Analýzy/Produkce/Tests/2024_04_30_produkce/"
 
-	// dstDir := "/tmp/out/"
-	dstFile1 := "/tmp/out/test_wheader.csv"
-	dstFile2 := "/tmp/out/test_woheader.csv"
+	dstFile1 := filepath.Join(dstDir, expRange+"_base_wheader.csv")
+	dstFile2 := filepath.Join(dstDir, expRange+"_base_woheader.csv")
+
 	err := arf.FolderMap(
 		srcFolder, true, &query)
 	if err != nil {
@@ -110,15 +103,10 @@ func RunExtractArchive(rootCfg *ConfigRoot, cfg *ConfigExtractArchive) {
 	}
 	ext := arf.FolderExtract(&query)
 
-	// Transfor
+	// A) BASE
+	// Transform
 	ext.TransformEmptyRowPart()
-	ext.TransformProductionCSV()
-	// ext.TransformEmptyRowPart()
-	// ext.FiltersRun()
-	// extractor.Transform(q.Transformer)
-	// ext.FilterColumns()
-
-	// Prebuild
+	ext.TransformBase()
 	ext.CSVtableBuild(false, false, query.CSVdelim, false)
 
 	// with internal header
@@ -131,5 +119,39 @@ func RunExtractArchive(rootCfg *ConfigRoot, cfg *ConfigExtractArchive) {
 	ext.CSVheaderWrite(dstFile2)
 	ext.CSVtableWrite(dstFile2)
 
-	// excel
+	// B) PRODUCTION
+	dstFile3 := filepath.Join(dstDir, expRange+"_eurovolby_wheader.csv")
+	dstFile4 := filepath.Join(dstDir, expRange+"_eurovolby_woheader.csv")
+	ext.TransformProduction()
+
+	// filter
+	filter := extract.NFilterColumn{
+		FilterFileName:  "/home/jk/CRO/CRO_BASE/openmedia_backup/filters/eurovolby - zadání.xlsx",
+		SheetName:       "data",
+		ColumnHeaderRow: 0,
+		RowHeaderColumn: 0,
+		PartCodeMark:    0,
+		FieldIDmark:     "",
+	}
+
+	err = ext.FilterMatchPersonName(&filter)
+	if err != nil {
+		panic(err)
+	}
+	err = ext.FilterMatchPersonAndParty(&filter)
+	if err != nil {
+		panic(err)
+	}
+
+	// build
+	ext.CSVtableBuild(false, false, query.CSVdelim, true)
+
+	// write file
+	ext.CSVheaderBuild(true, true)
+	ext.CSVheaderWrite(dstFile3)
+	ext.CSVtableWrite(dstFile3)
+
+	ext.CSVheaderBuild(false, true)
+	ext.CSVheaderWrite(dstFile4)
+	ext.CSVtableWrite(dstFile4)
 }

@@ -8,11 +8,11 @@ import (
 	"strings"
 )
 
-var flagsUsage = "Usage:\n"
+var FlagsUsage = "Usage:\n"
 
 // Usage called when help command invoked
 func Usage() {
-	fmt.Println(flagsUsage)
+	fmt.Println(FlagsUsage)
 }
 
 type FlagsMap map[string]map[string]interface{}
@@ -78,7 +78,7 @@ func DeclareFlags(config interface{}) (FlagsMap, error) {
 		}
 		fieldType := field.Type
 		cmdOpts := strings.Split(tagValue, "; ")
-		flagsUsage += fmt.Sprintf("-%s, --%s\n\t%s\n", cmdOpts[1], cmdOpts[0], cmdOpts[3])
+		FlagsUsage += fmt.Sprintf("-%s, --%s\n\t%s\n", cmdOpts[1], cmdOpts[0], cmdOpts[3])
 		flagMap := make(map[string]interface{})
 		flags[field.Name] = flagMap
 		switch fieldType.Kind() {

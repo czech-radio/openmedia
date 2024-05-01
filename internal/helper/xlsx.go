@@ -1,6 +1,8 @@
 package helper
 
-import "github.com/xuri/excelize/v2"
+import (
+	"github.com/xuri/excelize/v2"
+)
 
 // ReadExcelFileSheetRows
 func ReadExcelFileSheetRows(filePath, sheetName string) (
@@ -40,23 +42,47 @@ func MapExcelSheetColumn(
 }
 
 type Table struct {
-	RowHeader       []string
-	RowHeaderMap    map[string]int // Name vs position
-	ColumnHeader    []string
-	ColumnHeaderMap map[string]int
-	Rows            [][]string
+	Rows                 [][]string
+	RowHeaderToColumnMap map[string][]string
+	ColumnHeaderMap      map[string]int
+	ColumnHeader         []string
 }
 
-func MapExcelTable(
-	filePath, sheetName string, headerRow, headerColumn int,
-) (*Table, error) {
-	rows, err := ReadExcelFileSheetRows(filePath, sheetName)
-	if err != nil {
-		return nil, err
-	}
+func CreateTable(rows [][]string,
+	columnHeaderRow, rowHeaderColumn int) *Table {
 	table := new(Table)
-	table.RowHeader = rows[headerRow][headerColumn:]
-	//
+	table.MapTableHeaders(rows, columnHeaderRow, rowHeaderColumn)
+	table.Rows = rows[columnHeaderRow+1:][rowHeaderColumn+1:]
+	return table
+}
 
-	return nil, nil
+func (t *Table) MapTableHeaders(
+	rows [][]string, columnsHeaderRow, rowsHeaderColumn int) {
+	t.RowHeaderToColumnMap = make(map[string][]string)
+	// Map rows
+	r := rows
+	i := columnsHeaderRow + 1
+	for k := i; k < len(r); k++ {
+		t.RowHeaderToColumnMap[r[k][rowsHeaderColumn]] = r[k][rowsHeaderColumn+1:]
+	}
+
+	t.ColumnHeaderMap = make(map[string]int)
+	// Map columns header columnName vs position
+	for j, val := range r[rowsHeaderColumn] {
+		t.ColumnHeaderMap[val] = j
+	}
+}
+
+func (t *Table) MatchRow(
+	rowHeaderValue, columnName, columnValue string) bool {
+	row, ok := t.RowHeaderToColumnMap[rowHeaderValue]
+	if !ok {
+		return false
+	}
+	_ = row
+	columnIndex := t.ColumnHeaderMap[columnName] - 1
+	// slog.Warn("fuck", "name", rowHeaderValue, "colname", columnName, "colindex", columnIndex, "row", row)
+	colVal := row[columnIndex]
+	// slog.Warn("fuck", "rowval", rowHeaderValue, "val", value, "row", row)
+	return colVal == columnValue
 }
