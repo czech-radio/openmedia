@@ -48,3 +48,7 @@ func XMLprint(node *xmlquery.Node) {
 func FirstLetterToLowercase(input string) string {
 	return strings.ToLower(input[0:1]) + input[1:]
 }
+
+func FirstLetterToUppercase(input string) string {
+	return strings.ToUpper(input[0:1]) + input[1:]
+}

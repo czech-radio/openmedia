@@ -1,6 +1,7 @@
 package helper
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/ncruces/go-strftime"
@@ -85,6 +86,41 @@ func DateInRange(interval [2]time.Time, dateToCheck time.Time) bool {
 		return true
 	}
 	return false
+}
+
+func ParseStringDate(dateTime string, loc *time.Location) (time.Time, error) {
+	// time.UTC, time.Local time zones variables
+	var date time.Time
+	var err error
+	formats := []string{
+		"2006", "2006-01", "2006-01-02", // date
+		"2006-01-02T15", "2006-01-02T15:04", "2006-01-02T15:04:05", // time
+	}
+	for _, format := range formats {
+		date, err = time.ParseInLocation(format, dateTime, loc)
+		if err == nil {
+			return date, nil
+		}
+	}
+	return date, fmt.Errorf("cannot parse string as date: %s", dateTime)
+}
+
+// DateCreate generate date from specs.
+// 0-year,1-month,2-day,3-hour,4-minute,5-second,6-nsec
+func DateCreate(location *time.Location, specs ...int) time.Time {
+	res := make([]int, 7)
+	copy(res, specs)
+	if len(specs) == 0 {
+		// Null value time
+		return time.Time{}
+	}
+	if len(specs) < 2 {
+		res[1] = 1
+	}
+	if len(specs) < 3 {
+		res[2] = 1
+	}
+	return time.Date(res[0], time.Month(res[1]), res[2], res[3], res[4], res[5], res[6], location)
 }
 
 // CzechDateToUTC

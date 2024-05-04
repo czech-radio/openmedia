@@ -9,5 +9,6 @@ var rootCmdConfig = helper.CommandRoot
 func RunRootAlt() {
 	rootCmdConfig.Init()
 	rootCmdConfig.AddSub("extAlt", ExtAltRun)
+	rootCmdConfig.AddSub("extArch", RunExtractArch)
 	rootCmdConfig.RunRoot()
 }

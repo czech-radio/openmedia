@@ -8,7 +8,9 @@ var ExtAlt = helper.CommandConfig{}
 
 func ExtAltOpts() {
 	add := ExtAlt.AddOption
-	add("sourceFile", "sf", "", "string", "Source rundown file.",
+	add("sourceDirectory", "i", "", "string", "Source rundown file.",
+		nil, nil)
+	add("outputFile", "o", "", "string", "Destination directory or file",
 		nil, nil)
 }
 

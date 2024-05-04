@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"reflect"
 	"strconv"
+	"time"
 )
 
 // TODO: print usage for all commands at once using run main.go and all subcmds with help
@@ -110,7 +111,6 @@ func (cc *CommandConfig) RunSub(intf interface{}) {
 	if err != nil {
 		panic(err)
 	}
-	flag.Parse()
 	err = cc.ParseFlags(intf)
 	if err != nil {
 		panic(err)
@@ -183,10 +183,13 @@ func (opt *FlagOption) DeclareUsage() {
 }
 
 func (cc *CommandConfig) DeclareFlags() {
+	slog.Debug("declaring flags")
 	cc.OptsMap = make(map[string][5]interface{})
 	for i := range cc.Opts {
+		slog.Debug("declaring flag", "opt", cc.Opts[i])
 		res := cc.Opts[i].DeclareFlag()
 		name := cc.Opts[i].LongFlag
+		name = FirstLetterToUppercase(name)
 		cc.OptsMap[name] = res
 	}
 	flag.Usage = Usage
@@ -212,6 +215,10 @@ func (opt *FlagOption) DeclareFlag() [5]interface{} {
 		def = opt.Default
 		long = flag.String(opt.LongFlag, opt.Default, opt.Descripton)
 		short = flag.String(opt.ShortFlag, opt.Default, opt.Descripton)
+	case "date":
+		def = opt.Default
+		long = flag.String(opt.LongFlag, opt.Default, opt.Descripton)
+		short = flag.String(opt.ShortFlag, opt.Default, opt.Descripton)
 	default:
 		err := fmt.Errorf("unknow flag type")
 		opt.Error(err)
@@ -220,6 +227,7 @@ func (opt *FlagOption) DeclareFlag() [5]interface{} {
 }
 
 func (cc *CommandConfig) ParseFlags(iface interface{}) error {
+	slog.Info("parsing flags")
 	vof := reflect.ValueOf(iface)
 	if vof.Kind() != reflect.Ptr || vof.Elem().Kind() != reflect.Struct {
 		return fmt.Errorf("Invalid input: not a pointer to a struct")
@@ -228,11 +236,13 @@ func (cc *CommandConfig) ParseFlags(iface interface{}) error {
 	n := vofe.NumField()
 	for i := 0; i < n; i++ {
 		field := vofe.Type().Field(i)
-		optName := FirstLetterToLowercase(field.Name)
+		optName := FirstLetterToUppercase(field.Name)
 		vals, ok := cc.OptsMap[optName]
 		if !ok {
+			slog.Debug("flag not defined for struct field", "field", optName)
 			continue
 		}
+		slog.Debug("parsing flag", "name", field.Name, "type", field.Type.Name())
 		def := vals[0]
 		long := vals[1]
 		short := vals[2]
@@ -252,11 +262,22 @@ func (cc *CommandConfig) ParseFlags(iface interface{}) error {
 			res := GetStringValuePriority(vals...)
 			CheckAllovedValues(optName, res, alloved)
 			vofe.Field(i).SetString(res)
+		case "Time":
+			vals := []string{*long.(*string), *short.(*string), def.(string)}
+			res := GetStringValuePriority(vals...)
+			if res == "" {
+				continue
+			}
+			format := "20060102T150405.000"
+			dt, err := time.Parse(format, res)
+			if err != nil {
+				panic(err)
+			}
+			vofe.Field(i).Set(reflect.ValueOf(dt))
 		default:
-			panic("flag type not implemented")
+			panic(fmt.Errorf("flag type not implemented: %s", field.Type.Name()))
 		}
 	}
-	flag.Parse()
 	return nil
 }
 

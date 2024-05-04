@@ -2,6 +2,7 @@ package helper
 
 import (
 	"fmt"
+	"reflect"
 	"testing"
 	"time"
 )
@@ -114,4 +115,80 @@ func TestCzechDateToUTC(t *testing.T) {
 	}
 	fmt.Println(from)
 	fmt.Println(to)
+}
+
+func TestParseStringDate(t *testing.T) {
+	locCur := time.Local
+	type args struct {
+		location *time.Location
+		dateTime string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    time.Time
+		wantErr bool
+	}{
+		{"year", args{locCur, "2024"},
+			DateCreate(locCur, 2024), false},
+		{"year-month", args{locCur, "2024-02"},
+			DateCreate(locCur, 2024, 2), false},
+		{"year-month-day", args{locCur, "2024-02-03"},
+			DateCreate(locCur, 2024, 2, 3), false},
+		{"year-month-day-hour", args{locCur, "2024-02-03T11"},
+			DateCreate(locCur, 2024, 2, 3, 11), false},
+		{"year-month-day-hour-minute", args{locCur, "2024-02-03T11:49"},
+			DateCreate(locCur, 2024, 2, 3, 11, 49), false},
+		{"year-month-day-hour-minute-sec", args{locCur, "2024-02-03T11:49:39"},
+			DateCreate(locCur, 2024, 2, 3, 11, 49, 39), false},
+		{"err1", args{locCur, "kek-2024-02-03"},
+			DateCreate(locCur), true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := ParseStringDate(tt.args.dateTime, time.Local)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ParseStringDate() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("ParseStringDate() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestDateGetUTC(t *testing.T) {
+	loc, _ := time.LoadLocation("")
+	// loc := time.Local
+	type args struct {
+		location *time.Location
+		specs    []int
+	}
+	tests := []struct {
+		name string
+		args args
+		want time.Time
+	}{
+		{"year", args{loc, []int{2024}},
+			time.Date(2024, 1, 1, 0, 0, 0, 0, loc)},
+		{"year-month", args{loc, []int{2024, 0}},
+			time.Date(2024, 0, 1, 0, 0, 0, 0, loc)},
+		{"year-month-day", args{loc, []int{2024, 1, 1}},
+			time.Date(2024, 1, 1, 0, 0, 0, 0, loc)},
+		{"year-month-day-hour", args{loc, []int{2024, 1, 1, 10}},
+			time.Date(2024, 1, 1, 10, 0, 0, 0, loc)},
+		{"year-month-day-hour-minute", args{loc, []int{2024, 1, 1, 10, 49}},
+			time.Date(2024, 1, 1, 10, 49, 0, 0, loc)},
+		{"year-month-day-hour-minute-sec", args{loc, []int{2024, 1, 1, 10, 49, 33}},
+			time.Date(2024, 1, 1, 10, 49, 33, 0, loc)},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := DateCreate(
+				tt.args.location, tt.args.specs...); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("DateGetUTC() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }
