@@ -220,7 +220,7 @@ func (opt *FlagOption) DeclareFlag() [5]interface{} {
 		long = flag.String(opt.LongFlag, opt.Default, opt.Descripton)
 		short = flag.String(opt.ShortFlag, opt.Default, opt.Descripton)
 	default:
-		err := fmt.Errorf("unknow flag type")
+		err := fmt.Errorf("unknow flag type: %s", opt.FlagDescription.Type)
 		opt.Error(err)
 	}
 	return [5]interface{}{def, long, short, "", opt.AllovedValues}
@@ -268,12 +268,11 @@ func (cc *CommandConfig) ParseFlags(iface interface{}) error {
 			if res == "" {
 				continue
 			}
-			format := "20060102T150405.000"
-			dt, err := time.Parse(format, res)
+			date, err := ParseStringDate(res, time.Local)
 			if err != nil {
 				panic(err)
 			}
-			vofe.Field(i).Set(reflect.ValueOf(dt))
+			vofe.Field(i).Set(reflect.ValueOf(date))
 		default:
 			panic(fmt.Errorf("flag type not implemented: %s", field.Type.Name()))
 		}
