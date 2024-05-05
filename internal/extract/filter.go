@@ -22,25 +22,30 @@ type NFilterColumn struct {
 	FilterTable     files.Table
 }
 
-func (e *Extractor) MarkMatched(
-	matches bool, rowParts RowParts, partCode RowPartCode, fieldID string) {
+func (e *Extractor) MarkField(rowParts RowParts,
+	partCode RowPartCode, fieldID, value string) {
 	part, ok := rowParts[partCode]
 	if !ok {
 		part = make(RowPart)
 	}
-	var mark string
-	if matches {
-		mark = "1"
-	} else {
-		mark = "0"
-	}
 	field := RowField{
 		FieldID:   fieldID,
 		FieldName: "",
-		Value:     mark,
+		Value:     value,
 	}
 	part[fieldID] = field
 	rowParts[partCode] = part
+
+}
+
+func MarkValue(matches bool, fieldValue, nulValue string) string {
+	if matches {
+		return "1"
+	}
+	if fieldValue == nulValue {
+		return nulValue
+	}
+	return "0"
 }
 
 func (e *Extractor) FilterMatchPersonName(f *NFilterColumn) error {
@@ -52,13 +57,17 @@ func (e *Extractor) FilterMatchPersonName(f *NFilterColumn) error {
 	}
 	table := files.CreateTable(rows, f.ColumnHeaderRow, f.RowHeaderColumn)
 	rs := e.TableXML.Rows
+
+	valNP := RowFieldSpecialValueCodeMap[RowFieldValueNotPossible]
 	for _, r := range rs {
-		_, field, ok := GetRowPartAndField(r.RowParts, RowPartCode_ComputedKON, "jmeno_spojene")
+		_, field, ok := GetRowPartAndField(
+			r.RowParts, RowPartCode_ComputedKON, "jmeno_spojene")
 		if !ok {
 			panic(ok)
 		}
 		_, ok = table.RowHeaderToColumnMap[field.Value]
-		e.MarkMatched(ok, r.RowParts, RowPartCode_ContactItemHead, newColumnName)
+		mark := MarkValue(ok, field.Value, valNP)
+		e.MarkField(r.RowParts, RowPartCode_ContactItemHead, newColumnName, mark)
 	}
 	return nil
 }
@@ -72,6 +81,7 @@ func (e *Extractor) FilterMatchPersonAndParty(f *NFilterColumn) error {
 	}
 	table := files.CreateTable(rows, f.ColumnHeaderRow, f.RowHeaderColumn)
 	rs := e.TableXML.Rows
+	valNP := RowFieldSpecialValueCodeMap[RowFieldValueNotPossible]
 	for _, r := range rs {
 		_, nameField, ok := GetRowPartAndField(r.RowParts, RowPartCode_ComputedKON, "jmeno_spojene")
 		if !ok {
@@ -84,7 +94,8 @@ func (e *Extractor) FilterMatchPersonAndParty(f *NFilterColumn) error {
 		ok1 := table.MatchRow(nameField.Value, "navrhující strana", partyField.Value)
 		ok2 := table.MatchRow(nameField.Value, "politická příslušnost", partyField.Value)
 		res := ok1 || ok2
-		e.MarkMatched(res, r.RowParts, RowPartCode_ContactItemHead, newColumnName)
+		mark := MarkValue(res, partyField.Value, valNP)
+		e.MarkField(r.RowParts, RowPartCode_ContactItemHead, newColumnName, mark)
 	}
 	return nil
 }

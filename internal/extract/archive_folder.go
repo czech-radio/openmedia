@@ -48,10 +48,11 @@ type ArchiveFolderQuery struct {
 	OutputFileName    string
 	OutputDirectory   string
 
-	SourceDirectory string
-	FilterDateFrom  time.Time
-	FilterDateTo    time.Time
-	FilterRadioName string
+	SourceDirectory  string
+	FilterDateFrom   time.Time
+	FilterDateTo     time.Time
+	FilterRadioName  string
+	FiltersDirectory string
 }
 
 // FolderListing

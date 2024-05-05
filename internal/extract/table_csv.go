@@ -2,6 +2,7 @@ package extract
 
 import (
 	"fmt"
+	"path/filepath"
 
 	"log/slog"
 	"os"
@@ -19,17 +20,16 @@ func (row RowParts) CSVrowBuild(
 	partsFieldsPos RowPartsFieldsPositions,
 	delim string,
 ) {
-	count := len(partsPos)
-	for i, pos := range partsPos {
-		fieldsPos := partsFieldsPos[pos]
-		part := row[pos]
-		part.CSVrowPartBuild(builder, fieldsPos, delim)
+	for i, partPos := range partsPos {
+		fieldsPos := partsFieldsPos[partPos]
 		if len(fieldsPos) == 0 {
 			continue
 		}
-		if i < count-1 {
+		if i != 0 {
 			fmt.Fprintf(builder, "%s", "\t")
 		}
+		part := row[partPos]
+		part.CSVrowPartBuild(builder, fieldsPos, delim)
 	}
 	// end the line
 	fmt.Fprintf(builder, "%s", "\n")
@@ -62,9 +62,7 @@ func (part RowPart) CSVrowPartBuild(
 }
 
 func (e *Extractor) CSVheaderBuild(internal, external bool) {
-	// if e.TableXML.CSVheaderWriterLocal == nil {
 	e.TableXML.CSVheaderWriterLocal = new(strings.Builder)
-	// }
 	sb := e.TableXML.CSVheaderWriterLocal
 	if internal {
 		iheader := strings.Join(e.HeaderInternal, e.CSVdelim)
@@ -79,6 +77,7 @@ func (e *Extractor) CSVheaderBuild(internal, external bool) {
 func (e *Extractor) CSVtableBuild(
 	internalHeader, externalHeader bool,
 	delim string, clearBuilder bool, rowsIndexes ...[]int) int {
+	//TODO: remove header booleans and make wrapper function for building table and header
 	var rowsCount int
 	if e.TableXML.CSVtableWriterLocal == nil {
 		e.TableXML.CSVtableWriterLocal = new(strings.Builder)
@@ -111,6 +110,21 @@ func (e *Extractor) CSVtableBuild(
 		}
 	}
 	return rowsCount
+}
+
+func (e *Extractor) CSVtableOutputs(dstDir, fileName, preset string, internal bool) {
+	if internal {
+		dstFile1 := filepath.Join(
+			dstDir, fileName+"_"+preset+"_wh.csv")
+		e.CSVheaderBuild(true, true)
+		e.CSVheaderWrite(dstFile1, true)
+		e.CSVtableWrite(dstFile1, false)
+	}
+	dstFile2 := filepath.Join(
+		dstDir, fileName+"_"+preset+"_woh.csv")
+	e.CSVheaderBuild(false, true)
+	e.CSVheaderWrite(dstFile2, true)
+	e.CSVtableWrite(dstFile2, false)
 }
 
 func (e *Extractor) CSVtableOutput(dstFile string) {

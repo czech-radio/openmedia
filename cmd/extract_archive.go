@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"github/czech-radio/openmedia/internal/extract"
 	"log/slog"
 	"path/filepath"
@@ -22,6 +23,7 @@ func commandExtractArchiveConfigure() {
 		"Destination directory or file", nil, nil)
 	add("OutputFileName", "ofname", "", "string",
 		"Output file name.", nil, nil)
+	// Filter query
 	add("FilterDateFrom", "fdf", "", "date",
 		"Filter rundowns from date", nil, nil)
 	add("FilterDateTo", "fdt", "", "date",
@@ -30,6 +32,12 @@ func commandExtractArchiveConfigure() {
 		"Filter radio names", nil, nil)
 	add("CSVdelim", "csvD", "\t", "string",
 		"csv column field delimiter", []any{"\t"}, nil)
+
+	// Special filters
+	add("FiltersDirectory", "frdir", "", "string",
+		"Special filters directory", nil, nil)
+	// add("FiltersLoad", "frload", "", "[]string",
+	// "filter files to load", nil, nil)
 }
 
 func RunCommandExtractArchive() {
@@ -43,6 +51,14 @@ func RunCommandExtractArchive() {
 	}
 	q.Extractors = extract.EXTproduction
 	slog.Debug("effective subcommand config", "config", q)
+
+	// TODO: use internal configure check instead
+	filterPath1 := filepath.Join(q.FiltersDirectory, "eurovolby - zadání.xlsx")
+	ok, err1 := helper.FileExists(filterPath1)
+	if !ok || err1 != nil {
+		panic(fmt.Errorf("filter file not readable: %s", err1))
+	}
+
 	workerTypes := []ar.WorkerTypeCode{
 		ar.WorkerTypeZIPoriginal}
 	arf := extract.ArchiveFolder{
@@ -59,10 +75,27 @@ func RunCommandExtractArchive() {
 	}
 	ext := arf.FolderExtract(&q)
 	// A) BASE
-	dstFile1 := filepath.Join(q.OutputDirectory, q.OutputFileName+"_base_woheader.csv")
 	ext.TransformEmptyRowPart()
+	ext.TransformBase()
 	ext.CSVtableBuild(false, false, q.CSVdelim, false)
-	ext.CSVheaderBuild(true, true)
-	ext.CSVheaderWrite(dstFile1, true)
-	ext.CSVtableWrite(dstFile1, false)
+
+	ext.CSVtableOutputs(q.OutputDirectory, q.OutputFileName, "base", true)
+
+	// B) EUROVOLBY
+	ext.TransformProduction()
+	filter1 := extract.NFilterColumn{
+		FilterFileName: filterPath1,
+		SheetName:      "data",
+	}
+	err = ext.FilterMatchPersonName(&filter1)
+	if err != nil {
+		panic(err)
+	}
+	err = ext.FilterMatchPersonAndParty(&filter1)
+	if err != nil {
+		panic(err)
+	}
+
+	ext.CSVtableBuild(false, false, q.CSVdelim, true)
+	ext.CSVtableOutputs(q.OutputDirectory, q.OutputFileName, "eurovolby", true)
 }

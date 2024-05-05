@@ -425,10 +425,15 @@ func (e *Extractor) ComputeJoinNameAndSurname(
 		if !ok {
 			dstPart = make(RowPart)
 		}
+		valNP := RowFieldSpecialValueCodeMap[RowFieldValueNotPossible]
+		value := fmt.Sprintf("%s %s", prijmeni, jmeno)
+		if prijmeni == valNP && jmeno == valNP {
+			value = fmt.Sprint(valNP)
+		}
 		field := RowField{
 			FieldID:   targetFieldID,
 			FieldName: "",
-			Value:     fmt.Sprintf("%s %s", prijmeni, jmeno),
+			Value:     value,
 		}
 		dstPart[targetFieldID] = field
 		e.TableXML.Rows[i].RowParts[newColumnRowPart] = dstPart
