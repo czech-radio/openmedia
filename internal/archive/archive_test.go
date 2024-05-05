@@ -3,7 +3,9 @@ package internal
 import (
 	"errors"
 	"fmt"
-	"github/czech-radio/openmedia/internal/helper"
+
+	"github.com/triopium/go_utils/pkg/helper"
+
 	"log/slog"
 	"path/filepath"
 	"regexp"

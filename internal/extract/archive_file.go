@@ -6,9 +6,11 @@ import (
 	"encoding/xml"
 	"fmt"
 	ar "github/czech-radio/openmedia/internal/archive"
-	"github/czech-radio/openmedia/internal/helper"
+
 	"os"
 	"strings"
+
+	"github.com/triopium/go_utils/pkg/helper"
 
 	"github.com/antchfx/xmlquery"
 )

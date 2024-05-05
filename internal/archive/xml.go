@@ -6,13 +6,15 @@ import (
 	"bytes"
 	"encoding/xml"
 	"fmt"
-	"github/czech-radio/openmedia/internal/helper"
+
 	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	"github.com/triopium/go_utils/pkg/helper"
 
 	"github.com/antchfx/xmlquery"
 	"golang.org/x/text/encoding/unicode"

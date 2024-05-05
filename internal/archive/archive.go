@@ -5,7 +5,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github/czech-radio/openmedia/internal/helper"
+
+	"github.com/triopium/go_utils/pkg/helper"
 
 	"io"
 	"log/slog"

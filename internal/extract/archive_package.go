@@ -4,12 +4,14 @@ import (
 	"archive/zip"
 	"fmt"
 	ar "github/czech-radio/openmedia/internal/archive"
-	"github/czech-radio/openmedia/internal/helper"
+
 	"log/slog"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/triopium/go_utils/pkg/helper"
 
 	"github.com/ncruces/go-strftime"
 	"github.com/snabb/isoweek"

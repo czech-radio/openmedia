@@ -6,7 +6,6 @@ import (
 	"log/slog"
 	"path/filepath"
 
-	// github
 	"github.com/antchfx/xmlquery"
 )
 

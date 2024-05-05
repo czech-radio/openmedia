@@ -1,18 +1,19 @@
 module github/czech-radio/openmedia
 
-go 1.20
+go 1.22.2
 
 require (
-	github.com/antchfx/xmlquery v1.3.18
+	github.com/antchfx/xmlquery v1.4.0
 	github.com/go-xmlfmt/xmlfmt v1.1.2
 	github.com/ncruces/go-strftime v0.1.9
 	github.com/snabb/isoweek v1.0.3
+	github.com/triopium/go_utils v0.0.1
 	github.com/xuri/excelize/v2 v2.8.1
 	golang.org/x/text v0.14.0
 )
 
 require (
-	github.com/antchfx/xpath v1.2.4 // indirect
+	github.com/antchfx/xpath v1.3.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826 // indirect

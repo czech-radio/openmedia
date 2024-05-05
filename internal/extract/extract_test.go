@@ -3,9 +3,11 @@ package extract
 import (
 	"fmt"
 	ar "github/czech-radio/openmedia/internal/archive"
-	"github/czech-radio/openmedia/internal/helper"
+
 	"path/filepath"
 	"testing"
+
+	"github.com/triopium/go_utils/pkg/helper"
 )
 
 var testerConfig = helper.TesterConfig{

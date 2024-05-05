@@ -3,10 +3,12 @@ package extract
 
 import (
 	ar "github/czech-radio/openmedia/internal/archive"
-	"github/czech-radio/openmedia/internal/helper"
+
 	"io"
 	"log/slog"
 	"strings"
+
+	"github.com/triopium/go_utils/pkg/files"
 
 	"github.com/antchfx/xmlquery"
 )
@@ -63,7 +65,7 @@ func ExtractNodesFields(
 		parentRowCopy := CopyRow(parentRow.RowParts)
 		part := NodeToCSVrowPart(subNode, extr)
 		newRowNode := RowNode{}
-		parentNode, _ := helper.XMLnodeLevelUp(
+		parentNode, _ := files.XMLnodeLevelUp(
 			subNode, extr.ResultNodeGoUpLevels,
 		)
 		newRowNode.Node = parentNode
@@ -147,5 +149,5 @@ func XMLparalelQuery(extractors []OMextractor) string {
 }
 
 func XMLgetOpenmediaBaseNode(reader io.Reader) (*xmlquery.Node, error) {
-	return helper.XMLgetBaseNode(reader, "/OPENMEDIA")
+	return files.XMLgetBaseNode(reader, "/OPENMEDIA")
 }

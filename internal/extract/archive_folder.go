@@ -3,11 +3,13 @@ package extract
 import (
 	"archive/zip"
 	ar "github/czech-radio/openmedia/internal/archive"
-	"github/czech-radio/openmedia/internal/helper"
+
 	"io/fs"
 	"log/slog"
 	"path/filepath"
 	"time"
+
+	"github.com/triopium/go_utils/pkg/helper"
 )
 
 // ArchiveFolder
@@ -44,10 +46,12 @@ type ArchiveFolderQuery struct {
 	Transformer       TransformerCode
 	FilterColumns     []FilterColumn
 	OutputFileName    string
-	OtputDir          string
+	OutputDirectory   string
 
-	FilterDateFrom time.Time
-	FilterDateTo   time.Time
+	SourceDirectory string
+	FilterDateFrom  time.Time
+	FilterDateTo    time.Time
+	FilterRadioName string
 }
 
 // FolderListing

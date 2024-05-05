@@ -2,10 +2,12 @@ package extract
 
 import (
 	"fmt"
-	"github/czech-radio/openmedia/internal/helper"
+
 	"log/slog"
 	"os"
 	"strings"
+
+	"github.com/triopium/go_utils/pkg/helper"
 )
 
 // csv.NewWriter() would be alternative
@@ -118,13 +120,22 @@ func (e *Extractor) CSVtableOutput(dstFile string) {
 	}
 }
 
+func FileOverwritePermissions(overWrite bool) int {
+	perms := os.O_RDWR | os.O_CREATE | os.O_APPEND
+	if overWrite {
+		perms = os.O_RDWR | os.O_CREATE | os.O_TRUNC
+	}
+	return perms
+}
+
 // CSVtableWrite
-func (e *Extractor) CSVtableWrite(dstFilePath string) {
+func (e *Extractor) CSVtableWrite(dstFilePath string, overWrite bool) {
 	if dstFilePath == "" {
 		fmt.Println(e.TableXML.CSVtableWriterLocal)
 		return
 	}
-	outputFile, err := os.OpenFile(dstFilePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0600)
+	perms := FileOverwritePermissions(overWrite)
+	outputFile, err := os.OpenFile(dstFilePath, perms, 0600)
 	if err != nil {
 		panic(err)
 	}
@@ -136,12 +147,13 @@ func (e *Extractor) CSVtableWrite(dstFilePath string) {
 	slog.Warn("written bytes to file", "fileName", dstFilePath, "bytesCount", n)
 }
 
-func (e *Extractor) CSVheaderWrite(dstFilePath string) {
+func (e *Extractor) CSVheaderWrite(dstFilePath string, overWrite bool) {
 	if dstFilePath == "" {
 		fmt.Println(e.TableXML.CSVheaderWriterLocal)
 		return
 	}
-	outputFile, err := os.OpenFile(dstFilePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0600)
+	perms := FileOverwritePermissions(overWrite)
+	outputFile, err := os.OpenFile(dstFilePath, perms, 0600)
 	if err != nil {
 		panic(err)
 	}

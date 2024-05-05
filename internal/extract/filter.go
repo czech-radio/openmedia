@@ -1,8 +1,9 @@
 package extract
 
 import (
-	"github/czech-radio/openmedia/internal/helper"
 	"log/slog"
+
+	"github.com/triopium/go_utils/pkg/files"
 )
 
 type FilterCode int
@@ -18,7 +19,7 @@ type NFilterColumn struct {
 	RowHeaderColumn int
 	PartCodeMark    RowPartCode
 	FieldIDmark     string
-	FilterTable     helper.Table
+	FilterTable     files.Table
 }
 
 func (e *Extractor) MarkMatched(
@@ -45,11 +46,11 @@ func (e *Extractor) MarkMatched(
 func (e *Extractor) FilterMatchPersonName(f *NFilterColumn) error {
 	newColumnName := "name_match"
 	e.AddColumn(RowPartCode_ContactItemHead, newColumnName)
-	rows, err := helper.ReadExcelFileSheetRows(f.FilterFileName, f.SheetName)
+	rows, err := files.ReadExcelFileSheetRows(f.FilterFileName, f.SheetName)
 	if err != nil {
 		return err
 	}
-	table := helper.CreateTable(rows, f.ColumnHeaderRow, f.RowHeaderColumn)
+	table := files.CreateTable(rows, f.ColumnHeaderRow, f.RowHeaderColumn)
 	rs := e.TableXML.Rows
 	for _, r := range rs {
 		_, field, ok := GetRowPartAndField(r.RowParts, RowPartCode_ComputedKON, "jmeno_spojene")
@@ -65,11 +66,11 @@ func (e *Extractor) FilterMatchPersonName(f *NFilterColumn) error {
 func (e *Extractor) FilterMatchPersonAndParty(f *NFilterColumn) error {
 	newColumnName := "name&party_match"
 	e.AddColumn(RowPartCode_ContactItemHead, newColumnName)
-	rows, err := helper.ReadExcelFileSheetRows(f.FilterFileName, f.SheetName)
+	rows, err := files.ReadExcelFileSheetRows(f.FilterFileName, f.SheetName)
 	if err != nil {
 		return err
 	}
-	table := helper.CreateTable(rows, f.ColumnHeaderRow, f.RowHeaderColumn)
+	table := files.CreateTable(rows, f.ColumnHeaderRow, f.RowHeaderColumn)
 	rs := e.TableXML.Rows
 	for _, r := range rs {
 		_, nameField, ok := GetRowPartAndField(r.RowParts, RowPartCode_ComputedKON, "jmeno_spojene")
