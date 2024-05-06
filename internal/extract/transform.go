@@ -92,6 +92,18 @@ func (e *Extractor) FilterByPartAndFieldID(
 	return res
 }
 
+func (e *Extractor) RemovePart(fieldPrefix RowPartCode) {
+	newPartsPositions := RowPartsPositions{}
+	for _, part := range e.RowPartsPositions {
+		if part == fieldPrefix {
+			continue
+		}
+		newPartsPositions = append(newPartsPositions, part)
+	}
+	e.RowPartsPositions = newPartsPositions
+	e.HeaderBuild()
+}
+
 // RemoveColumn
 func (e *Extractor) RemoveColumn(
 	fieldPrefix RowPartCode, fieldID string) {
@@ -712,4 +724,58 @@ func (row RowParts) ConstructID() string {
 	out := fmt.Sprintf("%s/%s/%s/%s - %s/%s",
 		stanice, blok, datum, zacatek, konec, nazev)
 	return out
+}
+
+func (e *Extractor) TreatStoryRecordsWithoutOMobject() {
+	// for i, row := range e.TableXML.Rows {
+	for _, row := range e.TableXML.Rows {
+		// Check if applicable
+		storyRecordPart, ok := row.RowParts[RowPartCode_StoryRec]
+		if !ok {
+			continue
+		}
+		storyCatPart := row.RowParts[RowPartCode_StoryKategory]
+		if storyCatPart != nil {
+			// NOTE: Do not forget treat when not nill. Currently the part is not created when the OM_OBJECT is not found. Must be run before TransformEmptyRowPart
+			continue
+		}
+
+		recordType := storyRecordPart["5001"].Value
+		newRowPart := make(RowPart)
+		// Treat records
+		switch recordType {
+		case "Audio":
+			RowPartOverwriteFields(
+				storyRecordPart, newRowPart, ProductionFieldsAudio)
+			row.RowParts[RowPartCode_AudioClipHead] = newRowPart
+		case "Contact Item", "Contact Bin":
+			RowPartOverwriteFields(
+				storyRecordPart, newRowPart, ProductionFieldsContactItems)
+			row.RowParts[RowPartCode_ContactItemHead] = newRowPart
+		default:
+			continue
+		}
+		value := "UNKNOWN-" + recordType
+		EmptyRowPartInsertValue(row.RowParts, RowPartCode_StoryKategory, "TemplateName", value)
+	}
+}
+
+func RowPartOverwriteFields(
+	srcPart, targetPart RowPart, fieldIDs []string) {
+	for _, id := range fieldIDs {
+		targetPart[id] = srcPart[id]
+	}
+}
+
+// EmptyRowPartInsertValue
+func EmptyRowPartInsertValue(
+	rowParts RowParts, rowPartCode RowPartCode, fieldID, fieldValue string) {
+	field := RowField{
+		FieldID:   fieldID,
+		FieldName: "",
+		Value:     fieldValue,
+	}
+	rowPart := make(RowPart)
+	rowPart[fieldID] = field
+	rowParts[rowPartCode] = rowPart
 }

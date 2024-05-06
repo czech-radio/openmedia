@@ -1,6 +1,7 @@
 package extract
 
 import (
+	"fmt"
 	"log/slog"
 
 	"github.com/triopium/go_utils/pkg/files"
@@ -85,11 +86,12 @@ func (e *Extractor) FilterMatchPersonAndParty(f *NFilterColumn) error {
 	for _, r := range rs {
 		_, nameField, ok := GetRowPartAndField(r.RowParts, RowPartCode_ComputedKON, "jmeno_spojene")
 		if !ok {
-			panic(ok)
+			panic(fmt.Errorf("row part and fieldname not present in row"))
 		}
 		_, partyField, ok := GetRowPartAndField(r.RowParts, RowPartCode_ContactItemHead, "5015")
 		if !ok {
-			panic(ok)
+			mark := MarkValue(ok, partyField.Value, valNP)
+			e.MarkField(r.RowParts, RowPartCode_ContactItemHead, newColumnName, mark)
 		}
 		ok1 := table.MatchRow(nameField.Value, "navrhující strana", partyField.Value)
 		ok2 := table.MatchRow(nameField.Value, "politická příslušnost", partyField.Value)

@@ -45,10 +45,13 @@ type ArchiveFolderQuery struct {
 	CSVdelim          string
 	Transformer       TransformerCode
 	FilterColumns     []FilterColumn
-	OutputFileName    string
-	OutputDirectory   string
 
-	SourceDirectory  string
+	SourceDirectory string
+	OutputDirectory string
+	OutputFileName  string
+
+	ExtractorsName string
+
 	FilterDateFrom   time.Time
 	FilterDateTo     time.Time
 	FilterRadioName  string

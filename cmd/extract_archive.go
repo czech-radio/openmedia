@@ -17,13 +17,17 @@ var commandExtractArchiveConfig = configure.CommandConfig{}
 
 func commandExtractArchiveConfigure() {
 	add := commandExtractArchiveConfig.AddOption
+	// Archive query
 	add("SourceDirectory", "sdir", "", "string",
 		"Source rundown file.", nil, nil)
 	add("OutputDirectory", "odir", "", "string",
 		"Destination directory or file", nil, nil)
 	add("OutputFileName", "ofname", "", "string",
 		"Output file name.", nil, nil)
+
 	// Filter query
+	add("ExtractorsName", "exsn", "production1", "string",
+		"Name of extractor which specifies the parts of xml to be extracted", nil, nil)
 	add("FilterDateFrom", "fdf", "", "date",
 		"Filter rundowns from date", nil, nil)
 	add("FilterDateTo", "fdt", "", "date",
@@ -41,6 +45,7 @@ func commandExtractArchiveConfigure() {
 }
 
 func RunCommandExtractArchive() {
+	// PREPARE CONFIG
 	q := extract.ArchiveFolderQuery{}
 	commandExtractArchiveConfigure()
 	commandExtractArchiveConfig.RunSub(&q)
@@ -49,10 +54,16 @@ func RunCommandExtractArchive() {
 		q.RadioNames = make(map[string]bool)
 		q.RadioNames[q.FilterRadioName] = true
 	}
-	q.Extractors = extract.EXTproduction
+	// TODO: use internal configure check instead
+	extCode := extract.ExtractorsPresetCode(q.ExtractorsName)
+	extractors, ok := extract.ExtractorsCodeMap[extCode]
+	if !ok {
+		panic(fmt.Errorf("extractors name not defined: %s", q.ExtractorsName))
+	}
+	// q.Extractors = extract.EXTproduction
+	q.Extractors = extractors
 	slog.Debug("effective subcommand config", "config", q)
 
-	// TODO: use internal configure check instead
 	filterPath1 := filepath.Join(q.FiltersDirectory, "eurovolby - zadání.xlsx")
 	ok, err1 := helper.FileExists(filterPath1)
 	if !ok || err1 != nil {
@@ -60,11 +71,13 @@ func RunCommandExtractArchive() {
 	}
 
 	workerTypes := []ar.WorkerTypeCode{
-		ar.WorkerTypeZIPoriginal}
+		// ar.WorkerTypeZIPoriginal}
+		ar.WorkerTypeZIPminified}
 	arf := extract.ArchiveFolder{
 		PackageTypes: workerTypes,
 	}
 
+	// EXTRACT
 	err := arf.FolderMap(
 		q.SourceDirectory, true, &q)
 	if err != nil {
@@ -74,12 +87,18 @@ func RunCommandExtractArchive() {
 		panic("no output directory specified")
 	}
 	ext := arf.FolderExtract(&q)
+
+	// TREAT ODD RECORD
+	ext.RemovePart(extract.RowPartCode_StoryRec)
+	ext.TreatStoryRecordsWithoutOMobject()
+
 	// A) BASE
 	ext.TransformEmptyRowPart()
 	ext.TransformBase()
 	ext.CSVtableBuild(false, false, q.CSVdelim, false)
 
-	ext.CSVtableOutputs(q.OutputDirectory, q.OutputFileName, "base", true)
+	ext.CSVtableOutputs(q.OutputDirectory, q.OutputFileName,
+		q.ExtractorsName, "base", true)
 
 	// B) EUROVOLBY
 	ext.TransformProduction()
@@ -97,5 +116,6 @@ func RunCommandExtractArchive() {
 	}
 
 	ext.CSVtableBuild(false, false, q.CSVdelim, true)
-	ext.CSVtableOutputs(q.OutputDirectory, q.OutputFileName, "eurovolby", true)
+	ext.CSVtableOutputs(q.OutputDirectory, q.OutputFileName,
+		q.ExtractorsName, "eurovolby", true)
 }

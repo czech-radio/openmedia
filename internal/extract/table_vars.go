@@ -14,6 +14,9 @@ const (
 	RowPartCode_SubRec
 	RowPartCode_StoryHead
 	RowPartCode_StoryRec
+	RowPartCode_StoryRecContact
+	RowPartCode_StoryRecAudio
+	RowPartCode_StorySpec
 	RowPartCode_AudioClipHead
 	RowPartCode_AudioClipRec
 	RowPartCode_ContactItemHead
@@ -42,6 +45,9 @@ var RowPartsCodeMapProduction = PartsPrefixMap{
 	RowPartCode_SubRec:           {"Sub-REC", "SR"},
 	RowPartCode_StoryHead:        {"Story-HED", ""},
 	RowPartCode_StoryRec:         {"Story-REC", ""},
+	RowPartCode_StoryRecAudio:    {"Story-REC_AUD", ""},
+	RowPartCode_StoryRecContact:  {"Story-REC_CONT", ""},
+	RowPartCode_StorySpec:        {"Story-SPEC", ""},
 	RowPartCode_StoryKategory:    {"Story-Cat", "CAST"},
 	RowPartCode_AudioClipHead:    {"Audio-HED", "AUD"},
 	RowPartCode_AudioClipRec:     {"Audio-REC", "AUD"},
@@ -83,6 +89,7 @@ var FieldsIDsNamesProduction = FieldsIDsNames{
 	"5081":             "stanice",
 	"5082":             "itemcode",
 	"5087":             "ID",
+	"5068":             "ID",
 	"5088":             "pohlavi",
 	"6":                "autor",
 	"8":                "nazev",

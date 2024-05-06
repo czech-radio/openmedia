@@ -112,16 +112,20 @@ func (e *Extractor) CSVtableBuild(
 	return rowsCount
 }
 
-func (e *Extractor) CSVtableOutputs(dstDir, fileName, preset string, internal bool) {
+func (e *Extractor) CSVtableOutputs(dstDir, fileName, extractorsName, preset string, internal bool) {
 	if internal {
+		name := strings.Join(
+			[]string{fileName, extractorsName, preset, "wh.csv"}, "_")
 		dstFile1 := filepath.Join(
-			dstDir, fileName+"_"+preset+"_wh.csv")
+			dstDir, name)
 		e.CSVheaderBuild(true, true)
 		e.CSVheaderWrite(dstFile1, true)
 		e.CSVtableWrite(dstFile1, false)
 	}
+	name := strings.Join(
+		[]string{fileName, extractorsName, preset, "woh.csv"}, "_")
 	dstFile2 := filepath.Join(
-		dstDir, fileName+"_"+preset+"_woh.csv")
+		dstDir, name)
 	e.CSVheaderBuild(false, true)
 	e.CSVheaderWrite(dstFile2, true)
 	e.CSVtableWrite(dstFile2, false)
