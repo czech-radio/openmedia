@@ -13,6 +13,7 @@ type RowPartFieldPosition struct {
 	RowPartName string
 	FieldID     string
 	FieldName   string
+	FieldFormat string
 }
 
 // RowPartFieldsPositions

@@ -136,7 +136,7 @@ func (e *Extractor) CSVtableOutputs(dstDir, fileName, extractorsName, preset str
 		[]string{fileName, extractorsName, preset, "woh.xlsx"}, "_")
 	dstFile3 := filepath.Join(
 		dstDir, name)
-	lastRow, err := e.XLSXtableStreamSave(
+	lastRow, err := e.XLSXstreamTableSave(
 		dstFile3, "Sheet1", false, true, true)
 	if err != nil {
 		slog.Error(err.Error())

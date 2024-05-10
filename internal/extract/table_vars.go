@@ -61,12 +61,16 @@ var RowPartsCodeMapProduction = PartsPrefixMap{
 type FieldID struct {
 	Name             string
 	XLSXcolumnFormat int
+	XLSXcustomFormat string
 }
 
 type FieldsIDsNames2 map[string]FieldID
 
 var FieldsIDsNamesProduction2 = FieldsIDsNames2{
-	"1": {"cas_vytvoreni", 1},
+	"1":    {"cas_vytvoreni", 1, ""},
+	"1003": {"cas_konce", 21, ""},
+	"1004": {"cas_zacatku", 21, ""},
+	"1035": {"cas_textu", 21, ""},
 }
 
 type FieldsIDsNames map[string]string

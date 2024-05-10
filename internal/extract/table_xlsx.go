@@ -94,7 +94,7 @@ func (e *Extractor) XLSXrowsStreamSave(
 	return currentRow, nil
 }
 
-func (e *Extractor) XLSXtableStreamSave(
+func (e *Extractor) XLSXstreamTableSave(
 	filePath, sheetName string,
 	internalHeader, externalHeader, overWrite bool) (int, error) {
 	f, fileClose, err := XLSXopenFile(filePath, overWrite)
@@ -106,7 +106,7 @@ func (e *Extractor) XLSXtableStreamSave(
 	if err != nil {
 		return 0, err
 	}
-	lastRow, err := e.XLSXheaderStreamSave(sw, externalHeader, internalHeader)
+	lastRow, err := e.XLSXheaderStreamSave(sw, internalHeader, externalHeader)
 	if err != nil {
 		return lastRow, err
 	}
@@ -118,7 +118,149 @@ func (e *Extractor) XLSXtableStreamSave(
 	if err != nil {
 		return lastRow, err
 	}
+	err = e.XLSXstreamTableAdd(f, sheetName, lastRow)
+	if err != nil {
+		return lastRow, err
+	}
+	// func (f *File) SetDefaultFont(fontName string)
+	// func (f *File) GetStyle(idx int) (*Style, error)
+	// err = f.SetColStyle("Sheet1", "H", style)
+	// sheetName, "H", style
+	// err = f.SetRowStyle
+	err = e.XLSXstreamTableHeaderStyle(f, sheetName)
+	if err != nil {
+		return lastRow, err
+	}
+	err = e.XLSXstreamTableSetColumnsStyle(f, sheetName)
+	if err != nil {
+		return lastRow, err
+	}
+	err = sw.Flush()
+	if err != nil {
+		return lastRow, err
+	}
 	return lastRow, f.SaveAs(filePath)
+}
+
+func (e *Extractor) XLSXstreamTableAdd(
+	file *excelize.File, sheetName string, lastRow int) error {
+	// Set pane split (split first row)
+	err1 := file.SetPanes(sheetName, &excelize.Panes{
+		Freeze: true,
+		YSplit: 1,
+		XSplit: 1,
+		// TopLeftCell: "A10",
+		// ActivePane:  "bottomLeft",
+	})
+	if err1 != nil {
+		return err1
+	}
+
+	// Set table
+	endCell, err2 := excelize.CoordinatesToCellName(
+		len(e.HeaderInternal), lastRow)
+	cellRange := strings.Join([]string{"A1", endCell}, ":")
+	if err2 != nil {
+		return err2
+	}
+	rowStripes := true
+	table := excelize.Table{
+		Range:             cellRange,
+		Name:              "table",
+		StyleName:         "TableStyleMedium2",
+		ShowColumnStripes: true,
+		ShowFirstColumn:   true,
+		ShowLastColumn:    true,
+		ShowRowStripes:    &rowStripes,
+		// ShowRowStripes: true,
+	}
+	err3 := file.AddTable(sheetName, &table)
+	if err3 != nil {
+		return err3
+	}
+
+	return nil
+}
+
+func (e *Extractor) XLSXstreamTableSetColumnStyle(
+	file *excelize.File, sheetName string,
+	columIndex int, fieldID FieldID) error {
+
+	style := excelize.Style{
+		// NumFmt: 1, DecimalPlaces: nil,
+		// NegRed:       false,
+	}
+	if fieldID.XLSXcolumnFormat != 0 {
+		style.NumFmt = fieldID.XLSXcolumnFormat
+	}
+	if fieldID.XLSXcustomFormat != "" {
+		// customNumFmt := "[$$-409]#,##0.00"
+		style.CustomNumFmt = &fieldID.XLSXcustomFormat
+	}
+	styleIndex, err := file.NewStyle(&style)
+	if err != nil {
+		return err
+	}
+	colName, err := excelize.ColumnNumberToName(columIndex)
+	slog.Info("column style applied", "style", styleIndex)
+	return file.SetColStyle(sheetName, colName, styleIndex)
+}
+
+func (e *Extractor) XLSXstreamTableSetColumnsStyle(
+	file *excelize.File, sheetName string) error {
+	var columnIndex int
+	var err error
+	for _, partPos := range e.RowPartsPositions {
+		fieldsPos := e.RowPartsFieldsPositions[partPos]
+		for _, f := range fieldsPos {
+			columnIndex++
+			pos, ok := FieldsIDsNamesProduction2[f.FieldID]
+			if ok {
+				continue
+			}
+			err = e.XLSXstreamTableSetColumnStyle(
+				file, sheetName, columnIndex, pos)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return err
+}
+
+func (e *Extractor) XLSXstreamTableHeaderStyle(
+	file *excelize.File, sheetName string) error {
+	style := excelize.Style{
+		Border: []excelize.Border{},
+		Fill: excelize.Fill{
+			Type: "", Pattern: 1, Color: []string{}, Shading: 0,
+		},
+		Font: &excelize.Font{
+			Bold: true, Italic: false, Underline: "",
+			Family: "Times New Roman", Size: 20, Strike: false,
+			Color: "777777", ColorIndexed: 0, ColorTheme: nil,
+			ColorTint: 0.0, VertAlign: "",
+		},
+		Alignment: &excelize.Alignment{
+			Horizontal: "", Indent: 0, JustifyLastLine: false, ReadingOrder: 0,
+			RelativeIndent: 0, ShrinkToFit: false, TextRotation: 0, Vertical: "",
+			WrapText: false,
+		},
+		Protection: &excelize.Protection{
+			Hidden: false,
+			Locked: false,
+		},
+		NumFmt: 0, DecimalPlaces: nil,
+		// customNumFmt := "[$$-409]#,##0.00"
+		CustomNumFmt: nil,
+		NegRed:       false,
+	}
+	styleIndex, err := file.NewStyle(&style)
+	if err != nil {
+		return err
+	}
+	slog.Info("header style applied")
+	return file.SetRowStyle(sheetName, 1, 10, styleIndex)
 }
 
 func (r RowParts) PartsToXLSXrow(
