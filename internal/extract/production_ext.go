@@ -55,8 +55,17 @@ var EXTproduction = OMextractors{
 		// FieldIDs:         []string{"8"},
 		FieldIDs: ProductionFieldsRadioStory,
 	},
+	// OMextractor{
+	// ObjectPath:           "/<OM_RECORD>",
+	// ObjectAttrsNames:     []string{"RecordID"},
+	// PartPrefixCode:       RowPartCode_StoryRec,
+	// KeepWhenZeroSubnodes: true,
+	// ResultNodeGoUpLevels: 1,
+	// },
 	OMextractor{
-		ObjectPath:           "/<OM_RECORD>/Audioclip|Contact Item|Contact Bin",
+		ObjectPath: "/<OM_RECORD>/Audioclip|Contact Item|Contact Bin",
+		// ObjectPath: "/*Audioclip|Contact Item|Contact Bin",
+		// ObjectPath:           "/Audioclip|Contact Item|Contact Bin",
 		ObjectAttrsNames:     []string{"TemplateName", "ObjectID"},
 		PartPrefixCode:       RowPartCode_StoryKategory,
 		KeepWhenZeroSubnodes: true,

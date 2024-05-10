@@ -56,6 +56,7 @@ type ArchiveFolderQuery struct {
 	FilterDateTo     time.Time
 	FilterRadioName  string
 	FiltersDirectory string
+	FilterRecords    bool
 }
 
 // FolderListing

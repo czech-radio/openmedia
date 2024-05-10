@@ -89,9 +89,7 @@ func (e *Extractor) CSVtableBuild(
 	if len(rowsIndexes) > 1 {
 		panic("not implemented for multiple indexes' slices")
 	}
-	switch len(rowsIndexes) {
-	case 0:
-		// Build all rows
+	if len(rowsIndexes) == 0 || rowsIndexes[0] == nil {
 		e.CSVheaderBuild(internalHeader, externalHeader)
 		for i := 0; i < len(e.TableXML.Rows); i++ {
 			e.TableXML.Rows[i].CSVrowBuild(
@@ -99,21 +97,22 @@ func (e *Extractor) CSVtableBuild(
 			)
 			rowsCount++
 		}
-		// Build only specified rows in indexes slice
-	case 1:
-		e.CSVheaderBuild(internalHeader, externalHeader)
-		for _, index := range rowsIndexes[0] {
-			e.TableXML.Rows[index].CSVrowBuild(
-				sb, e.RowPartsPositions, e.RowPartsFieldsPositions, delim,
-			)
-			rowsCount++
-		}
+		return rowsCount
+	}
+	// Build only specified rows in indexes slice
+	e.CSVheaderBuild(internalHeader, externalHeader)
+	for _, index := range rowsIndexes[0] {
+		e.TableXML.Rows[index].CSVrowBuild(
+			sb, e.RowPartsPositions, e.RowPartsFieldsPositions, delim,
+		)
+		rowsCount++
 	}
 	return rowsCount
 }
 
 func (e *Extractor) CSVtableOutputs(dstDir, fileName, extractorsName, preset string, internal bool) {
 	if internal {
+		// csv with internal header
 		name := strings.Join(
 			[]string{fileName, extractorsName, preset, "wh.csv"}, "_")
 		dstFile1 := filepath.Join(
@@ -122,6 +121,8 @@ func (e *Extractor) CSVtableOutputs(dstDir, fileName, extractorsName, preset str
 		e.CSVheaderWrite(dstFile1, true)
 		e.CSVtableWrite(dstFile1, false)
 	}
+
+	// csv without internal header
 	name := strings.Join(
 		[]string{fileName, extractorsName, preset, "woh.csv"}, "_")
 	dstFile2 := filepath.Join(
@@ -129,6 +130,19 @@ func (e *Extractor) CSVtableOutputs(dstDir, fileName, extractorsName, preset str
 	e.CSVheaderBuild(false, true)
 	e.CSVheaderWrite(dstFile2, true)
 	e.CSVtableWrite(dstFile2, false)
+
+	// xlsx with internal header
+	name = strings.Join(
+		[]string{fileName, extractorsName, preset, "woh.xlsx"}, "_")
+	dstFile3 := filepath.Join(
+		dstDir, name)
+	lastRow, err := e.XLSXtableStreamSave(
+		dstFile3, "Sheet1", false, true, true)
+	if err != nil {
+		slog.Error(err.Error())
+		return
+	}
+	slog.Info("last row written", "number", lastRow)
 }
 
 func (e *Extractor) CSVtableOutput(dstFile string) {

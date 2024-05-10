@@ -58,6 +58,17 @@ var RowPartsCodeMapProduction = PartsPrefixMap{
 	RowPartCode_ComputedRID:      {"Comp-RID", "HLP"},
 }
 
+type FieldID struct {
+	Name             string
+	XLSXcolumnFormat int
+}
+
+type FieldsIDsNames2 map[string]FieldID
+
+var FieldsIDsNamesProduction2 = FieldsIDsNames2{
+	"1": {"cas_vytvoreni", 1},
+}
+
 type FieldsIDsNames map[string]string
 
 var FieldsIDsNamesProduction = FieldsIDsNames{

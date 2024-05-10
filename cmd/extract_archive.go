@@ -42,6 +42,8 @@ func commandExtractArchiveConfigure() {
 		"Special filters directory", nil, nil)
 	// add("FiltersLoad", "frload", "", "[]string",
 	// "filter files to load", nil, nil)
+	add("FilterRecords", "frrec", "false", "bool",
+		"filtere records", nil, nil)
 }
 
 func RunCommandExtractArchive() {
@@ -89,13 +91,19 @@ func RunCommandExtractArchive() {
 	ext := arf.FolderExtract(&q)
 
 	// TREAT ODD RECORD
-	ext.RemovePart(extract.RowPartCode_StoryRec)
+	ext.RowPartOmit(extract.RowPartCode_StoryRec)
+	var indxs []int
+	if q.FilterRecords {
+		indxs = ext.FilterStoryPartRecordsDuds()
+	}
+	// indxs = []int.(nil)
+
 	ext.TreatStoryRecordsWithoutOMobject()
 
 	// A) BASE
 	ext.TransformEmptyRowPart()
 	ext.TransformBase()
-	ext.CSVtableBuild(false, false, q.CSVdelim, false)
+	ext.CSVtableBuild(false, false, q.CSVdelim, false, indxs)
 
 	ext.CSVtableOutputs(q.OutputDirectory, q.OutputFileName,
 		q.ExtractorsName, "base", true)
@@ -115,7 +123,7 @@ func RunCommandExtractArchive() {
 		panic(err)
 	}
 
-	ext.CSVtableBuild(false, false, q.CSVdelim, true)
+	ext.CSVtableBuild(false, false, q.CSVdelim, true, indxs)
 	ext.CSVtableOutputs(q.OutputDirectory, q.OutputFileName,
 		q.ExtractorsName, "eurovolby", true)
 }

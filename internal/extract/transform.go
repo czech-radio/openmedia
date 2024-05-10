@@ -61,38 +61,7 @@ func (e *Extractor) UniqueRows() {
 	)
 }
 
-// FilterByPartAndFieldID
-func (e *Extractor) FilterByPartAndFieldID(
-	partCode RowPartCode, fieldID string,
-	fieldValuePatern string) []int {
-	var res []int
-	re := regexp.MustCompile(fieldValuePatern)
-	for i, row := range e.TableXML.Rows {
-		part, ok := row.RowParts[partCode]
-		if !ok {
-			slog.Debug(
-				"filter not effective", "reason", "partname not found",
-				"partName", partCode,
-			)
-			return nil
-		}
-		field, ok := part[fieldID]
-		if !ok {
-			slog.Debug(
-				"filter not effective", "reason", "fieldID not found",
-				"partName", partCode,
-			)
-			return nil
-		}
-		ok = re.MatchString(field.Value)
-		if ok {
-			res = append(res, i)
-		}
-	}
-	return res
-}
-
-func (e *Extractor) RemovePart(fieldPrefix RowPartCode) {
+func (e *Extractor) RowPartOmit(fieldPrefix RowPartCode) {
 	newPartsPositions := RowPartsPositions{}
 	for _, part := range e.RowPartsPositions {
 		if part == fieldPrefix {
@@ -104,8 +73,8 @@ func (e *Extractor) RemovePart(fieldPrefix RowPartCode) {
 	e.HeaderBuild()
 }
 
-// RemoveColumn
-func (e *Extractor) RemoveColumn(
+// RowPartColumnOmit
+func (e *Extractor) RowPartColumnOmit(
 	fieldPrefix RowPartCode, fieldID string) {
 	var newPos RowPartFieldsPositions
 	positions := e.RowPartsFieldsPositions[fieldPrefix]
@@ -652,13 +621,13 @@ func (e *Extractor) ComputeRecordIDs(removeSrcColumns bool) {
 		e.TableXML.Rows[i].RowParts[RowPartCode_ComputedRID] = part
 	}
 	if removeSrcColumns {
-		e.RemoveColumn(
+		e.RowPartColumnOmit(
 			RowPartCode_RadioRec, "RecordID")
-		e.RemoveColumn(
+		e.RowPartColumnOmit(
 			RowPartCode_HourlyRec, "RecordID")
-		e.RemoveColumn(
+		e.RowPartColumnOmit(
 			RowPartCode_SubRec, "RecordID")
-		e.RemoveColumn(
+		e.RowPartColumnOmit(
 			RowPartCode_StoryRec, "RecordID")
 	}
 }

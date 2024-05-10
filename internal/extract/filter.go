@@ -3,6 +3,7 @@ package extract
 import (
 	"fmt"
 	"log/slog"
+	"regexp"
 
 	"github.com/triopium/go_utils/pkg/files"
 )
@@ -59,7 +60,7 @@ func (e *Extractor) FilterMatchPersonName(f *NFilterColumn) error {
 	table := files.CreateTable(rows, f.ColumnHeaderRow, f.RowHeaderColumn)
 	rs := e.TableXML.Rows
 
-	valNP := RowFieldSpecialValueCodeMap[RowFieldValueNotPossible]
+	valueNP := RowFieldSpecialValueCodeMap[RowFieldValueNotPossible]
 	for _, r := range rs {
 		_, field, ok := GetRowPartAndField(
 			r.RowParts, RowPartCode_ComputedKON, "jmeno_spojene")
@@ -67,7 +68,7 @@ func (e *Extractor) FilterMatchPersonName(f *NFilterColumn) error {
 			panic(ok)
 		}
 		_, ok = table.RowHeaderToColumnMap[field.Value]
-		mark := MarkValue(ok, field.Value, valNP)
+		mark := MarkValue(ok, field.Value, valueNP)
 		e.MarkField(r.RowParts, RowPartCode_ContactItemHead, newColumnName, mark)
 	}
 	return nil
@@ -118,6 +119,30 @@ var FilterCodeMap = map[FilterCode]FilterColumn{
 		FilterCodeMatchPersonName,
 		RowPartCode_ComputedKON, "jmeno_spojene",
 		RowPartCode_ContactItemHead, "filtered", "", nil},
+}
+
+var rgxRecordDuds = regexp.MustCompile(`\d\d\d\d\d`)
+
+func (e *Extractor) FilterStoryPartRecordsDuds() []int {
+	indxs := make([]int, 0, len(e.Rows))
+	rows := e.TableXML.Rows
+	for i, row := range rows {
+		_, objid, _ := GetRowPartAndField(row.RowParts, RowPartCode_StoryKategory, "ObjectID")
+		_, recid, _ := GetRowPartAndField(row.RowParts, RowPartCode_StoryRec, "RecordID")
+		// _, storytype, _ := GetRowPartAndField(row.RowParts, RowPartCode_StoryRec, "5001")
+		if objid.Value != "" {
+			indxs = append(indxs, i)
+			continue
+		}
+		if recid.Value != "" {
+			ok := rgxRecordDuds.MatchString(recid.Value)
+			if ok {
+				continue
+			}
+		}
+		indxs = append(indxs, i)
+	}
+	return indxs
 }
 
 // FilterRun
@@ -178,4 +203,35 @@ func FieldValueMatchesValidValues(
 		return false, notFound
 	}
 	return validValues[field.Value], ""
+}
+
+// FilterByPartAndFieldID
+func (e *Extractor) FilterByPartAndFieldID(
+	partCode RowPartCode, fieldID string,
+	fieldValuePatern string) []int {
+	var res []int
+	re := regexp.MustCompile(fieldValuePatern)
+	for i, row := range e.TableXML.Rows {
+		part, ok := row.RowParts[partCode]
+		if !ok {
+			slog.Debug(
+				"filter not effective", "reason", "partname not found",
+				"partName", partCode,
+			)
+			return nil
+		}
+		field, ok := part[fieldID]
+		if !ok {
+			slog.Debug(
+				"filter not effective", "reason", "fieldID not found",
+				"partName", partCode,
+			)
+			return nil
+		}
+		ok = re.MatchString(field.Value)
+		if ok {
+			res = append(res, i)
+		}
+	}
+	return res
 }
