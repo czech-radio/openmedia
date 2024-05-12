@@ -62,15 +62,16 @@ type FieldID struct {
 	Name             string
 	XLSXcolumnFormat int
 	XLSXcustomFormat string
+	Width            int
 }
 
 type FieldsIDsNames2 map[string]FieldID
 
 var FieldsIDsNamesProduction2 = FieldsIDsNames2{
-	"1":    {"cas_vytvoreni", 1, ""},
-	"1003": {"cas_konce", 21, ""},
-	"1004": {"cas_zacatku", 21, ""},
-	"1035": {"cas_textu", 21, ""},
+	"1":    {"cas_vytvoreni", 1, "", 20},
+	"1003": {"cas_konce", 21, "", 20},
+	"1004": {"cas_zacatku", 21, "", 20},
+	"1035": {"cas_textu", 21, "", 20},
 }
 
 type FieldsIDsNames map[string]string

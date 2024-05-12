@@ -1,6 +1,7 @@
 package extract
 
 import (
+	"fmt"
 	"log/slog"
 	"strings"
 
@@ -94,7 +95,44 @@ func (e *Extractor) XLSXrowsStreamSave(
 	return currentRow, nil
 }
 
+// func (f *File) SetDefaultFont(fontName string)
+// func (f *File) GetStyle(idx int) (*Style, error)
+// err = f.SetColStyle("Sheet1", "H", style)
+// // err = f.SetRowStyle
+// err = f.SetColWidth(sheetName, "A", "B", 90)
+
+func ErrorRaise(resErr *error, err error) {
+	if err != nil {
+		*resErr = err
+		panic(err.Error())
+	}
+}
+
+func ErrorHandle(err *error) {
+	if r := recover(); r != nil {
+		slog.Error(r.(string))
+		*err = fmt.Errorf("somthing happend")
+	}
+}
+
 func (e *Extractor) XLSXstreamTableSave(
+	filePath, sheetName string,
+	internalHeader, externalHeader, overWrite bool) (int, error) {
+	var resErr error = fmt.Errorf("default error")
+	defer ErrorHandle(&resErr)
+	// defer return 0,nil
+	ErrorRaise(&resErr, nil)
+	ErrorRaise(&resErr, fmt.Errorf("kek"))
+	// filePath = "kek"
+	// f, fileClose, err := XLSXopenFile(filePath, overWrite)
+	// if err != nil {
+	// return 0, err
+	// }
+	// defer fileClose(f)
+	return 0, resErr
+}
+
+func (e *Extractor) XLSXstreamTableSaveB(
 	filePath, sheetName string,
 	internalHeader, externalHeader, overWrite bool) (int, error) {
 	f, fileClose, err := XLSXopenFile(filePath, overWrite)
@@ -118,27 +156,33 @@ func (e *Extractor) XLSXstreamTableSave(
 	if err != nil {
 		return lastRow, err
 	}
+	err = f.SaveAs(filePath)
+	if err != nil {
+		return lastRow, err
+	}
+
+	// Change format
+	f, fileClose, err = XLSXopenFile(filePath, false)
+	if err != nil {
+		return lastRow, err
+	}
 	err = e.XLSXstreamTableAdd(f, sheetName, lastRow)
 	if err != nil {
 		return lastRow, err
 	}
-	// func (f *File) SetDefaultFont(fontName string)
-	// func (f *File) GetStyle(idx int) (*Style, error)
-	// err = f.SetColStyle("Sheet1", "H", style)
-	// sheetName, "H", style
-	// err = f.SetRowStyle
-	err = e.XLSXstreamTableHeaderStyle(f, sheetName)
-	if err != nil {
-		return lastRow, err
-	}
+	defer fileClose(f)
 	err = e.XLSXstreamTableSetColumnsStyle(f, sheetName)
 	if err != nil {
 		return lastRow, err
 	}
-	err = sw.Flush()
-	if err != nil {
-		return lastRow, err
-	}
+	// err = e.XLSXstreamTableHeaderStyle(f, sheetName)
+	// if err != nil {
+	// 	return lastRow, err
+	// }
+	// err = sw.Flush()
+	// if err != nil {
+	// 	return lastRow, err
+	// }
 	return lastRow, f.SaveAs(filePath)
 }
 
@@ -184,7 +228,7 @@ func (e *Extractor) XLSXstreamTableAdd(
 
 func (e *Extractor) XLSXstreamTableSetColumnStyle(
 	file *excelize.File, sheetName string,
-	columIndex int, fieldID FieldID) error {
+	columName string, fieldID FieldID) error {
 
 	style := excelize.Style{
 		// NumFmt: 1, DecimalPlaces: nil,
@@ -201,31 +245,45 @@ func (e *Extractor) XLSXstreamTableSetColumnStyle(
 	if err != nil {
 		return err
 	}
-	colName, err := excelize.ColumnNumberToName(columIndex)
-	slog.Info("column style applied", "style", styleIndex)
-	return file.SetColStyle(sheetName, colName, styleIndex)
+	slog.Info("column style applied", "column", columName, "style", styleIndex)
+	return file.SetColStyle(sheetName, columName, styleIndex)
 }
 
 func (e *Extractor) XLSXstreamTableSetColumnsStyle(
 	file *excelize.File, sheetName string) error {
 	var columnIndex int
-	var err error
+	// var err error
 	for _, partPos := range e.RowPartsPositions {
 		fieldsPos := e.RowPartsFieldsPositions[partPos]
-		for _, f := range fieldsPos {
+		for _, fp := range fieldsPos {
 			columnIndex++
-			pos, ok := FieldsIDsNamesProduction2[f.FieldID]
+			col, err := excelize.ColumnNumberToName(columnIndex)
+			if err != nil {
+				return err
+			}
+			pos, ok := FieldsIDsNamesProduction2[fp.FieldID]
+			// _, ok := FieldsIDsNamesProduction2[fp.FieldID]
 			if ok {
 				continue
 			}
+			err = file.SetColWidth(sheetName, col, col, 30)
+			if err != nil {
+				return err
+			}
 			err = e.XLSXstreamTableSetColumnStyle(
-				file, sheetName, columnIndex, pos)
+				file, sheetName, col, pos)
 			if err != nil {
 				return err
 			}
 		}
 	}
-	return err
+
+	// err = file.SetColWidth(sheetName, "A", "B", 90)
+	// if err != nil {
+	// return err
+	// }
+	// err = file.Save()
+	return nil
 }
 
 func (e *Extractor) XLSXstreamTableHeaderStyle(
@@ -247,8 +305,7 @@ func (e *Extractor) XLSXstreamTableHeaderStyle(
 			WrapText: false,
 		},
 		Protection: &excelize.Protection{
-			Hidden: false,
-			Locked: false,
+			Hidden: false, Locked: false,
 		},
 		NumFmt: 0, DecimalPlaces: nil,
 		// customNumFmt := "[$$-409]#,##0.00"
@@ -259,7 +316,15 @@ func (e *Extractor) XLSXstreamTableHeaderStyle(
 	if err != nil {
 		return err
 	}
-	slog.Info("header style applied")
+	colName, err := excelize.ColumnNumberToName(len(e.HeaderInternal))
+	if err != nil {
+		return err
+	}
+	err = file.SetColWidth(sheetName, "A", colName, 30)
+	if err != nil {
+		return err
+	}
+	slog.Info("header style applied", "sheet", sheetName, "cols", colName)
 	return file.SetRowStyle(sheetName, 1, 10, styleIndex)
 }
 
