@@ -1,7 +1,6 @@
 package extract
 
 import (
-	"fmt"
 	"log/slog"
 	"strings"
 
@@ -51,7 +50,7 @@ func ConvertStringSliceToInterface(slice []string) []interface{} {
 	return newslice
 }
 
-func (e *Extractor) XLSXheaderStreamSave(
+func (e *Extractor) XLSXstreamAddHeader(
 	sw *excelize.StreamWriter, internalHeader, externalHeader bool) (int, error) {
 	lastRow := 0
 	if internalHeader {
@@ -75,7 +74,7 @@ func (e *Extractor) XLSXheaderStreamSave(
 	return lastRow, nil
 }
 
-func (e *Extractor) XLSXrowsStreamSave(
+func (e *Extractor) XLSXstreamAddRows(
 	sw *excelize.StreamWriter, lastRow int) (int, error) {
 	// Write rows
 	currentRow := lastRow
@@ -101,92 +100,43 @@ func (e *Extractor) XLSXrowsStreamSave(
 // // err = f.SetRowStyle
 // err = f.SetColWidth(sheetName, "A", "B", 90)
 
-func ErrorRaise(resErr *error, err error) {
-	if err != nil {
-		*resErr = err
-		panic(err.Error())
-	}
-}
-
-func ErrorHandle(err *error) {
-	if r := recover(); r != nil {
-		slog.Error(r.(string))
-		*err = fmt.Errorf("somthing happend")
-	}
-}
-
 func (e *Extractor) XLSXstreamTableSave(
 	filePath, sheetName string,
-	internalHeader, externalHeader, overWrite bool) (int, error) {
-	var resErr error = fmt.Errorf("default error")
-	defer ErrorHandle(&resErr)
-	// defer return 0,nil
-	ErrorRaise(&resErr, nil)
-	ErrorRaise(&resErr, fmt.Errorf("kek"))
-	// filePath = "kek"
-	// f, fileClose, err := XLSXopenFile(filePath, overWrite)
-	// if err != nil {
-	// return 0, err
-	// }
-	// defer fileClose(f)
-	return 0, resErr
-}
+	internalHeader, externalHeader, overWrite bool) (lastRow int, result error) {
+	el := helper.ErrList{}
+	defer el.Handle(&result)
+	var err error
 
-func (e *Extractor) XLSXstreamTableSaveB(
-	filePath, sheetName string,
-	internalHeader, externalHeader, overWrite bool) (int, error) {
+	// Add data
 	f, fileClose, err := XLSXopenFile(filePath, overWrite)
-	if err != nil {
-		return 0, err
-	}
+	el.ErrorRaise(err)
 	defer fileClose(f)
 	sw, err := f.NewStreamWriter(sheetName) // will overwrite sheet
-	if err != nil {
-		return 0, err
-	}
-	lastRow, err := e.XLSXheaderStreamSave(sw, internalHeader, externalHeader)
-	if err != nil {
-		return lastRow, err
-	}
-	lastRow, err = e.XLSXrowsStreamSave(sw, lastRow)
-	if err != nil {
-		return lastRow, err
-	}
+	el.ErrorRaise(err)
+	lastRow, err = e.XLSXstreamAddHeader(sw, internalHeader, externalHeader)
+	el.ErrorRaise(err)
+	lastRow, err = e.XLSXstreamAddRows(sw, lastRow)
+	el.ErrorRaise(err)
 	err = sw.Flush()
-	if err != nil {
-		return lastRow, err
-	}
+	el.ErrorRaise(err)
 	err = f.SaveAs(filePath)
-	if err != nil {
-		return lastRow, err
-	}
+	el.ErrorRaise(err)
 
-	// Change format
+	// Format table
 	f, fileClose, err = XLSXopenFile(filePath, false)
-	if err != nil {
-		return lastRow, err
-	}
-	err = e.XLSXstreamTableAdd(f, sheetName, lastRow)
-	if err != nil {
-		return lastRow, err
-	}
+	el.ErrorRaise(err)
 	defer fileClose(f)
+	err = e.XLSXstreamTableFormat(f, sheetName, lastRow)
+	el.ErrorRaise(err)
 	err = e.XLSXstreamTableSetColumnsStyle(f, sheetName)
-	if err != nil {
-		return lastRow, err
-	}
-	// err = e.XLSXstreamTableHeaderStyle(f, sheetName)
-	// if err != nil {
-	// 	return lastRow, err
-	// }
-	// err = sw.Flush()
-	// if err != nil {
-	// 	return lastRow, err
-	// }
+	el.ErrorRaise(err)
+	err = e.XLSXstreamTableHeaderStyle(f, sheetName)
+	el.ErrorRaise(err)
+
 	return lastRow, f.SaveAs(filePath)
 }
 
-func (e *Extractor) XLSXstreamTableAdd(
+func (e *Extractor) XLSXstreamTableFormat(
 	file *excelize.File, sheetName string, lastRow int) error {
 	// Set pane split (split first row)
 	err1 := file.SetPanes(sheetName, &excelize.Panes{
@@ -295,8 +245,10 @@ func (e *Extractor) XLSXstreamTableHeaderStyle(
 		},
 		Font: &excelize.Font{
 			Bold: true, Italic: false, Underline: "",
-			Family: "Times New Roman", Size: 20, Strike: false,
-			Color: "777777", ColorIndexed: 0, ColorTheme: nil,
+			// Family: "Times New Roman", Size: 10, Strike: false,
+			Family: "", Size: 10, Strike: false,
+			// Color: "777777", ColorIndexed: 0, ColorTheme: nil,
+			Color: "", ColorIndexed: 0, ColorTheme: nil,
 			ColorTint: 0.0, VertAlign: "",
 		},
 		Alignment: &excelize.Alignment{
@@ -325,7 +277,7 @@ func (e *Extractor) XLSXstreamTableHeaderStyle(
 		return err
 	}
 	slog.Info("header style applied", "sheet", sheetName, "cols", colName)
-	return file.SetRowStyle(sheetName, 1, 10, styleIndex)
+	return file.SetRowStyle(sheetName, 1, 1, styleIndex)
 }
 
 func (r RowParts) PartsToXLSXrow(
