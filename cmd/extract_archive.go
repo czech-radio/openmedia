@@ -105,7 +105,7 @@ func RunCommandExtractArchive() {
 	ext.TransformBase()
 	ext.CSVtableBuild(false, false, q.CSVdelim, false, indxs)
 
-	ext.CSVtableOutputs(q.OutputDirectory, q.OutputFileName,
+	ext.TableOutputs(q.OutputDirectory, q.OutputFileName,
 		q.ExtractorsName, "base", true)
 
 	// B) EUROVOLBY
@@ -124,6 +124,6 @@ func RunCommandExtractArchive() {
 	}
 
 	ext.CSVtableBuild(false, false, q.CSVdelim, true, indxs)
-	ext.CSVtableOutputs(q.OutputDirectory, q.OutputFileName,
+	ext.TableOutputs(q.OutputDirectory, q.OutputFileName,
 		q.ExtractorsName, "eurovolby", true)
 }

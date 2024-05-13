@@ -16,13 +16,11 @@ type ExtractorsPresetCode string
 const (
 	ExtractorsProduction1 ExtractorsPresetCode = "production1"
 	ExtractorsProduction2 ExtractorsPresetCode = "production2"
-	ExtractorsProduction3 ExtractorsPresetCode = "production3"
 )
 
 var ExtractorsCodeMap = ExtractorsMap{
 	ExtractorsProduction1: EXTproduction,
 	ExtractorsProduction2: EXTproduction2,
-	ExtractorsProduction3: EXTproduction3,
 }
 
 // ObjectAttributes

@@ -12,9 +12,49 @@ import (
 // f.NewConditionalStyle()
 // f.SetColStyle(sheetName, column, styleId)
 // f.SetColWidth()
-// set
 // f.SetCellStyle()
 // sw.SetRow()
+// func (f *File) SetDefaultFont(fontName string)
+// func (f *File) GetStyle(idx int) (*Style, error)
+// err = f.SetColStyle("Sheet1", "H", style)
+// // err = f.SetRowStyle
+// err = f.SetColWidth(sheetName, "A", "B", 90)
+
+func (e *Extractor) XLSXstreamTableSave(
+	filePath, sheetName string, overWrite bool,
+	internalHeader, externalHeader, columnFormat bool) (lastRow int, result error) {
+	el := helper.ErrList{}
+	defer el.Handle(&result)
+	var err error
+
+	// Add data
+	f, fileClose, err := XLSXopenFile(filePath, overWrite)
+	el.ErrorRaise(err)
+	defer fileClose(f)
+	sw, err := f.NewStreamWriter(sheetName) // will overwrite sheet
+	el.ErrorRaise(err)
+	lastRow, err = e.XLSXstreamAddHeader(sw, internalHeader, externalHeader)
+	el.ErrorRaise(err)
+	lastRow, err = e.XLSXstreamAddRows(sw, lastRow)
+	el.ErrorRaise(err)
+	err = sw.Flush()
+	el.ErrorRaise(err)
+	err = f.SaveAs(filePath)
+	el.ErrorRaise(err)
+
+	// Format table
+	f, fileClose, err = XLSXopenFile(filePath, false)
+	el.ErrorRaise(err)
+	defer fileClose(f)
+	err = e.XLSXstreamTableFormat(f, sheetName, lastRow)
+	el.ErrorRaise(err)
+	err = e.XLSXstreamTableSetColumnsStyle(f, sheetName, columnFormat)
+	el.ErrorRaise(err)
+	err = e.XLSXstreamTableHeaderStyle(f, sheetName)
+	el.ErrorRaise(err)
+
+	return lastRow, f.SaveAs(filePath)
+}
 
 func XLSXopenFile(
 	filePath string, overWrite bool,
@@ -94,85 +134,38 @@ func (e *Extractor) XLSXstreamAddRows(
 	return currentRow, nil
 }
 
-// func (f *File) SetDefaultFont(fontName string)
-// func (f *File) GetStyle(idx int) (*Style, error)
-// err = f.SetColStyle("Sheet1", "H", style)
-// // err = f.SetRowStyle
-// err = f.SetColWidth(sheetName, "A", "B", 90)
-
-func (e *Extractor) XLSXstreamTableSave(
-	filePath, sheetName string,
-	internalHeader, externalHeader, overWrite bool) (lastRow int, result error) {
+func (e *Extractor) XLSXstreamTableFormat(
+	file *excelize.File, sheetName string, lastRow int) (result error) {
 	el := helper.ErrList{}
 	defer el.Handle(&result)
-	var err error
-
-	// Add data
-	f, fileClose, err := XLSXopenFile(filePath, overWrite)
-	el.ErrorRaise(err)
-	defer fileClose(f)
-	sw, err := f.NewStreamWriter(sheetName) // will overwrite sheet
-	el.ErrorRaise(err)
-	lastRow, err = e.XLSXstreamAddHeader(sw, internalHeader, externalHeader)
-	el.ErrorRaise(err)
-	lastRow, err = e.XLSXstreamAddRows(sw, lastRow)
-	el.ErrorRaise(err)
-	err = sw.Flush()
-	el.ErrorRaise(err)
-	err = f.SaveAs(filePath)
-	el.ErrorRaise(err)
-
-	// Format table
-	f, fileClose, err = XLSXopenFile(filePath, false)
-	el.ErrorRaise(err)
-	defer fileClose(f)
-	err = e.XLSXstreamTableFormat(f, sheetName, lastRow)
-	el.ErrorRaise(err)
-	err = e.XLSXstreamTableSetColumnsStyle(f, sheetName)
-	el.ErrorRaise(err)
-	err = e.XLSXstreamTableHeaderStyle(f, sheetName)
-	el.ErrorRaise(err)
-
-	return lastRow, f.SaveAs(filePath)
-}
-
-func (e *Extractor) XLSXstreamTableFormat(
-	file *excelize.File, sheetName string, lastRow int) error {
 	// Set pane split (split first row)
-	err1 := file.SetPanes(sheetName, &excelize.Panes{
+	err := file.SetPanes(sheetName, &excelize.Panes{
 		Freeze: true,
 		YSplit: 1,
 		XSplit: 1,
 		// TopLeftCell: "A10",
 		// ActivePane:  "bottomLeft",
 	})
-	if err1 != nil {
-		return err1
-	}
+	el.ErrorRaise(err)
 
-	// Set table
-	endCell, err2 := excelize.CoordinatesToCellName(
+	// Set table dimensions and format
+	endCell, err := excelize.CoordinatesToCellName(
 		len(e.HeaderInternal), lastRow)
+	el.ErrorRaise(err)
 	cellRange := strings.Join([]string{"A1", endCell}, ":")
-	if err2 != nil {
-		return err2
-	}
 	rowStripes := true
 	table := excelize.Table{
 		Range:             cellRange,
 		Name:              "table",
 		StyleName:         "TableStyleMedium2",
-		ShowColumnStripes: true,
-		ShowFirstColumn:   true,
-		ShowLastColumn:    true,
+		ShowColumnStripes: false,
+		ShowFirstColumn:   false,
+		ShowLastColumn:    false,
 		ShowRowStripes:    &rowStripes,
-		// ShowRowStripes: true,
+		// ShowRowStripes:    true,
 	}
-	err3 := file.AddTable(sheetName, &table)
-	if err3 != nil {
-		return err3
-	}
-
+	err = file.AddTable(sheetName, &table)
+	el.ErrorRaise(err)
 	return nil
 }
 
@@ -200,7 +193,10 @@ func (e *Extractor) XLSXstreamTableSetColumnStyle(
 }
 
 func (e *Extractor) XLSXstreamTableSetColumnsStyle(
-	file *excelize.File, sheetName string) error {
+	file *excelize.File, sheetName string, format bool) error {
+	if !format {
+		return nil
+	}
 	var columnIndex int
 	// var err error
 	for _, partPos := range e.RowPartsPositions {

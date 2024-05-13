@@ -110,11 +110,14 @@ func (e *Extractor) CSVtableBuild(
 	return rowsCount
 }
 
-func (e *Extractor) CSVtableOutputs(dstDir, fileName, extractorsName, preset string, internal bool) {
+func (e *Extractor) TableOutputs(
+	dstDir, fileName, extractorsName, transformName string, internal bool) {
+
+	// CSV
+	// csv with internal header
 	if internal {
-		// csv with internal header
 		name := strings.Join(
-			[]string{fileName, extractorsName, preset, "wh.csv"}, "_")
+			[]string{fileName, extractorsName, transformName, "wh.csv"}, "_")
 		dstFile1 := filepath.Join(
 			dstDir, name)
 		e.CSVheaderBuild(true, true)
@@ -124,26 +127,25 @@ func (e *Extractor) CSVtableOutputs(dstDir, fileName, extractorsName, preset str
 
 	// csv without internal header
 	name := strings.Join(
-		[]string{fileName, extractorsName, preset, "woh.csv"}, "_")
+		[]string{fileName, extractorsName, transformName, "woh.csv"}, "_")
 	dstFile2 := filepath.Join(
 		dstDir, name)
 	e.CSVheaderBuild(false, true)
 	e.CSVheaderWrite(dstFile2, true)
 	e.CSVtableWrite(dstFile2, false)
 
+	// XLSX
 	// xlsx with internal header
 	name = strings.Join(
-		[]string{fileName, extractorsName, preset, "woh.xlsx"}, "_")
+		[]string{fileName, extractorsName, transformName, "woh.xlsx"}, "_")
 	dstFile3 := filepath.Join(
 		dstDir, name)
-	slog.Info("SAVING")
 	lastRow, err := e.XLSXstreamTableSave(
-		dstFile3, "Sheet1", false, true, true)
+		dstFile3, "Sheet1", true, false, true, true)
 	if err != nil {
 		slog.Error("cannot save table", "error", err.Error())
 		return
 	}
-	slog.Info("SAVED")
 	slog.Info("last row written", "number", lastRow)
 }
 
