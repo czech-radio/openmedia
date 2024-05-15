@@ -37,10 +37,12 @@ ArchiveExtractWeek(){
   # local fdf="2024-04-01"
   # local fdt="2024-05-01"
   # local fdt="2024-01-11"
-  local run_name="month_april"
+  # local run_name="month_april"
+  local run_name="day"
   local ofname="${frn:-all}_${run_name}_$fdf"
   local frdir="/home/jk/CRO/CRO_BASE/openmedia_backup/filters/"
-  local frn="Plus"
+  # local frn="Plus"
+  local frn=""
   
   date > "${odir}/run_stat.txt"
   # old

@@ -193,7 +193,9 @@ func (e *Extractor) XLSXstreamTableSetColumnStyle(
 }
 
 func (e *Extractor) XLSXstreamTableSetColumnsStyle(
-	file *excelize.File, sheetName string, format bool) error {
+	file *excelize.File, sheetName string, format bool) (output error) {
+	el := helper.ErrList{}
+	defer el.Handle(&output)
 	if !format {
 		return nil
 	}
@@ -204,23 +206,16 @@ func (e *Extractor) XLSXstreamTableSetColumnsStyle(
 		for _, fp := range fieldsPos {
 			columnIndex++
 			col, err := excelize.ColumnNumberToName(columnIndex)
-			if err != nil {
-				return err
-			}
+			el.ErrorRaise(err)
 			pos, ok := FieldsIDsNamesProduction2[fp.FieldID]
-			// _, ok := FieldsIDsNamesProduction2[fp.FieldID]
-			if ok {
+			if !ok {
 				continue
 			}
-			err = file.SetColWidth(sheetName, col, col, 30)
-			if err != nil {
-				return err
-			}
+			err = file.SetColWidth(sheetName, col, col, pos.Width)
+			el.ErrorRaise(err)
 			err = e.XLSXstreamTableSetColumnStyle(
 				file, sheetName, col, pos)
-			if err != nil {
-				return err
-			}
+			el.ErrorRaise(err)
 		}
 	}
 
@@ -268,7 +263,7 @@ func (e *Extractor) XLSXstreamTableHeaderStyle(
 	if err != nil {
 		return err
 	}
-	err = file.SetColWidth(sheetName, "A", colName, 30)
+	err = file.SetColWidth(sheetName, "A", colName, 15)
 	if err != nil {
 		return err
 	}

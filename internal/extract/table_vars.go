@@ -62,16 +62,58 @@ type FieldID struct {
 	Name             string
 	XLSXcolumnFormat int
 	XLSXcustomFormat string
-	Width            int
+	Width            float64
 }
 
 type FieldsIDsNames2 map[string]FieldID
 
 var FieldsIDsNamesProduction2 = FieldsIDsNames2{
-	"1":    {"cas_vytvoreni", 1, "", 20},
-	"1003": {"cas_konce", 21, "", 20},
-	"1004": {"cas_zacatku", 21, "", 20},
-	"1035": {"cas_textu", 21, "", 20},
+	"1":    {"cas_vytvoreni", 0, "", 20},
+	"1000": {"datum", 1, "", 30},
+	// "1002":             {"planovana_stopaz"},
+	// "1003":             {"cas_konce"},
+	// "1004":             {"cas_zacatku"},
+	// "1005":             {"stopaz"},
+	// "1010":             {"spoctena_stopaz"},
+	// "1029":             {"korekce"},
+	// "1035":             {"cas_textu"},
+	// "1036":             {"audio_stopaz"},
+	// "12":               {"redakce"},
+	// "16":               {"druh"},
+	// "321":              {"format"},
+	// "38":               {"stopaz"},
+	// "421":              {"jmeno"},
+	// "422":              {"prijmeni"},
+	// "423":              {"spolecnost"},
+	// "424":              {"funkce"},
+	// "5":                {"vytvoril"},
+	// "5015":             {"strana"},
+	// "5016":             {"tema"},
+	// "5070":             {"schvalil_redakce"},
+	// "5071":             {"schvalil_stanice"},
+	// "5072":             {"incode"},
+	// "5079":             {"cil_vyroby"},
+	// "5081":             {"stanice"},
+	// "5082":             {"itemcode"},
+	// "5087":             {"ID"},
+	// "5068":             {"ID"},
+	// "5088":             {"pohlavi"},
+	// "6":                {"autor"},
+	// "8":                {"nazev"},
+	// "ID":               {"compID"},
+	// "RecordID":         {"RID"},
+	// "TemplateName":     {"kategorie"},
+	// "datum":            {"datum"},
+	// "kategory":         {"kategory"},
+	// "C-RID":            {"RID"},
+	// "C-index":          {"index"},
+	// "ObjectID":         {"ObjectID"},
+	// "FileName":         {"FileName"},
+	// "filtered":         {"filtered"},
+	// "region":           {"region"},
+	// "jmeno_spojene":    {"jmeno_spojene"},
+	// "name_match":       {"name_match"},
+	// "name&party_match": {"kontrola_strany"},
 }
 
 type FieldsIDsNames map[string]string
