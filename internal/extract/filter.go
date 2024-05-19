@@ -16,7 +16,7 @@ const (
 
 type NFilterColumn struct {
 	FilterFileName  string
-	SheetName       string
+	FilterSheetName string
 	ColumnHeaderRow int
 	RowHeaderColumn int
 	PartCodeMark    RowPartCode
@@ -53,7 +53,7 @@ func MarkValue(matches bool, fieldValue, nulValue string) string {
 func (e *Extractor) FilterMatchPersonName(f *NFilterColumn) error {
 	newColumnName := "name_match"
 	e.AddColumn(RowPartCode_ContactItemHead, newColumnName)
-	sheetRows, err := files.ReadExcelFileSheetRows(f.FilterFileName, f.SheetName)
+	sheetRows, err := files.ReadExcelFileSheetRows(f.FilterFileName, f.FilterSheetName)
 	if err != nil {
 		return err
 	}
@@ -77,7 +77,7 @@ func (e *Extractor) FilterMatchPersonName(f *NFilterColumn) error {
 func (e *Extractor) FilterMatchPersonAndParty(f *NFilterColumn) error {
 	newColumnName := "name&party_match"
 	e.AddColumn(RowPartCode_ContactItemHead, newColumnName)
-	rows, err := files.ReadExcelFileSheetRows(f.FilterFileName, f.SheetName)
+	rows, err := files.ReadExcelFileSheetRows(f.FilterFileName, f.FilterSheetName)
 	if err != nil {
 		return err
 	}
@@ -106,7 +106,7 @@ func (e *Extractor) FilterMatchPersonAndParty(f *NFilterColumn) error {
 func (e *Extractor) FilterMatchPersonIDandPolitics(f *NFilterColumn) error {
 	newColumnName := "vysoka_politika"
 	e.AddColumn(RowPartCode_ContactItemHead, newColumnName)
-	rows, err := files.ReadExcelFileSheetRows(f.FilterFileName, f.SheetName)
+	rows, err := files.ReadExcelFileSheetRows(f.FilterFileName, f.FilterSheetName)
 	if err != nil {
 		return err
 	}

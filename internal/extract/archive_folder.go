@@ -53,6 +53,7 @@ type ArchiveFolderQuery struct {
 	OutputFileName      string
 
 	ExtractorsName string
+	ExtractorsCode ExtractorsPresetCode
 
 	FilterDateFrom   time.Time
 	FilterDateTo     time.Time

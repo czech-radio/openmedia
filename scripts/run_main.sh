@@ -17,7 +17,8 @@ TouchDone(){
 }
 
 ArchiveExtractKontrolniHodinaProdukce(){
-  local exsn="production_all"
+  # local exsn="production_all"
+  local exsn="production_contacts"
   local sdir="/mnt/remote/cro/export-avo/Rundowns"
   local odir="/tmp/test/"
   local verbose="0"
@@ -30,12 +31,13 @@ ArchiveExtractKontrolniHodinaProdukce(){
   local run_name="kontrolni_hodina"
   local ofname="${frn:-all}-${run_name}-$fdf-$fdt"
   local sdirType="ORIGINAL.zip"
+  local frfn="${SCRIPT_DIR}/../../openmedia-filters/analýza opozice - zadání.xlsx"
   
   date > "${odir}/run_stat.txt"
   go run "$main_path" -v="$verbose" extractArchive \
     -fdf="$fdf" -fdt="$fdt" -frn="$frn" \
     -ofname="$ofname" -sdir="$sdir" -odir="$odir" \
-    -frdir="$frdir" -frfn="$frfn" -exsn="$exsn" -frrec \
+    -frfn="$frfn" -exsn="$exsn" \
     -sdirType="$sdirType"
   date >> "${odir}/run_stat.txt"
 }

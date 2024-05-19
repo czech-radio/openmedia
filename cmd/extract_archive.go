@@ -20,9 +20,9 @@ func commandExtractArchiveConfigure() {
 	// Archive query
 	add("SourceDirectory", "sdir",
 		"/mnt/remote/cro/export-avo/Rundowns", "string", c.NotNill,
-		"Source rundown file.", nil, helper.DirectoryExists)
+		"Source directory of rundown files.", nil, helper.DirectoryExists)
 	add("SourceDirectoryType", "sdirType", "MINIFIED.zip", "string", "",
-		"type of source folder where the rundowns resides", nil, nil)
+		"type of source directory where the rundowns resides", nil, nil)
 	add("OutputDirectory", "odir", "/tmp/test/", "string", c.NotNill,
 		"Destination directory or file", nil, helper.DirectoryExists)
 	add("OutputFileName", "ofname", "", "string", c.NotNill,
@@ -41,14 +41,14 @@ func commandExtractArchiveConfigure() {
 		"csv column field delimiter", []string{"\t", ";"}, nil)
 
 	// Special filters
-	add("FiltersDirectory", "frdir", "", "string", "",
-		"Special filters directory", nil, nil)
-	add("FiltersFileName", "frfn", "", "string", "",
+	// add("FiltersDirectory", "frdir", "", "string", "",
+	// "Special filters directory", nil, nil)
+	add("FilterFileName", "frfn", "", "string", "",
 		"Special filters filename", nil, nil)
-	add("FiltersLoad", "frload", "", "[]string", "",
-		"filter files to load", nil, nil)
-	add("FilterRecords", "frrec", "false", "bool", "",
-		"filtere records", nil, nil)
+	add("FilterSheetName", "frsn", "data", "string", "",
+		"Special filters filename", nil, nil)
+	add("FilterTypeName", "frtn", "vysoka_politika", "string", "",
+		"Special filters filename", nil, nil)
 }
 
 func PrepareConfig() *extract.ArchiveFolderQuery {
@@ -66,6 +66,7 @@ func PrepareConfig() *extract.ArchiveFolderQuery {
 		panic(fmt.Errorf("extractors name not defined: %s", q.ExtractorsName))
 	}
 	q.Extractors = extractors
+	q.ExtractorsCode = extCode
 
 	if q.FiltersFileName != "" {
 		filterPath1 := filepath.Join(q.FiltersDirectory, q.FiltersFileName)
@@ -79,42 +80,46 @@ func PrepareConfig() *extract.ArchiveFolderQuery {
 	return &q
 }
 
+func PrepareFilter() *extract.NFilterColumn {
+	filter := &extract.NFilterColumn{}
+	err := commandExtractArchiveConfig.ParseFlags(filter)
+	if err != nil {
+		panic(err)
+	}
+	return filter
+}
+
 func RunCommandExtractArchive() {
-	q := PrepareConfig()
-	arf := extract.ArchiveFolder{PackageTypes: []ar.WorkerTypeCode{q.WorkerType}}
+	query := PrepareConfig()
+	filter := PrepareFilter()
+	arf := extract.ArchiveFolder{
+		PackageTypes: []ar.WorkerTypeCode{query.WorkerType}}
 	// EXTRACT
-	if err := arf.FolderMap(q.SourceDirectory, true, q); err != nil {
+	if err := arf.FolderMap(query.SourceDirectory, true, query); err != nil {
 		helper.Errors.ExitWithCode(err)
 	}
-	ext := arf.FolderExtract(q)
+	ext := arf.FolderExtract(query)
 
-	var indxs []int
-	// indxs = ext.FilterContacts()
-
+	// TRANSFORM
 	// A) BASE
+	var indxs []int
 	ext.TransformBase()
-	ext.CSVtableBuild(false, false, q.CSVdelim, false, indxs)
-	ext.TableOutputs(q.OutputDirectory, q.OutputFileName,
-		q.ExtractorsName, "base", true)
+	if query.ExtractorsCode == extract.ExtractorsProductionContacts {
+		indxs = ext.FilterContacts()
+	}
+	ext.CSVtableBuild(false, false, query.CSVdelim, false, indxs)
+	ext.TableOutputs(query.OutputDirectory, query.OutputFileName,
+		query.ExtractorsName, "base", true)
 
-	// // B) Transformed
-	// ext.TransformProduction()
-	// // filter1 := extract.NFilterColumn{
-	// // 	FilterFileName: filterPath1,
-	// // 	SheetName:      "data",
-	// // }
-	// // err = ext.FilterMatchPersonName(&filter1)
-	// // if err != nil {
-	// // 	panic(err)
-	// // }
-	// // err = ext.FilterMatchPersonIDandPolitics(&filter1)
-	// // // err = ext.FilterMatchPersonAndParty(&filter1)
-	// // if err != nil {
-	// // 	panic(err)
-	// // }
-
-	// // B) Opozice
-	// ext.CSVtableBuild(false, false, q.CSVdelim, true, indxs)
-	// ext.TableOutputs(q.OutputDirectory, q.OutputFileName,
-	// 	q.ExtractorsName, "transformed", true)
+	// B) TRANSFORM
+	ext.TransformProduction()
+	// err = ext.FilterMatchPersonName(&filter1)
+	// err = ext.FilterMatchPersonAndParty(&filter1)
+	err := ext.FilterMatchPersonIDandPolitics(filter)
+	if err != nil {
+		panic(err)
+	}
+	ext.CSVtableBuild(false, false, query.CSVdelim, true, indxs)
+	ext.TableOutputs(query.OutputDirectory, query.OutputFileName,
+		query.ExtractorsName, "transformed", true)
 }

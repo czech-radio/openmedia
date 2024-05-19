@@ -5,7 +5,7 @@ import (
 	"slices"
 )
 
-var EXTcontacts = OMextractors{
+var EXTproductionContacts = OMextractors{
 	OMextractor{
 		PartPrefixCode: RowPartCode_ComputedRID,
 		FieldIDs:       ProductionFieldsComputedRID,
