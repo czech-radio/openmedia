@@ -53,21 +53,21 @@ func MarkValue(matches bool, fieldValue, nulValue string) string {
 func (e *Extractor) FilterMatchPersonName(f *NFilterColumn) error {
 	newColumnName := "name_match"
 	e.AddColumn(RowPartCode_ContactItemHead, newColumnName)
-	rows, err := files.ReadExcelFileSheetRows(f.FilterFileName, f.SheetName)
+	sheetRows, err := files.ReadExcelFileSheetRows(f.FilterFileName, f.SheetName)
 	if err != nil {
 		return err
 	}
-	table := files.CreateTable(rows, f.ColumnHeaderRow, f.RowHeaderColumn)
-	rs := e.TableXML.Rows
-
+	sheetTableMapped := files.CreateTable(sheetRows, f.ColumnHeaderRow, f.RowHeaderColumn)
 	valueNP := RowFieldSpecialValueCodeMap[RowFieldValueNotPossible]
+
+	rs := e.TableXML.Rows
 	for _, r := range rs {
 		_, field, ok := GetRowPartAndField(
 			r.RowParts, RowPartCode_ComputedKON, "jmeno_spojene")
 		if !ok {
 			panic(ok)
 		}
-		_, ok = table.RowHeaderToColumnMap[field.Value]
+		_, ok = sheetTableMapped.RowHeaderToColumnMap[field.Value]
 		mark := MarkValue(ok, field.Value, valueNP)
 		e.MarkField(r.RowParts, RowPartCode_ContactItemHead, newColumnName, mark)
 	}
@@ -103,6 +103,39 @@ func (e *Extractor) FilterMatchPersonAndParty(f *NFilterColumn) error {
 	return nil
 }
 
+func (e *Extractor) FilterMatchPersonIDandPolitics(f *NFilterColumn) error {
+	newColumnName := "vysoka_politika"
+	e.AddColumn(RowPartCode_ContactItemHead, newColumnName)
+	rows, err := files.ReadExcelFileSheetRows(f.FilterFileName, f.SheetName)
+	if err != nil {
+		return err
+	}
+	table := files.CreateTable(rows, f.ColumnHeaderRow, 1)
+	valNP := RowFieldSpecialValueCodeMap[RowFieldValueNotPossible]
+	rs := e.TableXML.Rows
+	mark := ""
+	for _, r := range rs {
+		_, contactIDfield, ok := GetRowPartAndField(
+			r.RowParts, RowPartCode_ContactItemHead, "5068")
+		if !ok {
+			slog.Error("row part and fieldname not present in row")
+			continue
+		}
+		if contactIDfield.Value == valNP {
+			e.MarkField(r.RowParts, RowPartCode_ContactItemHead, newColumnName, valNP)
+			continue
+		}
+		row, ok := table.RowHeaderToColumnMap[contactIDfield.Value]
+		if !ok {
+			mark = "99"
+		} else {
+			mark = row[0]
+		}
+		e.MarkField(r.RowParts, RowPartCode_ContactItemHead, newColumnName, mark)
+	}
+	return nil
+}
+
 // FilterColumn
 type FilterColumn struct {
 	FilterName     FilterCode
@@ -119,6 +152,23 @@ var FilterCodeMap = map[FilterCode]FilterColumn{
 		FilterCodeMatchPersonName,
 		RowPartCode_ComputedKON, "jmeno_spojene",
 		RowPartCode_ContactItemHead, "filtered", "", nil},
+}
+
+func (e *Extractor) FilterContacts() []int {
+	indxs := make([]int, 0, len(e.Rows))
+	rows := e.TableXML.Rows
+	for i, row := range rows {
+		_, objid, _ := GetRowPartAndField(
+			row.RowParts, RowPartCode_StoryKategory, "TemplateName")
+		switch objid.Value {
+		case "Contact Item", "Contact Bin",
+			"UNKNOWN-Contact Item", "UNKNOWN-Contact Bin":
+			indxs = append(indxs, i)
+		default:
+			continue
+		}
+	}
+	return indxs
 }
 
 var rgxRecordDuds = regexp.MustCompile(`\d\d\d\d\d`)
@@ -143,6 +193,20 @@ func (e *Extractor) FilterStoryPartRecordsDuds() []int {
 		indxs = append(indxs, i)
 	}
 	return indxs
+}
+
+func (e *Extractor) DeleteNonMatchingRows(rowIdxsFiltered []int) {
+	slog.Warn("rows count before deletion", "parsed", len(e.Rows), "filtered", len(rowIdxsFiltered))
+	out := make([]*RowNode, len(rowIdxsFiltered))
+	rowIdxFilteredCurrent := 0
+	for ri := range e.Rows {
+		if ri == rowIdxsFiltered[rowIdxFilteredCurrent] {
+			out[rowIdxFilteredCurrent] = e.Rows[ri]
+			rowIdxFilteredCurrent++
+		}
+	}
+	e.Rows = out
+	slog.Warn("rows count after deletion", "count_after", len(out))
 }
 
 // FilterRun
@@ -235,3 +299,15 @@ func (e *Extractor) FilterByPartAndFieldID(
 	}
 	return res
 }
+
+// func UniqSliceInt(slices ...[]int) []int {
+// 	outMap := make(map[int]bool)
+// 	outSlice []int
+// 	for s := range slices {
+// 		for _, r := range slices[s] {
+// 			if outMap[r] {
+// 			}
+// 			// outMap[r] = true
+// 		}
+// 	}
+// }

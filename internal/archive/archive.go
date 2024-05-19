@@ -41,6 +41,15 @@ var WorkerTypeMap = map[WorkerTypeCode]string{
 	WorkerTypeCSVprodukce:             "PRODUKCE.csv",
 }
 
+func WorkeTypeCodeGet(codeName string) WorkerTypeCode {
+	for code, name := range WorkerTypeMap {
+		if codeName == name {
+			return code
+		}
+	}
+	panic(fmt.Errorf("no worker code found for given name: %s", codeName))
+}
+
 func InferEncoding(wtc WorkerTypeCode) helper.FileEncodingCode {
 	var enc helper.FileEncodingCode
 	switch wtc {

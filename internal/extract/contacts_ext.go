@@ -5,7 +5,7 @@ import (
 	"slices"
 )
 
-var EXTproduction2 = OMextractors{
+var EXTcontacts = OMextractors{
 	OMextractor{
 		PartPrefixCode: RowPartCode_ComputedRID,
 		FieldIDs:       ProductionFieldsComputedRID,
@@ -69,19 +69,11 @@ var EXTproduction2 = OMextractors{
 	// visidata: select rows with not null Story-REC_RecordID, select rows with null Story-Cat_ObjectID
 	// Normal record
 	OMextractor{
-		ObjectPath:           "/Audioclip|Contact Item|Contact Bin",
+		ObjectPath:           "/Contact Item|Contact Bin",
 		ObjectAttrsNames:     []string{"TemplateName", "ObjectID"},
 		PartPrefixCode:       RowPartCode_StoryKategory,
 		KeepWhenZeroSubnodes: true,
 		ResultNodeGoUpLevels: 1,
-	},
-	OMextractor{
-		ObjectPath: "/Audioclip",
-		FieldsPath: ar.TemplateHeaderFieldPath,
-		// FieldIDs:   []string{"8"},
-		FieldIDs:             ProductionFieldsAudio,
-		PartPrefixCode:       RowPartCode_AudioClipHead,
-		KeepWhenZeroSubnodes: true,
 	},
 	OMextractor{
 		ObjectPath: "/Contact Item|Contact Bin",

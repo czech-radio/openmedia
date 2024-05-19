@@ -202,8 +202,6 @@ func (e *Extractor) TransformHeaderExternal(
 		}
 	}
 	e.HeaderBuild()
-	// slog.Warn("fucked", "external", e.HeaderExternal)
-	// helper.Sleeper(10, "s")
 }
 
 // TransformObjectID
@@ -711,6 +709,43 @@ func (e *Extractor) TreatStoryRecordsWithoutOMobject() {
 
 		recordType := storyRecordPart["5001"].Value
 		newRowPart := make(RowPart)
+		// Treat records
+		switch recordType {
+		case "Audio":
+			RowPartOverwriteFields(
+				storyRecordPart, newRowPart, ProductionFieldsAudio)
+			row.RowParts[RowPartCode_AudioClipHead] = newRowPart
+		case "Contact Item", "Contact Bin":
+			RowPartOverwriteFields(
+				storyRecordPart, newRowPart, ProductionFieldsContactItems)
+			row.RowParts[RowPartCode_ContactItemHead] = newRowPart
+		default:
+			continue
+		}
+		value := "UNKNOWN-" + recordType
+		EmptyRowPartInsertValue(row.RowParts, RowPartCode_StoryKategory, "TemplateName", value)
+	}
+}
+
+func (e *Extractor) TreatStoryRecordsWithoutOMobjectB(recordTypes map[string]bool) {
+	// for i, row := range e.TableXML.Rows {
+	for _, row := range e.TableXML.Rows {
+		// Check if applicable
+		storyRecordPart, ok := row.RowParts[RowPartCode_StoryRec]
+		if !ok {
+			continue
+		}
+		storyCatPart := row.RowParts[RowPartCode_StoryKategory]
+		if storyCatPart != nil {
+			// NOTE: Do not forget treat when not nill. Currently the part is not created when the OM_OBJECT is not found. Must be run before TransformEmptyRowPart
+			continue
+		}
+
+		recordType := storyRecordPart["5001"].Value
+		newRowPart := make(RowPart)
+		if !recordTypes[recordType] {
+			continue
+		}
 		// Treat records
 		switch recordType {
 		case "Audio":

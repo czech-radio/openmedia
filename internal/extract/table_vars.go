@@ -165,6 +165,7 @@ var FieldsIDsNamesProduction = FieldsIDsNames{
 	"jmeno_spojene":    "jmeno_spojene",
 	"name_match":       "name_match",
 	"name&party_match": "kontrola_strany",
+	"vysoka_politika":  "vysoka_politika",
 }
 
 var FieldsIDsNamesProductionLong = FieldsIDsNames{

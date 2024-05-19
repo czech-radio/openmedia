@@ -46,9 +46,11 @@ type ArchiveFolderQuery struct {
 	Transformer       TransformerCode
 	FilterColumns     []FilterColumn
 
-	SourceDirectory string
-	OutputDirectory string
-	OutputFileName  string
+	SourceDirectory     string
+	SourceDirectoryType string
+	WorkerType          ar.WorkerTypeCode
+	OutputDirectory     string
+	OutputFileName      string
 
 	ExtractorsName string
 
@@ -56,6 +58,7 @@ type ArchiveFolderQuery struct {
 	FilterDateTo     time.Time
 	FilterRadioName  string
 	FiltersDirectory string
+	FiltersFileName  string
 	FilterRecords    bool
 }
 

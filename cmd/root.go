@@ -18,7 +18,7 @@ var VersionInfo = configure.VersionInfo{
 	GitCommit: BuildGitCommit,
 }
 
-var commandRootConfig = configure.CommandRoot
+var commandRootConfig = configure.CommanderRoot
 
 func RunRoot() {
 	commandRootConfig.VersionInfoAdd(VersionInfo)

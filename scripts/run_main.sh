@@ -5,71 +5,85 @@ main_path="${SCRIPT_DIR}/../main.go"
 LOG_DIR="/tmp/test/"
 OUTPUT_DIR="${1:-/tmp/test}"
 
-ArchiveExtractRadioDay(){
-  local sdir="/mnt/remote/cro/export-avo/Rundowns"
-  local odir="/tmp/test/"
-  local fdf="2024-01-01"
-  local fdt="2024-01-02"
-  local exsn="production1"
-  # local fdt="2024-02-02"
-  local frn="Plus"
-  local ofname="${frn}_day_$fdf"
-  local frdir="/home/jk/CRO/CRO_BASE/openmedia_backup/filters/"
-  
-  go run "$main_path" -v=-4 extractArchive \
-    -fdf="$fdf" -fdt="$fdt" -frn="$frn" \
-    -ofname="$ofname" -sdir="$sdir" -odir="$odir" \
-    -frdir="$frdir" -exsn="$exsn"
+
+TouchDone(){
+  local odir="$1"
+  local result="$2"
+  if [[ "$result" == 0 ]] ; then
+    touch "${odir}/DONE"
+  else
+    touch "${odir}/FAIL"
+  fi
 }
 
-
-ArchiveExtractWeek(){
+ArchiveExtractKontrolniHodinaProdukce(){
+  local exsn="production_all"
   local sdir="/mnt/remote/cro/export-avo/Rundowns"
   local odir="/tmp/test/"
-  # local odir="/mnt/remote/cro/R/GŘ/Strategický rozvoj/Analytická sekce/Analýzy/Produkce/Tests/2024_05_09_eurovolby/filtr"
-  
-  # local verbose="-4"
   local verbose="0"
-  local fdf="2024-01-01"
-  local fdt="2024-01-02"
   
-  # local fdt="2024-01-02"
-  # local fdf="2024-04-01"
-  # local fdt="2024-05-01"
-  # local fdt="2024-01-11"
-  # local run_name="month_april"
-  local run_name="day"
-  local ofname="${frn:-all}_${run_name}_$fdf"
-  local frdir="/home/jk/CRO/CRO_BASE/openmedia_backup/filters/"
-  # local frn="Plus"
-  local frn=""
+  # 2024-01-02T13
+  # kontrolni den/hodina posunute o 2 hodiny
+  local frn="Plus"
+  local fdf="2024-01-02T15"
+  local fdt="2024-01-02T17"
+  local run_name="kontrolni_hodina"
+  local ofname="${frn:-all}-${run_name}-$fdf-$fdt"
+  local sdirType="ORIGINAL.zip"
   
   date > "${odir}/run_stat.txt"
-  # old
-  # local exsn="production1"
-  # go run "$main_path" -v="$verbose" extractArchive \
-  #   -fdf="$fdf" -fdt="$fdt" -frn="$frn" \
-  #   -ofname="$ofname" -sdir="$sdir" -odir="$odir" \
-  #   -frdir="$frdir" -exsn="$exsn"
-  
-  # new 
-  # local exsn="production2"
-  # go run "$main_path" -v="$verbose" extractArchive \
-  #   -fdf="$fdf" -fdt="$fdt" -frn="$frn" \
-  #   -ofname="$ofname" -sdir="$sdir" -odir="$odir" \
-  #   -frdir="$frdir" -exsn="$exsn"
-
-  # new filtered
-  local exsn="production2"
-  local ofname="${frn:-all}_${run_name}_filtered_$fdf"
   go run "$main_path" -v="$verbose" extractArchive \
     -fdf="$fdf" -fdt="$fdt" -frn="$frn" \
     -ofname="$ofname" -sdir="$sdir" -odir="$odir" \
-    -frdir="$frdir" -exsn="$exsn" -frrec -frn="$frn"
+    -frdir="$frdir" -frfn="$frfn" -exsn="$exsn" -frrec \
+    -sdirType="$sdirType"
+  date >> "${odir}/run_stat.txt"
+}
+
+ArchiveExtractKontrolniWeekProdukce(){
+  local exsn="production_all"
+  local sdir="/mnt/remote/cro/export-avo/Rundowns"
+  local odir="/tmp/test/"
+  local verbose="0"
   
-  if [[ $? == 0 ]] ; then
-    touch "${odir}/DONE"
-  fi
+  local run_name="kontrolni_hodina"
+  local fdf="2024-03-25"
+  local fdt="2024-03-31"
+  local run_name="kontrolni_W13"
+  local ofname="${frn:-all}-${run_name}-$fdf-$fdt"
+  date > "${odir}/run_stat.txt"
+  go run "$main_path" -v="$verbose" extractArchive \
+    -fdf="$fdf" -fdt="$fdt" -frn="$frn" \
+    -ofname="$ofname" -sdir="$sdir" -odir="$odir" \
+    -frdir="$frdir" -frfn="$frfn" -exsn="$exsn" -frrec
+  date >> "${odir}/run_stat.txt"
+}
+
+
+
+ArchiveExtractContacts(){
+  local sdir="/mnt/remote/cro/export-avo/Rundowns"
+  local odir="/tmp/test/"
+  local verbose="0"
+  local exsn="contacts"
+  # local exsn="production2"
+  # local fdf="2024-01-01"
+  # local fdt="2024-01-02"
+  
+  # Pul roku
+  local fdf="2023-10-01"
+  local fdt="2024-04-01"
+  local run_name="kontrolni_hodina"
+  local ofname="${frn:-all}-${run_name}-$fdf-$fdt"
+  local frdir="/home/jk/CRO/CRO_BASE/openmedia-filters/"
+  local frfn="analýza opozice - zadání.xlsx"
+  
+  date > "${odir}/run_stat.txt"
+  go run "$main_path" -v="$verbose" extractArchive \
+    -fdf="$fdf" -fdt="$fdt" -frn="$frn" \
+    -ofname="$ofname" -sdir="$sdir" -odir="$odir" \
+    -frdir="$frdir" -frfn="$frfn" -exsn="$exsn" -frrec
+  TouchDone "${odir}" "$?"
   date >> "${odir}/run_stat.txt"
 }
 

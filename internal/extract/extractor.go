@@ -14,13 +14,15 @@ type ExtractorsMap map[ExtractorsPresetCode]OMextractors
 type ExtractorsPresetCode string
 
 const (
-	ExtractorsProduction1 ExtractorsPresetCode = "production1"
-	ExtractorsProduction2 ExtractorsPresetCode = "production2"
+	ExtractorsProductionOmit ExtractorsPresetCode = "production_omit"
+	ExtractorsProductionAll  ExtractorsPresetCode = "production_all"
+	ExtractorsContacts       ExtractorsPresetCode = "contacts"
 )
 
 var ExtractorsCodeMap = ExtractorsMap{
-	ExtractorsProduction1: EXTproduction,
-	ExtractorsProduction2: EXTproduction2,
+	ExtractorsProductionOmit: EXTproductionOmit,
+	ExtractorsProductionAll:  EXTproductionAll,
+	ExtractorsContacts:       EXTcontacts,
 }
 
 // ObjectAttributes

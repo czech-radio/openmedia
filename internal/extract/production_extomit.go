@@ -4,7 +4,8 @@ import (
 	ar "github/czech-radio/openmedia/internal/archive"
 )
 
-var EXTproduction = OMextractors{
+// EXTproductionOmit extractor which extracts storry parts (audio,contacts) but omits records which does not containt OM_OBJECT
+var EXTproductionOmit = OMextractors{
 	OMextractor{
 		PartPrefixCode: RowPartCode_ComputedRID,
 		FieldIDs:       ProductionFieldsComputedRID,

@@ -136,17 +136,17 @@ func (e *Extractor) TableOutputs(
 
 	// XLSX
 	// xlsx with internal header
-	name = strings.Join(
-		[]string{fileName, extractorsName, transformName, "woh.xlsx"}, "_")
-	dstFile3 := filepath.Join(
-		dstDir, name)
-	lastRow, err := e.XLSXstreamTableSave(
-		dstFile3, "Sheet1", true, false, true, true)
-	if err != nil {
-		slog.Error("cannot save table", "error", err.Error())
-		return
-	}
-	slog.Info("last row written", "number", lastRow)
+	// name = strings.Join(
+	// 	[]string{fileName, extractorsName, transformName, "woh.xlsx"}, "_")
+	// dstFile3 := filepath.Join(
+	// 	dstDir, name)
+	// lastRow, err := e.XLSXstreamTableSave(
+	// 	dstFile3, "Sheet1", true, false, true, true)
+	// if err != nil {
+	// 	slog.Error("cannot save table", "error", err.Error())
+	// 	return
+	// }
+	// slog.Info("last row written", "number", lastRow)
 }
 
 func (e *Extractor) CSVtableOutput(dstFile string) {

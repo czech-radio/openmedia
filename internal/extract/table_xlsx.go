@@ -8,6 +8,8 @@ import (
 	"github.com/xuri/excelize/v2"
 )
 
+// TODO: treat maximum rows when exporting to xlsx
+
 // f.NewStyle()
 // f.NewConditionalStyle()
 // f.SetColStyle(sheetName, column, styleId)
