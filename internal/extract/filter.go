@@ -50,14 +50,15 @@ func MarkValue(matches bool, fieldValue, nulValue string) string {
 	return "0"
 }
 
-func (e *Extractor) FilterMatchPersonName(f *NFilterColumn) error {
+func (e *Extractor) FilterMatchPersonNameExact(f *NFilterColumn) error {
 	newColumnName := "name_match"
 	e.AddColumn(RowPartCode_ContactItemHead, newColumnName)
 	sheetRows, err := files.ReadExcelFileSheetRows(f.FilterFileName, f.FilterSheetName)
 	if err != nil {
 		return err
 	}
-	sheetTableMapped := files.CreateTable(sheetRows, f.ColumnHeaderRow, f.RowHeaderColumn)
+	sheetTableMapped := files.CreateTable(
+		sheetRows, f.ColumnHeaderRow, f.RowHeaderColumn)
 	valueNP := RowFieldSpecialValueCodeMap[RowFieldValueNotPossible]
 
 	rs := e.TableXML.Rows
@@ -69,6 +70,34 @@ func (e *Extractor) FilterMatchPersonName(f *NFilterColumn) error {
 		}
 		_, ok = sheetTableMapped.RowHeaderToColumnMap[field.Value]
 		mark := MarkValue(ok, field.Value, valueNP)
+		e.MarkField(r.RowParts, RowPartCode_ContactItemHead, newColumnName, mark)
+	}
+	return nil
+}
+
+func (e *Extractor) FilterMatchPersonName(f *NFilterColumn) error {
+	newColumnName := "name_match"
+	e.AddColumn(RowPartCode_ContactItemHead, newColumnName)
+	sheetRows, err := files.ReadExcelFileSheetRows(f.FilterFileName, f.FilterSheetName)
+	if err != nil {
+		return err
+	}
+	sheetTableMapped := files.CreateTableTransformColumn(
+		sheetRows, f.ColumnHeaderRow, f.RowHeaderColumn, TransformName)
+	valueNP := RowFieldSpecialValueCodeMap[RowFieldValueNotPossible]
+
+	rs := e.TableXML.Rows
+	for _, r := range rs {
+		_, field, ok := GetRowPartAndField(
+			r.RowParts, RowPartCode_ComputedKON, "jmeno_spojene")
+		if !ok {
+			panic(ok)
+		}
+		valueTransformed := TransformName(field.Value)
+		// _, ok = sheetTableMapped.RowHeaderToColumnMap[field.Value]
+		_, ok = sheetTableMapped.RowHeaderToColumnMap[valueTransformed]
+		// mark := MarkValue(ok, field.Value, valueNP)
+		mark := MarkValue(ok, valueTransformed, valueNP)
 		e.MarkField(r.RowParts, RowPartCode_ContactItemHead, newColumnName, mark)
 	}
 	return nil

@@ -114,11 +114,11 @@ func NodeGetFields(
 	slog.Debug("query fields", "query", query)
 	fields := xmlquery.Find(node, query)
 	if fields == nil {
-		slog.Error("fields is nil")
+		slog.Warn("fields is nil")
 		return part
 	}
 	if len(fields) == 0 {
-		slog.Error("no fields found")
+		slog.Warn("no fields found")
 		return part
 	}
 	for _, f := range fields {

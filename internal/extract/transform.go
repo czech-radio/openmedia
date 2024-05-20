@@ -783,3 +783,11 @@ func EmptyRowPartInsertValue(
 	rowPart[fieldID] = field
 	rowParts[rowPartCode] = rowPart
 }
+
+func TransformName(name string) string {
+	var out string
+	out = strings.ToLower(name)               // all lower letters
+	out = strings.TrimLeft(out, "nepoužívat") // remove string from left
+	out = strings.Join(strings.Fields(out), " ")
+	return out
+}

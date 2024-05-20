@@ -1,6 +1,8 @@
 package extract
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestTransformTema(t *testing.T) {
 	type args struct {
@@ -26,6 +28,28 @@ func TestTransformTema(t *testing.T) {
 			}
 			if got != tt.want {
 				t.Errorf("TransformTema() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestTransformName(t *testing.T) {
+	type args struct {
+		name string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{"nepouzivat", args{"NEPOUŽÍVAT Nováková Šárka"}, "nováková šárka"},
+		{"nepouzivat2", args{"NEPOUŽÍVAT  Nováková  Šárka"}, "nováková šárka"},
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := TransformName(tt.args.name); got != tt.want {
+				t.Errorf("TransformName() = %v, want %v", got, tt.want)
 			}
 		})
 	}

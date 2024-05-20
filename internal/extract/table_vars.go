@@ -146,8 +146,8 @@ var FieldsIDsNamesProduction = FieldsIDsNames{
 	"5079":             "cil_vyroby",
 	"5081":             "stanice",
 	"5082":             "itemcode",
-	"5087":             "ID",
-	"5068":             "ID",
+	"5087":             "ID_5087", // change name (temporary) // 2024-05-20
+	"5068":             "ID_5068", // change name (temporary) // 2024-05-20
 	"5088":             "pohlavi",
 	"6":                "autor",
 	"8":                "nazev",

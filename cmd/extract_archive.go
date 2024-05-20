@@ -113,11 +113,18 @@ func RunCommandExtractArchive() {
 
 	// B) TRANSFORM
 	ext.TransformProduction()
-	// err = ext.FilterMatchPersonName(&filter1)
-	// err = ext.FilterMatchPersonAndParty(&filter1)
-	err := ext.FilterMatchPersonIDandPolitics(filter)
-	if err != nil {
-		panic(err)
+	if filter.FilterFileName != "" {
+		err := ext.FilterMatchPersonName(filter)
+		// err := ext.FilterMatchPersonNameExact(filter)
+		if err != nil {
+			panic(err)
+		}
+
+		// err = ext.FilterMatchPersonAndParty(&filter1)
+		err = ext.FilterMatchPersonIDandPolitics(filter)
+		if err != nil {
+			panic(err)
+		}
 	}
 	ext.CSVtableBuild(false, false, query.CSVdelim, true, indxs)
 	ext.TableOutputs(query.OutputDirectory, query.OutputFileName,

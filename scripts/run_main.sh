@@ -17,8 +17,8 @@ TouchDone(){
 }
 
 ArchiveExtractKontrolniHodinaProdukce(){
-  # local exsn="production_all"
-  local exsn="production_contacts"
+  local exsn="production_all"
+  # local exsn="production_contacts"
   local sdir="/mnt/remote/cro/export-avo/Rundowns"
   local odir="/tmp/test/"
   local verbose="0"
@@ -30,7 +30,7 @@ ArchiveExtractKontrolniHodinaProdukce(){
   local fdt="2024-01-02T17"
   local run_name="kontrolni_hodina"
   local ofname="${frn:-all}-${run_name}-$fdf-$fdt"
-  local sdirType="ORIGINAL.zip"
+  local sdirType="MINIFIED.zip"
   local frfn="${SCRIPT_DIR}/../../openmedia-filters/analýza opozice - zadání.xlsx"
   
   date > "${odir}/run_stat.txt"
@@ -42,22 +42,23 @@ ArchiveExtractKontrolniHodinaProdukce(){
   date >> "${odir}/run_stat.txt"
 }
 
-ArchiveExtractKontrolniWeekProdukce(){
+ArchiveExtractKontrolniTydenProdukce(){
   local exsn="production_all"
   local sdir="/mnt/remote/cro/export-avo/Rundowns"
   local odir="/tmp/test/"
   local verbose="0"
+  local sdirType="MINIFIED.zip"
   
-  local run_name="kontrolni_hodina"
+  local run_name="kontrolni_tyden_W13"
   local fdf="2024-03-25"
   local fdt="2024-03-31"
-  local run_name="kontrolni_W13"
   local ofname="${frn:-all}-${run_name}-$fdf-$fdt"
   date > "${odir}/run_stat.txt"
   go run "$main_path" -v="$verbose" extractArchive \
     -fdf="$fdf" -fdt="$fdt" -frn="$frn" \
     -ofname="$ofname" -sdir="$sdir" -odir="$odir" \
-    -frdir="$frdir" -frfn="$frfn" -exsn="$exsn" -frrec
+    -frfn="$frfn" -exsn="$exsn"
+  TouchDone "${odir}" "$?"
   date >> "${odir}/run_stat.txt"
 }
 
@@ -67,24 +68,24 @@ ArchiveExtractContacts(){
   local sdir="/mnt/remote/cro/export-avo/Rundowns"
   local odir="/tmp/test/"
   local verbose="0"
-  local exsn="contacts"
-  # local exsn="production2"
+  local sdirType="MINIFIED.zip"
+  local exsn="production_contacts"
   # local fdf="2024-01-01"
   # local fdt="2024-01-02"
   
   # Pul roku
   local fdf="2023-10-01"
   local fdt="2024-04-01"
-  local run_name="kontrolni_hodina"
+  local run_name="opozice"
   local ofname="${frn:-all}-${run_name}-$fdf-$fdt"
   local frdir="/home/jk/CRO/CRO_BASE/openmedia-filters/"
-  local frfn="analýza opozice - zadání.xlsx"
+  local frfn="${SCRIPT_DIR}/../../openmedia-filters/analýza opozice - zadání.xlsx"
   
   date > "${odir}/run_stat.txt"
   go run "$main_path" -v="$verbose" extractArchive \
     -fdf="$fdf" -fdt="$fdt" -frn="$frn" \
     -ofname="$ofname" -sdir="$sdir" -odir="$odir" \
-    -frdir="$frdir" -frfn="$frfn" -exsn="$exsn" -frrec
+    -frfn="$frfn" -exsn="$exsn"
   TouchDone "${odir}" "$?"
   date >> "${odir}/run_stat.txt"
 }
