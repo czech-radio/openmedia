@@ -55,7 +55,11 @@ func PrepareConfig() *extract.ArchiveFolderQuery {
 	q := extract.ArchiveFolderQuery{}
 	commandExtractArchiveConfigure()
 	commandExtractArchiveConfig.RunSub(&q)
-	q.DateRange = [2]time.Time{q.FilterDateFrom, q.FilterDateTo}
+	_, offset := q.FilterDateFrom.Zone()
+	offsetDuration := time.Duration(offset) * time.Second
+	q.DateRange = [2]time.Time{
+		q.FilterDateFrom.UTC().Add(offsetDuration + 1),
+		q.FilterDateTo.UTC().Add(offsetDuration - 1)}
 	if q.FilterRadioName != "" {
 		q.RadioNames = make(map[string]bool)
 		q.RadioNames[q.FilterRadioName] = true
@@ -111,7 +115,7 @@ func RunCommandExtractArchive() {
 	ext.TableOutputs(query.OutputDirectory, query.OutputFileName,
 		query.ExtractorsName, "base", true)
 
-	// B) TRANSFORM
+	// B) PRODUCTION
 	ext.TransformProduction()
 	if filter.FilterFileName != "" {
 		err := ext.FilterMatchPersonName(filter)

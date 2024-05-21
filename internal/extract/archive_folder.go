@@ -150,6 +150,7 @@ func (af *ArchiveFolder) FolderExtract(
 			if err != nil {
 				slog.Error(err.Error())
 			}
+			ext.SetFileNameColumn()
 			ext.TableXML.NullXMLnode()
 			slog.Warn("extracted lines", "count", len(ext.TableXML.Rows))
 			extMain.TableXML.Rows = append(

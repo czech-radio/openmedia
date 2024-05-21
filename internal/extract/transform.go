@@ -23,8 +23,6 @@ const (
 // Transform
 func (e *Extractor) Transform(code TransformerCode) {
 	switch code {
-	case TransformerMock:
-		e.TransformMock()
 	case TransformerCodedFields:
 		e.TransformCodedFields()
 	case TransformerProduction:
@@ -646,6 +644,7 @@ func (e *Extractor) SetFileNameColumn() {
 		part[targetFieldID] = field
 		e.TableXML.Rows[i].RowParts[RowPartCode_ComputedRID] = part
 	}
+	e.AddColumn(RowPartCode_ComputedRID, targetFieldID)
 }
 
 // ComputeID

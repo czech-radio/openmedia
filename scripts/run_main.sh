@@ -26,8 +26,12 @@ ArchiveExtractKontrolniHodinaProdukce(){
   # 2024-01-02T13
   # kontrolni den/hodina posunute o 2 hodiny
   local frn="Plus"
-  local fdf="2024-01-02T15"
-  local fdt="2024-01-02T17"
+  # local fdf="2024-01-02T15"
+  # local fdt="2024-01-02T17"
+  # local fdf="2024-01-02T13"
+  # local fdt="2024-01-02T14"
+  local fdf="2024-05-02T13"
+  local fdt="2024-05-02T14"
   local run_name="kontrolni_hodina"
   local ofname="${frn:-all}-${run_name}-$fdf-$fdt"
   local sdirType="MINIFIED.zip"
@@ -62,7 +66,10 @@ ArchiveExtractKontrolniTydenProdukce(){
   date >> "${odir}/run_stat.txt"
 }
 
-
+AchiveExtractKontrolni(){
+  ArchiveExtractKontrolniHodinaProdukce
+  ArchiveExtractKontrolniTydenProdukce
+}
 
 ArchiveExtractContacts(){
   local sdir="/mnt/remote/cro/export-avo/Rundowns"

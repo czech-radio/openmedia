@@ -155,6 +155,8 @@ func ArchivePackageFileMatch(
 		return false, nil
 	}
 	_, ok := helper.DateRangesIntersection(q.DateRange, meta.DateRange)
+	fmt.Println("FUCK", ok, q.DateRange)
+	fmt.Println("FUCK", ok, meta.DateRange)
 	if !ok {
 		slog.Warn(
 			"filename match daterange", "filename", nestedFileName,
