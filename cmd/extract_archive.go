@@ -49,6 +49,8 @@ func commandExtractArchiveConfigure() {
 		"Special filters filename", nil, nil)
 	add("FilterTypeName", "frtn", "vysoka_politika", "string", "",
 		"Special filters filename", nil, nil)
+	add("ValidatorFileName", "valfn", "", "string", "",
+		"xlsx file containing validation receipe", nil, nil)
 }
 
 func PrepareConfig() *extract.ArchiveFolderQuery {
@@ -59,7 +61,12 @@ func PrepareConfig() *extract.ArchiveFolderQuery {
 	offsetDuration := time.Duration(offset) * time.Second
 	q.DateRange = [2]time.Time{
 		q.FilterDateFrom.UTC().Add(offsetDuration + 1),
-		q.FilterDateTo.UTC().Add(offsetDuration - 1)}
+		q.FilterDateTo.UTC().Add(offsetDuration)}
+	// q.FilterDateTo.UTC()}
+	// dateRangeN := [2]time.Time{
+	// q.FilterDateFrom,
+	// q.FilterDateTo,
+	// i}
 	if q.FilterRadioName != "" {
 		q.RadioNames = make(map[string]bool)
 		q.RadioNames[q.FilterRadioName] = true
@@ -73,10 +80,19 @@ func PrepareConfig() *extract.ArchiveFolderQuery {
 	q.ExtractorsCode = extCode
 
 	if q.FiltersFileName != "" {
+		// TODO:FiltersDirectory not provided, full path filename must be given. Decide if fullpaths must be given or the directory and filename.
 		filterPath1 := filepath.Join(q.FiltersDirectory, q.FiltersFileName)
 		ok, err1 := helper.FileExists(filterPath1)
 		if !ok || err1 != nil {
 			panic(fmt.Errorf("filter file: %s not readable: %s", filterPath1, err1))
+		}
+	}
+	if q.ValidatorFileName != "" {
+		// TODO:FiltersDirectory not provided, full path filename must be given. Decide if fullpaths must be given or the directory and filename.
+		filterPath2 := filepath.Join(q.FiltersDirectory, q.ValidatorFileName)
+		ok, err1 := helper.FileExists(filterPath2)
+		if !ok || err1 != nil {
+			panic(fmt.Errorf("filter file: %s not readable: %s", filterPath2, err1))
 		}
 	}
 	q.WorkerType = ar.WorkeTypeCodeGet(q.SourceDirectoryType)
@@ -102,6 +118,12 @@ func RunCommandExtractArchive() {
 	if err := arf.FolderMap(query.SourceDirectory, true, query); err != nil {
 		helper.Errors.ExitWithCode(err)
 	}
+
+	// if true {
+	// 	fmt.Println("FUCK", arf.PackagesNamesOrder)
+	// 	fmt.Println(query.DateRange)
+	// 	panic("FUCK")
+	// }
 	ext := arf.FolderExtract(query)
 
 	// TRANSFORM
@@ -115,7 +137,10 @@ func RunCommandExtractArchive() {
 	ext.TableOutputs(query.OutputDirectory, query.OutputFileName,
 		query.ExtractorsName, "base", true)
 
-	// B) PRODUCTION
+	// B) VALIDATE
+	ext.ValidateColumnsValues(query.ValidatorFileName)
+
+	// C) FILTER
 	ext.TransformProduction()
 	if filter.FilterFileName != "" {
 		err := ext.FilterMatchPersonName(filter)

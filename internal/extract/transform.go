@@ -785,8 +785,8 @@ func EmptyRowPartInsertValue(
 
 func TransformName(name string) string {
 	var out string
-	out = strings.ToLower(name)               // all lower letters
-	out = strings.TrimLeft(out, "nepoužívat") // remove string from left
-	out = strings.Join(strings.Fields(out), " ")
+	out = strings.ToLower(name)                     // all lower letters
+	out = strings.Replace(out, "nepoužívat", "", 1) // remove string
+	out = strings.Join(strings.Fields(out), " ")    // remove multiple white space
 	return out
 }

@@ -44,6 +44,8 @@ func TestTransformName(t *testing.T) {
 	}{
 		{"nepouzivat", args{"NEPOUŽÍVAT Nováková Šárka"}, "nováková šárka"},
 		{"nepouzivat2", args{"NEPOUŽÍVAT  Nováková  Šárka"}, "nováková šárka"},
+		{"err1", args{"Vancl Jan"}, "vancl jan"},
+		{"err2", args{" Vancl  Jan  "}, "vancl jan"},
 		// TODO: Add test cases.
 	}
 	for _, tt := range tests {

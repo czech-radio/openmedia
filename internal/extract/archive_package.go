@@ -34,7 +34,7 @@ func ArchivePackageNameParse(packageName string) (time.Time, time.Time, string, 
 	_, m, d := isoweek.StartDate(year, isoWeekNumber)
 	timeZone, _ := time.LoadLocation("")
 	dateFrom := time.Date(year, m, d, 0, 0, 0, 0, timeZone)
-	dateTo := dateFrom.AddDate(0, 0, 6)
+	dateTo := dateFrom.AddDate(0, 0, 7) // NOTE: maybe add 6 days and 23:59,9999 hours instead 7
 	return dateFrom, dateTo, packageType, nil
 }
 
@@ -89,6 +89,17 @@ func ArchivePackageFilenameParse(fileName string) (RundownName, error) {
 	if err != nil {
 		return RundownName{}, err
 	}
+
+	// TODO: ammend name parsing range
+
+	// true, range [2024-03-31 12:00:00 +0000 UTC 2024-03-31 00:00:00 +0000 UTC] RD_12-24_Pohoda_Sunday_W13_2024_03_31.xml
+	// true, range [2024-03-31 12:00:00 +0000 UTC 2024-03-31 00:00:00 +0000 UTC] RD_12-24_Vltava_Sunday_W13_2024_03_31.xml
+	// true, range [2024-03-31 12:00:00 +0000 UTC 2024-03-31 00:00:00 +0000 UTC] RD_12-24_Wave_Sunday_W13_2024_03_31.xml
+	// true, range [2024-03-31 17:00:00 +0000 UTC 2024-03-31 00:00:00 +0000 UTC] RD_17-24_Dvojka_Sunday_W13_2024_03_31.xml
+	// true, range [2024-03-31 18:00:00 +0000 UTC 2024-03-31 00:00:00 +0000 UTC] RD_18-24_Plus_Sunday_W13_2024_03_31.xml
+	// true, range [2024-03-31 18:00:00 +0000 UTC 2024-03-31 00:00:00 +0000 UTC] RD_18-24_Radiožurnál_Sunday_W13_2024_03_31.xml
+	// true, range [2024-03-31 19:00:00 +0000 UTC 2024-03-31 00:00:00 +0000 UTC] RD_19-24_ČRo_Region_SC_Sunday_W13_2024_03_31.xml
+	// true, range [2024-03-31 20:00:00 +0000 UTC 2024-03-31 00:00:00 +0000 UTC] RD_20-24_RŽ_Sport_Sunday_W13_2024_03_31.xml
 
 	year := res[6]
 	month := res[7]
@@ -155,8 +166,9 @@ func ArchivePackageFileMatch(
 		return false, nil
 	}
 	_, ok := helper.DateRangesIntersection(q.DateRange, meta.DateRange)
-	fmt.Println("FUCK", ok, q.DateRange)
-	fmt.Println("FUCK", ok, meta.DateRange)
+	fmt.Printf("FUCK matched %t,%s\n", ok, nestedFileName)
+	fmt.Printf("%t, filter %v\n", ok, q.DateRange)
+	fmt.Printf("%t, range %v %s\n", ok, meta.DateRange, nestedFileName)
 	if !ok {
 		slog.Warn(
 			"filename match daterange", "filename", nestedFileName,

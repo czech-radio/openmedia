@@ -55,12 +55,14 @@ type ArchiveFolderQuery struct {
 	ExtractorsName string
 	ExtractorsCode ExtractorsPresetCode
 
-	FilterDateFrom   time.Time
-	FilterDateTo     time.Time
-	FilterRadioName  string
-	FiltersDirectory string
-	FiltersFileName  string
-	FilterRecords    bool
+	FilterDateFrom  time.Time
+	FilterDateTo    time.Time
+	FilterRadioName string
+	FilterRecords   bool
+
+	FiltersDirectory  string
+	FiltersFileName   string
+	ValidatorFileName string
 }
 
 // FolderListing

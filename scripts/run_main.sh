@@ -36,13 +36,15 @@ ArchiveExtractKontrolniHodinaProdukce(){
   local ofname="${frn:-all}-${run_name}-$fdf-$fdt"
   local sdirType="MINIFIED.zip"
   local frfn="${SCRIPT_DIR}/../../openmedia-filters/analýza opozice - zadání.xlsx"
+  # local valfn="${SCRIPT_DIR}/../../openmedia-filters/validace.xlsx"
+  local valfn='/home/jk/CRO/CRO_BASE/openmedia-filters/validace.xlsx'
   
   date > "${odir}/run_stat.txt"
   go run "$main_path" -v="$verbose" extractArchive \
     -fdf="$fdf" -fdt="$fdt" -frn="$frn" \
     -ofname="$ofname" -sdir="$sdir" -odir="$odir" \
     -frfn="$frfn" -exsn="$exsn" \
-    -sdirType="$sdirType"
+    -sdirType="$sdirType" -valfn="$valfn"
   date >> "${odir}/run_stat.txt"
 }
 
@@ -55,7 +57,7 @@ ArchiveExtractKontrolniTydenProdukce(){
   
   local run_name="kontrolni_tyden_W13"
   local fdf="2024-03-25"
-  local fdt="2024-03-31"
+  local fdt="2024-04-01"
   local ofname="${frn:-all}-${run_name}-$fdf-$fdt"
   date > "${odir}/run_stat.txt"
   go run "$main_path" -v="$verbose" extractArchive \

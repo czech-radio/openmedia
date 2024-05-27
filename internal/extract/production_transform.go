@@ -10,7 +10,7 @@ func (e *Extractor) TransformSpecialValues() {
 }
 
 func (e *Extractor) TransformBase() {
-	e.AddColumn(RowPartCode_ComputedRID, "FileName")
+	// e.AddColumn(RowPartCode_ComputedRID, "FileName")
 	e.RowPartOmit(RowPartCode_StoryRec)
 	indxs := e.FilterStoryPartRecordsDuds()
 	e.DeleteNonMatchingRows(indxs)

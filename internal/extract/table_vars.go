@@ -222,6 +222,15 @@ var RowFieldSpecialValueCodeMap = map[RowFieldValueCode]string{
 	RowFieldValueParentNotFound: "(NC)", // (NOT CONTAIN), (NEOBSAHUJE)
 }
 
+func CheckIfFieldValueIsSpecialValue(fieldValue string) bool {
+	for _, sval := range RowFieldSpecialValueCodeMap {
+		if sval == fieldValue {
+			return true
+		}
+	}
+	return false
+}
+
 func CheckIfMapContainsKeyValue(inMap map[RowFieldValueCode]string, value string) bool {
 	for _, spec := range inMap {
 		if spec == value {
