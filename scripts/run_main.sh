@@ -35,9 +35,8 @@ ArchiveExtractKontrolniHodinaProdukce(){
   local run_name="kontrolni_hodina"
   local ofname="${frn:-all}-${run_name}-$fdf-$fdt"
   local sdirType="MINIFIED.zip"
-  local frfn="${SCRIPT_DIR}/../../openmedia-filters/analýza opozice - zadání.xlsx"
-  # local valfn="${SCRIPT_DIR}/../../openmedia-filters/validace.xlsx"
-  local valfn='/home/jk/CRO/CRO_BASE/openmedia-filters/validace.xlsx'
+  local valfn="${SCRIPT_DIR}/../../openmedia-filters/validace.xlsx"
+  # local frfn="${SCRIPT_DIR}/../../openmedia-filters/analýza opozice - zadání.xlsx"
   
   date > "${odir}/run_stat.txt"
   go run "$main_path" -v="$verbose" extractArchive \
@@ -54,6 +53,7 @@ ArchiveExtractKontrolniTydenProdukce(){
   local odir="/tmp/test/"
   local verbose="0"
   local sdirType="MINIFIED.zip"
+  local valfn="${SCRIPT_DIR}/../../openmedia-filters/validace.xlsx"
   
   local run_name="kontrolni_tyden_W13"
   local fdf="2024-03-25"
@@ -63,12 +63,12 @@ ArchiveExtractKontrolniTydenProdukce(){
   go run "$main_path" -v="$verbose" extractArchive \
     -fdf="$fdf" -fdt="$fdt" -frn="$frn" \
     -ofname="$ofname" -sdir="$sdir" -odir="$odir" \
-    -frfn="$frfn" -exsn="$exsn"
+    -frfn="$frfn" -exsn="$exsn" -valfn="$valfn"
   TouchDone "${odir}" "$?"
   date >> "${odir}/run_stat.txt"
 }
 
-AchiveExtractKontrolni(){
+ArchiveExtractKontrolni(){
   ArchiveExtractKontrolniHodinaProdukce
   ArchiveExtractKontrolniTydenProdukce
 }

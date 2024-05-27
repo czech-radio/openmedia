@@ -82,7 +82,7 @@ func (e *Extractor) FilterMatchPersonName(f *NFilterColumn) error {
 	if err != nil {
 		return err
 	}
-	sheetTableMapped := files.CreateTableTransformColumn(
+	sheetTableMapped := files.CreateTableTransformRowHeader(
 		sheetRows, f.ColumnHeaderRow, f.RowHeaderColumn, TransformName)
 	valueNP := RowFieldSpecialValueCodeMap[RowFieldValueNotPossible]
 

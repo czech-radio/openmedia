@@ -21,6 +21,10 @@ func (e *Extractor) TransformBase() {
 	e.TransformHeaderExternal(RowPartCode_HourlyHead, "1000", "planovany_zacatek")
 }
 
+func (e *Extractor) TransformBeforeValidation() {
+	e.TransformColumnsFields(TransformTema, false, "5016")
+}
+
 // TransformProduction
 func (e *Extractor) TransformProduction() {
 	// Convert dates

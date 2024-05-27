@@ -10,6 +10,7 @@ import (
 	ar "github/czech-radio/openmedia/internal/archive"
 
 	c "github.com/triopium/go_utils/pkg/configure"
+	"github.com/triopium/go_utils/pkg/files"
 	"github.com/triopium/go_utils/pkg/helper"
 )
 
@@ -19,21 +20,21 @@ func commandExtractArchiveConfigure() {
 	add := commandExtractArchiveConfig.AddOption
 	// Archive query
 	add("SourceDirectory", "sdir",
-		"/mnt/remote/cro/export-avo/Rundowns", "string", c.NotNill,
+		"/mnt/remote/cro/export-avo/Rundowns", "string", c.NotNil,
 		"Source directory of rundown files.", nil, helper.DirectoryExists)
 	add("SourceDirectoryType", "sdirType", "MINIFIED.zip", "string", "",
 		"type of source directory where the rundowns resides", nil, nil)
-	add("OutputDirectory", "odir", "/tmp/test/", "string", c.NotNill,
+	add("OutputDirectory", "odir", "/tmp/test/", "string", c.NotNil,
 		"Destination directory or file", nil, helper.DirectoryExists)
-	add("OutputFileName", "ofname", "", "string", c.NotNill,
+	add("OutputFileName", "ofname", "", "string", c.NotNil,
 		"Output file name.", nil, nil)
 
 	// Filter query
-	add("ExtractorsName", "exsn", "production2", "string", c.NotNill,
+	add("ExtractorsName", "exsn", "production2", "string", c.NotNil,
 		"Name of extractor which specifies the parts of xml to be extracted", nil, nil)
-	add("FilterDateFrom", "fdf", "", "date", c.NotNill,
+	add("FilterDateFrom", "fdf", "", "date", c.NotNil,
 		"Filter rundowns from date", nil, nil)
-	add("FilterDateTo", "fdt", "", "date", c.NotNill,
+	add("FilterDateTo", "fdt", "", "date", c.NotNil,
 		"Filter rundowns to date", nil, nil)
 	add("FilterRadioName", "frn", "", "string", "",
 		"Filter radio names", nil, nil)
@@ -119,11 +120,6 @@ func RunCommandExtractArchive() {
 		helper.Errors.ExitWithCode(err)
 	}
 
-	// if true {
-	// 	fmt.Println("FUCK", arf.PackagesNamesOrder)
-	// 	fmt.Println(query.DateRange)
-	// 	panic("FUCK")
-	// }
 	ext := arf.FolderExtract(query)
 
 	// TRANSFORM
@@ -138,7 +134,11 @@ func RunCommandExtractArchive() {
 		query.ExtractorsName, "base", true)
 
 	// B) VALIDATE
-	ext.ValidateColumnsValues(query.ValidatorFileName)
+	ext.TransformBeforeValidation()
+	ext.ValidateAllColumns(query.ValidatorFileName)
+	ext.CSVtableBuild(false, false, query.CSVdelim, true, indxs)
+	ext.TableOutputs(query.OutputDirectory, query.OutputFileName,
+		query.ExtractorsName, "base_validated", true)
 
 	// C) FILTER
 	ext.TransformProduction()
@@ -158,4 +158,15 @@ func RunCommandExtractArchive() {
 	ext.CSVtableBuild(false, false, query.CSVdelim, true, indxs)
 	ext.TableOutputs(query.OutputDirectory, query.OutputFileName,
 		query.ExtractorsName, "transformed", true)
+
+	// D) EXPORT CSV FILES IN DIR TO XLSX
+	delimRunes := []rune(query.CSVdelim)
+	if len(delimRunes) != 1 {
+		slog.Error("cannot use delim")
+		return
+	}
+	err := files.CSVdirToXLSX(query.OutputDirectory, delimRunes[0])
+	if err != nil {
+		slog.Error(err.Error())
+	}
 }
