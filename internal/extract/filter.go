@@ -83,7 +83,7 @@ func (e *Extractor) FilterMatchPersonName(f *NFilterColumn) error {
 		return err
 	}
 	sheetTableMapped := files.CreateTableTransformRowHeader(
-		sheetRows, f.ColumnHeaderRow, f.RowHeaderColumn, TransformName)
+		sheetRows, f.ColumnHeaderRow, f.RowHeaderColumn, TransformPersonName)
 	valueNP := RowFieldSpecialValueCodeMap[RowFieldValueNotPossible]
 
 	rs := e.TableXML.Rows
@@ -93,7 +93,7 @@ func (e *Extractor) FilterMatchPersonName(f *NFilterColumn) error {
 		if !ok {
 			panic(ok)
 		}
-		valueTransformed := TransformName(field.Value)
+		valueTransformed := TransformPersonName(field.Value)
 		// _, ok = sheetTableMapped.RowHeaderToColumnMap[field.Value]
 		_, ok = sheetTableMapped.RowHeaderToColumnMap[valueTransformed]
 		// mark := MarkValue(ok, field.Value, valueNP)
@@ -328,15 +328,3 @@ func (e *Extractor) FilterByPartAndFieldID(
 	}
 	return res
 }
-
-// func UniqSliceInt(slices ...[]int) []int {
-// 	outMap := make(map[int]bool)
-// 	outSlice []int
-// 	for s := range slices {
-// 		for _, r := range slices[s] {
-// 			if outMap[r] {
-// 			}
-// 			// outMap[r] = true
-// 		}
-// 	}
-// }

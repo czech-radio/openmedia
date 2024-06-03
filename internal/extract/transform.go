@@ -226,7 +226,8 @@ var temaregex = regexp.MustCompile(`(\d\d)-`)
 // TransformTema
 func TransformTema(tema string) (string, error) {
 	var sb strings.Builder
-	res := temaregex.FindAllStringSubmatch(tema, -1)
+	temastr := TrimAllWhiteSpace(tema) // NOTE: added 2024-06-0i3
+	res := temaregex.FindAllStringSubmatch(temastr, -1)
 	if len(res) == 0 {
 		return tema, nil
 	}
@@ -783,10 +784,18 @@ func EmptyRowPartInsertValue(
 	rowParts[rowPartCode] = rowPart
 }
 
-func TransformName(name string) string {
+func TransformPersonName(name string) string {
 	var out string
 	out = strings.ToLower(name)                     // all lower letters
 	out = strings.Replace(out, "nepoužívat", "", 1) // remove string
 	out = strings.Join(strings.Fields(out), " ")    // remove multiple white space
+	return out
+}
+
+var regxpSpace = regexp.MustCompile(`\s+`)
+
+func TrimAllWhiteSpace(input string) string {
+	out := strings.TrimSpace(input)
+	out = regxpSpace.ReplaceAllString(out, "")
 	return out
 }

@@ -60,7 +60,6 @@ type ArchiveFolderQuery struct {
 	FilterRadioName string
 	FilterRecords   bool
 
-	FiltersDirectory  string
 	FiltersFileName   string
 	ValidatorFileName string
 }

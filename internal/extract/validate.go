@@ -1,8 +1,11 @@
 package extract
 
 import (
+	"fmt"
 	"log/slog"
+	"os"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -16,7 +19,61 @@ type ValidateColumnAddressParams struct {
 	FormatRegex string
 }
 
-// VALIDATE UNIT FUNCTION
+type ValidationColumnAccount map[string]int // Invalid Value VS count
+
+type ValidationTableAccount struct {
+	InvalidValues    map[string]ValidationColumnAccount // Column name VS ColumnValidation
+	ColumnsPositions []string
+}
+
+// VALIDATE UNIT FUNCTIONS
+func (e *Extractor) ColumnAccountPrepare(
+	pc RowPartCode, fieldID string) ValidationColumnAccount {
+	if e.ValidationTableAccount.InvalidValues == nil {
+		e.ValidationTableAccount.InvalidValues = make(map[string]ValidationColumnAccount)
+	}
+	if e.ValidationTableAccount.ColumnsPositions == nil {
+		e.ValidationTableAccount.ColumnsPositions = make([]string, 0)
+	}
+	columnName := GetColumnHeaderExternal(pc, fieldID)
+	columnAccount, ok := e.ValidationTableAccount.InvalidValues[columnName]
+	if !ok {
+		columnAccount = make(map[string]int)
+		e.ValidationTableAccount.InvalidValues[columnName] = columnAccount
+	}
+	return columnAccount
+}
+
+func FieldPrevalidate(rp RowParts, rpc RowPartCode, fieldID string) bool {
+	_, field, ok := GetRowPartAndField(
+		rp, rpc, fieldID)
+	if !ok {
+		slog.Warn("field not validated: not present", "filed", field)
+		return false
+	}
+	if CheckIfFieldValueIsSpecialValue(field.Value) {
+		slog.Warn("field not validated: special value", "filed", field)
+		return false
+	}
+	return true
+}
+
+func ValueInvalidAccount(
+	vca ValidationColumnAccount,
+	part RowPart, field RowField,
+	valid bool,
+) {
+	valueNC := RowFieldSpecialValueCodeMap[RowFieldValueNotValid]
+	if !valid {
+		part[field.FieldID] = RowField{
+			FieldID:   field.FieldID,
+			FieldName: "",
+			Value:     valueNC,
+		}
+		vca[field.Value]++
+	}
+}
+
 func FormatFieldBeforeValidation(input string) string {
 	out := strings.ToLower(input)                // all lower letters
 	out = strings.ReplaceAll(out, "\u00a0", " ") // non-breaking space (NBSP) not needed if strings.Join(strings.Fields(out)," ") is used as it removes NBSP also
@@ -52,19 +109,21 @@ func ValidateStopaz(stopaz string) (string, error) {
 	return stopaz, nil
 }
 
-func (e *Extractor) ValidateAllColumns(xlsxValidationReceipeFile string) {
+func (e *Extractor) ValidateAllColumns(
+	xlsxValidationReceipeFile string) {
 	e.ValidateColumnsValues(xlsxValidationReceipeFile)
 	e.ValidateColumnsValuesList(xlsxValidationReceipeFile)
 	e.ValidateColumnsFormat(xlsxValidationReceipeFile)
 }
 
 // VALIDATE COLUMNS VALUES LIST
-func ValidateValuesList(
+func ValidateValuesAgainstList(
 	allovedVals map[string][]string, valuesList string) bool {
 	// valueList is string containing values delimited by delimiter
 	values := FormatFieldValuesListBeforeValidation(valuesList)
 	for _, val := range values {
-		_, ok := allovedVals[val+";"]
+		// _, ok := allovedVals[val+";"]
+		_, ok := allovedVals[val]
 		// NOTE: in allovedVals the values are "01;" from source xlsx file
 		if !ok {
 			return false
@@ -98,34 +157,18 @@ func (e *Extractor) ValidateColumnValuesList(
 	}
 	sheetTableMapped := files.CreateTableTransformRowHeader(
 		sheetRows, 0, 0, FormatFieldBeforeValidation)
-	valueNC := RowFieldSpecialValueCodeMap[RowFieldValueNotValid]
 	allovedVals := sheetTableMapped.RowHeaderToColumnMap
-
+	columnAccount := e.ColumnAccountPrepare(vp.RowPartCode, vp.FieldID)
 	rs := e.TableXML.Rows
-	for _, r := range rs {
-		part, field, ok := GetRowPartAndField(
-			r.RowParts, vp.RowPartCode, vp.FieldID)
-		if !ok {
-			slog.Error("field not present in row", "filedID", field.FieldID)
-			continue
-		}
-		if CheckIfFieldValueIsSpecialValue(field.Value) {
-			continue
-		}
-		ok = ValidateValuesList(allovedVals, field.Value)
-		// Value is not valid
-		if !ok {
-			part[field.FieldID] = RowField{
-				FieldID:   vp.FieldID,
-				FieldName: "",
-				Value:     valueNC,
-			}
-		}
 
-		// Value is valid
-		if ok {
+	for _, r := range rs {
+		if !FieldPrevalidate(r.RowParts, vp.RowPartCode, vp.FieldID) {
 			continue
 		}
+		part, field, _ := GetRowPartAndField(
+			r.RowParts, vp.RowPartCode, vp.FieldID)
+		validOK := ValidateValuesAgainstList(allovedVals, field.Value)
+		ValueInvalidAccount(columnAccount, part, field, validOK)
 	}
 	return nil
 }
@@ -141,7 +184,6 @@ func (e *Extractor) ValidateColumnsValues(
 		{"cil_vyroby", RowPartCode_StoryHead, "5079", ""},
 		{"pohlavi_KON", RowPartCode_ContactItemHead, "5088", ""},
 	}
-
 	for _, c := range columnsParams {
 		err := e.ValidateColumnValues(xlsxValidationReceipeFile, c)
 		if err != nil {
@@ -153,59 +195,28 @@ func (e *Extractor) ValidateColumnsValues(
 func (e *Extractor) ValidateColumnValues(
 	xlsxValidationReceipeFile string,
 	vp ValidateColumnAddressParams,
-	// sheetName string, rowPartCode RowPartCode, fieldID string,
 ) error {
 	sheetRows, err := files.ReadExcelFileSheetRows(
 		xlsxValidationReceipeFile, vp.SheetName)
 	if err != nil {
 		return err
 	}
-	// sheetTableMapped := files.CreateTable(
-	// sheetRows, 0, 0)
+
 	sheetTableMapped := files.CreateTableTransformRowHeader(
 		sheetRows, 0, 0, FormatFieldBeforeValidation)
-	valueNC := RowFieldSpecialValueCodeMap[RowFieldValueNotValid]
+	columnAccount := e.ColumnAccountPrepare(vp.RowPartCode, vp.FieldID)
 
 	rs := e.TableXML.Rows
 	for _, r := range rs {
-		part, field, ok := GetRowPartAndField(
+		if !FieldPrevalidate(r.RowParts, vp.RowPartCode, vp.FieldID) {
+			continue
+		}
+		part, field, _ := GetRowPartAndField(
 			r.RowParts, vp.RowPartCode, vp.FieldID)
-		if !ok {
-			slog.Error("field not present in row", "filedID", field.FieldID)
-			continue
-		}
-		if CheckIfFieldValueIsSpecialValue(field.Value) {
-			continue
-		}
 		valueToValidate := FormatFieldBeforeValidation(field.Value)
-		_, ok = sheetTableMapped.RowHeaderToColumnMap[valueToValidate]
+		_, validOK := sheetTableMapped.RowHeaderToColumnMap[valueToValidate]
 
-		// Value is not valid
-		if !ok {
-			part[field.FieldID] = RowField{
-				FieldID:   vp.FieldID,
-				FieldName: "",
-				// Value:     valueNC + " " + valueToValidate + " " + field.Value,
-				Value: valueNC,
-			}
-		}
-
-		// Value is valid
-		if ok {
-			continue
-			// part[field.FieldID] = RowField{
-			// FieldID:   vp.FieldID,
-			// FieldName: "",
-			// Value:     "valid+" + valueToValidate + " " + field.Value,
-			// }
-		}
-
-		// TODO: account the rownumber, rowPartCode, fieldID, origvalue
-		// e.MarkField(r.RowParts, RowPartCode_ContactItemHead, newColumnName, mark)
-		// _, ok = sheetTableMapped.RowHeaderToColumnMap[valueTransformed]
-		// mark := MarkValue(ok, field.Value, valueNP)
-		// mark := MarkValue(ok, valueTransformed, valueNP)
-		// e.MarkField(r.RowParts, RowPartCode_ContactItemHead, newColumnName, mark)
+		ValueInvalidAccount(columnAccount, part, field, validOK)
 	}
 	return nil
 }
@@ -217,7 +228,8 @@ func (e *Extractor) ValidateColumnsFormat(xlsxValidationReceipeFile string) {
 	rgx_Stopaz := `^\d{1,16}$`         // only numbers
 	rgx_Datum := `^\d{8}T\d{6},\d{3}$` // 20240102T130010,333
 	rgx_Incode := `^OM\d{3,}$`         // OM + 3 or more digits
-	rgx_Itemcode := `^\d{4,}`          // 4 or more digits
+	rgx_Itemcode := `^.{4,}$`          // 4 or more digits
+	rgx_Nazev_HR := `^\d\d:\d\d-\d\d:\d\d$`
 
 	columnsParams := []ValidateColumnAddressParams{
 		// ID
@@ -239,6 +251,9 @@ func (e *Extractor) ValidateColumnsFormat(xlsxValidationReceipeFile string) {
 
 		{"incode", RowPartCode_StoryHead, "5072", rgx_Incode},
 		{"itemcode", RowPartCode_AudioClipHead, "5082", rgx_Itemcode},
+		{"nazev_HR", RowPartCode_HourlyHead, "8", rgx_Nazev_HR},
+
+		// TEMA
 	}
 	for _, c := range columnsParams {
 		err := e.ValidateColumnFormat(xlsxValidationReceipeFile, c)
@@ -252,33 +267,91 @@ func (e *Extractor) ValidateColumnFormat(
 	xlsxValidationReceipeFile string,
 	vp ValidateColumnAddressParams,
 ) error {
-	valueNC := RowFieldSpecialValueCodeMap[RowFieldValueNotValid]
 	formatRegex := regexp.MustCompile(vp.FormatRegex)
-	rs := e.TableXML.Rows
-	for _, r := range rs {
-		part, field, ok := GetRowPartAndField(
-			r.RowParts, vp.RowPartCode, vp.FieldID)
-		if !ok {
-			slog.Error("field not present in row", "filedID", field.FieldID)
-			continue
-		}
-		if CheckIfFieldValueIsSpecialValue(field.Value) {
-			continue
-		}
-		ok = formatRegex.MatchString(field.Value)
-		// Value is not valid
-		if !ok {
-			part[field.FieldID] = RowField{
-				FieldID:   vp.FieldID,
-				FieldName: "",
-				Value:     valueNC,
-			}
-		}
+	columnAccount := e.ColumnAccountPrepare(vp.RowPartCode, vp.FieldID)
 
-		// Value is valid
-		if ok {
+	rs := e.TableXML.Rows
+	for i, r := range rs {
+		if !FieldPrevalidate(r.RowParts, vp.RowPartCode, vp.FieldID) {
 			continue
 		}
+		part, field, _ := GetRowPartAndField(
+			r.RowParts, vp.RowPartCode, vp.FieldID)
+		// fieldValueWithoutSpace := TrimAllWhiteSpace(field.Value)
+		validOK := formatRegex.MatchString(field.Value)
+		if !validOK {
+			slog.Warn("field not valid:", "field", field, "rowi", i, "row", r)
+		}
+		ValueInvalidAccount(columnAccount, part, field, validOK)
 	}
 	return nil
+}
+
+func (e *Extractor) ValidationLogWrite(
+	logFilePath, delim string, overWrite bool) error {
+	header := e.ValidationLogHeader()
+	sb := new(strings.Builder)
+	fmt.Fprintf(sb, "%s\n", strings.Join(
+		[]string{"column", "value", "count"}, delim))
+	for _, h := range header {
+		columnAccount := e.ValidationTableAccount.InvalidValues[h]
+		// Sorted per column name
+		keys := SortColumnAccount(columnAccount)
+		for _, k := range keys {
+			// fmt.Fprintf(sb, "%s%s%s%s%d\n",
+			fmt.Fprintf(sb, "%s%s%q%s%d\n",
+				h, delim, k, delim, columnAccount[k])
+		}
+		// Not sorted
+		// for value, count := range columnAccount {
+		// fmt.Fprintf(sb, "%s%s%s%s%d\n", h, delim, value, delim, count)
+		// }
+	}
+	perms := FileOverwritePermissions(overWrite)
+	outputFile, err := os.OpenFile(logFilePath, perms, 0600)
+	if err != nil {
+		return err
+	}
+	defer outputFile.Close()
+	n, err := outputFile.WriteString(sb.String())
+	if err != nil {
+		return err
+	}
+	slog.Info("written bytes to file", "fileName", logFilePath, "bytesCount", n)
+	return nil
+}
+
+func SortColumnAccount(vca ValidationColumnAccount) []string {
+	type KeyValue struct {
+		Key   string
+		Value int
+	}
+	var kvs []KeyValue
+	for k, v := range vca {
+		kvs = append(kvs, KeyValue{k, v})
+	}
+
+	sort.Slice(kvs, func(i, j int) bool {
+		return kvs[i].Value > kvs[j].Value
+	})
+	out := make([]string, len(kvs))
+	for i, kv := range kvs {
+		out[i] = kv.Key
+	}
+	return out
+}
+
+func (e *Extractor) ValidationLogHeader() []string {
+	header := make([]string, 0)
+	for _, partPos := range e.HeaderExternal {
+		columnAccount, ok := e.ValidationTableAccount.InvalidValues[partPos]
+		if !ok {
+			continue
+		}
+		if len(columnAccount) == 0 {
+			continue
+		}
+		header = append(header, partPos)
+	}
+	return header
 }

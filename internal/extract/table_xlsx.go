@@ -1,8 +1,14 @@
 package extract
 
 import (
+	"encoding/csv"
+	"fmt"
 	"log/slog"
+	"os"
+	"path/filepath"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/triopium/go_utils/pkg/helper"
 	"github.com/xuri/excelize/v2"
@@ -309,47 +315,177 @@ func (p RowPart) PartToXSLXrow(
 	return out
 }
 
-func (e *Extractor) NewStyle() excelize.Style {
-	st := excelize.Style{
-		Border: []excelize.Border{},
-		Fill: excelize.Fill{
-			Type:    "",
-			Pattern: 0,
-			Color:   []string{},
-			Shading: 0,
-		},
-		Font: &excelize.Font{
-			Bold:         false,
-			Italic:       false,
-			Underline:    "",
-			Family:       "",
-			Size:         0.0,
-			Strike:       false,
-			Color:        "",
-			ColorIndexed: 0,
-			ColorTheme:   nil,
-			ColorTint:    0.0,
-			VertAlign:    "",
-		},
-		Alignment: &excelize.Alignment{
-			Horizontal:      "",
-			Indent:          0,
-			JustifyLastLine: false,
-			ReadingOrder:    0,
-			RelativeIndent:  0,
-			ShrinkToFit:     false,
-			TextRotation:    0,
-			Vertical:        "",
-			WrapText:        false,
-		},
-		Protection: &excelize.Protection{
-			Hidden: false,
-			Locked: false,
-		},
-		NumFmt:        0,
-		DecimalPlaces: nil,
-		CustomNumFmt:  nil,
-		NegRed:        false,
+func CSVreadRows(csvFileName string, csvDelim rune) ([][]string, error) {
+	file, err := os.Open(csvFileName)
+	if err != nil {
+		return nil, err
 	}
-	return st
+	defer file.Close()
+	reader := csv.NewReader(file)
+	reader.FieldsPerRecord = 0 // must be same as first row
+	// reader.FieldsPerRecord = -1 // do not check record length
+	reader.Comma = csvDelim
+	// reader.LazyQuotes = true
+	return reader.ReadAll()
+}
+
+func GetHeaderRowIndex(rows [][]string) int {
+	headerRow := 0
+	for i := 0; i < len(rows[0]); i++ {
+		_, ok := FieldsIDsNamesProduction2.GetByName(rows[0][i])
+		if ok {
+			break
+		}
+		_, ok = FieldsIDsNamesProduction2.GetByName(rows[1][i])
+		if ok {
+			headerRow = 1
+			break
+		}
+	}
+	return headerRow
+}
+
+func XLSXsetColumnStyle(
+	f *excelize.File, sheetName string, rows [][]string) error {
+	headerRow := GetHeaderRowIndex(rows)
+	for i := 0; i < len(rows[0]); i++ {
+		fieldID, ok := FieldsIDsNamesProduction2.GetByName(rows[headerRow][i])
+		// column properties
+		cname, err := excelize.ColumnNumberToName(i + 1)
+		if err != nil {
+			return err
+		}
+		firstCell := fmt.Sprintf("%s%d", cname, headerRow+1)
+		lastCell := fmt.Sprintf("%s%d", cname, len(rows))
+
+		// default column width
+		if ok && fieldID.Width > -1 {
+			if err := f.SetColWidth(
+				sheetName, cname, cname, fieldID.Width); err != nil {
+				return err
+			}
+		}
+
+		// Column format number
+		styleDef := excelize.Style{}
+		styleDef.NumFmt = fieldID.XLSXcolumnFormat
+
+		// Custom format
+		if ok && fieldID.XLSXcustomFormat != "" {
+			styleDef.CustomNumFmt = &fieldID.XLSXcustomFormat
+		}
+		if !ok {
+			stext := "@"
+			styleDef.CustomNumFmt = &stext
+		}
+
+		// Write style to column
+		style, err := f.NewStyle(&styleDef)
+		if err != nil {
+			return err
+		}
+		err = f.SetCellStyle(sheetName, firstCell, lastCell, style)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func CSVtoXLSX(csvFile string, csvDelim rune) error {
+	// read csv
+	records, err := CSVreadRows(csvFile, csvDelim)
+	if err != nil {
+		return err
+	}
+	if len(records) < 2 {
+		return nil
+	}
+
+	// Create a new Excel file
+	xlsxFile := excelize.NewFile()
+	sheetName := "Sheet1"
+	// Create a new sheet
+	index, err := xlsxFile.NewSheet(sheetName)
+	if err != nil {
+		return err
+	}
+	xlsxFile.SetActiveSheet(index)
+
+	// Set style
+	lastCol, err := excelize.ColumnNumberToName(len(records[0]))
+	if err != nil {
+		return err
+	}
+	if err := xlsxFile.SetColWidth(sheetName, "A", lastCol, 12); err != nil {
+		return err
+	}
+	err = XLSXsetColumnStyle(xlsxFile, sheetName, records)
+	if err != nil {
+		return err
+	}
+	ncol := len(records[0])
+	nrow := len(records)
+	headerRow := GetHeaderRowIndex(records)
+	for coli := 0; coli < ncol; coli++ {
+		fieldID, _ := FieldsIDsNamesProduction2.GetByName(records[headerRow][coli])
+		for rowi := 0; rowi < nrow; rowi++ {
+			cellRef, _ := excelize.CoordinatesToCellName(coli+1, rowi+1)
+			// fmt.Println("INDEX", coli, rowi)
+			// fmt.Println("ROW_LEN", len(records[rowi]))
+			// if len(records[rowi]) < coli {
+			// continue
+			// }
+			// fmt.Println("FUCITL", nrow, ncol)
+			cell := records[rowi][coli]
+			// err := XLSXsetCellValueTry(xlsxFile, sheetName, cellRef, cell)
+			err := XLSXsetCellValue(xlsxFile, sheetName, fieldID, cellRef, cell)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	name := helper.FilenameWithoutExtension(csvFile)
+	dir := filepath.Dir(csvFile)
+	xlsxFilePath := filepath.Join(dir, name+".xlsx")
+	// fmt.Println("FUCIT")
+	return xlsxFile.SaveAs(xlsxFilePath)
+}
+
+func XLSXsetCellValueTry(
+	file *excelize.File, sheetName string, cellRef, cell string,
+) error {
+	// DATE
+	date, err := ParseXMLdate(cell)
+	if err == nil {
+		return file.SetCellValue(sheetName, cellRef, date)
+	}
+	date2, err := time.Parse("2006-01-02 15:04:05", cell)
+	if err == nil {
+		return file.SetCellValue(sheetName, cellRef, date2)
+	}
+	// NUMBER
+	res, err := strconv.Atoi(cell)
+	if err == nil {
+		return file.SetCellValue(sheetName, cellRef, res)
+	}
+	return file.SetCellValue(sheetName, cellRef, cell)
+}
+
+func CSVdirToXLSX(csvFolder string, csvDelim rune) error {
+	files, err := helper.ListDirFiles(csvFolder)
+	if err != nil {
+		return err
+	}
+	for _, f := range files {
+		ext := filepath.Ext(f)
+		if ext == ".csv" {
+			err = CSVtoXLSX(f, csvDelim)
+			if err != nil {
+				return fmt.Errorf("%w file: %s", err, f)
+			}
+		}
+	}
+	return nil
 }

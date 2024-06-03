@@ -67,6 +67,9 @@ type Extractor struct {
 	HeaderExternal []string
 
 	CSVdelim string
+
+	// Logging
+	ValidationTableAccount
 }
 
 func (e *Extractor) Init(
@@ -148,9 +151,19 @@ func (e *Extractor) HeaderColumnExternalCreate(
 		resName = FieldsIDsNamesProduction[fieldID]
 	}
 	if prefix.External == "" {
+		// NOTE!!!: maybe add delim too
 		return resName
 	}
 	return fmt.Sprintf("%s_%s%s", resName, prefix.External, delim)
+}
+
+func GetColumnHeaderExternal(rowPartCode RowPartCode, fieldID string) string {
+	resName := FieldsIDsNamesProduction[fieldID]
+	prefix := RowPartsCodeMapProduction[rowPartCode]
+	if prefix.External == "" {
+		return resName
+	}
+	return fmt.Sprintf("%s_%s", resName, prefix.External)
 }
 
 func (e *Extractor) ExtractTable(fileName string) error {

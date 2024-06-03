@@ -1,5 +1,7 @@
 package extract
 
+import "strings"
+
 // RowPartCode
 type RowPartCode int
 
@@ -67,9 +69,31 @@ type FieldID struct {
 
 type FieldsIDsNames2 map[string]FieldID
 
+func (fi FieldsIDsNames2) GetByName(name string) (FieldID, bool) {
+	for _, value := range fi {
+		if value.Name == name {
+			return value, true
+		}
+		out := strings.Split(name, "_")
+		if len(out) == 1 {
+			continue
+		}
+		cur := strings.Join(out[:len(out)-1], "_")
+		if value.Name == cur {
+			return value, true
+		}
+	}
+	return FieldID{}, false
+}
+
 var FieldsIDsNamesProduction2 = FieldsIDsNames2{
-	"1":    {"cas_vytvoreni", 0, "", 20},
-	"1000": {"datum", 1, "", 30},
+	// "1":    {"cas_vytvoreni", 0, "", 20},
+	"1000":     {"datum", 14, "DD. MM. R", 12},
+	"C-index":  {"index", 0, "@", 24},
+	"5081":     {"stanice", 1, "", 4},
+	"8":        {"nazev", 0, "@", 22},
+	"ObjectID": {"ObjectID", 0, "@", 18},
+
 	// "1002":             {"planovana_stopaz"},
 	// "1003":             {"cas_konce"},
 	// "1004":             {"cas_zacatku"},
@@ -93,7 +117,6 @@ var FieldsIDsNamesProduction2 = FieldsIDsNames2{
 	// "5071":             {"schvalil_stanice"},
 	// "5072":             {"incode"},
 	// "5079":             {"cil_vyroby"},
-	// "5081":             {"stanice"},
 	// "5082":             {"itemcode"},
 	// "5087":             {"ID"},
 	// "5068":             {"ID"},
@@ -106,7 +129,6 @@ var FieldsIDsNamesProduction2 = FieldsIDsNames2{
 	// "datum":            {"datum"},
 	// "kategory":         {"kategory"},
 	// "C-RID":            {"RID"},
-	// "C-index":          {"index"},
 	// "ObjectID":         {"ObjectID"},
 	// "FileName":         {"FileName"},
 	// "filtered":         {"filtered"},
