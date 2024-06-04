@@ -138,16 +138,20 @@ func RunCommandExtractArchive() {
 		ext.TransformProduction()
 
 		if filter.FilterFileName != "" {
-			// NOTE:Check filter file exists at start
+			// Match filename: // eurovolby,oposition
 			err := ext.FilterMatchPersonName(filter)
 			if err != nil {
 				panic(err)
 			}
-			// err = ext.FilterMatchPersonIDandPolitics(filter)
+
+			// Match filename: // eurovolby
+			// err = ext.FilterMatchPersonAndParty(filter)
 			// if err != nil {
-			// 	panic(err)
+			// panic(err)
 			// }
-			err = ext.FilterMatchPersonAndParty(filter)
+
+			// Match filename: // oposition
+			err = ext.FilterMatchPersonIDandPolitics(filter)
 			if err != nil {
 				panic(err)
 			}
@@ -159,14 +163,16 @@ func RunCommandExtractArchive() {
 	}
 	// D) PREVOD KÓDŮ"
 	// E) EXPORT CSV FILES IN DIR TO XLSX
-	delimRunes := []rune(query.CSVdelim)
-	if len(delimRunes) != 1 {
-		slog.Error("cannot use delim")
-		return
-	}
-	// errex := files.CSVdirToXLSX(query.OutputDirectory, delimRunes[0])
-	errex := extract.CSVdirToXLSX(query.OutputDirectory, delimRunes[0])
-	if errex != nil {
-		slog.Error(errex.Error())
+	if false {
+		delimRunes := []rune(query.CSVdelim)
+		if len(delimRunes) != 1 {
+			slog.Error("cannot use delim")
+			return
+		}
+		// errex := files.CSVdirToXLSX(query.OutputDirectory, delimRunes[0])
+		errex := extract.CSVdirToXLSX(query.OutputDirectory, delimRunes[0])
+		if errex != nil {
+			slog.Error(errex.Error())
+		}
 	}
 }

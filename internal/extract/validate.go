@@ -51,6 +51,10 @@ func FieldPrevalidate(rp RowParts, rpc RowPartCode, fieldID string) bool {
 		slog.Warn("field not validated: not present", "filed", field)
 		return false
 	}
+	if field.Value == "" {
+		slog.Warn("field not validated: field empty", "filed", field)
+		return false
+	}
 	if CheckIfFieldValueIsSpecialValue(field.Value) {
 		slog.Warn("field not validated: special value", "filed", field)
 		return false
@@ -224,7 +228,7 @@ func (e *Extractor) ValidateColumnValues(
 // VALIDATE COLUMNS FORMAT
 func (e *Extractor) ValidateColumnsFormat(xlsxValidationReceipeFile string) {
 	rgx_ID := `^[a-fA-F\d]{8}(-[a-fA-F\d]{4}){3}-[a-fA-F\d]{8}$`
-	// UUID variand eg.: F763E219-4759-4698-B2D6-5E6DFDBC
+	// UUID variant eg.: F763E219-4759-4698-B2D6-5E6DFDBC
 	rgx_Stopaz := `^\d{1,16}$`         // only numbers
 	rgx_Datum := `^\d{8}T\d{6},\d{3}$` // 20240102T130010,333
 	rgx_Incode := `^OM\d{3,}$`         // OM + 3 or more digits
@@ -252,8 +256,6 @@ func (e *Extractor) ValidateColumnsFormat(xlsxValidationReceipeFile string) {
 		{"incode", RowPartCode_StoryHead, "5072", rgx_Incode},
 		{"itemcode", RowPartCode_AudioClipHead, "5082", rgx_Itemcode},
 		{"nazev_HR", RowPartCode_HourlyHead, "8", rgx_Nazev_HR},
-
-		// TEMA
 	}
 	for _, c := range columnsParams {
 		err := e.ValidateColumnFormat(xlsxValidationReceipeFile, c)
