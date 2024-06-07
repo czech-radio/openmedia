@@ -82,8 +82,8 @@ func PrepareConfig() *extract.ArchiveFolderQuery {
 	return &q
 }
 
-func PrepareFilter() *extract.NFilterColumn {
-	filter := &extract.NFilterColumn{}
+func PrepareFilter() *extract.FilterFile {
+	filter := &extract.FilterFile{}
 	err := commandExtractArchiveConfig.ParseFlags(filter)
 	if err != nil {
 		panic(err)
@@ -134,27 +134,34 @@ func RunCommandExtractArchive() {
 		}
 
 		// C) FILTER
+		// TODO: simplify without switch case
 		process_name += "_filtered"
 		ext.TransformProduction()
-
-		if filter.FilterFileName != "" {
-			// Match filename: // eurovolby,oposition
+		filterCode, err := extract.GetFilterFileCode(filter.FilterFileName)
+		if err != nil {
+			panic(err)
+		}
+		switch filterCode {
+		case extract.FilterFileOposition:
 			err := ext.FilterMatchPersonName(filter)
 			if err != nil {
 				panic(err)
 			}
-
-			// Match filename: // eurovolby
-			// err = ext.FilterMatchPersonAndParty(filter)
-			// if err != nil {
-			// panic(err)
-			// }
-
-			// Match filename: // oposition
 			err = ext.FilterMatchPersonIDandPolitics(filter)
 			if err != nil {
 				panic(err)
 			}
+		case extract.FilterFileEuroElection:
+			err := ext.FilterMatchPersonName(filter)
+			if err != nil {
+				panic(err)
+			}
+			err = ext.FilterMatchPersonAndParty(filter)
+			if err != nil {
+				panic(err)
+			}
+		default:
+			slog.Info("No filter applied")
 		}
 
 		ext.CSVtableBuild(false, false, query.CSVdelim, true, indxs)

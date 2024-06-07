@@ -3,25 +3,55 @@ package extract
 import (
 	"fmt"
 	"log/slog"
+	"path/filepath"
 	"regexp"
 
 	"github.com/triopium/go_utils/pkg/files"
 )
 
-type FilterCode int
+type FilterFileCode string
 
 const (
-	FilterCodeMatchPersonName FilterCode = iota
+	FilterFileOposition    FilterFileCode = "filtr_opozice"
+	FilterFileEuroElection FilterFileCode = "filtr_eurovolby"
 )
 
-type NFilterColumn struct {
+type FilterFunction func(FilterFile) error
+type FilterFileCodes map[FilterFileCode][]FilterFunction
+
+var FilterFileCodeMap = FilterFileCodes{
+	FilterFileOposition:    {},
+	FilterFileEuroElection: {},
+}
+
+func GetFilterFileCode(filePath string) (FilterFileCode, error) {
+	fileName := filepath.Base(filePath)
+	for f := range FilterFileCodeMap {
+		rg := regexp.MustCompile("^" + string(f))
+		if rg.MatchString(fileName) {
+			return f, nil
+		}
+	}
+	return FilterFileCode(""), fmt.Errorf("Unknown filter filename: %s", filePath)
+}
+
+type FilterFile struct {
 	FilterFileName  string
 	FilterSheetName string
 	ColumnHeaderRow int
 	RowHeaderColumn int
-	PartCodeMark    RowPartCode
-	FieldIDmark     string
-	FilterTable     files.Table
+}
+
+func (e *Extractor) ApplyFilter(filterFile string) {
+	if filterFile == "" {
+		return
+	}
+	filterCode, err := GetFilterFileCode(filterFile)
+	if err != nil {
+		panic(err)
+	}
+	switch filterCode {
+	}
 }
 
 func (e *Extractor) MarkField(rowParts RowParts,
@@ -50,7 +80,50 @@ func MarkValue(matches bool, fieldValue, nulValue string) string {
 	return "0"
 }
 
-func (e *Extractor) FilterMatchPersonNameExact(f *NFilterColumn) error {
+// FieldValueMatchesValidValues
+func FieldValueMatchesValidValues(
+	row RowParts, partCode RowPartCode, fieldID string,
+	validValues map[string]bool) (bool, string) {
+	_, field, ok := GetRowPartAndField(row, partCode, fieldID)
+	notFound := RowFieldSpecialValueCodeMap[RowFieldValueChildNotFound]
+	if !ok {
+		return false, notFound
+	}
+	return validValues[field.Value], ""
+}
+
+// FilterByPartAndFieldID
+func (e *Extractor) FilterByPartAndFieldID(
+	partCode RowPartCode, fieldID string,
+	fieldValuePatern string) []int {
+	var res []int
+	re := regexp.MustCompile(fieldValuePatern)
+	for i, row := range e.TableXML.Rows {
+		part, ok := row.RowParts[partCode]
+		if !ok {
+			slog.Debug(
+				"filter not effective", "reason", "partname not found",
+				"partName", partCode,
+			)
+			return nil
+		}
+		field, ok := part[fieldID]
+		if !ok {
+			slog.Debug(
+				"filter not effective", "reason", "fieldID not found",
+				"partName", partCode,
+			)
+			return nil
+		}
+		ok = re.MatchString(field.Value)
+		if ok {
+			res = append(res, i)
+		}
+	}
+	return res
+}
+
+func (e *Extractor) FilterMatchPersonNameExact(f *FilterFile) error {
 	newColumnName := "name_match"
 	e.AddColumn(RowPartCode_ContactItemHead, newColumnName)
 	sheetRows, err := files.ReadExcelFileSheetRows(f.FilterFileName, f.FilterSheetName)
@@ -75,7 +148,7 @@ func (e *Extractor) FilterMatchPersonNameExact(f *NFilterColumn) error {
 	return nil
 }
 
-func (e *Extractor) FilterMatchPersonName(f *NFilterColumn) error {
+func (e *Extractor) FilterMatchPersonName(f *FilterFile) error {
 	newColumnName := "name_match"
 	e.AddColumn(RowPartCode_ContactItemHead, newColumnName)
 	sheetRows, err := files.ReadExcelFileSheetRows(f.FilterFileName, f.FilterSheetName)
@@ -103,7 +176,7 @@ func (e *Extractor) FilterMatchPersonName(f *NFilterColumn) error {
 	return nil
 }
 
-func (e *Extractor) FilterMatchPersonAndParty(f *NFilterColumn) error {
+func (e *Extractor) FilterMatchPersonAndParty(f *FilterFile) error {
 	newColumnName := "name&party_match"
 	e.AddColumn(RowPartCode_ContactItemHead, newColumnName)
 	rows, err := files.ReadExcelFileSheetRows(f.FilterFileName, f.FilterSheetName)
@@ -132,7 +205,7 @@ func (e *Extractor) FilterMatchPersonAndParty(f *NFilterColumn) error {
 	return nil
 }
 
-func (e *Extractor) FilterMatchPersonIDandPolitics(f *NFilterColumn) error {
+func (e *Extractor) FilterMatchPersonIDandPolitics(f *FilterFile) error {
 	newColumnName := "vysoka_politika"
 	e.AddColumn(RowPartCode_ContactItemHead, newColumnName)
 	rows, err := files.ReadExcelFileSheetRows(f.FilterFileName, f.FilterSheetName)
@@ -163,24 +236,6 @@ func (e *Extractor) FilterMatchPersonIDandPolitics(f *NFilterColumn) error {
 		e.MarkField(r.RowParts, RowPartCode_ContactItemHead, newColumnName, mark)
 	}
 	return nil
-}
-
-// FilterColumn
-type FilterColumn struct {
-	FilterName     FilterCode
-	PartCodeCheck  RowPartCode
-	FieldIDcheck   string
-	PartCodeMark   RowPartCode
-	FieldIDmark    string
-	FileWithValues string
-	Values         map[string]bool
-}
-
-var FilterCodeMap = map[FilterCode]FilterColumn{
-	FilterCodeMatchPersonName: {
-		FilterCodeMatchPersonName,
-		RowPartCode_ComputedKON, "jmeno_spojene",
-		RowPartCode_ContactItemHead, "filtered", "", nil},
 }
 
 func (e *Extractor) FilterContacts() []int {
@@ -236,95 +291,4 @@ func (e *Extractor) DeleteNonMatchingRows(rowIdxsFiltered []int) {
 	}
 	e.Rows = out
 	slog.Warn("rows count after deletion", "count_after", len(out))
-}
-
-// FilterRun
-func (e *Extractor) FilterRun(f FilterColumn) {
-	switch f.FilterName {
-	case FilterCodeMatchPersonName:
-		e.FilterMatchPersonNameB(f)
-	}
-}
-
-// FiltersRun
-func (e *Extractor) FiltersRun(filters []FilterColumn) {
-	if filters == nil {
-		slog.Debug("no filters to filter column specified")
-		return
-	}
-	for f := range filters {
-		e.FilterRun(filters[f])
-	}
-}
-
-// FilterMatchPersonName
-func (e *Extractor) FilterMatchPersonNameB(f FilterColumn) {
-	for i, row := range e.TableXML.Rows {
-		matches, altValue := FieldValueMatchesValidValues(
-			row.RowParts, f.PartCodeCheck, f.FieldIDcheck, f.Values,
-		)
-		part, ok := e.TableXML.Rows[i].RowParts[f.PartCodeMark]
-		if !ok {
-			part = make(RowPart)
-		}
-		var mark string
-		if matches {
-			mark = "1"
-		} else {
-			mark = "0"
-		}
-		if altValue != "" {
-			mark = altValue
-		}
-		field := RowField{
-			FieldID:   f.FieldIDmark,
-			FieldName: "",
-			Value:     mark,
-		}
-		part[f.FieldIDmark] = field
-		e.TableXML.Rows[i].RowParts[f.PartCodeMark] = part
-	}
-}
-
-// FieldValueMatchesValidValues
-func FieldValueMatchesValidValues(
-	row RowParts, partCode RowPartCode, fieldID string,
-	validValues map[string]bool) (bool, string) {
-	_, field, ok := GetRowPartAndField(row, partCode, fieldID)
-	notFound := RowFieldSpecialValueCodeMap[RowFieldValueChildNotFound]
-	if !ok {
-		return false, notFound
-	}
-	return validValues[field.Value], ""
-}
-
-// FilterByPartAndFieldID
-func (e *Extractor) FilterByPartAndFieldID(
-	partCode RowPartCode, fieldID string,
-	fieldValuePatern string) []int {
-	var res []int
-	re := regexp.MustCompile(fieldValuePatern)
-	for i, row := range e.TableXML.Rows {
-		part, ok := row.RowParts[partCode]
-		if !ok {
-			slog.Debug(
-				"filter not effective", "reason", "partname not found",
-				"partName", partCode,
-			)
-			return nil
-		}
-		field, ok := part[fieldID]
-		if !ok {
-			slog.Debug(
-				"filter not effective", "reason", "fieldID not found",
-				"partName", partCode,
-			)
-			return nil
-		}
-		ok = re.MatchString(field.Value)
-		if ok {
-			res = append(res, i)
-		}
-	}
-	return res
 }

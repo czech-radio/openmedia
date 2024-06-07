@@ -8,9 +8,16 @@ SOURCE_DIR="/mnt/remote/cro/export-avo/Rundowns"
 
 ## FILTER FILES
 FILTERS_DIR="${SCRIPT_DIR}/../../openmedia-filters"
+
+### filter validation
 FILE_VALIDATION="${FILTERS_DIR}/validace_new_ammended.xlsx"
-FILE_OPOSITION="${FILTERS_DIR}/analýza opozice - zadání.xlsx"
-FILE_EUROVOLBY="${FILTERS_DIR}/eurovolby - zadání.xlsx"
+
+### filter oposition
+FILE_OPOSITION="${FILTERS_DIR}/filtr_opozice_2023-10-01_2024-03-31_v1.xlsx"
+# FILE_OPOSITION="${FILTERS_DIR}/filtr_opozice_2024-04-01_2024-05-31_v1.xlsx"
+
+### filter eurovolby
+FILE_EUROVOLBY="${FILTERS_DIR}/filtr_eurovolby_v1.xlsx"
 
 TouchDone(){
   local odir="$1"
@@ -43,8 +50,8 @@ ArchiveExtractCommand(){
     "-frfn=${FILE_FILTER:-}"
   )
   local logFile="${OUTPUT_DIR}/${OUTPUT_FILENAME}_run.log"
-  # go run "$MAIN_PATH" extractArchive "${flags[@]}" 2>&1 | tee "$logFile"
-  go run "$MAIN_PATH" -v="${VERBOSE:-0}" extractArchive "${flags[@]}" &> "$logFile"
+  go run "$MAIN_PATH" extractArchive "${flags[@]}" 2>&1 | tee "$logFile"
+  # go run "$MAIN_PATH" -v="${VERBOSE:-0}" extractArchive "${flags[@]}" &> "$logFile"
   # tail -f "$logFile"
   TouchDone "${OUTPUT_DIR}" "${OUTPUT_FILENAME}" "$?"
 }
@@ -113,9 +120,13 @@ ArchiveExtractEurovolby(){
 
 ArchiveExtractOpozice(){
   local EXTRACTOR="production_contacts"
-  local FROM="2024-04-01"
+  # local FROM="2024-04-01"
+  local FROM="2024-01-01"
   # local TO="2024-04-02"
-  local TO="2024-06-01"
+  # local TO="2024-06-01"
+  local TO="2024-01-02"
+  # local TO="2024-02-01"
+  local RADIOS="Plus"
   local OUTPUT_FILENAME="opozice"
   local FILE_FILTER="$FILE_OPOSITION"
   ArchiveExtractCommand
