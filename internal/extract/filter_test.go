@@ -44,7 +44,7 @@ func TestGetFilterByFilterFileName(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetFilterFileCode(tt.args.fname)
+			got, err := FilterFileCodeMap.GetFilterFileCode(tt.args.fname)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetFilterByFilterFileName() error = %v, wantErr %v", err, tt.wantErr)
 				return

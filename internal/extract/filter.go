@@ -16,7 +16,7 @@ const (
 	FilterFileEuroElection FilterFileCode = "filtr_eurovolby"
 )
 
-type FilterFunction func(FilterFile) error
+type FilterFunction func(*FilterFile) error
 type FilterFileCodes map[FilterFileCode][]FilterFunction
 
 var FilterFileCodeMap = FilterFileCodes{
@@ -24,9 +24,32 @@ var FilterFileCodeMap = FilterFileCodes{
 	FilterFileEuroElection: {},
 }
 
-func GetFilterFileCode(filePath string) (FilterFileCode, error) {
+func (ffc FilterFileCodes) AddFilters(
+	filterCode FilterFileCode, filterFuncs ...FilterFunction) {
+	ffc[filterCode] = filterFuncs
+}
+
+func (ffc FilterFileCodes) FiltersApply(ff *FilterFile) error {
+	filterCode, err := ffc.GetFilterFileCode(ff.FilterFileName)
+	if err != nil {
+		return err
+	}
+	filterFuncs, ok := ffc[filterCode]
+	if !ok {
+		return fmt.Errorf("No filter functions defined for filter file: %v", filterCode)
+	}
+	for _, ffunc := range filterFuncs {
+		err := ffunc(ff)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (ffc *FilterFileCodes) GetFilterFileCode(filePath string) (FilterFileCode, error) {
 	fileName := filepath.Base(filePath)
-	for f := range FilterFileCodeMap {
+	for f := range *ffc {
 		rg := regexp.MustCompile("^" + string(f))
 		if rg.MatchString(fileName) {
 			return f, nil
@@ -40,18 +63,6 @@ type FilterFile struct {
 	FilterSheetName string
 	ColumnHeaderRow int
 	RowHeaderColumn int
-}
-
-func (e *Extractor) ApplyFilter(filterFile string) {
-	if filterFile == "" {
-		return
-	}
-	filterCode, err := GetFilterFileCode(filterFile)
-	if err != nil {
-		panic(err)
-	}
-	switch filterCode {
-	}
 }
 
 func (e *Extractor) MarkField(rowParts RowParts,
@@ -238,7 +249,7 @@ func (e *Extractor) FilterMatchPersonIDandPolitics(f *FilterFile) error {
 	return nil
 }
 
-func (e *Extractor) FilterContacts() []int {
+func (e *Extractor) FilterPeculiarContacts() []int {
 	indxs := make([]int, 0, len(e.Rows))
 	rows := e.TableXML.Rows
 	for i, row := range rows {
@@ -287,6 +298,9 @@ func (e *Extractor) DeleteNonMatchingRows(rowIdxsFiltered []int) {
 		if ri == rowIdxsFiltered[rowIdxFilteredCurrent] {
 			out[rowIdxFilteredCurrent] = e.Rows[ri]
 			rowIdxFilteredCurrent++
+		}
+		if rowIdxFilteredCurrent+1 > len(rowIdxsFiltered) {
+			break
 		}
 	}
 	e.Rows = out

@@ -110,9 +110,9 @@ ArchiveExtractRange(){
 ArchiveExtractEurovolby(){
   local EXTRACTOR="production_contacts"
   local FROM="2024-05-01"
-  local TO="2024-06-01"
+  # local TO="2024-06-01"
   # local FROM="2024-05-01"
-  # local TO="2024-05-02"
+  local TO="2024-05-02"
   local OUTPUT_FILENAME="eurovolby"
   local FILE_FILTER="$FILE_EUROVOLBY"
   ArchiveExtractCommand

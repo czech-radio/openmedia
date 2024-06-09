@@ -114,3 +114,15 @@ func (e *Extractor) FilterMatchPersonNameB(f FilterColumn) {
 		e.TableXML.Rows[i].RowParts[f.PartCodeMark] = part
 	}
 }
+
+// func (e *Extractor) ApplyFilter(filterFile string) {
+// 	if filterFile == "" {
+// 		return
+// 	}
+// 	filterCode, err := GetFilterFileCode(filterFile)
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// 	switch filterCode {
+// 	}
+// }

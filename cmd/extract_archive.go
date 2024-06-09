@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"github/czech-radio/openmedia/internal/extract"
 	"log/slog"
-	"path/filepath"
-	"strings"
 	"time"
 
 	ar "github/czech-radio/openmedia/internal/archive"
@@ -57,7 +55,7 @@ func CheckFileExistsIfNotNull(fileName string) (bool, error) {
 	return true, nil
 }
 
-func PrepareConfig() *extract.ArchiveFolderQuery {
+func ParseConfigOptions() *extract.ArchiveFolderQuery {
 	q := extract.ArchiveFolderQuery{}
 	commandExtractArchiveConfigure()
 	commandExtractArchiveConfig.RunSub(&q)
@@ -82,7 +80,7 @@ func PrepareConfig() *extract.ArchiveFolderQuery {
 	return &q
 }
 
-func PrepareFilter() *extract.FilterFile {
+func ParseFilterOptions() *extract.FilterFile {
 	filter := &extract.FilterFile{}
 	err := commandExtractArchiveConfig.ParseFlags(filter)
 	if err != nil {
@@ -92,94 +90,46 @@ func PrepareFilter() *extract.FilterFile {
 }
 
 func RunCommandExtractArchive() {
-	query := PrepareConfig()
-	filter := PrepareFilter()
+	queryOpts := ParseConfigOptions()
+	filterOpts := ParseFilterOptions()
 	arf := extract.ArchiveFolder{
-		PackageTypes: []ar.WorkerTypeCode{query.WorkerType}}
+		PackageTypes: []ar.WorkerTypeCode{queryOpts.WorkerType}}
 
-	if true {
-		// EXTRACT
-		if err := arf.FolderMap(query.SourceDirectory, true, query); err != nil {
-			helper.Errors.ExitWithCode(err)
-		}
-
-		ext := arf.FolderExtract(query)
-		// TRANSFORM
-		// A) BASE
-		process_name := "base"
-		var indxs []int
-		ext.TransformBase()
-		if query.ExtractorsCode == extract.ExtractorsProductionContacts {
-			indxs = ext.FilterContacts()
-		}
-		ext.CSVtableBuild(false, false, query.CSVdelim, false, indxs)
-		ext.TableOutputs(query.OutputDirectory, query.OutputFileName,
-			query.ExtractorsName, process_name, true)
-
-		// B) VALIDATE
-		process_name += "_validated"
-		ext.TransformBeforeValidation()
-		ext.ValidateAllColumns(query.ValidatorFileName)
-		ext.CSVtableBuild(false, false, query.CSVdelim, true, indxs)
-		ext.TableOutputs(query.OutputDirectory, query.OutputFileName,
-			query.ExtractorsName, process_name, true)
-
-		logFileName := strings.Join(
-			[]string{query.OutputFileName, process_name, "log"}, "_")
-		logFilePath := filepath.Join(
-			query.OutputDirectory, logFileName+".csv")
-		err := ext.ValidationLogWrite(logFilePath, query.CSVdelim, true)
-		if err != nil {
-			panic(err)
-		}
-
-		// C) FILTER
-		// TODO: simplify without switch case
-		process_name += "_filtered"
-		ext.TransformProduction()
-		filterCode, err := extract.GetFilterFileCode(filter.FilterFileName)
-		if err != nil {
-			panic(err)
-		}
-		switch filterCode {
-		case extract.FilterFileOposition:
-			err := ext.FilterMatchPersonName(filter)
-			if err != nil {
-				panic(err)
-			}
-			err = ext.FilterMatchPersonIDandPolitics(filter)
-			if err != nil {
-				panic(err)
-			}
-		case extract.FilterFileEuroElection:
-			err := ext.FilterMatchPersonName(filter)
-			if err != nil {
-				panic(err)
-			}
-			err = ext.FilterMatchPersonAndParty(filter)
-			if err != nil {
-				panic(err)
-			}
-		default:
-			slog.Info("No filter applied")
-		}
-
-		ext.CSVtableBuild(false, false, query.CSVdelim, true, indxs)
-		ext.TableOutputs(query.OutputDirectory, query.OutputFileName,
-			query.ExtractorsName, process_name, true)
+	// EXTRACT
+	if err := arf.FolderMap(queryOpts.SourceDirectory, true, queryOpts); err != nil {
+		helper.Errors.ExitWithCode(err)
 	}
+	extracted := arf.FolderExtract(queryOpts)
+
+	// OUTPUT
+	processName := "base"
+	extracted.OutputBaseDataset(processName, queryOpts)
+
+	processName += "_validated"
+	err := extracted.OutputValidatedDataset(processName, queryOpts)
+	if err != nil {
+		panic(err)
+	}
+
+	processName += "_filtered"
+	err = extracted.OutputFilteredDataset(processName, queryOpts, filterOpts)
+	if err != nil {
+		panic(err)
+	}
+
 	// D) PREVOD KÓDŮ"
-	// E) EXPORT CSV FILES IN DIR TO XLSX
-	if false {
-		delimRunes := []rune(query.CSVdelim)
-		if len(delimRunes) != 1 {
-			slog.Error("cannot use delim")
-			return
-		}
-		// errex := files.CSVdirToXLSX(query.OutputDirectory, delimRunes[0])
-		errex := extract.CSVdirToXLSX(query.OutputDirectory, delimRunes[0])
-		if errex != nil {
-			slog.Error(errex.Error())
-		}
-	}
+	// 	// E) EXPORT CSV FILES IN DIR TO XLSX
+	// 	if false {
+	// 		delimRunes := []rune(queryOpts.CSVdelim)
+	// 		if len(delimRunes) != 1 {
+	// 			slog.Error("cannot use delim")
+	// 			return
+	// 		}
+	// 		// errex := files.CSVdirToXLSX(query.OutputDirectory, delimRunes[0])
+	// 		errex := extract.CSVdirToXLSX(queryOpts.OutputDirectory, delimRunes[0])
+	// 		if errex != nil {
+	// 			slog.Error(errex.Error())
+	// 		}
+	// 	}
+	// }
 }
