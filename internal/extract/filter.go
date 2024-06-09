@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"path/filepath"
 	"regexp"
+	"strings"
 
 	"github.com/triopium/go_utils/pkg/files"
 )
@@ -159,6 +160,90 @@ func (e *Extractor) FilterMatchPersonNameExact(f *FilterFile) error {
 	return nil
 }
 
+// MatchStringElement check if element is present in slice
+func MatchStringElement(slice []string, element string) bool {
+	for _, s1 := range slice {
+		if s1 == element {
+			return true
+		}
+	}
+	return false
+}
+
+// MatchStringElements check if at least count elements are present in both slices
+func MatchStringElements(str1, str2 []string, count int) bool {
+	countMatched := 0
+	curIdx := 0
+	for _, s1 := range str1 {
+		if MatchStringElement(str2[curIdx:], s1) {
+			curIdx++
+			countMatched++
+		}
+	}
+	return countMatched >= count
+}
+
+func MatchPersonNameNoDiacriticsAtLeastTwo(
+	tableMap map[string][]string, key string) (bool, string) {
+	var ok bool
+	if len(key) == 2 {
+		_, ok := tableMap[key]
+		return ok, key
+	}
+	valueSlice := strings.Fields(key)
+	for tkey := range tableMap {
+		tkeySlice := strings.Fields(tkey)
+		ok = MatchStringElements(tkeySlice, valueSlice, 2)
+		if ok {
+			return true, tkey
+		}
+	}
+	return false, ""
+}
+
+func (e *Extractor) FilterMatchPersonNameNoDiacritics(f *FilterFile) error {
+	columnNameMatch := "name_match"
+	e.AddColumn(RowPartCode_ContactItemHead, columnNameMatch)
+	ColumnNameRefered := "referencni_jmeno"
+	e.AddColumn(RowPartCode_ContactItemHead, ColumnNameRefered)
+
+	sheetRows, err := files.ReadExcelFileSheetRows(f.FilterFileName, f.FilterSheetName)
+	if err != nil {
+		return err
+	}
+	sheetTableMapped := files.CreateTableTransformRowHeader(
+		sheetRows, f.ColumnHeaderRow, f.RowHeaderColumn, TransformPersonNameNoDiacritcs)
+	sheetTableMapped.MapTableRowKeyTransform(sheetRows, f.ColumnHeaderRow, f.RowHeaderColumn, TransformPersonNameNoDiacritcs)
+	valueNP := RowFieldSpecialValueCodeMap[RowFieldValueNotPossible]
+
+	xlsxTableColumnName := "příjmení a jméno"
+	xlsxTableRowKeyIdx := sheetTableMapped.ColumnHeaderMap[xlsxTableColumnName]
+	rs := e.TableXML.Rows
+	for _, r := range rs {
+		_, field, ok := GetRowPartAndField(
+			r.RowParts, RowPartCode_ComputedKON, "jmeno_spojene")
+		if !ok {
+			panic(ok)
+		}
+		valueTransformed := TransformPersonNameNoDiacritcs(field.Value)
+		ok, tkey := MatchPersonNameNoDiacriticsAtLeastTwo(
+			sheetTableMapped.RowHeaderToColumnMap, valueTransformed)
+		// Matched
+		mark := MarkValue(ok, valueTransformed, valueNP)
+		e.MarkField(r.RowParts, RowPartCode_ContactItemHead, columnNameMatch, mark)
+
+		// Get referent if matched
+		refMark := valueNP
+		row, ok := sheetTableMapped.RowHeaderToColumnMap[tkey]
+		if ok {
+			refMark = row[xlsxTableRowKeyIdx]
+		}
+		e.MarkField(
+			r.RowParts, RowPartCode_ContactItemHead, ColumnNameRefered, refMark)
+	}
+	return nil
+}
+
 func (e *Extractor) FilterMatchPersonName(f *FilterFile) error {
 	newColumnName := "name_match"
 	e.AddColumn(RowPartCode_ContactItemHead, newColumnName)
@@ -178,9 +263,7 @@ func (e *Extractor) FilterMatchPersonName(f *FilterFile) error {
 			panic(ok)
 		}
 		valueTransformed := TransformPersonName(field.Value)
-		// _, ok = sheetTableMapped.RowHeaderToColumnMap[field.Value]
 		_, ok = sheetTableMapped.RowHeaderToColumnMap[valueTransformed]
-		// mark := MarkValue(ok, field.Value, valueNP)
 		mark := MarkValue(ok, valueTransformed, valueNP)
 		e.MarkField(r.RowParts, RowPartCode_ContactItemHead, newColumnName, mark)
 	}
@@ -291,7 +374,7 @@ func (e *Extractor) FilterStoryPartRecordsDuds() []int {
 }
 
 func (e *Extractor) DeleteNonMatchingRows(rowIdxsFiltered []int) {
-	slog.Warn("rows count before deletion", "parsed", len(e.Rows), "filtered", len(rowIdxsFiltered))
+	slog.Info("rows count before deletion", "parsed", len(e.Rows), "filtered", len(rowIdxsFiltered))
 	out := make([]*RowNode, len(rowIdxsFiltered))
 	rowIdxFilteredCurrent := 0
 	for ri := range e.Rows {
@@ -304,5 +387,5 @@ func (e *Extractor) DeleteNonMatchingRows(rowIdxsFiltered []int) {
 		}
 	}
 	e.Rows = out
-	slog.Warn("rows count after deletion", "count_after", len(out))
+	slog.Info("rows count after deletion", "count_after", len(out))
 }

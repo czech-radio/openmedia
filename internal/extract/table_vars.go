@@ -185,6 +185,7 @@ var FieldsIDsNamesProduction = FieldsIDsNames{
 	"filtered":         "filtered",
 	"region":           "region",
 	"jmeno_spojene":    "jmeno_spojene",
+	"referencni_jmeno": "referencni_jmeno",
 	"name_match":       "name_match",
 	"name&party_match": "kontrola_strany",
 	"vysoka_politika":  "vysoka_politika",

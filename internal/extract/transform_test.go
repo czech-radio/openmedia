@@ -56,3 +56,47 @@ func TestTransformName(t *testing.T) {
 		})
 	}
 }
+
+func TestTransformNameNoDiacritics(t *testing.T) {
+	type args struct {
+		name string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{"nepouzivat", args{"NEPOUŽÍVAT Nováková Šárka"}, "novakova sarka"},
+		{"nepouzivat2", args{"NEPOUŽÍVAT  Nováková  Šárka"}, "novakova sarka"},
+		{"err1", args{"Vancl Jan"}, "vancl jan"},
+		{"err2", args{" Vancl  Jan  "}, "vancl jan"},
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := TransformPersonNameNoDiacritcs(tt.args.name); got != tt.want {
+				t.Errorf("TransformPersonNameNoDiacritcs() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestRemoveAccents(t *testing.T) {
+	type args struct {
+		s string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{"one", args{"ěščřžáíéĚŠČŘŽÁÍÉ"}, "escrzaieESCRZAIE"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := RemoveAccents(tt.args.s); got != tt.want {
+				t.Errorf("RemoveAccents() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

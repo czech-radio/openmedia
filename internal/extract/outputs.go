@@ -41,12 +41,13 @@ func (e *Extractor) OutputFilteredDataset(
 	filters := make(FilterFileCodes)
 	filters.AddFilters(
 		FilterFileOposition,
-		e.FilterMatchPersonName,
+		e.FilterMatchPersonNameNoDiacritics,
 		e.FilterMatchPersonIDandPolitics,
 	)
 	filters.AddFilters(
 		FilterFileEuroElection,
-		e.FilterMatchPersonName,
+		e.FilterMatchPersonNameNoDiacritics,
+		// e.FilterMatchPersonName,
 		e.FilterMatchPersonAndParty,
 	)
 	err := filters.FiltersApply(filterOpts)

@@ -1,6 +1,8 @@
 package extract
 
-import "testing"
+import (
+	"testing"
+)
 
 // func TestUniqSliceInt(t *testing.T) {
 // 	type args struct {
@@ -51,6 +53,55 @@ func TestGetFilterByFilterFileName(t *testing.T) {
 			}
 			if got != tt.want {
 				t.Errorf("GetFilterByFilterFileName() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+// func TestMatchStringElements(t *testing.T) {
+// 	type args struct {
+// 		str1 []string
+// 		str2 []string
+// 	}
+// 	tests := []struct {
+// 		name string
+// 		args args
+// 	}{
+// 		{"one", args{
+// 			[]string{"kek", "jek", "tek"},
+// 			[]string{"kek", "tek"},
+// 		}},
+// 	}
+// 	for _, tt := range tests {
+// 		t.Run(tt.name, func(t *testing.T) {
+// 			MatchStringElements(tt.args.str1, tt.args.str2)
+// 		})
+// 	}
+// }
+
+func TestMatchStringElements(t *testing.T) {
+	type args struct {
+		str1 []string
+		str2 []string
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{"one", args{
+			[]string{"kek", "jek", "tek"},
+			[]string{"kek", "tek"}}, true,
+		},
+		{"two", args{
+			[]string{"kek", "jek", "tek"},
+			[]string{"kek", "sek"}}, false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := MatchStringElements(tt.args.str1, tt.args.str2, 2); got != tt.want {
+				t.Errorf("MatchStringElements() = %v, want %v", got, tt.want)
 			}
 		})
 	}

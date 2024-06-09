@@ -8,6 +8,9 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode"
+
+	"golang.org/x/text/unicode/norm"
 )
 
 type TransformerCode int
@@ -785,11 +788,33 @@ func EmptyRowPartInsertValue(
 }
 
 func TransformPersonName(name string) string {
-	var out string
-	out = strings.ToLower(name)                     // all lower letters
-	out = strings.Replace(out, "nepoužívat", "", 1) // remove string
-	out = strings.Join(strings.Fields(out), " ")    // remove multiple white space
-	return out
+	name = strings.TrimSpace(name)
+	name = strings.ToLower(name)                      // all lower letters
+	name = strings.Replace(name, "nepoužívat", "", 1) // remove string
+	name = strings.Join(strings.Fields(name), " ")    // remove multiple white space
+	return name
+}
+
+func TransformPersonNameNoDiacritcs(name string) string {
+	name = strings.TrimSpace(name)
+	name = strings.ToLower(name)                      // all lower letters
+	name = strings.Replace(name, "nepoužívat", "", 1) // remove string
+	name = strings.Join(strings.Fields(name), " ")    // remove multiple white space
+	name = RemoveAccents(name)
+	return name
+}
+
+// RemoveAccents removes accents and diacritics from a string.
+func RemoveAccents(s string) string {
+	t := norm.NFD.String(s) // Normalize the string to NFD (Normalization Form D)
+	result := make([]rune, 0, len(t))
+	for _, r := range t {
+		// Will iterate over runes: č is two runes c+ˇ -> ˇ will not be appended
+		if !unicode.Is(unicode.Mn, r) { // Mn: nonspacing marks
+			result = append(result, r)
+		}
+	}
+	return string(result)
 }
 
 var regxpSpace = regexp.MustCompile(`\s+`)

@@ -124,9 +124,9 @@ ArchiveExtractOpozice(){
   local FROM="2024-01-01"
   # local TO="2024-04-02"
   # local TO="2024-06-01"
-  local TO="2024-01-02"
-  # local TO="2024-02-01"
-  local RADIOS="Plus"
+  # local TO="2024-01-02"
+  local TO="2024-02-01"
+  # local RADIOS="Plus"
   local OUTPUT_FILENAME="opozice"
   local FILE_FILTER="$FILE_OPOSITION"
   ArchiveExtractCommand

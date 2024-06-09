@@ -108,13 +108,13 @@ func RunCommandExtractArchive() {
 	processName += "_validated"
 	err := extracted.OutputValidatedDataset(processName, queryOpts)
 	if err != nil {
-		panic(err)
+		helper.Errors.ExitWithCode(err)
 	}
 
 	processName += "_filtered"
 	err = extracted.OutputFilteredDataset(processName, queryOpts, filterOpts)
 	if err != nil {
-		panic(err)
+		helper.Errors.ExitWithCode(err)
 	}
 
 	// D) PREVOD KÓDŮ"
