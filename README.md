@@ -33,57 +33,60 @@ The program executes two operations:
 
 ## Usage
 
-Use `opendmedia-archive -h` to see all available options.
+### Commands
 
-- Production mode: Halts when unprocessable file encountered.
+#### Base
 
-  ```bash
-  openmedia -i <SOURCE_FOLDER> -o <OUTPUT_FOLDER>
-  ```
+- running built binary (see Instalation)
 
-- Dry run mode: output files will be created in a temporary directory
+    ```bash
+    openmedia -h
+    ```
 
-  ```bash
-  openmedia -n -i <SOURCE_FOLDER> [-o <OUTPUT_FOLDER>]
-  ```
+- running without build (see Instalation)
 
-- Continue processing folder when unprocessable file encountered
-  (useful for example in dry-mode).
-  
-  ```bash
-  openmedia -ifr -i <SOURCE_FOLDER> -o <OUTPUT_FOLDER>
-  ```
+    ```bash
+    run main.go -h
+    ```
 
-  ```bash
-  openmedia -n -ifr -i <SOURCE_FOLDER> [-o <OUTPUT_FOLDER>]
-  ```
+#### Extract Rundown Archvie
 
-- By default, we log in structured JSON e.g.
+    ```bash 
+    go run main.go extractArchive -h
+    ```
 
-  ```bash
-  {"time":"2024-01-08T20:08:41.365154585+01:00","level":"INFO","source":{"function":"github/czech-radio/opendmedia-archive/internal.(*Process).WorkerLogInfo","file":"process.go","line":346},"msg":"2020_W10_MINIFIED.zip","ArhiveRatio":"0.024","MinifyRatio":"0.327","original":13552180,"compressed":319488,"minified":4430320,"file":"test/testdata/rundowns_mix/RD_12-19_ČRo_Olomouc_-_Wed__04_03_2020_2_1608925_20200304234622.xml"}
-  {"time":"2024-01-08T20:08:41.519854699+01:00","level":"INFO","source":{"function":"github/czech-radio/opendmedia-archive/internal.(*Process).WorkerLogInfo","file":"process.go","line":346},"msg":"2020_W10_ORIGINAL.zip","ArhiveRatio":"0.066","MinifyRatio":"1.000","original":18364782,"compressed":1204224,"minified":18364782,"file":"test/testdata/rundowns_mix/RD_12-19_ČRo_Ostrava_-_Středa_04_03_2020_2_1603282_20200304234540.xml"}
-  {"time":"2024-01-08T20:08:42.244667764+01:00","level":"INFO","source":{"function":"github/czech-radio/opendmedia-archive/internal.(*Process).WorkerLogInfo","file":"process.go","line":346},"msg":"2020_W10_MINIFIED.zip","ArhiveRatio":"0.023","MinifyRatio":"0.314","original":18364782,"compressed":421888,"minified":5772375,"file":"test/testdata/rundowns_mix/RD_12-19_ČRo_Ostrava_-_Středa_04_03_2020_2_1603282_20200304234540.xml"}
-  {"time":"2024-01-08T20:08:42.244735372+01:00","level":"INFO","source":{"function":"github/czech-radio/opendmedia-archive/internal.(*Process).WorkerLogInfo","file":"process.go","line":346},"msg":"GLOBAL_ORIGINAL","ArhiveRatio":"0.063","MinifyRatio":"1.000","original":449249600,"compressed":28196864,"minified":449249600,"file":"test/testdata/rundowns_mix/"}
-  {"time":"2024-01-08T20:08:42.244753922+01:00","level":"INFO","source":{"function":"github/czech-radio/opendmedia-archive/internal.(*Process).WorkerLogInfo","file":"process.go","line":346},"msg":"GLOBAL_MINIFY","ArhiveRatio":"0.021","MinifyRatio":"0.287","original":449249600,"compressed":9629696,"minified":129017125,"file":"test/testdata/rundowns_mix/"}
-  ```
+- providing all needed parameters on commandline is rather cumbersome
 
-- Plain logging output can be invoked with `-lt` e.g.
+- use script default variables or change them in run_main.sh:
 
-  ```bash
-  openmedia archive -n -lt plain -i <SOURCE_FOLDER> [-o <OUTPUT_FOLDER>]
-  ```
+    -- globally in ArchiveExtractCommand or per preset function
 
-  which outputs
+    -- mount archive rundown folder to SOURCE_DIR as specified in run_main.sh
 
-  ```bash
-  time=2024-01-08T20:05:22.542+01:00 level=INFO source=process.go:346 msg=2020_W10_ORIGINAL.zip ArhiveRatio=0.067 MinifyRatio=1.000 original=13552180 compressed=905216 minified=13552180 file=test/testdata/rundowns_mix/RD_12-19_ČRo_Olomouc_-_Wed__04_03_2020_2_1608925_20200304234622.xml
-  time=2024-01-08T20:05:23.457+01:00 level=INFO source=process.go:346 msg=2020_W10_MINIFIED.zip ArhiveRatio=0.024 MinifyRatio=0.327 original=13552180 compressed=319488 minified=4430320 file=test/testdata/rundowns_mix/RD_12-19_ČRo_Olomouc_-_Wed__04_03_2020_2_1608925_20200304234622.xml
-  time=2024-01-08T20:05:23.662+01:00 level=INFO source=process.go:346 msg=2020_W10_ORIGINAL.zip ArhiveRatio=0.066 MinifyRatio=1.000 original=18364782 compressed=1204224 minified=18364782 file=test/testdata/rundowns_mix/RD_12-19_ČRo_Ostrava_-_Středa_04_03_2020_2_1603282_20200304234540.xml
-  time=2024-01-08T20:05:24.500+01:00 level=INFO source=process.go:346 msg=2020_W10_MINIFIED.zip ArhiveRatio=0.023 MinifyRatio=0.314 original=18364782 compressed=421888 minified=5772375 file=test/testdata/rundowns_mix/RD_12-19_ČRo_Ostrava_-_Středa_04_03_2020_2_1603282_20200304234540.xml
-  time=2024-01-08T20:05:24.500+01:00 level=INFO source=process.go:346 msg=GLOBAL_ORIGINAL ArhiveRatio=0.063 MinifyRatio=1.000 original=449249600 compressed=28196864 minified=449249600 file=test/testdata/rundowns_mix/
-  time=2024-01-08T20:05:24.500+01:00 level=INFO source=process.go:346 msg=GLOBAL_MINIFY ArhiveRatio=0.021 MinifyRatio=0.287 original=449249600 compressed=9629696 minified=129017125 file=test/testdata/rundowns_mix/
-  ```
+    -- create OUTPUT_DIR as specified in run_manin.sh
+
+    ```bash
+    ./scripts/run_main.sh ArchiveExtractOpozice
+    ```
+
+- avaiable presests:
+
+    -- ArchiveExtractConntrolProductionHour
+
+    -- ArchiveExtractConntrolProductionWeek
+
+    -- ArchiveExtractControl
+
+    -- ArchiveExtractConntrolProductionDecember
+
+    -- ArchiveExtractControlValidation
+
+    -- ArchiveExtractRange
+
+    -- ArchiveExtractEurovolby
+
+    -- ArchiveExtractOpozice
+
 
 ## Development
 

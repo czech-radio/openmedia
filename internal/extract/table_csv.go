@@ -8,6 +8,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/triopium/go_utils/pkg/files"
 	"github.com/triopium/go_utils/pkg/helper"
 )
 
@@ -185,4 +186,55 @@ func (e *Extractor) CSVheaderWrite(dstFilePath string, overWrite bool) {
 		panic(err)
 	}
 	slog.Warn("written bytes to file", "fileName", dstFilePath, "bytesCount", n)
+}
+
+// ROWFIELDSPARTS FROM CSV
+
+func (e *Extractor) RowPartsFieldsPositionsFromCSVfile(
+	csvFileName string, delim rune) error {
+	_, partsPos, partsFieldsPos, err := RowPartsPositionsFromCSVfile(csvFileName, delim)
+	if err != nil {
+		return err
+	}
+	e.RowPartsPositions = partsPos
+	e.RowPartsFieldsPositions = partsFieldsPos
+	return nil
+}
+
+func RowPartsPositionsFromCSVfile(fileName string, delim rune) (
+	[][]string, RowPartsPositions, RowPartsFieldsPositions, error) {
+	records, err := files.CSVreadRows(fileName, delim)
+	rpp := make(RowPartsPositions, 0)
+	rpfp := make(RowPartsFieldsPositions, 0)
+	if err != nil {
+		return nil, rpp, rpfp, err
+	}
+	for _, c := range records[0] {
+		partCode, fieldID, err := GetRowPartFromFieldID(c)
+		if err != nil {
+			return nil, rpp, rpfp, err
+		}
+		rpp = append(rpp, partCode)
+		field := RowPartFieldPosition{
+			FieldID: fieldID,
+		}
+		rpfp[partCode] = append(rpfp[partCode], field)
+	}
+	return records[2:], rpp, rpfp, nil
+}
+
+func GetRowPartFromFieldID(fieldHeader string) (RowPartCode, string, error) {
+	var rpc RowPartCode
+	names := strings.Split(fieldHeader, "_")
+	if len(names) != 2 {
+		panic("Header field not parsable: " + fieldHeader)
+	}
+	rowCodeName := names[0]
+	fieldID := names[1]
+	for pkey, pval := range RowPartsCodeMapProduction {
+		if pval.Internal == rowCodeName {
+			return pkey, fieldID, nil
+		}
+	}
+	return rpc, fieldID, fmt.Errorf("unknown header field: %s", fieldHeader)
 }

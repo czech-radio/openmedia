@@ -51,15 +51,12 @@ type UniqueRow struct {
 
 // TableXML
 type TableXML struct {
-	Rows              []*RowNode
-	RowsFiltered      []int
-	RowPartsPositions []RowPartCode
-	RowPartsFieldsPositions
+	Rows         []*RowNode
+	RowsFiltered []int
 
 	UniqueRowsOrder []int
 	UniqueRows      map[string]int
 
-	TableRows            RowParts
 	SrcFilePath          string
 	DstFilePath          string
 	CSVtableWriterLocal  *strings.Builder

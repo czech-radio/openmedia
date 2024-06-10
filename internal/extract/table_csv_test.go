@@ -58,3 +58,29 @@ func TestRowPrintToCSV(t *testing.T) {
 	row.CSVrowBuild(&builder, partsPos, partsFieldsPos, CSVdelim)
 	fmt.Println(builder.String())
 }
+
+func TestRowPartsPositionsFromCSVfile(t *testing.T) {
+	type args struct {
+		fileName string
+		delim    rune
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{"one", args{"/tmp/test/opozice_production_contacts_base_wh.csv", '\t'}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got0, got1, got2, err := RowPartsPositionsFromCSVfile(tt.args.fileName, tt.args.delim)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("RowPartsPositionsFromCSVfile() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			fmt.Println(got0[0])
+			fmt.Println(got1)
+			fmt.Println(got2)
+		})
+	}
+}
