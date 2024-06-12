@@ -42,12 +42,12 @@ func (e *Extractor) OutputFilteredDataset(
 	filters.AddFilters(
 		FilterFileOposition,
 		// e.FilterMatchPersonNameJoinedNoDiacritics,
-		e.FilterMatchPersonNameSurnameNoDiacritics,
+		e.FilterMatchPersonNameSurnameNormalized,
 		e.FilterMatchPersonIDandHighPolitics,
 	)
 	filters.AddFilters(
 		FilterFileEuroElection,
-		e.FilterMatchPersonNameSurnameNoDiacritics,
+		e.FilterMatchPersonNameSurnameNormalized,
 		// e.FilterMatchPersonName,
 		e.FilterMatchPersonAndParty,
 	)

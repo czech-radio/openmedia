@@ -4,27 +4,6 @@ import (
 	"testing"
 )
 
-// func TestUniqSliceInt(t *testing.T) {
-// 	type args struct {
-// 		A []int
-// 		B []int
-// 	}
-// 	tests := []struct {
-// 		name string
-// 		args args
-// 		want []int
-// 	}{
-// 		{"one", args{[]int{1, 3, 5, 10}, []int{2, 3, 10, 11}}, []int{3, 10}},
-// 	}
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			if got := UniqSliceInt(tt.args.A, tt.args.B); !reflect.DeepEqual(got, tt.want) {
-// 				t.Errorf("UniqSliceInt() = %v, want %v", got, tt.want)
-// 			}
-// 		})
-// 	}
-// }
-
 func TestGetFilterByFilterFileName(t *testing.T) {
 	type args struct {
 		fname string
@@ -57,27 +36,6 @@ func TestGetFilterByFilterFileName(t *testing.T) {
 		})
 	}
 }
-
-// func TestMatchStringElements(t *testing.T) {
-// 	type args struct {
-// 		str1 []string
-// 		str2 []string
-// 	}
-// 	tests := []struct {
-// 		name string
-// 		args args
-// 	}{
-// 		{"one", args{
-// 			[]string{"kek", "jek", "tek"},
-// 			[]string{"kek", "tek"},
-// 		}},
-// 	}
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			MatchStringElements(tt.args.str1, tt.args.str2)
-// 		})
-// 	}
-// }
 
 func TestMatchStringElements(t *testing.T) {
 	type args struct {

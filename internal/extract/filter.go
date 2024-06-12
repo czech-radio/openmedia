@@ -171,7 +171,7 @@ func MatchStringElements(str1, str2 []string, count int) bool {
 	return countMatched >= count
 }
 
-func MatchPersonNameSurnameNoDiacritics(
+func MatchPersonNameSurnameNormalized(
 	table *files.Table,
 	rowParts RowParts,
 ) (string, bool) {
@@ -217,7 +217,8 @@ func MatchPersonNameSurnameNoDiacritics(
 	return "", false
 }
 
-func (e *Extractor) FilterMatchPersonNameSurnameNoDiacritics(f *FilterFile) error {
+// FilterMatchPersonNameSurnameNormalized match at least one Name and one Surname from Name, Surname table. Name and surnames are normalized to all lowercase
+func (e *Extractor) FilterMatchPersonNameSurnameNormalized(f *FilterFile) error {
 	columnNameMatch := "name_match"
 	e.AddColumn(RowPartCode_ContactItemHead, columnNameMatch)
 	ColumnNameRefered := "referencni_jmeno"
@@ -234,7 +235,7 @@ func (e *Extractor) FilterMatchPersonNameSurnameNoDiacritics(f *FilterFile) erro
 
 	rs := e.TableXML.Rows
 	for _, r := range rs {
-		nameRef, ok := MatchPersonNameSurnameNoDiacritics(sheetTableMapped, r.RowParts)
+		nameRef, ok := MatchPersonNameSurnameNormalized(sheetTableMapped, r.RowParts)
 		var refnameMark string
 		var nameMatchMark string
 		if ok {
@@ -333,6 +334,7 @@ func (e *Extractor) FilterPeculiarContacts() []int {
 
 var rgxRecordDuds = regexp.MustCompile(`\d\d\d\d\d`)
 
+// FilterStoryPartRecordsDuds get row indexes of records which has ObjectID or rows which corresponding RecordID is smaller than rgxRecordDuds
 func (e *Extractor) FilterStoryPartRecordsDuds() []int {
 	indxs := make([]int, 0, len(e.Rows))
 	rows := e.TableXML.Rows
@@ -355,6 +357,7 @@ func (e *Extractor) FilterStoryPartRecordsDuds() []int {
 	return indxs
 }
 
+// DeleteNonMatchingRows delete row indexes not specified in rowIndxsFiltered
 func (e *Extractor) DeleteNonMatchingRows(rowIdxsFiltered []int) {
 	slog.Info("rows count before deletion", "parsed", len(e.Rows), "filtered", len(rowIdxsFiltered))
 	out := make([]*RowNode, len(rowIdxsFiltered))

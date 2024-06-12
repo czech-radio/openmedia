@@ -43,7 +43,6 @@ type ArchiveFolderQuery struct {
 	ComputeUniqueRows bool
 	PrintHeader       bool
 	CSVdelim          string
-	Transformer       TransformerCode
 
 	SourceDirectory     string
 	SourceDirectoryType string

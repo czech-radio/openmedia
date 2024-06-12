@@ -13,30 +13,6 @@ import (
 	"golang.org/x/text/unicode/norm"
 )
 
-type TransformerCode int
-
-const (
-	TransformerMock TransformerCode = iota
-	TransformerCodedFields
-	TransformerProduction
-	TransformerProductionCSV
-	TransformerEurovolby
-)
-
-// Transform
-func (e *Extractor) Transform(code TransformerCode) {
-	switch code {
-	case TransformerCodedFields:
-		e.TransformCodedFields()
-	case TransformerProduction:
-		e.TransformProduction()
-	case TransformerProductionCSV:
-		e.TransformBase()
-	case TransformerEurovolby:
-		e.TransformEurovolby()
-	}
-}
-
 // UniqueRows
 func (e *Extractor) UniqueRows() {
 	if e.TableXML.UniqueRows == nil {
