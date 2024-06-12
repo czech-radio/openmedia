@@ -92,20 +92,8 @@ func MarkValue(matches bool, fieldValue, nulValue string) string {
 	return "0"
 }
 
-// FieldValueMatchesValidValues
-func FieldValueMatchesValidValues(
-	row RowParts, partCode RowPartCode, fieldID string,
-	validValues map[string]bool) (bool, string) {
-	_, field, ok := GetRowPartAndField(row, partCode, fieldID)
-	notFound := RowFieldSpecialValueCodeMap[RowFieldValueChildNotFound]
-	if !ok {
-		return false, notFound
-	}
-	return validValues[field.Value], ""
-}
-
-// FilterByPartAndFieldID
-func (e *Extractor) FilterByPartAndFieldID(
+// FilterByPartAndFieldIDregexp
+func (e *Extractor) FilterByPartAndFieldIDregexp(
 	partCode RowPartCode, fieldID string,
 	fieldValuePatern string) []int {
 	var res []int
@@ -183,25 +171,53 @@ func MatchStringElements(str1, str2 []string, count int) bool {
 	return countMatched >= count
 }
 
-func MatchPersonNameNoDiacriticsAtLeastTwo(
-	tableMap map[string][]string, key string) (bool, string) {
-	var ok bool
-	if len(key) == 2 {
-		_, ok := tableMap[key]
-		return ok, key
+func MatchPersonNameSurnameNoDiacritics(
+	table *files.Table,
+	rowParts RowParts,
+) (string, bool) {
+	xColumnSurnameName := "Příjmení a jméno"
+	xColumnSurname := "Příjmení"
+	xColumnName := "Jméno"
+	colsMap := table.ColumnHeaderMap
+	xColumnSurnameNameIdx, ok0 := colsMap[xColumnSurnameName]
+	xColumnSurnameIdx, ok1 := colsMap[xColumnSurname]
+	xColumnNameIdx, ok2 := colsMap[xColumnName]
+	if !(ok0 && ok1 && ok2) {
+		panic("At least one of column header not found")
 	}
-	valueSlice := strings.Fields(key)
-	for tkey := range tableMap {
-		tkeySlice := strings.Fields(tkey)
-		ok = MatchStringElements(tkeySlice, valueSlice, 2)
-		if ok {
-			return true, tkey
+	_, spojene, _ := GetRowPartAndField(
+		rowParts, RowPartCode_ComputedKON, "jmeno_spojene")
+
+	tableMap := table.RowHeaderToColumnMap
+	xRow, ok := tableMap[TransformPersonNameNoDiacritcs(spojene.Value)]
+	if ok {
+		return xRow[xColumnSurnameNameIdx], ok
+	}
+	_, name, _ := GetRowPartAndField(
+		rowParts, RowPartCode_ContactItemHead, "421")
+	namest := strings.Fields(TransformPersonNameNoDiacritcs(name.Value))
+	_, surname, _ := GetRowPartAndField(
+		rowParts, RowPartCode_ContactItemHead, "422")
+	surnamest := strings.Fields(TransformPersonNameNoDiacritcs(surname.Value))
+
+	xtable := table.RowHeaderToColumnMap
+	for _, trow := range xtable {
+		xnames := strings.Fields(
+			TransformPersonNameNoDiacritcs(trow[xColumnNameIdx]))
+		xsurnames := strings.Fields(
+			TransformPersonNameNoDiacritcs(trow[xColumnSurnameIdx]))
+		ok1 := MatchStringElements(xnames, namest, 1)
+		ok2 := MatchStringElements(xsurnames, surnamest, 1)
+		if ok1 && ok2 {
+			nameRef := trow[xColumnSurnameNameIdx]
+			return nameRef, true
 		}
 	}
-	return false, ""
+
+	return "", false
 }
 
-func (e *Extractor) FilterMatchPersonNameNoDiacritics(f *FilterFile) error {
+func (e *Extractor) FilterMatchPersonNameSurnameNoDiacritics(f *FilterFile) error {
 	columnNameMatch := "name_match"
 	e.AddColumn(RowPartCode_ContactItemHead, columnNameMatch)
 	ColumnNameRefered := "referencni_jmeno"
@@ -216,56 +232,22 @@ func (e *Extractor) FilterMatchPersonNameNoDiacritics(f *FilterFile) error {
 	sheetTableMapped.MapTableRowKeyTransform(sheetRows, f.ColumnHeaderRow, f.RowHeaderColumn, TransformPersonNameNoDiacritcs)
 	valueNP := RowFieldSpecialValueCodeMap[RowFieldValueNotPossible]
 
-	xlsxTableColumnName := "příjmení a jméno"
-	xlsxTableRowKeyIdx := sheetTableMapped.ColumnHeaderMap[xlsxTableColumnName]
 	rs := e.TableXML.Rows
 	for _, r := range rs {
-		_, field, ok := GetRowPartAndField(
-			r.RowParts, RowPartCode_ComputedKON, "jmeno_spojene")
-		if !ok {
-			panic(ok)
-		}
-		valueTransformed := TransformPersonNameNoDiacritcs(field.Value)
-		ok, tkey := MatchPersonNameNoDiacriticsAtLeastTwo(
-			sheetTableMapped.RowHeaderToColumnMap, valueTransformed)
-		// Matched
-		mark := MarkValue(ok, valueTransformed, valueNP)
-		e.MarkField(r.RowParts, RowPartCode_ContactItemHead, columnNameMatch, mark)
-
-		// Get referent if matched
-		refMark := valueNP
-		row, ok := sheetTableMapped.RowHeaderToColumnMap[tkey]
+		nameRef, ok := MatchPersonNameSurnameNoDiacritics(sheetTableMapped, r.RowParts)
+		var refnameMark string
+		var nameMatchMark string
 		if ok {
-			refMark = row[xlsxTableRowKeyIdx]
+			refnameMark = nameRef
+			nameMatchMark = "1"
 		}
-		e.MarkField(
-			r.RowParts, RowPartCode_ContactItemHead, ColumnNameRefered, refMark)
-	}
-	return nil
-}
-
-func (e *Extractor) FilterMatchPersonName(f *FilterFile) error {
-	newColumnName := "name_match"
-	e.AddColumn(RowPartCode_ContactItemHead, newColumnName)
-	sheetRows, err := files.ReadExcelFileSheetRows(f.FilterFileName, f.FilterSheetName)
-	if err != nil {
-		return err
-	}
-	sheetTableMapped := files.CreateTableTransformRowHeader(
-		sheetRows, f.ColumnHeaderRow, f.RowHeaderColumn, TransformPersonName)
-	valueNP := RowFieldSpecialValueCodeMap[RowFieldValueNotPossible]
-
-	rs := e.TableXML.Rows
-	for _, r := range rs {
-		_, field, ok := GetRowPartAndField(
-			r.RowParts, RowPartCode_ComputedKON, "jmeno_spojene")
 		if !ok {
-			panic(ok)
+			refnameMark = valueNP
+			nameMatchMark = "0"
 		}
-		valueTransformed := TransformPersonName(field.Value)
-		_, ok = sheetTableMapped.RowHeaderToColumnMap[valueTransformed]
-		mark := MarkValue(ok, valueTransformed, valueNP)
-		e.MarkField(r.RowParts, RowPartCode_ContactItemHead, newColumnName, mark)
+		e.MarkField(r.RowParts, RowPartCode_ContactItemHead, columnNameMatch, nameMatchMark)
+		e.MarkField(
+			r.RowParts, RowPartCode_ContactItemHead, ColumnNameRefered, refnameMark)
 	}
 	return nil
 }
@@ -299,14 +281,14 @@ func (e *Extractor) FilterMatchPersonAndParty(f *FilterFile) error {
 	return nil
 }
 
-func (e *Extractor) FilterMatchPersonIDandPolitics(f *FilterFile) error {
+func (e *Extractor) FilterMatchPersonIDandHighPolitics(f *FilterFile) error {
 	newColumnName := "vysoka_politika"
 	e.AddColumn(RowPartCode_ContactItemHead, newColumnName)
 	rows, err := files.ReadExcelFileSheetRows(f.FilterFileName, f.FilterSheetName)
 	if err != nil {
 		return err
 	}
-	table := files.CreateTable(rows, f.ColumnHeaderRow, 1)
+	table := files.CreateTable(rows, f.ColumnHeaderRow, 3)
 	valNP := RowFieldSpecialValueCodeMap[RowFieldValueNotPossible]
 	rs := e.TableXML.Rows
 	mark := ""
