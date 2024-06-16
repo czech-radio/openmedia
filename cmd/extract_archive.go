@@ -92,6 +92,7 @@ func ParseFilterOptions() *extract.FilterFile {
 func RunCommandExtractArchive() {
 	queryOpts := ParseConfigOptions()
 	filterOpts := ParseFilterOptions()
+	fmt.Println("FUCIT", filterOpts)
 	arf := extract.ArchiveFolder{
 		PackageTypes: []ar.WorkerTypeCode{queryOpts.WorkerType}}
 

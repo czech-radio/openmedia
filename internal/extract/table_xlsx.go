@@ -215,7 +215,7 @@ func (e *Extractor) XLSXstreamTableSetColumnsStyle(
 			columnIndex++
 			col, err := excelize.ColumnNumberToName(columnIndex)
 			el.ErrorRaise(err)
-			pos, ok := FieldsIDsNamesProduction2[fp.FieldID]
+			pos, ok := FieldsIDsNames[fp.FieldID]
 			if !ok {
 				continue
 			}
@@ -332,11 +332,11 @@ func CSVreadRows(csvFileName string, csvDelim rune) ([][]string, error) {
 func GetHeaderRowIndex(rows [][]string) int {
 	headerRow := 0
 	for i := 0; i < len(rows[0]); i++ {
-		_, ok := FieldsIDsNamesProduction2.GetByName(rows[0][i])
+		_, ok := FieldsIDsNames.GetByName(rows[0][i])
 		if ok {
 			break
 		}
-		_, ok = FieldsIDsNamesProduction2.GetByName(rows[1][i])
+		_, ok = FieldsIDsNames.GetByName(rows[1][i])
 		if ok {
 			headerRow = 1
 			break
@@ -349,7 +349,7 @@ func XLSXsetColumnStyle(
 	f *excelize.File, sheetName string, rows [][]string) error {
 	headerRow := GetHeaderRowIndex(rows)
 	for i := 0; i < len(rows[0]); i++ {
-		fieldID, ok := FieldsIDsNamesProduction2.GetByName(rows[headerRow][i])
+		fieldID, ok := FieldsIDsNames.GetByName(rows[headerRow][i])
 		// column properties
 		cname, err := excelize.ColumnNumberToName(i + 1)
 		if err != nil {
@@ -428,7 +428,7 @@ func CSVtoXLSX(csvFile string, csvDelim rune) error {
 	nrow := len(records)
 	headerRow := GetHeaderRowIndex(records)
 	for coli := 0; coli < ncol; coli++ {
-		fieldID, _ := FieldsIDsNamesProduction2.GetByName(records[headerRow][coli])
+		fieldID, _ := FieldsIDsNames.GetByName(records[headerRow][coli])
 		for rowi := 0; rowi < nrow; rowi++ {
 			cellRef, _ := excelize.CoordinatesToCellName(coli+1, rowi+1)
 			// fmt.Println("INDEX", coli, rowi)

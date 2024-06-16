@@ -1,6 +1,7 @@
 package extract
 
 import (
+	"log/slog"
 	"path/filepath"
 	"strings"
 )
@@ -37,6 +38,10 @@ func (e *Extractor) OutputFilteredDataset(
 	processName string, queryOpts *ArchiveFolderQuery,
 	filterOpts *FilterFile,
 ) error {
+	if filterOpts.FilterFileName == "" {
+		slog.Info("filter file not specified")
+		return nil
+	}
 	e.TransformProduction()
 	filters := make(FilterFileCodes)
 	filters.AddFilters(

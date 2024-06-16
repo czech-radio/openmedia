@@ -148,7 +148,7 @@ func (e *Extractor) HeaderColumnExternalCreate(
 		}
 	}
 	if resName == "" {
-		resName = FieldsIDsNamesProduction[fieldID]
+		resName = FieldsIDsNames[fieldID].NameShort
 	}
 	if prefix.External == "" {
 		// NOTE!!!: maybe add delim too
@@ -158,7 +158,7 @@ func (e *Extractor) HeaderColumnExternalCreate(
 }
 
 func GetColumnHeaderExternal(rowPartCode RowPartCode, fieldID string) string {
-	resName := FieldsIDsNamesProduction[fieldID]
+	resName := FieldsIDsNames[fieldID].NameShort
 	prefix := RowPartsCodeMapProduction[rowPartCode]
 	if prefix.External == "" {
 		return resName

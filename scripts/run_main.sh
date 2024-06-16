@@ -48,7 +48,7 @@ ArchiveExtractCommand(){
     "-fdf=${FROM:-2024-01-01}"
     "-fdt=${TO:-2024-01-02}"
     "-valfn=${FILE_VALIDATION}"
-    "-frfn=${FILE_FILTER:-}"
+    "-frfn=${FILE_FILTER:-${FILE_OPOSITION}}"
   )
   local logFile="${OUTPUT_DIR}/${OUTPUT_FILENAME}_run.log"
   go run "$MAIN_PATH" extractArchive "${flags[@]}" 2>&1 | tee "$logFile"

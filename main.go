@@ -21,9 +21,7 @@ THE SOFTWARE.
 */
 package main
 
-import (
-	"github/czech-radio/openmedia/cmd"
-)
+import "github/czech-radio/openmedia/cmd"
 
 func main() {
 	cmd.RunRoot()

@@ -2,7 +2,7 @@ package extract
 
 import "strings"
 
-// RowPartCode
+// RowPartCode specifies part of table row (group of row fields) corresponing to xml OM_OBJECT attributes, OM_HEADER or OM_RECORD fields
 type RowPartCode int
 
 var CSVdelim = "\t"
@@ -61,17 +61,18 @@ var RowPartsCodeMapProduction = PartsPrefixMap{
 }
 
 type FieldID struct {
-	Name             string
+	NameShort        string
+	NameLong         string
 	XLSXcolumnFormat int
 	XLSXcustomFormat string
 	Width            float64
 }
 
-type FieldsIDsNames2 map[string]FieldID
+type FieldsIDsNamesMap map[string]FieldID
 
-func (fi FieldsIDsNames2) GetByName(name string) (FieldID, bool) {
+func (fi FieldsIDsNamesMap) GetByName(name string) (FieldID, bool) {
 	for _, value := range fi {
-		if value.Name == name {
+		if value.NameShort == name {
 			return value, true
 		}
 		out := strings.Split(name, "_")
@@ -79,153 +80,66 @@ func (fi FieldsIDsNames2) GetByName(name string) (FieldID, bool) {
 			continue
 		}
 		cur := strings.Join(out[:len(out)-1], "_")
-		if value.Name == cur {
+		if value.NameShort == cur {
 			return value, true
 		}
 	}
 	return FieldID{}, false
 }
 
-var FieldsIDsNamesProduction2 = FieldsIDsNames2{
-	// "1":    {"cas_vytvoreni", 0, "", 20},
-	"1000":     {"datum", 14, "DD. MM. R", 12},
-	"C-index":  {"index", 0, "@", 24},
-	"5081":     {"stanice", 1, "", 4},
-	"8":        {"nazev", 0, "@", 22},
-	"ObjectID": {"ObjectID", 0, "@", 18},
+var FieldWidthDefault = float64(10)
+var FieldWidthShort = float64(6)
 
-	// "1002":             {"planovana_stopaz"},
-	// "1003":             {"cas_konce"},
-	// "1004":             {"cas_zacatku"},
-	// "1005":             {"stopaz"},
-	// "1010":             {"spoctena_stopaz"},
-	// "1029":             {"korekce"},
-	// "1035":             {"cas_textu"},
-	// "1036":             {"audio_stopaz"},
-	// "12":               {"redakce"},
-	// "16":               {"druh"},
-	// "321":              {"format"},
-	// "38":               {"stopaz"},
-	// "421":              {"jmeno"},
-	// "422":              {"prijmeni"},
-	// "423":              {"spolecnost"},
-	// "424":              {"funkce"},
-	// "5":                {"vytvoril"},
-	// "5015":             {"strana"},
-	// "5016":             {"tema"},
-	// "5070":             {"schvalil_redakce"},
-	// "5071":             {"schvalil_stanice"},
-	// "5072":             {"incode"},
-	// "5079":             {"cil_vyroby"},
-	// "5082":             {"itemcode"},
-	// "5087":             {"ID"},
-	// "5068":             {"ID"},
-	// "5088":             {"pohlavi"},
-	// "6":                {"autor"},
-	// "8":                {"nazev"},
-	// "ID":               {"compID"},
-	// "RecordID":         {"RID"},
-	// "TemplateName":     {"kategorie"},
-	// "datum":            {"datum"},
-	// "kategory":         {"kategory"},
-	// "C-RID":            {"RID"},
-	// "ObjectID":         {"ObjectID"},
-	// "FileName":         {"FileName"},
-	// "filtered":         {"filtered"},
-	// "region":           {"region"},
-	// "jmeno_spojene":    {"jmeno_spojene"},
-	// "name_match":       {"name_match"},
-	// "name&party_match": {"kontrola_strany"},
+var FieldsIDsNames = FieldsIDsNamesMap{
+	"1":                {"cas_vytvoreni", "Čas vytvoření", 0, "", 20},
+	"1000":             {"datum", "", 14, "DD. MM. R", FieldWidthDefault},
+	"1002":             {"planovana_stopaz", "Plánovaná stopáž", 0, "@", FieldWidthDefault},
+	"1003":             {"cas_konce", "Čas konce", 0, "@", FieldWidthDefault},
+	"1004":             {"cas_zacatku", "Čas začátku", 0, "@", FieldWidthDefault},
+	"1005":             {"stopaz", "Stopáž", 0, "@", FieldWidthDefault},
+	"1010":             {"spoctena_stopaz", "Spočtená stopáž", 0, "@", FieldWidthDefault},
+	"1029":             {"korekce", "Korekce", 0, "@", FieldWidthDefault},
+	"1035":             {"cas_textu", "Čas textu", 0, "@", FieldWidthDefault},
+	"1036":             {"audio_stopaz", "Audio Stopáž", 0, "@", FieldWidthDefault},
+	"12":               {"redakce", "Redakce", 0, "@", FieldWidthDefault},
+	"16":               {"druh", "Druh", 0, "@", FieldWidthDefault},
+	"321":              {"format", "Formát", 0, "@", FieldWidthDefault},
+	"38":               {"stopaz", "Stopáž", 0, "@", FieldWidthDefault},
+	"406":              {"region", "Region", 0, "@", FieldWidthDefault},
+	"421":              {"jmeno", "Jméno", 0, "@", FieldWidthDefault},
+	"422":              {"prijmeni", "Příjmení", 0, "@", FieldWidthDefault},
+	"423":              {"spolecnost", "Společnost", 0, "@", FieldWidthDefault},
+	"424":              {"funkce", "Funkce", 0, "@", FieldWidthDefault},
+	"5":                {"vytvoril", "Vytovřil", 0, "@", FieldWidthDefault},
+	"5015":             {"strana", "Politická příslušnost", 0, "@", FieldWidthDefault},
+	"5016":             {"tema", "Téma", 0, "@", FieldWidthDefault},
+	"5068":             {"ID_5068", "ContactContainerFieldID", 0, "@", FieldWidthDefault},
+	"5070":             {"schvalil_redakce", "Schválil redakce", 0, "@", FieldWidthDefault},
+	"5071":             {"schvalil_stanice", "Schválil stanice", 0, "@", FieldWidthDefault},
+	"5072":             {"incode", "IN_code", 0, "@", FieldWidthDefault},
+	"5079":             {"cil_vyroby", "Cíl výroby", 0, "@", FieldWidthDefault},
+	"5081":             {"stanice", "Stanice", 1, "@", FieldWidthDefault},
+	"5082":             {"itemcode", "ItemCode", 0, "@", FieldWidthDefault},
+	"5087":             {"ID_5087", "CustomUniqueID2", 0, "@", FieldWidthDefault},
+	"5088":             {"pohlavi", "Gender", 0, "@", FieldWidthDefault},
+	"6":                {"autor", "Autor", 0, "@", FieldWidthDefault},
+	"8":                {"nazev", "Název", 0, "@", 22},
+	"C-RID":            {"C-RID", "Computed RecordID", 0, "@", FieldWidthDefault},
+	"C-index":          {"index", "", 0, "@", 24},
+	"FileName":         {"FileName", "FileName", 0, "@", FieldWidthDefault},
+	"ID":               {"compID", "Computed ID", 0, "@", FieldWidthDefault},
+	"ObjectID":         {"ObjectID", "ObjectID", 0, "@", FieldWidthDefault},
+	"RecordID":         {"RID", "RecordID", 0, "@", FieldWidthDefault},
+	"TemplateName":     {"kategorie", "Kategorie", 0, "@", FieldWidthDefault},
+	"datum":            {"datum", "Datum", 0, "@", FieldWidthDefault},
+	"jmeno_spojene":    {"jmeno_spojene", "Jméno Spojené", 0, "@", FieldWidthDefault},
+	"kategory":         {"kategory", "Kategory", 0, "@", FieldWidthDefault},
+	"name&party_match": {"kontrola_strany", "Kontrola strany", 0, "@", FieldWidthShort},
+	"name_match":       {"name_match", "Name match", 0, "@", FieldWidthShort},
+	"vysoka_politika":  {"vysoka_politika", "Vysoká politika", 0, "@", FieldWidthShort},
 }
 
-type FieldsIDsNames map[string]string
-
-var FieldsIDsNamesProduction = FieldsIDsNames{
-	"1":                "cas_vytvoreni",
-	"1000":             "datum",
-	"1002":             "planovana_stopaz",
-	"1003":             "cas_konce",
-	"1004":             "cas_zacatku",
-	"1005":             "stopaz",
-	"1010":             "spoctena_stopaz",
-	"1029":             "korekce",
-	"1035":             "cas_textu",
-	"1036":             "audio_stopaz",
-	"12":               "redakce",
-	"16":               "druh",
-	"321":              "format",
-	"38":               "stopaz",
-	"421":              "jmeno",
-	"422":              "prijmeni",
-	"423":              "spolecnost",
-	"424":              "funkce",
-	"5":                "vytvoril",
-	"5015":             "strana",
-	"5016":             "tema",
-	"5070":             "schvalil_redakce",
-	"5071":             "schvalil_stanice",
-	"5072":             "incode",
-	"5079":             "cil_vyroby",
-	"5081":             "stanice",
-	"5082":             "itemcode",
-	"5087":             "ID_5087", // change name (temporary) // 2024-05-20
-	"5068":             "ID_5068", // change name (temporary) // 2024-05-20
-	"5088":             "pohlavi",
-	"6":                "autor",
-	"8":                "nazev",
-	"ID":               "compID",
-	"RecordID":         "RID",
-	"TemplateName":     "kategorie",
-	"datum":            "datum",
-	"kategory":         "kategory",
-	"C-RID":            "RID",
-	"C-index":          "index",
-	"ObjectID":         "ObjectID",
-	"FileName":         "FileName",
-	"filtered":         "filtered",
-	"region":           "region",
-	"jmeno_spojene":    "jmeno_spojene",
-	"referencni_jmeno": "referencni_jmeno",
-	"name_match":       "name_match",
-	"name&party_match": "kontrola_strany",
-	"vysoka_politika":  "vysoka_politika",
-}
-
-var FieldsIDsNamesProductionLong = FieldsIDsNames{
-	"1":            "Čas vytvoření",
-	"TemplateName": "kategorie",
-	"RecordID":     "RID",
-	"8":            "Název",
-	"1004":         "Čas začátku",
-	"1003":         "Čas konce",
-	"1005":         "Stopáž",
-	"321":          "Formát",
-	"5081":         "Stanice",
-	"1036":         "Audio stopáž",
-	"1029":         "Korekce",
-	"1010":         "Spočtená stopáž",
-	"1002":         "Plánovaná stopáž",
-	"5079":         "Cíl výroby",
-	"16":           "Druh",
-	"5082":         "ItemCode",
-	"5072":         "IN_Code",
-	"5016":         "Téma",
-	"5":            "Vytvořil",
-	"6":            "Autor",
-	"12":           "Redakce",
-	"5071":         "Schválil stanice",
-	"5070":         "Schválil redakce",
-	"421":          "Jméno",
-	"422":          "Příjmení",
-	"423":          "Společnost",
-	"424":          "Funkce",
-	"5015":         "Politická příslušnost",
-	"5087":         "CustomUniqueID2",
-	"5088":         "Gender",
-	"1035":         "Čas textu",
-}
-
-type RowFieldValueCode int
+type RowFieldSpecialValueCode int
 
 const (
 	RowFieldValueEmptyString = iota
@@ -236,7 +150,7 @@ const (
 	RowFieldValueParentNotFound
 )
 
-var RowFieldSpecialValueCodeMap = map[RowFieldValueCode]string{
+var RowFieldSpecialValueCodeMap = map[RowFieldSpecialValueCode]string{
 	RowFieldValueEmptyString:    "(NS)", // (NOT SPECIFIED), (NEUVEDENO)
 	RowFieldValueNotPossible:    "(NP)", // (NOT POSSIBLE), (NELZE)
 	RowFieldValueNotContain:     "(NC)", // (NOT CONTAIN), (NEOBSAHUJE)
@@ -254,7 +168,7 @@ func CheckIfFieldValueIsSpecialValue(fieldValue string) bool {
 	return false
 }
 
-func CheckIfMapContainsKeyValue(inMap map[RowFieldValueCode]string, value string) bool {
+func CheckIfMapContainsKeyValue(inMap map[RowFieldSpecialValueCode]string, value string) bool {
 	for _, spec := range inMap {
 		if spec == value {
 			return true

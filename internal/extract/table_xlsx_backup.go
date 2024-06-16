@@ -57,9 +57,9 @@ func XlsxFormatColumns(xlsxFile string) error {
 	}
 	headerRow := 0
 	for i := 0; i < len(rows[0]); i++ {
-		fieldID, ok := FieldsIDsNamesProduction2.GetByName(rows[0][i])
+		fieldID, ok := FieldsIDsNames.GetByName(rows[0][i])
 		if !ok {
-			fieldID, ok = FieldsIDsNamesProduction2.GetByName(rows[1][i])
+			fieldID, ok = FieldsIDsNames.GetByName(rows[1][i])
 			headerRow = 1
 		}
 		if !ok {
@@ -270,9 +270,9 @@ func XLSXsetColumnStyleText(
 	f *excelize.File, sheetName string, rows [][]string) error {
 	headerRow := 0
 	for i := 0; i < len(rows[0]); i++ {
-		_, ok := FieldsIDsNamesProduction2.GetByName(rows[0][i])
+		_, ok := FieldsIDsNames.GetByName(rows[0][i])
 		if !ok {
-			_, ok = FieldsIDsNamesProduction2.GetByName(rows[1][i])
+			_, ok = FieldsIDsNames.GetByName(rows[1][i])
 			headerRow = 1
 		}
 		if !ok {
