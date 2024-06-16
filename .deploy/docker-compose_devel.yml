@@ -1,8 +1,8 @@
 version: '3.9'
 services:
-  openmedia_reduce_devel:
-    image: 'localhost/openmedia_reduce_devel'
-    container_name: 'openmedia_reduce_devel'
+  openmedia_devel:
+    image: 'localhost/openmedia_devel'
+    container_name: 'openmedia_devel'
     command: bash
     build:
       dockerfile: Dockerfile_devel

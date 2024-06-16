@@ -7,7 +7,7 @@ require (
 	github.com/ncruces/go-strftime v0.1.9
 	github.com/snabb/isoweek v1.0.3
 	// github.com/triopium/go_utils v0.0.6
-	github.com/triopium/go_utils v0.0.9
+	github.com/triopium/go_utils v0.1.0
 	github.com/xuri/excelize/v2 v2.8.1
 	golang.org/x/text v0.14.0
 )

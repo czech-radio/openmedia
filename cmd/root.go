@@ -1,5 +1,6 @@
 package cmd
 
+//0254db3
 import (
 	"github.com/triopium/go_utils/pkg/configure"
 )
@@ -23,6 +24,7 @@ var commandRootConfig = configure.CommanderRoot
 func RunRoot() {
 	commandRootConfig.VersionInfoAdd(VersionInfo)
 	commandRootConfig.Init()
+	commandRootConfig.AddSub("archive", RunCommandArchive)
 	commandRootConfig.AddSub("extractArchive", RunCommandExtractArchive)
 	commandRootConfig.RunRoot()
 }

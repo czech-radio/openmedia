@@ -3,10 +3,10 @@
 
 GITHUB_API_URL="https://api.github.com/repos"
 REPOS_GROUP="${REPOS_GROUP:-czech-radio}"
-REPO_NAME="${REPO_NAME:-openmedia-archive}"
-BINARY_NAME=${BINARY_NAME:-openmedia-archive}
-SERVICE_NAME=${SERVICE_NAME:-openmedia-archive}
-MAIN_COMMAND="${MAIN_COMMAND:-openmedia-archive -V}"
+REPO_NAME="${REPO_NAME:-openmedia}"
+BINARY_NAME=${BINARY_NAME:-openmedia}
+SERVICE_NAME=${SERVICE_NAME:-openmedia}
+MAIN_COMMAND="${MAIN_COMMAND:-openmedia -V}"
 REPO_URL="${GITHUB_API_URL}/${REPOS_GROUP}/${REPO_NAME}"
 ASSET_DOWNLOAD_URL="https://github.com/${REPOS_GROUP}/${REPO_NAME}/releases/download"
 AUTO_UPDATE_SERVICE="${AUTO_UPDATE_SERVICE:-false}"
