@@ -89,7 +89,7 @@ func ParseFilterOptions() *extract.FilterFile {
 	return filter
 }
 
-func RunCommandExtractArchive() {
+func RunCommandExtractArchive(rcfg *c.RootConfig) {
 	queryOpts := ParseConfigOptions()
 	filterOpts := ParseFilterOptions()
 	arf := extract.ArchiveFolder{

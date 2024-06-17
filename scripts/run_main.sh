@@ -100,6 +100,14 @@ ArchiveExtractControlValidation(){
   ArchiveExtractConntrolProductionDecember
 }
 
+ArchiveExtractControlAddHocErr(){
+  local EXTRACTOR="production_all"
+  local FROM="2024-06-14"
+  local TO="2024-06-20"
+  local OUTPUT_FILENAME="baddhoc_err"
+  ArchiveExtractCommand
+}
+
 ArchiveExtractRange(){
   local EXTRACTOR="production_all"
   local FROM="2023-12-01"

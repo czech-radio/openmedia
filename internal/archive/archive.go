@@ -71,7 +71,7 @@ type Archive struct {
 
 type ArchiveOptions struct {
 	SourceDirectory          string
-	DestinationDirectory     string
+	OutputDirectory          string
 	CompressionType          string
 	InvalidFileContinue      bool
 	InvalidFileRename        bool
@@ -234,7 +234,7 @@ func (f *ArchiveItemFileMeta) Parse(
 			f.Year, f.Month, f.Day, f.Hour, f.Minute, f.Second)
 	}
 	// f.DirectoryDestination = filepath.Join(opts.DestinationDirectory, omFileType.OutputDir)
-	f.DirectoryDestination = opts.DestinationDirectory
+	f.DirectoryDestination = opts.OutputDirectory
 	f.FileInfo = fileInfo
 	f.DirectorySource = opts.SourceDirectory
 	f.FilePathSource = sourceFilePath
@@ -284,7 +284,7 @@ func (p *Archive) ErrorHandle(errMain error, errorsPartial ...error) helper.Cont
 
 func (p *Archive) PrepareOutput() error {
 	for _, t := range OpenMediaFileTypeMap {
-		outputdir := filepath.Join(p.Options.DestinationDirectory, t.OutputDir)
+		outputdir := filepath.Join(p.Options.OutputDirectory, t.OutputDir)
 		if err := os.MkdirAll(outputdir, 0700); err != nil {
 			return err
 		}
@@ -322,8 +322,8 @@ processFolder:
 	p.WG.Done()
 	p.WG.Wait()
 	res := p.Results
-	p.WorkerLogInfo("GLOBAL_ORIGINAL", res.SizeOriginal, res.SizePackedBackup, res.SizeOriginal, p.Options.SourceDirectory, p.Options.DestinationDirectory)
-	p.WorkerLogInfo("GLOBAL_MINIFY", res.SizeOriginal, res.SizePackedMinified, res.SizeMinified, p.Options.SourceDirectory, p.Options.DestinationDirectory)
+	p.WorkerLogInfo("GLOBAL_ORIGINAL", res.SizeOriginal, res.SizePackedBackup, res.SizeOriginal, p.Options.SourceDirectory, p.Options.OutputDirectory)
+	p.WorkerLogInfo("GLOBAL_MINIFY", res.SizeOriginal, res.SizePackedMinified, res.SizeMinified, p.Options.SourceDirectory, p.Options.OutputDirectory)
 
 	if p.Results.DuplicatesFound > 0 {
 		dupesErr := fmt.Errorf("duplicates found, cout: %d", p.Results.DuplicatesFound)

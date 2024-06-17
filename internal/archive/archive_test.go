@@ -86,11 +86,11 @@ func Test_ProcessFolder(t *testing.T) {
 	srcDir := filepath.Join(
 		testerConfig.TempDataSource, subDir)
 	dstDir := filepath.Join(
-		testerConfig.TempDataDestination, subDir)
+		testerConfig.TempDataOutput, subDir)
 	opts := ArchiveOptions{
-		SourceDirectory:      srcDir,
-		DestinationDirectory: dstDir,
-		InvalidFileRename:    false,
+		SourceDirectory:   srcDir,
+		OutputDirectory:   dstDir,
+		InvalidFileRename: false,
 		// InvalidFileContinue:  false,
 		InvalidFileContinue:    true,
 		CompressionType:        "zip",
@@ -111,11 +111,11 @@ func Test_ProcessFolderInvalid(t *testing.T) {
 	srcDir := filepath.Join(
 		testerConfig.TempDataSource, subDir)
 	dstDir := filepath.Join(
-		testerConfig.TempDataDestination, subDir)
+		testerConfig.TempDataOutput, subDir)
 
 	opts := ArchiveOptions{
 		SourceDirectory:        srcDir,
-		DestinationDirectory:   dstDir,
+		OutputDirectory:        dstDir,
 		InvalidFileRename:      false,
 		InvalidFileContinue:    true,
 		CompressionType:        "zip",
@@ -136,11 +136,11 @@ func Test_ProcessFolderComplexNoDupes(t *testing.T) {
 	srcDir := filepath.Join(
 		testerConfig.TempDataSource, subDir)
 	dstDir := filepath.Join(
-		testerConfig.TempDataDestination, subDir)
+		testerConfig.TempDataOutput, subDir)
 
 	opts := ArchiveOptions{
 		SourceDirectory:          srcDir,
-		DestinationDirectory:     dstDir,
+		OutputDirectory:          dstDir,
 		InvalidFileRename:        false,
 		InvalidFileContinue:      true,
 		CompressionType:          "zip",
@@ -163,12 +163,12 @@ func Test_ProcessFolderComplexDupes(t *testing.T) {
 	srcDir := filepath.Join(
 		testerConfig.TempDataSource, subDir)
 	dstDir := filepath.Join(
-		testerConfig.TempDataDestination, subDir)
+		testerConfig.TempDataOutput, subDir)
 
 	opts := ArchiveOptions{
-		SourceDirectory:      srcDir,
-		DestinationDirectory: dstDir,
-		InvalidFileRename:    false,
+		SourceDirectory:   srcDir,
+		OutputDirectory:   dstDir,
+		InvalidFileRename: false,
 		// InvalidFileContinue:  false,
 		InvalidFileContinue:      true,
 		CompressionType:          "zip",
@@ -193,7 +193,7 @@ func Test_ProcessFolderComplexDupesSame(t *testing.T) {
 
 	opts := ArchiveOptions{
 		SourceDirectory:          srcDir,
-		DestinationDirectory:     srcDir,
+		OutputDirectory:          srcDir,
 		InvalidFileRename:        false,
 		InvalidFileContinue:      true,
 		CompressionType:          "zip",
@@ -222,13 +222,13 @@ func Test_ProcessFolderRundownsAppend(t *testing.T) {
 		// "dir4",
 	}
 	dstDir := filepath.Join(
-		testerConfig.TempDataDestination, subDir)
+		testerConfig.TempDataOutput, subDir)
 	for i := range subDirs {
 		srcSubDir := filepath.Join(srcDir, subDirs[i])
 		fmt.Println("PROCESSING FOLDER", srcSubDir)
 		opts := ArchiveOptions{
 			SourceDirectory:          srcSubDir,
-			DestinationDirectory:     dstDir,
+			OutputDirectory:          dstDir,
 			InvalidFileRename:        false,
 			InvalidFileContinue:      true,
 			CompressionType:          "zip",
@@ -254,11 +254,11 @@ func Test_ProcessFolderDate(t *testing.T) {
 	srcDir := filepath.Join(
 		testerConfig.TempDataSource, subDir)
 	dstDir := filepath.Join(
-		testerConfig.TempDataDestination, subDir)
+		testerConfig.TempDataOutput, subDir)
 
 	opts := ArchiveOptions{
 		SourceDirectory:          srcDir,
-		DestinationDirectory:     dstDir,
+		OutputDirectory:          dstDir,
 		InvalidFileRename:        false,
 		InvalidFileContinue:      true,
 		CompressionType:          "zip",

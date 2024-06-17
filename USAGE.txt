@@ -1,0 +1,109 @@
+=== RUN   TestRunCommandRoot
+=== RUN   TestRunCommandRoot/0_help
+COMMAND_INPUT:
+go run main.go -h
+openmedia -h
+COMMAND_OUTPUT_START:
+Usage:
+-H, -generalHelp
+	Get help on all subcommands
+
+-V, -version
+	Print version of program.
+
+-v, -verbose
+	Level of verbosity.
+
+-logt, -logType
+	Type of logs formating.
+	[json plain]
+
+-dr, -dryRun
+	Dry run, useful for tests. Avoid any pernament changes to filesystem or any expensive tasks
+
+-dc, -debugConfig
+	Debug/print flag values
+
+-logts, -logTest
+	Print test logs
+
+
+
+=== RUN   TestRunCommandRoot/1_print_version
+COMMAND_INPUT:
+go run main.go -V
+openmedia -V
+COMMAND_OUTPUT_START:
+{ProgramName: Version:1.0.0 GitTag: GitCommit: BuildTime:}
+
+=== RUN   TestRunCommandRoot/2_print_config
+COMMAND_INPUT:
+go run main.go -dc
+openmedia -dc
+COMMAND_OUTPUT_START:
+Root config: &{GeneralHelp:false Version:false Verbose:0 DryRun:false LogType:json LogTest:false DebugConfig:true}
+
+=== RUN   TestRunCommandRoot/3_print_version_and_config
+COMMAND_INPUT:
+go run main.go -V -dc
+openmedia -V -dc
+COMMAND_OUTPUT_START:
+{ProgramName: Version:1.0.0 GitTag: GitCommit: BuildTime:}
+Root config: &{GeneralHelp:false Version:true Verbose:0 DryRun:false LogType:json LogTest:false DebugConfig:true}
+
+=== RUN   TestRunCommandRoot/4_test_log_[err]
+COMMAND_INPUT:
+go run main.go -logt=plain -logts -v=6
+openmedia -logt=plain -logts -v=6
+COMMAND_OUTPUT_START:
+time=2024-06-17T23:02:10.309+02:00 level=ERROR source=sloger.go:53 msg="test error"
+
+=== RUN   TestRunCommandRoot/5_test_log_[err,warn]
+COMMAND_INPUT:
+go run main.go -logt=plain -logts -v=4
+openmedia -logt=plain -logts -v=4
+COMMAND_OUTPUT_START:
+time=2024-06-17T23:02:10.831+02:00 level=WARN source=sloger.go:52 msg="test warn"
+time=2024-06-17T23:02:10.831+02:00 level=ERROR source=sloger.go:53 msg="test error"
+
+=== RUN   TestRunCommandRoot/6_test_log_[err,warn,info]
+COMMAND_INPUT:
+go run main.go -logt=plain -logts -v=0
+openmedia -logt=plain -logts -v=0
+COMMAND_OUTPUT_START:
+time=2024-06-17T23:02:11.319+02:00 level=INFO source=sloger.go:51 msg="test info"
+time=2024-06-17T23:02:11.319+02:00 level=WARN source=sloger.go:52 msg="test warn"
+time=2024-06-17T23:02:11.319+02:00 level=ERROR source=sloger.go:53 msg="test error"
+
+=== RUN   TestRunCommandRoot/7_terst_log_[err,warn,info,debug]
+COMMAND_INPUT:
+go run main.go -logt=plain -logts -v=-4
+openmedia -logt=plain -logts -v=-4
+COMMAND_OUTPUT_START:
+time=2024-06-17T23:02:11.808+02:00 level=DEBUG source=sloger.go:50 msg="test debug"
+time=2024-06-17T23:02:11.808+02:00 level=INFO source=sloger.go:51 msg="test info"
+time=2024-06-17T23:02:11.808+02:00 level=WARN source=sloger.go:52 msg="test warn"
+time=2024-06-17T23:02:11.808+02:00 level=ERROR source=sloger.go:53 msg="test error"
+
+=== RUN   TestRunCommandRoot/8_test_log_json
+COMMAND_INPUT:
+go run main.go -logt=json -logts -v=-4
+openmedia -logt=json -logts -v=-4
+COMMAND_OUTPUT_START:
+{"time":"2024-06-17T23:02:12.242869962+02:00","level":"DEBUG","source":{"function":"github.com/triopium/go_utils/pkg/logging.LoggingOutputTest","file":"sloger.go","line":50},"msg":"test debug"}
+{"time":"2024-06-17T23:02:12.242951436+02:00","level":"INFO","source":{"function":"github.com/triopium/go_utils/pkg/logging.LoggingOutputTest","file":"sloger.go","line":51},"msg":"test info"}
+{"time":"2024-06-17T23:02:12.242962849+02:00","level":"WARN","source":{"function":"github.com/triopium/go_utils/pkg/logging.LoggingOutputTest","file":"sloger.go","line":52},"msg":"test warn"}
+{"time":"2024-06-17T23:02:12.242973878+02:00","level":"ERROR","source":{"function":"github.com/triopium/go_utils/pkg/logging.LoggingOutputTest","file":"sloger.go","line":53},"msg":"test error"}
+
+--- PASS: TestRunCommandRoot (4.00s)
+    --- PASS: TestRunCommandRoot/0_help (0.40s)
+    --- PASS: TestRunCommandRoot/1_print_version (0.40s)
+    --- PASS: TestRunCommandRoot/2_print_config (0.37s)
+    --- PASS: TestRunCommandRoot/3_print_version_and_config (0.42s)
+    --- PASS: TestRunCommandRoot/4_test_log_[err] (0.42s)
+    --- PASS: TestRunCommandRoot/5_test_log_[err,warn] (0.52s)
+    --- PASS: TestRunCommandRoot/6_test_log_[err,warn,info] (0.49s)
+    --- PASS: TestRunCommandRoot/7_terst_log_[err,warn,info,debug] (0.49s)
+    --- PASS: TestRunCommandRoot/8_test_log_json (0.43s)
+PASS
+ok  	github/czech-radio/openmedia/cmd	(cached)
