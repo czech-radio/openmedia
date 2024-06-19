@@ -10,15 +10,20 @@ import (
 
 var CommandArchivePresets = [][]string{
 	{"help", "archive", "-h"},
+	{"run err exit no", "-v=0", "archive"},
 	// {"debug config", "-dc", "-v=0", "archive"},
 	// {"dry run err exit", "-dr", "-v=0", "archive"},
 	// {"dry run err exit no", "-dr", "-v=0", "archive", "-ifc"},
-	{"run err exit no", "-dc", "-v=-4", "archive", "-ifc", "-R"},
+	// {"run err exit no", "-dc", "-v=-4", "archive", "-ifc"},
+	// {"run err exit no", "-v=-4", "archive", "-ifc", "-R"},
+	// {"run err exit no", "-v=0", "archive", "-ifc"},
+	// {"run err exit no", "-v=-4", "archive", "-ifc"},
+	// {"run err exit no", "-dc", "-v=-4", "archive", "-ifc", "-R"},
 }
 
 func TestRunCommandArchive(t *testing.T) {
-	testSubdir := "cmd"
-	// tpath := filepath.Join("cmd", "archive")
+	// testSubdir := "cmd"
+	testSubdir := filepath.Join("cmd", "archive")
 	// testSubdir := tpath
 	defer testerConfig.RecoverPanic(t)
 	testerConfig.InitTest(t, testSubdir)

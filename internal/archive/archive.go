@@ -277,8 +277,10 @@ func (p *Archive) ErrorHandle(errMain error, errorsPartial ...error) helper.Cont
 	}
 
 	if p.Options.InvalidFileContinue {
+		slog.Info("skipped processing file")
 		return helper.Skip
 	}
+	slog.Info("halt processing files: bad file encountered")
 	return helper.Break
 }
 

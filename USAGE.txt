@@ -5,26 +5,28 @@ go run main.go -h
 openmedia -h
 COMMAND_OUTPUT_START:
 Usage:
--H, -generalHelp
+-H, -generalHelp=false
 	Get help on all subcommands
 
--V, -version
+-V, -version=false
 	Print version of program.
 
--v, -verbose
-	Level of verbosity.
+-v, -verbose=0
+	Level of verbosity. Lower the number the more verbose is the output. 
+	-v=-2
+	[6 4 2 0 -2 -4]
 
--logt, -logType
+-logt, -logType=json
 	Type of logs formating.
 	[json plain]
 
--dr, -dryRun
+-dr, -dryRun=false
 	Dry run, useful for tests. Avoid any pernament changes to filesystem or any expensive tasks
 
--dc, -debugConfig
+-dc, -debugConfig=false
 	Debug/print flag values
 
--logts, -logTest
+-logts, -logTest=false
 	Print test logs
 
 
@@ -56,54 +58,114 @@ COMMAND_INPUT:
 go run main.go -logt=plain -logts -v=6
 openmedia -logt=plain -logts -v=6
 COMMAND_OUTPUT_START:
-time=2024-06-17T23:02:10.309+02:00 level=ERROR source=sloger.go:53 msg="test error"
+time=2024-06-19T13:49:27.952+02:00 level=ERROR source=sloger.go:53 msg="test error"
 
 === RUN   TestRunCommandRoot/5_test_log_[err,warn]
 COMMAND_INPUT:
 go run main.go -logt=plain -logts -v=4
 openmedia -logt=plain -logts -v=4
 COMMAND_OUTPUT_START:
-time=2024-06-17T23:02:10.831+02:00 level=WARN source=sloger.go:52 msg="test warn"
-time=2024-06-17T23:02:10.831+02:00 level=ERROR source=sloger.go:53 msg="test error"
+time=2024-06-19T13:49:28.333+02:00 level=WARN source=sloger.go:52 msg="test warn"
+time=2024-06-19T13:49:28.333+02:00 level=ERROR source=sloger.go:53 msg="test error"
 
 === RUN   TestRunCommandRoot/6_test_log_[err,warn,info]
 COMMAND_INPUT:
 go run main.go -logt=plain -logts -v=0
 openmedia -logt=plain -logts -v=0
 COMMAND_OUTPUT_START:
-time=2024-06-17T23:02:11.319+02:00 level=INFO source=sloger.go:51 msg="test info"
-time=2024-06-17T23:02:11.319+02:00 level=WARN source=sloger.go:52 msg="test warn"
-time=2024-06-17T23:02:11.319+02:00 level=ERROR source=sloger.go:53 msg="test error"
+time=2024-06-19T13:49:28.704+02:00 level=INFO source=sloger.go:51 msg="test info"
+time=2024-06-19T13:49:28.704+02:00 level=WARN source=sloger.go:52 msg="test warn"
+time=2024-06-19T13:49:28.704+02:00 level=ERROR source=sloger.go:53 msg="test error"
 
 === RUN   TestRunCommandRoot/7_terst_log_[err,warn,info,debug]
 COMMAND_INPUT:
 go run main.go -logt=plain -logts -v=-4
 openmedia -logt=plain -logts -v=-4
 COMMAND_OUTPUT_START:
-time=2024-06-17T23:02:11.808+02:00 level=DEBUG source=sloger.go:50 msg="test debug"
-time=2024-06-17T23:02:11.808+02:00 level=INFO source=sloger.go:51 msg="test info"
-time=2024-06-17T23:02:11.808+02:00 level=WARN source=sloger.go:52 msg="test warn"
-time=2024-06-17T23:02:11.808+02:00 level=ERROR source=sloger.go:53 msg="test error"
+time=2024-06-19T13:49:29.162+02:00 level=DEBUG source=sloger.go:50 msg="test debug"
+time=2024-06-19T13:49:29.163+02:00 level=INFO source=sloger.go:51 msg="test info"
+time=2024-06-19T13:49:29.163+02:00 level=WARN source=sloger.go:52 msg="test warn"
+time=2024-06-19T13:49:29.163+02:00 level=ERROR source=sloger.go:53 msg="test error"
 
 === RUN   TestRunCommandRoot/8_test_log_json
 COMMAND_INPUT:
 go run main.go -logt=json -logts -v=-4
 openmedia -logt=json -logts -v=-4
 COMMAND_OUTPUT_START:
-{"time":"2024-06-17T23:02:12.242869962+02:00","level":"DEBUG","source":{"function":"github.com/triopium/go_utils/pkg/logging.LoggingOutputTest","file":"sloger.go","line":50},"msg":"test debug"}
-{"time":"2024-06-17T23:02:12.242951436+02:00","level":"INFO","source":{"function":"github.com/triopium/go_utils/pkg/logging.LoggingOutputTest","file":"sloger.go","line":51},"msg":"test info"}
-{"time":"2024-06-17T23:02:12.242962849+02:00","level":"WARN","source":{"function":"github.com/triopium/go_utils/pkg/logging.LoggingOutputTest","file":"sloger.go","line":52},"msg":"test warn"}
-{"time":"2024-06-17T23:02:12.242973878+02:00","level":"ERROR","source":{"function":"github.com/triopium/go_utils/pkg/logging.LoggingOutputTest","file":"sloger.go","line":53},"msg":"test error"}
+{"time":"2024-06-19T13:49:29.654828781+02:00","level":"DEBUG","source":{"function":"github.com/triopium/go_utils/pkg/logging.LoggingOutputTest","file":"sloger.go","line":50},"msg":"test debug"}
+{"time":"2024-06-19T13:49:29.654960758+02:00","level":"INFO","source":{"function":"github.com/triopium/go_utils/pkg/logging.LoggingOutputTest","file":"sloger.go","line":51},"msg":"test info"}
+{"time":"2024-06-19T13:49:29.654976271+02:00","level":"WARN","source":{"function":"github.com/triopium/go_utils/pkg/logging.LoggingOutputTest","file":"sloger.go","line":52},"msg":"test warn"}
+{"time":"2024-06-19T13:49:29.654988118+02:00","level":"ERROR","source":{"function":"github.com/triopium/go_utils/pkg/logging.LoggingOutputTest","file":"sloger.go","line":53},"msg":"test error"}
 
---- PASS: TestRunCommandRoot (4.00s)
+--- PASS: TestRunCommandRoot (3.73s)
     --- PASS: TestRunCommandRoot/0_help (0.40s)
     --- PASS: TestRunCommandRoot/1_print_version (0.40s)
-    --- PASS: TestRunCommandRoot/2_print_config (0.37s)
-    --- PASS: TestRunCommandRoot/3_print_version_and_config (0.42s)
-    --- PASS: TestRunCommandRoot/4_test_log_[err] (0.42s)
-    --- PASS: TestRunCommandRoot/5_test_log_[err,warn] (0.52s)
-    --- PASS: TestRunCommandRoot/6_test_log_[err,warn,info] (0.49s)
-    --- PASS: TestRunCommandRoot/7_terst_log_[err,warn,info,debug] (0.49s)
-    --- PASS: TestRunCommandRoot/8_test_log_json (0.43s)
+    --- PASS: TestRunCommandRoot/2_print_config (0.42s)
+    --- PASS: TestRunCommandRoot/3_print_version_and_config (0.39s)
+    --- PASS: TestRunCommandRoot/4_test_log_[err] (0.40s)
+    --- PASS: TestRunCommandRoot/5_test_log_[err,warn] (0.38s)
+    --- PASS: TestRunCommandRoot/6_test_log_[err,warn,info] (0.37s)
+    --- PASS: TestRunCommandRoot/7_terst_log_[err,warn,info,debug] (0.46s)
+    --- PASS: TestRunCommandRoot/8_test_log_json (0.49s)
 PASS
 ok  	github/czech-radio/openmedia/cmd	(cached)
+=== RUN   TestRunCommandArchive
+=== RUN   TestRunCommandArchive/0_help
+COMMAND_INPUT:
+go run main.go archive -h
+openmedia archive -h
+COMMAND_OUTPUT_START:
+subcommand: archive
+-sdir, -SourceDirectory=.
+	Source directory of rundown files.
+
+-odir, -OutputDirectory=.
+	Destination directory for archived rundwon files
+
+-ct, -CompressionType=zip
+	Type of file compression
+	[zip]
+
+-ifc, -InvalidFileContinue=true
+	Continue even though unprocessable file encountered
+
+-ifr, -InvalidFileRename=false
+	Rename invalid files in source folder.
+
+-pfr, -ProcessedFileRename=false
+	Rename original rundown files after they are processed/archived: add "proccesed" prefix to source filename
+
+-pfd, -ProcessedFileDelete=false
+	Delete original rundown files after they are processed/archived.
+
+-pfia, -PreserveFoldersInArchive=false
+	Preserve source folder structure in archive
+
+-R, -RecurseSourceDirectory=false
+	Recurse source directory
+
+
+
+=== RUN   TestRunCommandArchive/1_run_err_exit_no
+COMMAND_INPUT:
+go run main.go -v=0 archive
+openmedia -v=0 archive
+COMMAND_OUTPUT_START:
+{"time":"2024-06-19T13:49:45.519301202+02:00","level":"INFO","source":{"function":"github/czech-radio/openmedia/cmd.GlobalConfig.RunCommandArchive","file":"archive.go","line":60},"msg":"effective config","config":{"SourceDirectory":"/tmp/openmedia1743551864/cmd/SRC/cmd/archive","OutputDirectory":"/tmp/openmedia1743551864/cmd/DST/cmd/archive","CompressionType":"zip","InvalidFileContinue":true,"InvalidFileRename":false,"ProcessedFileRename":false,"ProcessedFileDelete":false,"PreserveFoldersInArchive":false,"RecurseSourceDirectory":false}}
+{"time":"2024-06-19T13:49:45.523076469+02:00","level":"INFO","source":{"function":"github/czech-radio/openmedia/internal/archive.(*Archive).WorkerLogInfo","file":"archive.go","line":444},"msg":"Contacts/2023_W49_ORIGINAL.zip","ArhiveRatio":"0.000","MinifyRatio":"1.000","original":47182,"compressed":0,"minified":47182,"filePathSource":"/tmp/openmedia1743551864/cmd/SRC/cmd/archive/CT_AAA-domаcб_obecnа_osoba_2_10359730_20231208144502.xml","filePathDestination":"Contacts/2023_W49_ORIGINAL.zip/CT_ELV-iokíkč_mniykš_lqaht_Friday_W49_2023_12_08T144502.xml"}
+{"time":"2024-06-19T13:49:45.526221974+02:00","level":"INFO","source":{"function":"github/czech-radio/openmedia/internal/archive.(*Archive).WorkerLogInfo","file":"archive.go","line":444},"msg":"Contacts/2023_W49_MINIFIED.zip","ArhiveRatio":"0.000","MinifyRatio":"0.119","original":47182,"compressed":0,"minified":5596,"filePathSource":"/tmp/openmedia1743551864/cmd/SRC/cmd/archive/CT_AAA-domаcб_obecnа_osoba_2_10359730_20231208144502.xml","filePathDestination":"Contacts/2023_W49_MINIFIED.zip/CT_ELV-iokíkč_mniykš_lqaht_Friday_W49_2023_12_08T144502.xml"}
+{"time":"2024-06-19T13:49:45.526696401+02:00","level":"INFO","source":{"function":"github/czech-radio/openmedia/internal/archive.(*Archive).WorkerLogInfo","file":"archive.go","line":444},"msg":"Contacts/2023_W50_ORIGINAL.zip","ArhiveRatio":"0.000","MinifyRatio":"1.000","original":47170,"compressed":0,"minified":47170,"filePathSource":"/tmp/openmedia1743551864/cmd/SRC/cmd/archive/CT_Hrab╪tovа__Jana_2_985786_20231213023749.xml","filePathDestination":"Contacts/2023_W50_ORIGINAL.zip/CT_Cvmqďsbzř,_Plhh_Wednesday_W50_2023_12_13T023749.xml"}
+{"time":"2024-06-19T13:49:45.534160852+02:00","level":"INFO","source":{"function":"github/czech-radio/openmedia/internal/archive.(*Archive).WorkerLogInfo","file":"archive.go","line":444},"msg":"Contacts/2023_W50_MINIFIED.zip","ArhiveRatio":"0.000","MinifyRatio":"0.111","original":47170,"compressed":0,"minified":5219,"filePathSource":"/tmp/openmedia1743551864/cmd/SRC/cmd/archive/CT_Hrab╪tovа__Jana_2_985786_20231213023749.xml","filePathDestination":"Contacts/2023_W50_MINIFIED.zip/CT_Cvmqďsbzř,_Plhh_Wednesday_W50_2023_12_13T023749.xml"}
+{"time":"2024-06-19T13:49:45.535031915+02:00","level":"ERROR","source":{"function":"github/czech-radio/openmedia/internal/archive.(*Archive).ErrorHandle","file":"archive.go","line":273},"msg":"filename: /tmp/openmedia1743551864/cmd/SRC/cmd/archive/RD_00-12_Pohoda_-_Fri_06_01_2023_2_14293760_20230107001431_bad.xml, xml: encoding \"utf-16\" declared but Decoder.CharsetReader is nil","source":"/home/jk/CRO/CRO_BASE/openmedia/internal/archive/archive.go","function":"github/czech-radio/openmedia/internal/archive.(*Archive).Folder","line":316}
+{"time":"2024-06-19T13:49:45.535071435+02:00","level":"INFO","source":{"function":"github/czech-radio/openmedia/internal/archive.(*Archive).ErrorHandle","file":"archive.go","line":280},"msg":"skipped processing file"}
+{"time":"2024-06-19T13:49:46.176054014+02:00","level":"INFO","source":{"function":"github/czech-radio/openmedia/internal/archive.(*Archive).WorkerLogInfo","file":"archive.go","line":444},"msg":"Rundowns/2020_W10_ORIGINAL.zip","ArhiveRatio":"0.073","MinifyRatio":"1.000","original":13551976,"compressed":987136,"minified":13551976,"filePathSource":"/tmp/openmedia1743551864/cmd/SRC/cmd/archive/RD_12-19_ČRo_Olomouc_-_Wed__04_03_2020_2_1608925_20200304234622.xml","filePathDestination":"Rundowns/2020_W10_ORIGINAL.zip/RD_12-19_ŘRf_Tcunyso_Wednesday_W10_2020_03_04.xml"}
+{"time":"2024-06-19T13:49:46.678553299+02:00","level":"INFO","source":{"function":"github/czech-radio/openmedia/internal/archive.(*Archive).WorkerLogInfo","file":"archive.go","line":444},"msg":"Rundowns/2020_W10_MINIFIED.zip","ArhiveRatio":"0.028","MinifyRatio":"0.327","original":13551976,"compressed":385024,"minified":4430218,"filePathSource":"/tmp/openmedia1743551864/cmd/SRC/cmd/archive/RD_12-19_ČRo_Olomouc_-_Wed__04_03_2020_2_1608925_20200304234622.xml","filePathDestination":"Rundowns/2020_W10_MINIFIED.zip/RD_12-19_ŘRf_Tcunyso_Wednesday_W10_2020_03_04.xml"}
+{"time":"2024-06-19T13:49:46.67861505+02:00","level":"INFO","source":{"function":"github/czech-radio/openmedia/internal/archive.(*Archive).WorkerLogInfo","file":"archive.go","line":444},"msg":"GLOBAL_ORIGINAL","ArhiveRatio":"0.072","MinifyRatio":"1.000","original":13646328,"compressed":987136,"minified":13646328,"filePathSource":"/tmp/openmedia1743551864/cmd/SRC/cmd/archive","filePathDestination":"/tmp/openmedia1743551864/cmd/DST/cmd/archive"}
+{"time":"2024-06-19T13:49:46.678630858+02:00","level":"INFO","source":{"function":"github/czech-radio/openmedia/internal/archive.(*Archive).WorkerLogInfo","file":"archive.go","line":444},"msg":"GLOBAL_MINIFY","ArhiveRatio":"0.028","MinifyRatio":"0.325","original":13646328,"compressed":385024,"minified":4441033,"filePathSource":"/tmp/openmedia1743551864/cmd/SRC/cmd/archive","filePathDestination":"/tmp/openmedia1743551864/cmd/DST/cmd/archive"}
+{"time":"2024-06-19T13:49:46.678647937+02:00","level":"ERROR","source":{"function":"github/czech-radio/openmedia/internal/archive.ErrorsMarshalLog","file":"archive.go","line":358},"msg":"AggregatedErrors","errors":["\"filename: /tmp/openmedia1743551864/cmd/SRC/cmd/archive/RD_00-12_Pohoda_-_Fri_06_01_2023_2_14293760_20230107001431_bad.xml, xml: encoding \\\"utf-16\\\" declared but Decoder.CharsetReader is nil\""]}
+
+--- PASS: TestRunCommandArchive (1.96s)
+    --- PASS: TestRunCommandArchive/0_help (0.38s)
+    --- PASS: TestRunCommandArchive/1_run_err_exit_no (1.57s)
+PASS
+ok  	github/czech-radio/openmedia/cmd	1.966s

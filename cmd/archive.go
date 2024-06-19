@@ -57,6 +57,7 @@ func (gc GlobalConfig) RunCommandArchive() {
 		fmt.Printf("Archive config: %+v\n", options)
 		os.Exit(0)
 	}
+	slog.Info("effective config", "config", options)
 	if gc.DryRun {
 		slog.Info("Running in dry run mode")
 		TempDir := helper.DirectoryCreateTemporaryOrPanic("openmedia_archive")
