@@ -148,6 +148,32 @@ func (e *Extractor) FilterMatchPersonNameExact(f *FilterFile) error {
 	return nil
 }
 
+func (e *Extractor) FilterMatchPersonName(f *FilterFile) error {
+	newColumnName := "name_match"
+	e.AddColumn(RowPartCode_ContactItemHead, newColumnName)
+	sheetRows, err := files.ReadExcelFileSheetRows(f.FilterFileName, f.FilterSheetName)
+	if err != nil {
+		return err
+	}
+	sheetTableMapped := files.CreateTableTransformRowHeader(
+		sheetRows, f.ColumnHeaderRow, f.RowHeaderColumn, TransformPersonName)
+	valueNP := RowFieldSpecialValueCodeMap[RowFieldValueNotPossible]
+
+	rs := e.TableXML.Rows
+	for _, r := range rs {
+		_, field, ok := GetRowPartAndField(
+			r.RowParts, RowPartCode_ComputedKON, "jmeno_spojene")
+		if !ok {
+			panic(ok)
+		}
+		valueTransformed := TransformPersonName(field.Value)
+		_, ok = sheetTableMapped.RowHeaderToColumnMap[valueTransformed]
+		mark := MarkValue(ok, valueTransformed, valueNP)
+		e.MarkField(r.RowParts, RowPartCode_ContactItemHead, newColumnName, mark)
+	}
+	return nil
+}
+
 // MatchStringElement check if element is present in slice
 func MatchStringElement(slice []string, element string) bool {
 	for _, s1 := range slice {
@@ -184,6 +210,7 @@ func MatchPersonNameSurnameNormalized(
 	xColumnNameIdx, ok2 := colsMap[xColumnName]
 	if !(ok0 && ok1 && ok2) {
 		panic("At least one of column header not found")
+		// slog.Error("At least one of column header not found")
 	}
 	_, spojene, _ := GetRowPartAndField(
 		rowParts, RowPartCode_ComputedKON, "jmeno_spojene")

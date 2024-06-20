@@ -33,60 +33,7 @@ The program executes two operations:
 
 ## Usage
 
-### Commands
-
-#### Base
-
-- running built binary (see Instalation)
-
-    ```bash
-    openmedia -h
-    ```
-
-- running without build (see Instalation)
-
-    ```bash
-    run main.go -h
-    ```
-
-#### Extract Rundown Archvie
-
-    ```bash 
-    go run main.go extractArchive -h
-    ```
-
-- providing all needed parameters on commandline is rather cumbersome
-
-- use script default variables or change them in run_main.sh:
-
-    -- globally in ArchiveExtractCommand or per preset function
-
-    -- mount archive rundown folder to SOURCE_DIR as specified in run_main.sh
-
-    -- create OUTPUT_DIR as specified in run_manin.sh
-
-    ```bash
-    ./scripts/run_main.sh ArchiveExtractOpozice
-    ```
-
-- avaiable presests:
-
-    -- ArchiveExtractConntrolProductionHour
-
-    -- ArchiveExtractConntrolProductionWeek
-
-    -- ArchiveExtractControl
-
-    -- ArchiveExtractConntrolProductionDecember
-
-    -- ArchiveExtractControlValidation
-
-    -- ArchiveExtractRange
-
-    -- ArchiveExtractEurovolby
-
-    -- ArchiveExtractOpozice
-
+[relative link](./USAGE.txt)
 
 ## Development
 

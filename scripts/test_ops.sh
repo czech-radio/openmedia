@@ -13,9 +13,17 @@ Go_test_debug(){
   GO_TEST_TYPE="manual" GOLOGLEVEL=-4 go test -v "$path" -run "$test_pattern" "${test_opts}"
 }
 
+Go_test_binary(){
+  "${SCRIPT_DIR}/build.sh" &>/dev/null
+  local tempDir=$(mktemp -d)
+  local srcFile="${SCRIPT_DIR}/../openmedia"
+  cp "${srcFile}" "${tempDir}"
+  "${tempDir}/openmedia" "-H"
+} 
+
 Go_test_run(){
   go clean -testcache
-  local path
+  # local path
   local path="$1"
   local path="${SCRIPT_DIR}/../${path}/..."
   local test_pattern

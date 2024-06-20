@@ -7,6 +7,7 @@
 *.dll
 *.so
 *.dylib
+openmedia
 
 # Test binary, built with `go test -c`
 *.test
@@ -25,4 +26,5 @@ test/testdata/rundowns_additional/
 
 # personal scripts
 .pscripts/
+
 

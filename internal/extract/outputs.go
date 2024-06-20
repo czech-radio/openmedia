@@ -52,8 +52,8 @@ func (e *Extractor) OutputFilteredDataset(
 	)
 	filters.AddFilters(
 		FilterFileEuroElection,
-		e.FilterMatchPersonNameSurnameNormalized,
-		// e.FilterMatchPersonName,
+		// e.FilterMatchPersonNameSurnameNormalized,
+		e.FilterMatchPersonName,
 		e.FilterMatchPersonAndParty,
 	)
 	err := filters.FiltersApply(filterOpts)

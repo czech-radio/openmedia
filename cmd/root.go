@@ -33,6 +33,8 @@ func RunRoot() {
 	ConfigMain.Init()
 	ConfigMain.AddSub(
 		"archive", ConfigMain.RunCommandArchive)
+	ConfigMain.AddSub(
+		"extractArchive", ConfigMain.RunCommandExtractArchive)
 	ConfigMain.RunRoot()
 
 	// commandRootConfig.VersionInfoAdd(VersionInfo)
