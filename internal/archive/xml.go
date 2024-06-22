@@ -34,7 +34,8 @@ func PipePrint(input_reader *io.PipeReader) {
 }
 
 func PipeUTF16leToUTF8(r io.Reader) *io.PipeReader {
-	utf8reader := unicode.UTF16(unicode.LittleEndian, unicode.IgnoreBOM).NewDecoder().Reader(r)
+	utf8reader := unicode.UTF16(
+		unicode.LittleEndian, unicode.IgnoreBOM).NewDecoder().Reader(r)
 	pr, pw := io.Pipe()
 	go func() {
 		defer pw.Close()
@@ -105,7 +106,8 @@ func PipeRundownHeaderAdd(input_reader io.Reader) *io.PipeReader {
 	return pr
 }
 
-func PipeRundownUnmarshal(input_reader *io.PipeReader) (*OPENMEDIA, error) {
+func PipeRundownUnmarshal(
+	input_reader *io.PipeReader) (*OPENMEDIA, error) {
 	var OM OPENMEDIA
 	buffReader := bufio.NewReader(input_reader)
 	// io.ReadFull
@@ -135,13 +137,19 @@ func PipeRundownMarshal(om *OPENMEDIA) *io.PipeReader {
 	return pr
 }
 
-type ArchiveResult struct {
-	FilesCount     int
-	FilesProcessed int
-	FilesSuccess   int
-	FilesFailure   int
-	Errors         []error
-	FilesValid     []string
+type ProcessStats struct {
+	AllCount       int
+	ProcessedCount int
+	FailureCount   int
+	SuccessCount   int
+}
+
+type ResultFilenamesValidation struct {
+	*ProcessStats
+	ErrMap helper.ErrMap
+	Errors []error
+
+	ValidFilenames []string
 }
 
 type OpenMediaFileTypeCode int
@@ -165,7 +173,8 @@ var OpenMediaFileTypeMap = map[OpenMediaFileTypeCode]*OpenMediaFileType{
 		OmFileTypeContact, "CT", "Contact Bin", "Contacts"},
 }
 
-func GetOMtypeByTemplateName(templateName string) (*OpenMediaFileType, error) {
+func GetOMtypeByTemplateName(
+	templateName string) (*OpenMediaFileType, error) {
 	var result *OpenMediaFileType
 	for _, t := range OpenMediaFileTypeMap {
 		if t.TemplateName == templateName {
@@ -180,7 +189,8 @@ func ValidateFileName(src_path string) (bool, error) {
 	file_extension := filepath.Ext(src_path)
 	if file_extension != ".xml" {
 		return false,
-			fmt.Errorf("file does not have xml extension: %s", src_path)
+			// fmt.Errorf("file does not have xml extension: %s", src_path)
+			fmt.Errorf("file does not have xml extension")
 	}
 	var isOpenMediaFile bool
 	for _, t := range OpenMediaFileTypeMap {
@@ -189,7 +199,9 @@ func ValidateFileName(src_path string) (bool, error) {
 		}
 	}
 	if !isOpenMediaFile {
-		return false, fmt.Errorf("filename is not valid OpenMedia file: %s", src_path)
+		return false, fmt.Errorf(
+			// "filename is not valid OpenMedia file: %s", src_path)
+			"filename is not valid OpenMedia file")
 	}
 
 	_, err := os.Stat(src_path)
@@ -199,8 +211,11 @@ func ValidateFileName(src_path string) (bool, error) {
 	return true, nil
 }
 
-func ValidateFilesInDirectory(rootDir string, recursive bool) (*ArchiveResult, error) {
-	var result *ArchiveResult = &ArchiveResult{}
+func ValidateFilenamesInDirectory(
+	rootDir string, recursive bool) (*ResultFilenamesValidation, error) {
+	result := new(ResultFilenamesValidation)
+	result.ErrMap = make(helper.ErrMap)
+	result.ProcessStats = new(ProcessStats)
 	dirWalker := func(filePath string, file fs.DirEntry, err error) error {
 		if err != nil {
 			return err
@@ -214,15 +229,16 @@ func ValidateFilesInDirectory(rootDir string, recursive bool) (*ArchiveResult, e
 		if file.IsDir() {
 			return nil
 		}
+		ps := result.ProcessStats
+		ps.ProcessedCount++
 		_, err = ValidateFileName(filePath)
 		if err != nil {
-			result.FilesFailure++
-			result.AddError(err)
+			ps.FailureCount++
+			result.ErrMap.Aggregate(err, filePath)
 			return nil
 		}
-		result.FilesProcessed++
-		result.FilesValid = append(result.FilesValid, filePath)
-		result.FilesCount = result.FilesProcessed
+		result.ValidFilenames = append(result.ValidFilenames, filePath)
+		ps.SuccessCount++
 		return nil
 	}
 
@@ -230,22 +246,8 @@ func ValidateFilesInDirectory(rootDir string, recursive bool) (*ArchiveResult, e
 	if err != nil {
 		return result, err
 	}
-	if len(result.Errors) > 0 {
-		err := fmt.Errorf("%s, count %d",
-			helper.Errors.CodeMsg(helper.ErrCodeInvalid), len(result.Errors))
-		return result, err
-		// errors.New("invalid files count: %d", len(result.Errors))
-	}
+	result.AllCount = result.ProcessedCount
 	return result, nil
-}
-
-func (ar *ArchiveResult) AddError(err ...error) {
-	if err == nil {
-		return
-	}
-	if len(err) > 0 {
-		ar.Errors = append(ar.Errors, err...)
-	}
 }
 
 func GetFieldValueByName(attrs []xmlquery.Attr, id string) (string, bool) {
@@ -347,7 +349,8 @@ func HandleXMLfileHeader(
 	return breader, err
 }
 
-func ZipFileExtractData(zf *zip.File, enc helper.FileEncodingCode) ([]byte, error) {
+func ZipFileExtractData(
+	zf *zip.File, enc helper.FileEncodingCode) ([]byte, error) {
 	fileHandle, err := zf.Open()
 	if err != nil {
 		return nil, err
@@ -356,7 +359,8 @@ func ZipFileExtractData(zf *zip.File, enc helper.FileEncodingCode) ([]byte, erro
 	return helper.HandleFileEncoding(enc, fileHandle)
 }
 
-func ZipXmlFileDecodeData(zf *zip.File, enc helper.FileEncodingCode) (*bytes.Reader, error) {
+func ZipXmlFileDecodeData(
+	zf *zip.File, enc helper.FileEncodingCode) (*bytes.Reader, error) {
 	data, err := ZipFileExtractData(zf, enc)
 	if err != nil {
 		return nil, err

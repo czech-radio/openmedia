@@ -19,8 +19,6 @@ var VersionInfo = configure.VersionInfo{
 	GitCommit: BuildGitCommit,
 }
 
-// var commandRootConfig = configure.CommanderRoot
-
 type GlobalConfig struct {
 	configure.CommanderConfig
 }
@@ -31,15 +29,9 @@ var ConfigMain = GlobalConfig{
 func RunRoot() {
 	ConfigMain.VersionInfoAdd(VersionInfo)
 	ConfigMain.Init()
-	ConfigMain.AddSub(
-		"archive", ConfigMain.RunCommandArchive)
-	ConfigMain.AddSub(
-		"extractArchive", ConfigMain.RunCommandExtractArchive)
+	ConfigMain.AddSub("archive",
+		ConfigMain.RunCommandArchive)
+	ConfigMain.AddSub("extractArchive",
+		ConfigMain.RunCommandExtractArchive)
 	ConfigMain.RunRoot()
-
-	// commandRootConfig.VersionInfoAdd(VersionInfo)
-	// commandRootConfig.Init()
-	// commandRootConfig.AddSub("archive", RunCommandArchive)
-	// commandRootConfig.AddSub("extractArchive", RunCommandExtractArchive)
-	// commandRootConfig.RunRoot()
 }

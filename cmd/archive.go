@@ -28,6 +28,9 @@ func commandArchiveConfigure() {
 		"zip", "string", c.NotNil,
 		"Type of file compression",
 		[]string{"zip"}, nil)
+	add("InvalidFilenameContinue", "ifnc",
+		"true", "bool", "",
+		"Continue even though unknown filename encountered", nil, nil)
 	add("InvalidFileContinue", "ifc",
 		"true", "bool", "",
 		"Continue even though unprocessable file encountered", nil, nil)
@@ -59,8 +62,8 @@ func (gc GlobalConfig) RunCommandArchive() {
 	}
 	slog.Info("effective config", "config", options)
 	if gc.DryRun {
-		slog.Info("Running in dry run mode")
 		TempDir := helper.DirectoryCreateTemporaryOrPanic("openmedia_archive")
+		slog.Info("dry run activated", "output_path", TempDir)
 		options.OutputDirectory = TempDir
 	}
 	process := ar.Archive{Options: options}

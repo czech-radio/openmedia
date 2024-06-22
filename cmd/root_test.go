@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os/exec"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -16,6 +17,26 @@ var testerConfig = helper.TesterConfig{
 
 func TestMain(m *testing.M) {
 	testerConfig.TesterMain(m)
+}
+
+func PrintOutput(
+	countCommand, nthCommand int, commandName string,
+	flags []string, resultLog []byte) {
+	if nthCommand == 0 {
+		fmt.Printf("\n## command: %s\n", commandName)
+	}
+	testName := fmt.Sprintf(
+		"### %d. %s: %s", nthCommand+1, commandName, flags[0])
+	fmt.Printf("%s\n", testName)
+	flagsJoined := strings.Join(flags[1:], " ")
+	fmt.Printf("COMMAND_INPUT:\n")
+	fmt.Printf("\tgo run main.go %s\n", flagsJoined)
+	fmt.Printf("\topenmedia %s\n", flagsJoined)
+	fmt.Printf("#### COMMAND_OUTPUT_START:\n%s\n",
+		string(resultLog))
+	if countCommand == nthCommand+1 {
+		fmt.Printf("### Run summary\n")
+	}
 }
 
 var CommandRootPresets = [][]string{
@@ -35,7 +56,8 @@ var CommandRootPresets = [][]string{
 	{"test log json", "-logt=json", "-logts", "-v=-4"},
 }
 
-func TestRunCommandRoot(t *testing.T) {
+func TestRunCommand_Root(t *testing.T) {
+	commandName := "root"
 	testSubdir := "cmd"
 	defer testerConfig.RecoverPanic(t)
 	testerConfig.InitTest(t, testSubdir)
@@ -47,12 +69,11 @@ func TestRunCommandRoot(t *testing.T) {
 			if err != nil {
 				t.Error(err)
 			}
-			flagsJoined := strings.Join(flags[1:], " ")
-			fmt.Printf("COMMAND_INPUT:\ngo run main.go %s\n", flagsJoined)
-			fmt.Printf("openmedia %s\n", flagsJoined)
-			fmt.Printf("COMMAND_OUTPUT_START:\n%s\n", string(resultLog))
+			PrintOutput(
+				len(CommandRootPresets), i, commandName, flags, resultLog)
 		}
-		testName := fmt.Sprintf("%d_%s", i, flags[0])
-		t.Run(testName, fn)
+		// testName := fmt.Sprintf("%d_%s", i, flags[0])
+		// t.Run(testName, fn)
+		t.Run(strconv.Itoa(i+1), fn)
 	}
 }

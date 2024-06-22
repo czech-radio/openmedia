@@ -49,7 +49,7 @@ func Test_ValidateFilesInDirectory(t *testing.T) {
 	tp := testerConfig.TempSourcePathGeter(validfiles)
 	srcPath := tp("")
 
-	_, err := ValidateFilesInDirectory(srcPath, true)
+	_, err := ValidateFilenamesInDirectory(srcPath, true)
 	if err != nil {
 		t.Error(err)
 	}
@@ -57,7 +57,7 @@ func Test_ValidateFilesInDirectory(t *testing.T) {
 	invalidfiles := "rundowns_invalid"
 	tp = testerConfig.TempSourcePathGeter(invalidfiles)
 	srcPath = tp("")
-	_, err = ValidateFilesInDirectory(srcPath, true)
+	_, err = ValidateFilenamesInDirectory(srcPath, true)
 	if err == nil {
 		t.Error("failed to catch error")
 	}

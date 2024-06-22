@@ -30,10 +30,11 @@ The program executes two operations:
   ```powershell
   .\scripts\build.ps1
   ```
+## HELP
+[help](./HELP.txt)
 
 ## Usage
-
-[relative link](./USAGE.txt)
+[usage](./USAGE.md)
 
 ## Development
 

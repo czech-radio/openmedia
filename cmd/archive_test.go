@@ -1,30 +1,28 @@
 package cmd
 
 import (
-	"fmt"
+	"os"
 	"os/exec"
 	"path/filepath"
-	"strings"
+	"strconv"
 	"testing"
 )
 
 var CommandArchivePresets = [][]string{
 	{"help", "archive", "-h"},
-	{"run err exit no", "-v=0", "archive"},
-	// {"debug config", "-dc", "-v=0", "archive"},
-	// {"dry run err exit", "-dr", "-v=0", "archive"},
-	// {"dry run err exit no", "-dr", "-v=0", "archive", "-ifc"},
-	// {"run err exit no", "-dc", "-v=-4", "archive", "-ifc"},
-	// {"run err exit no", "-v=-4", "archive", "-ifc", "-R"},
-	// {"run err exit no", "-v=0", "archive", "-ifc"},
-	// {"run err exit no", "-v=-4", "archive", "-ifc"},
-	// {"run err exit no", "-dc", "-v=-4", "archive", "-ifc", "-R"},
+	{"debug config", "-dc", "-v=0", "archive", "-ifc", "-R"},
+	{"run exit on src file error", "-v=0", "archive", "-ifc"},
+	{"run do not exit on src file error", "-v=0", "archive"},
+	{"dry run, no exit on src file error", "-dr", "-v=0", "archive"},
+	{"recurse source directory", "-v=0", "archive", "-ifc", "-R"},
 }
 
-func TestRunCommandArchive(t *testing.T) {
-	// testSubdir := "cmd"
-	testSubdir := filepath.Join("cmd", "archive")
-	// testSubdir := tpath
+// TODO: find out why not recurse directory
+// TODO: report number of archived files
+
+func TestRunCommand_Archive(t *testing.T) {
+	commandName := "archive"
+	testSubdir := filepath.Join("cmd", commandName)
 	defer testerConfig.RecoverPanic(t)
 	testerConfig.InitTest(t, testSubdir)
 	for i, flags := range CommandArchivePresets {
@@ -33,21 +31,20 @@ func TestRunCommandArchive(t *testing.T) {
 			srcDir := filepath.Join(
 				testerConfig.TempDataSource, testSubdir)
 			dstDir := filepath.Join(
-				testerConfig.TempDataOutput, testSubdir)
+				testerConfig.TempDataOutput, testSubdir, strconv.Itoa(i+1))
+			err := os.Mkdir(dstDir, 0700)
+			if err != nil {
+				panic(err)
+			}
 			flagss := append(flags, "-sdir="+srcDir)
 			flagss = append(flagss, "-odir="+dstDir)
-			command := append([]string{"run", "../main.go"}, flagss[1:]...)
+			command := append([]string{
+				"run", "../main.go"}, flagss[1:]...)
 			cmdexec := exec.Command("go", command...)
 			resultLog, err := cmdexec.CombinedOutput()
-			if err != nil {
-				t.Error(err)
-			}
-			flagsJoined := strings.Join(flags[1:], " ")
-			fmt.Printf("COMMAND_INPUT:\ngo run main.go %s\n", flagsJoined)
-			fmt.Printf("openmedia %s\n", flagsJoined)
-			fmt.Printf("COMMAND_OUTPUT_START:\n%s\n", string(resultLog))
+			PrintOutput(len(CommandArchivePresets), i, commandName,
+				flagss, resultLog)
 		}
-		testName := fmt.Sprintf("%d_%s", i, flags[0])
-		t.Run(testName, fn)
+		t.Run(strconv.Itoa(i), fn)
 	}
 }
