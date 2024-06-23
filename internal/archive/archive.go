@@ -366,7 +366,7 @@ func (p *Archive) Folder() error {
 		if err != nil {
 			p.Results.FailureCount++
 		}
-		if err != nil && p.Options.InvalidFileContinue {
+		if err != nil && !p.Options.InvalidFileContinue {
 			return fmt.Errorf("%s %w", file, err)
 		}
 		p.Results.SuccessCount++

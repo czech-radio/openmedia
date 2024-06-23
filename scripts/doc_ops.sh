@@ -5,7 +5,8 @@ GenerateHelp(){
 }
 
 GenerateUsage(){
-  go test -v ./cmd/. -run Command_Root > USAGE.md
+  truncate -s 0 USAGE.md
+  # go test -v ./cmd/. -run Command_Root >> USAGE.md
   go test -v ./cmd/. -run Command_Archive >> USAGE.md
 }
 
