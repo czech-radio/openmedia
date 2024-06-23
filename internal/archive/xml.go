@@ -6,6 +6,8 @@ import (
 	"bytes"
 	"encoding/xml"
 	"fmt"
+	"log/slog"
+	"strconv"
 
 	"io"
 	"io/fs"
@@ -142,6 +144,18 @@ type ProcessStats struct {
 	ProcessedCount int
 	FailureCount   int
 	SuccessCount   int
+}
+
+func (p ProcessStats) LogProcessStats(processName string) {
+	vars := "All"
+	msg := strconv.Itoa(p.AllCount)
+	msg += "/" + strconv.Itoa(p.ProcessedCount)
+	vars += "/" + "Processed"
+	msg += "/" + strconv.Itoa(p.SuccessCount)
+	vars += "/" + "Success"
+	msg += "/" + strconv.Itoa(p.FailureCount)
+	vars += "/" + "Failure"
+	slog.Info("process stat", "name", processName, vars, msg)
 }
 
 type ResultFilenamesValidation struct {

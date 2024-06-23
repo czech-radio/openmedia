@@ -6,8 +6,9 @@ GenerateHelp(){
 
 GenerateUsage(){
   truncate -s 0 USAGE.md
-  # go test -v ./cmd/. -run Command_Root >> USAGE.md
+  go test -v ./cmd/. -run Command_Root >> USAGE.md
   go test -v ./cmd/. -run Command_Archive >> USAGE.md
+  sed -i "/^=== RUN.*$/d" USAGE.md
 }
 
 GenerateAll(){

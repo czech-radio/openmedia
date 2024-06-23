@@ -48,7 +48,9 @@ func TestRunCommand_Archive(t *testing.T) {
 		}
 		flagss := append(flags, "-sdir="+srcDir)
 		flagss = append(flagss, "-odir="+dstDir)
-		fn := ReturnTestFunc(i+1, commandName, testSubdir, flagss)
+		fn := ReturnTestFunc(
+			len(CommandArchivePresets), i+1, commandName,
+			testSubdir, flagss)
 		t.Run(strconv.Itoa(i+1), fn)
 	}
 }

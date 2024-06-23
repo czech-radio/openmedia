@@ -24,16 +24,16 @@ func PrintOutput(
 	countCommand, nthCommand int, commandName string,
 	flags []string, resultLog []byte) {
 	if nthCommand == 1 {
-		fmt.Printf("## command: %s\n", commandName)
+		fmt.Printf("\n## Command: %s\n", commandName)
 	}
 	testName := fmt.Sprintf(
 		"### %d. %s: %s", nthCommand, commandName, flags[0])
 	fmt.Printf("%s\n", testName)
 	flagsJoined := strings.Join(flags[1:], " ")
-	fmt.Printf("COMMAND_INPUT:\n")
+	fmt.Printf("Command input:\n")
 	fmt.Printf("\tgo run main.go %s\n", flagsJoined)
 	fmt.Printf("\topenmedia %s\n", flagsJoined)
-	fmt.Printf("#### COMMAND_OUTPUT_START:\n%s\n",
+	fmt.Printf("#### Command output:\n%s\n",
 		string(resultLog))
 	if countCommand == nthCommand {
 		fmt.Printf("### Run summary\n")
@@ -41,7 +41,7 @@ func PrintOutput(
 }
 
 func ReturnTestFunc(
-	tn int, name, subdir string, flags []string,
+	tcount, tn int, name, subdir string, flags []string,
 ) func(t *testing.T) {
 
 	fn := func(t *testing.T) {
@@ -50,7 +50,7 @@ func ReturnTestFunc(
 		resultLog, err := cmdexec.CombinedOutput()
 		_ = err
 		PrintOutput(
-			len(CommandRootPresets), tn, name, flags, resultLog)
+			tcount, tn, name, flags, resultLog)
 	}
 
 	return fn
@@ -80,7 +80,9 @@ func TestRunCommand_Root(t *testing.T) {
 	defer testerConfig.RecoverPanic(t)
 	testerConfig.InitTest(t, testSubdir)
 	for i, flags := range CommandRootPresets {
-		fn := ReturnTestFunc(i+1, commandName, testSubdir, flags)
+		fn := ReturnTestFunc(
+			len(CommandRootPresets), i+1,
+			commandName, testSubdir, flags)
 		t.Run(strconv.Itoa(i+1), fn)
 	}
 }

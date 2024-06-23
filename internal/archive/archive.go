@@ -261,62 +261,6 @@ func (f *ArchiveItemFileMeta) SetWeekWorkerName(
 	return f.WorkerName
 }
 
-// func (p *Archive) ErrorHandleAdd(
-// 	errMain error, errorsPartial ...error) helper.ControlFlowAction {
-// 	if errMain == nil {
-// 		return helper.Continue
-// 	}
-// 	if p.ErrMap == nil {
-// 		p.ErrMap = make(map[string][]string)
-// 	}
-// 	_, ok := p.ErrMap[errMain.Error()]
-// 	if !ok {
-// 		p.ErrMap[errMain.Error()] = make([]string, 0)
-// 	}
-// 	if len(errorsPartial) == 0 {
-// 		p.ErrMap[errMain.Error()] = append(
-// 			p.ErrMap[errMain.Error()], "")
-// 	}
-// 	if len(errorsPartial) > 0 {
-// 		for _, e := range errorsPartial {
-// 			p.ErrMap[errMain.Error()] = append(
-// 				p.ErrMap[errMain.Error()], e.Error())
-// 		}
-// 	}
-// 	if p.Options.InvalidFileContinue {
-// 		slog.Info("skipped processing file")
-// 		return helper.Skip
-// 	}
-// 	slog.Info("halt processing files: bad file encountered")
-// 	return helper.Break
-// }
-
-// func (p *Archive) ErrorHandle(
-// 	errMain error, errorsPartial ...error) helper.ControlFlowAction {
-// 	p.Results.FilesProcessed++
-// 	if errMain == nil {
-// 		p.Results.FilesSuccess++
-// 		return helper.Continue
-// 	}
-
-// 	p.Results.FilesFailure++
-// 	// Get info about function which called this hadnler
-// 	fileName, funcName, line := helper.TraceFunction(2)
-// 	slog.Error(errMain.Error(),
-// 		"source", fileName, "function", funcName, "line", line)
-// 	p.Errors = append(p.Errors, errMain)
-// 	if len(errorsPartial) > 0 {
-// 		p.Errors = append(p.Errors, errorsPartial...)
-// 	}
-
-// 	if p.Options.InvalidFileContinue {
-// 		slog.Info("skipped processing file")
-// 		return helper.Skip
-// 	}
-// 	slog.Info("halt processing files: bad file encountered")
-// 	return helper.Break
-// }
-
 func (p *Archive) PrepareOutput() error {
 	for _, t := range OpenMediaFileTypeMap {
 		outputdir := filepath.Join(p.Options.OutputDirectory, t.OutputDir)
@@ -333,15 +277,16 @@ func ValidRatio(valid, all int) string {
 }
 
 func (p *Archive) Folder() error {
+	process_validation := "filenames_validation"
+	process_archive := "archive_create"
 	// 1. Folder files validation
 	vr, err := ValidateFilenamesInDirectory(
 		p.Options.SourceDirectory, p.Options.RecurseSourceDirectory)
-	slog.Info("Archive filenames validation result",
-		"valid_ratio", ValidRatio(vr.SuccessCount, vr.ProcessedCount))
+	vr.LogProcessStats(process_validation)
 	if err != nil {
 		return err
 	}
-	err = vr.ErrMap.MarshalError("validation")
+	err = vr.ErrMap.MarshalError(process_validation)
 	if err != nil && !p.Options.InvalidFilenameContinue {
 		return err
 	}
@@ -364,35 +309,59 @@ func (p *Archive) Folder() error {
 		p.ErrMap.Aggregate(err, file)
 		p.Results.ProcessedCount++
 		if err != nil {
+			ermsg := fmt.Errorf("%s %w", file, err)
 			p.Results.FailureCount++
-		}
-		if err != nil && !p.Options.InvalidFileContinue {
-			return fmt.Errorf("%s %w", file, err)
+			if p.Options.InvalidFileContinue {
+				slog.Error(ermsg.Error())
+				continue
+			}
+			return ermsg
 		}
 		p.Results.SuccessCount++
+		p.Results.LogProcessStats(process_archive)
 	}
 	p.WG.Done()
 	p.WG.Wait()
 
-	// res := p.Results
-	// p.WorkerLogInfo("GLOBAL_ORIGINAL",
-	// 	res.SizeOriginal, res.SizePackedBackup, res.SizeOriginal,
-	// 	p.Options.SourceDirectory, p.Options.OutputDirectory)
-	// p.WorkerLogInfo("GLOBAL_MINIFY",
-	// 	res.SizeOriginal, res.SizePackedMinified, res.SizeMinified,
-	// 	p.Options.SourceDirectory, p.Options.OutputDirectory)
+	// 4. Log cumulative results
+	// TODO: log to file
 
-	// if p.Results.DuplicatesFound > 0 {
-	// 	dupesErr := fmt.Errorf("duplicates found, cout: %d",
-	// 		p.Results.DuplicatesFound)
-	// 	p.ErrorHandle(dupesErr)
-	// }
+	// log validation
+	fmt.Printf("\nRESULTS:\n")
+	fmt.Printf("\nresult: %s\n", process_validation)
+	err = vr.ErrMap.MarshalError("errors")
+	if err != nil {
+		fmt.Println(err)
+	}
+	vr.LogProcessStats(process_validation)
+
+	// log archive create
+	fmt.Printf("\nresult: %s\n", process_archive)
+	p.Results.LogProcessStats(process_archive)
+	res := p.Results
+	p.WorkerLogInfo("GLOBAL_ORIGINAL",
+		res.SizeOriginal, res.SizePackedBackup, res.SizeOriginal,
+		p.Options.SourceDirectory, p.Options.OutputDirectory)
+	p.WorkerLogInfo("GLOBAL_MINIFY",
+		res.SizeOriginal, res.SizePackedMinified, res.SizeMinified,
+		p.Options.SourceDirectory, p.Options.OutputDirectory)
+	if p.Results.DuplicatesFound > 0 {
+		dupesErr := fmt.Errorf("duplicates found, cout: %d",
+			p.Results.DuplicatesFound)
+		p.ErrMap.Add(dupesErr)
+		fmt.Println("duplicate_files", p.Results.Duplicates)
+	}
+	err = p.ErrMap.MarshalError("errors")
+	if err != nil {
+		fmt.Println(err)
+	}
 
 	// _ = ErrorsMarshalLog(p.Errors)
 	p.DestroyWorkers()
 	return nil
 }
 
+// deprecated
 func ErrorsMarshalLog(errs []error) error {
 	var results []string
 	var marshalErrors []error
