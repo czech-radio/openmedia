@@ -167,7 +167,7 @@ func (e *Extractor) CSVtableWrite(dstFilePath string, overWrite bool) {
 	if err != nil {
 		panic(err)
 	}
-	slog.Warn("written bytes to file", "fileName", dstFilePath, "bytesCount", n)
+	slog.Info("written bytes to file", "fileName", dstFilePath, "bytesCount", n)
 }
 
 func (e *Extractor) CSVheaderWrite(dstFilePath string, overWrite bool) {
@@ -185,7 +185,7 @@ func (e *Extractor) CSVheaderWrite(dstFilePath string, overWrite bool) {
 	if err != nil {
 		panic(err)
 	}
-	slog.Warn("written bytes to file", "fileName", dstFilePath, "bytesCount", n)
+	slog.Info("written bytes to file", "fileName", dstFilePath, "bytesCount", n)
 }
 
 // ROWFIELDSPARTS FROM CSV

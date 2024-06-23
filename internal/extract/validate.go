@@ -26,6 +26,10 @@ type ValidationTableAccount struct {
 	ColumnsPositions []string
 }
 
+func LogValidationError(err error) {
+	slog.Error("validation_error", "msg", err.Error())
+}
+
 // VALIDATE UNIT FUNCTIONS
 func (e *Extractor) ColumnAccountPrepare(
 	pc RowPartCode, fieldID string) ValidationColumnAccount {
@@ -47,16 +51,21 @@ func (e *Extractor) ColumnAccountPrepare(
 func FieldPrevalidate(rp RowParts, rpc RowPartCode, fieldID string) bool {
 	_, field, ok := GetRowPartAndField(
 		rp, rpc, fieldID)
+
+	errFuncLog := func(cause string) {
+		slog.Debug("validation_warning", "filed", field, "cause", cause)
+	}
+
 	if !ok {
-		slog.Warn("field not validated: not present", "filed", field)
+		errFuncLog("field missing")
 		return false
 	}
 	if field.Value == "" {
-		slog.Warn("field not validated: field empty", "filed", field)
+		errFuncLog("field empty")
 		return false
 	}
 	if CheckIfFieldValueIsSpecialValue(field.Value) {
-		slog.Warn("field not validated: special value", "filed", field)
+		errFuncLog("special value")
 		return false
 	}
 	return true
@@ -145,7 +154,7 @@ func (e *Extractor) ValidateColumnsValuesList(xlsxValidationReceipeFile string) 
 	for _, c := range columnsParams {
 		err := e.ValidateColumnValuesList(xlsxValidationReceipeFile, c)
 		if err != nil {
-			slog.Error("fuck validation error")
+			LogValidationError(err)
 		}
 	}
 }
@@ -191,7 +200,7 @@ func (e *Extractor) ValidateColumnsValues(
 	for _, c := range columnsParams {
 		err := e.ValidateColumnValues(xlsxValidationReceipeFile, c)
 		if err != nil {
-			slog.Error("fuck validation error")
+			LogValidationError(err)
 		}
 	}
 }
@@ -203,6 +212,7 @@ func (e *Extractor) ValidateColumnValues(
 	sheetRows, err := files.ReadExcelFileSheetRows(
 		xlsxValidationReceipeFile, vp.SheetName)
 	if err != nil {
+		fmt.Println("FUCK2")
 		return err
 	}
 
@@ -260,7 +270,7 @@ func (e *Extractor) ValidateColumnsFormat(xlsxValidationReceipeFile string) {
 	for _, c := range columnsParams {
 		err := e.ValidateColumnFormat(xlsxValidationReceipeFile, c)
 		if err != nil {
-			slog.Error("fuck validation error")
+			LogValidationError(err)
 		}
 	}
 }
@@ -282,7 +292,7 @@ func (e *Extractor) ValidateColumnFormat(
 		// fieldValueWithoutSpace := TrimAllWhiteSpace(field.Value)
 		validOK := formatRegex.MatchString(field.Value)
 		if !validOK {
-			slog.Warn("field not valid:", "field", field, "rowi", i, "row", r)
+			slog.Debug("validation_warning", "msg", "not valid", "field", field, "rowi", i, "row", r)
 		}
 		ValueInvalidAccount(columnAccount, part, field, validOK)
 	}

@@ -166,9 +166,9 @@ func ArchivePackageFileMatch(
 		return false, nil
 	}
 	_, ok := helper.DateRangesIntersection(q.DateRange, meta.DateRange)
-	fmt.Printf("FUCK matched %t,%s\n", ok, nestedFileName)
-	fmt.Printf("%t, filter %v\n", ok, q.DateRange)
-	fmt.Printf("%t, range %v %s\n", ok, meta.DateRange, nestedFileName)
+	// fmt.Printf("FUCK matched %t,%s\n", ok, nestedFileName)
+	// fmt.Printf("%t, filter %v\n", ok, q.DateRange)
+	// fmt.Printf("%t, range %v %s\n", ok, meta.DateRange, nestedFileName)
 	if !ok {
 		slog.Warn(
 			"filename match daterange", "filename", nestedFileName,
@@ -214,7 +214,7 @@ func PackageMap(
 		ap.PacakgeFilesOrder = append(ap.PacakgeFilesOrder, fr.Name)
 	}
 	count += len(ap.PackageFiles)
-	slog.Warn(
+	slog.Info(
 		"filenames in all packages", "count", count,
 		"matched", true)
 	return &ap, count, nil

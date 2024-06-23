@@ -30,11 +30,38 @@ The program executes two operations:
   ```powershell
   .\scripts\build.ps1
   ```
-## HELP
+## Help
 [help](./HELP.txt)
 
 ## Usage
 [usage](./USAGE.md)
+
+## Presets script
+[presets](./scripts/run_main.sh)
+  
+  ```bash
+  ./scripts/run_main.sh ArchiveExtractControl
+  ```
+  
+  ```bash
+  ./scripts/run_main.sh ArchiveExtractControlValidation
+  ```
+
+- make copy of the script, change main variables inside preset function form example: FROM, TO and FILTER_FILE.
+
+- Make sure the output directory exists or change it in script inside function ArchiveExtractCommand OUTPUT_DIR.
+
+- Mount rundowns folder R/.../cro/export-avo/Rundowns. Change variable SOURCE_DIR on line 3 to folder where the rundowns resides.
+
+- Run the script.
+
+    ```bash
+  ./scripts/run_main.sh ArchiveExtractOpozice
+  ```
+  
+  ```bash
+  ./scripts/run_main.sh ArchiveExtractEurovolby
+  ```
 
 ## Development
 

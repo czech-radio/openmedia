@@ -20,6 +20,10 @@ func (e *Extractor) OutputBaseDataset(
 
 func (e *Extractor) OutputValidatedDataset(
 	processName string, queryOpts *ArchiveFolderQuery) error {
+	if queryOpts.ValidatorFileName == "" {
+		slog.Info("validation_warning", "msg", "validation receipe file not specified")
+		return nil
+	}
 	e.TransformBeforeValidation()
 	e.ValidateAllColumns(queryOpts.ValidatorFileName)
 	e.CSVtableBuild(false, false, queryOpts.CSVdelim, true)

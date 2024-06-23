@@ -14,23 +14,21 @@ var CommandArchivePresets = [][]string{
 	{"debug config",
 		"-v=0", "-dc", "archive", "-ifc", "-R"},
 
-	{"run exit on src file error",
-		"-v=0", "archive", "-ifc"},
-
-	{"run do not exit on src file error",
-		"-v=0", "archive"},
-
-	{"dry run, no exit on src file error",
+	{"dry run",
 		"-dr", "-v=0", "archive"},
 
-	// {"do not recurse source directory",
-	// "-v=0", "archive"},
+	{"exit on src file error or filename error",
+		"-v=0", "archive", "-ifc", "-ifnc", "-R"},
 
-	// {"recurse source directory",
-	// "-v=0", "archive", "-R"},
+	{"run exit on src file error",
+		"-v=0", "archive", "-ifc", "-R"},
+
+	{"do not exit on any file error",
+		"-v=0", "archive", "-R"},
+
+	{"do not recurse the source folder",
+		"-v=0", "archive"},
 }
-
-// TODO: report number of archived files
 
 func TestRunCommand_Archive(t *testing.T) {
 	commandName := "archive"

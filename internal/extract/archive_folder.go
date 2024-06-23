@@ -124,8 +124,8 @@ func (af *ArchiveFolder) FolderMap(
 			af.Packages[packageName] = archivePackage
 		}
 	}
-	slog.Warn("packages matched", "count", len(af.Packages))
-	slog.Warn("files inside packages matched", "count", filesCount)
+	slog.Info("packages matched", "count", len(af.Packages))
+	slog.Info("files inside packages matched", "count", filesCount)
 	return nil
 }
 
@@ -135,8 +135,19 @@ func (af *ArchiveFolder) FolderExtract(
 	var extMain Extractor
 	extMain.Init(nil, query.Extractors, query.CSVdelim)
 	for _, packageName := range af.PackagesNamesOrder {
-		slog.Warn("proccessing package", "package", packageName)
-		archivePackage := af.Packages[packageName]
+		slog.Info("proccessing package", "package", packageName)
+		archivePackage, ok := af.Packages[packageName]
+
+		if !ok {
+			continue
+		}
+		if archivePackage.PacakgeFilesOrder == nil {
+			continue
+		}
+		if len(archivePackage.PacakgeFilesOrder) == 0 {
+			continue
+		}
+
 		for _, fileName := range archivePackage.PacakgeFilesOrder {
 			file := archivePackage.PackageFiles[fileName]
 			slog.Warn(
@@ -149,7 +160,7 @@ func (af *ArchiveFolder) FolderExtract(
 			}
 			ext.SetFileNameColumn()
 			ext.TableXML.NullXMLnode()
-			slog.Warn("extracted lines", "count", len(ext.TableXML.Rows))
+			slog.Info("extracted lines", "count", len(ext.TableXML.Rows))
 			extMain.TableXML.Rows = append(
 				extMain.TableXML.Rows, ext.TableXML.Rows...)
 		}

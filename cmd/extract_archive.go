@@ -31,7 +31,7 @@ func commandExtractArchiveConfigure() {
 	add("ExtractorsName", "exsn", "production_all", "string", c.NotNil,
 		"Name of extractor which specifies the parts of xml to be extracted", nil, nil)
 	add("FilterDateFrom", "fdf", "", "date", c.NotNil,
-		"Filter rundowns from date", nil, nil)
+		"Filter rundowns from date. Format of the date is given in form 'YYYY-mm-ddTHH:mm:ss' e.g. 2024, 2024-02-01 or 2024-02-01T10. The precission of date given is arbitrary.", nil, nil)
 	add("FilterDateTo", "fdt", "", "date", c.NotNil,
 		"Filter rundowns to date", nil, nil)
 	add("FilterRadioName", "frn", "", "string", "",
@@ -41,7 +41,7 @@ func commandExtractArchiveConfigure() {
 
 	// Special filters
 	add("FilterFileName", "frfn", "", "string", "",
-		"Special filters filename", nil, CheckFileExistsIfNotNull)
+		"Special filters filename. The filter filename specifies how the file is parsed and how it is used", nil, CheckFileExistsIfNotNull)
 	add("FilterSheetName", "frsn", "data", "string", "",
 		"Special filters sheetname", nil, nil)
 	add("ValidatorFileName", "valfn", "", "string", "",
@@ -76,7 +76,7 @@ func ParseConfigOptions() *extract.ArchiveFolderQuery {
 	q.Extractors = extractors
 	q.ExtractorsCode = extCode
 	q.WorkerType = ar.WorkeTypeCodeGet(q.SourceDirectoryType)
-	slog.Debug("effective subcommand config", "config", q)
+	slog.Info("effective subcommand config", "config", q)
 	return &q
 }
 
