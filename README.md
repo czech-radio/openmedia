@@ -31,7 +31,7 @@ The program executes two operations:
   .\scripts\build.ps1
   ```
 ## Help
-[help](./HELP.txt)
+[help](./HELP.md)
 
 ## Usage
 [usage](./USAGE.md)

@@ -50,6 +50,9 @@
 	Type of file compression
 	[zip]
 
+-ifnc, -InvalidFilenameContinue=true
+	Continue even though unknown filename encountered
+
 -ifc, -InvalidFileContinue=true
 	Continue even though unprocessable file encountered
 
@@ -93,7 +96,7 @@
 	Name of extractor which specifies the parts of xml to be extracted
 
 -fdf, -FilterDateFrom=
-	Filter rundowns from date
+	Filter rundowns from date. Format of the date is given in form 'YYYY-mm-ddTHH:mm:ss' e.g. 2024, 2024-02-01 or 2024-02-01T10. The precission of date given is arbitrary.
 
 -fdt, -FilterDateTo=
 	Filter rundowns to date
@@ -106,7 +109,7 @@
 	[	 ;]
 
 -frfn, -FilterFileName=
-	Special filters filename
+	Special filters filename. The filter filename specifies how the file is parsed and how it is used
 
 -frsn, -FilterSheetName=data
 	Special filters sheetname
