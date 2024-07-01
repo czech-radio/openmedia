@@ -7,9 +7,17 @@ import (
 )
 
 func TestXLSXsetStyle(t *testing.T) {
-	filePath := "/tmp/test/test.xlsx"
+	testSubdir := "exports"
+	defer testerConfig.RecoverPanic(t)
+	testerConfig.InitTest(t, testSubdir)
+	tp := testerConfig.TempSourcePathGeter(testSubdir)
+	fileName := "production_production_contacts_base_wh.xlsx"
+	fileSrcPath := tp(fileName)
+
+	tp = testerConfig.TempDestinationPathGeter(testSubdir)
+	fileDstPath := tp(fileName)
 	sheet := "Sheet1"
-	file, err := excelize.OpenFile(filePath)
+	file, err := excelize.OpenFile(fileSrcPath)
 	if err != nil {
 		t.Error(err)
 	}
@@ -20,7 +28,7 @@ func TestXLSXsetStyle(t *testing.T) {
 		t.Error(err)
 	}
 	// err = file.Save()
-	err = file.SaveAs(filePath)
+	err = file.SaveAs(fileDstPath)
 	if err != nil {
 		t.Error(err)
 	}

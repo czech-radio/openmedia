@@ -60,6 +60,12 @@ func TestRowPrintToCSV(t *testing.T) {
 }
 
 func TestRowPartsPositionsFromCSVfile(t *testing.T) {
+	testSubdir := "exports"
+	defer testerConfig.RecoverPanic(t)
+	testerConfig.InitTest(t, testSubdir)
+	tp := testerConfig.TempSourcePathGeter(testSubdir)
+	filePath := tp(
+		"production_production_contacts_base_wh.csv")
 	type args struct {
 		fileName string
 		delim    rune
@@ -69,7 +75,7 @@ func TestRowPartsPositionsFromCSVfile(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		{"one", args{"/tmp/test/opozice_production_contacts_base_wh.csv", '\t'}, false},
+		{"one", args{filePath, '\t'}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
