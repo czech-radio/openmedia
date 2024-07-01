@@ -31,10 +31,10 @@ The program executes two operations:
   .\scripts\build.ps1
   ```
 ## Help
-[help](./HELP.md)
+[help](./docs/HELP.md)
 
 ## Usage
-[usage](./USAGE.md)
+[usage](./docs/USAGE.md)
 
 ## Presets script
 [presets](./scripts/run_main.sh)

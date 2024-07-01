@@ -1,16 +1,16 @@
 #!/bin/bash -x
 
 GenerateHelp(){
-  go run main.go -H > HELP.md
+  go run main.go -H > ./docs/HELP.md
 }
 
 GenerateUsage(){
-  truncate -s 0 USAGE.md
+  truncate -s 0 ./docs/USAGE.md
   {
     go test -v ./cmd/. -run Command_Root;
     go test -v ./cmd/. -run Command_Archive;
     go test -v ./cmd/. -run Command_ExtractArchive;
-  } >> USAGE.md
+  } >> ./docs/USAGE.md
   sed -i "/^=== RUN.*$/d" USAGE.md
 }
 
