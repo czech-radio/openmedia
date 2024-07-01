@@ -52,7 +52,7 @@ Git_update_tag(){
   fi
 
   ### change version
-  ChangeVersionInFiles tag_name
+  ChangeVersionInFiles "${tag_name}"
 
   ### push tags
   git add .
