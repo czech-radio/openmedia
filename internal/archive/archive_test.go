@@ -88,13 +88,13 @@ func Test_ProcessFolder(t *testing.T) {
 	dstDir := filepath.Join(
 		testerConfig.TempDataOutput, subDir)
 	opts := ArchiveOptions{
-		SourceDirectory:   srcDir,
-		OutputDirectory:   dstDir,
-		InvalidFileRename: false,
-		// InvalidFileContinue:  false,
-		InvalidFileContinue:    true,
-		CompressionType:        "zip",
-		RecurseSourceDirectory: true,
+		SourceDirectory:         srcDir,
+		OutputDirectory:         dstDir,
+		InvalidFileRename:       false,
+		InvalidFileContinue:     true,
+		InvalidFilenameContinue: true,
+		CompressionType:         "zip",
+		RecurseSourceDirectory:  true,
 	}
 	process := Archive{Options: opts}
 	err := process.Folder()
@@ -103,28 +103,45 @@ func Test_ProcessFolder(t *testing.T) {
 	}
 }
 
-func Test_ProcessFolderInvalid(t *testing.T) {
+func Test_ProcessFolderInvalid2(t *testing.T) {
 	defer testerConfig.RecoverPanic(t)
-	testerConfig.InitTest(t)
-
+	testerConfig.InitTest(t, "rundowns_invalid")
 	subDir := "rundowns_invalid"
-	srcDir := filepath.Join(
-		testerConfig.TempDataSource, subDir)
-	dstDir := filepath.Join(
-		testerConfig.TempDataOutput, subDir)
+	tp := testerConfig.TempSourcePathGeter(subDir)
+	srcDir := tp(".")
+	tp = testerConfig.TempDestinationPathGeter(subDir)
+	dstDir := tp(".")
 
-	opts := ArchiveOptions{
-		SourceDirectory:        srcDir,
-		OutputDirectory:        dstDir,
-		InvalidFileRename:      false,
-		InvalidFileContinue:    true,
-		CompressionType:        "zip",
-		RecurseSourceDirectory: true,
+	opts1 := ArchiveOptions{
+		SourceDirectory:         srcDir,
+		OutputDirectory:         dstDir,
+		InvalidFileRename:       false,
+		InvalidFileContinue:     true,
+		InvalidFilenameContinue: true,
+		CompressionType:         "zip",
+		RecurseSourceDirectory:  true,
 	}
-	process := Archive{Options: opts}
-	err := process.Folder()
-	if err != nil {
-		t.Error(err)
+	opts2 := opts1
+	opts2.InvalidFileContinue = false
+
+	tests := []struct {
+		name string
+		ArchiveOptions
+		wantErr bool
+	}{
+		{"no halt on file/filename error", opts1, false},
+		{"halt on filename error", opts2, true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			process := Archive{Options: tt.ArchiveOptions}
+			err := process.Folder()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("(p *Archive) Folder() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+		})
 	}
 }
 
