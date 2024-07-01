@@ -30,15 +30,18 @@ ChangeVersionInFile(){
   local string_before="$2"
   local string_after="$3"
   local new_version="$4"
-  sed "s,\(${string_before}\).\+\(${string_after}\),\1${new_version}\2,g" "${PROJECT_DIR}/${fileName}"
+  local file_path="${PROJECT_DIR}/${fileName}"
+  # sed "s,\(${string_before}\).\+\(${string_after}\),\1${new_version}\2,g" "${file_path}"
+  sed -i "s,\(${string_before}\).\+\(${string_after}\),\1${new_version}\2,g" "${file_path}"
 }
 
 ChangeVersionInFiles(){
   local new_version="$1"
   # README.md
-  ChangeVersionInFile "README.md" "https://img.shields.io/badge/" "-blue.svg" "$new_version"
+  ChangeVersionInFile "README.md" "https://img.shields.io/badge/version-" "-blue.svg" "$new_version"
   # cmd/root.go
-  ChangeVersionInFile "cmd/root.go" "Version:\s\+" "\," "$new_version"
+  local new_version="\"$1\""
+  ChangeVersionInFile "cmd/root.go" "Version:\s\+" "\," "${new_version}"
 }
 
 Git_update_tag(){

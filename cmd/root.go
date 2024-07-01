@@ -14,7 +14,7 @@ var (
 
 // VersionInfo Binary version info
 var VersionInfo = configure.VersionInfo{
-	Version:   "1.0.0",
+	Version:   "tag_name",
 	GitTag:    BuildGitTag,
 	GitCommit: BuildGitCommit,
 }
