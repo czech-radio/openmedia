@@ -43,23 +43,36 @@ func TestTransformXML(t *testing.T) {
 }
 
 func Test_ValidateFilesInDirectory(t *testing.T) {
-	validfiles := "rundowns_valid"
 	defer testerConfig.RecoverPanic(t)
-	testerConfig.InitTest(t, validfiles)
-	tp := testerConfig.TempSourcePathGeter(validfiles)
-	srcPath := tp("")
-
-	_, err := ValidateFilenamesInDirectory(srcPath, true)
-	if err != nil {
-		t.Error(err)
+	tests := []struct {
+		name         string
+		subDir       string
+		wantErr      bool
+		InvalidCount int
+	}{
+		{"valid files", "rundowns_valid", false, 0},
+		{"invalid files", "rundowns_invalid", false, 1},
 	}
+	subDirs := []string{}
+	for _, tt := range tests {
+		subDirs = append(subDirs, tt.subDir)
+	}
+	testerConfig.InitTest(t, subDirs...)
 
-	invalidfiles := "rundowns_invalid"
-	tp = testerConfig.TempSourcePathGeter(invalidfiles)
-	srcPath = tp("")
-	_, err = ValidateFilenamesInDirectory(srcPath, true)
-	if err == nil {
-		t.Error("failed to catch error")
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tp := testerConfig.TempSourcePathGeter(tt.subDir)
+			srcPath := tp(".")
+			res, err := ValidateFilenamesInDirectory(srcPath, true)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ValidateFilenamesInDirectory() error = %v, wantErr %v",
+					err, tt.wantErr)
+			}
+			if res.FailureCount != tt.InvalidCount {
+				t.Errorf("ValidateFilenamesInDirectory() res = %v, invalid files count found is not correct: %v vs %v",
+					res, tt.InvalidCount, res.FailureCount)
+			}
+		})
 	}
 }
 

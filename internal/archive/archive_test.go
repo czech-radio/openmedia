@@ -2,7 +2,6 @@ package internal
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/triopium/go_utils/pkg/helper"
 
@@ -147,9 +146,8 @@ func Test_ProcessFolderInvalid2(t *testing.T) {
 
 func Test_ProcessFolderComplexNoDupes(t *testing.T) {
 	defer testerConfig.RecoverPanic(t)
-	testerConfig.InitTest(t)
-
 	subDir := "rundowns_complex_nodupes"
+	testerConfig.InitTest(t, subDir)
 	srcDir := filepath.Join(
 		testerConfig.TempDataSource, subDir)
 	dstDir := filepath.Join(
@@ -160,51 +158,77 @@ func Test_ProcessFolderComplexNoDupes(t *testing.T) {
 		OutputDirectory:          dstDir,
 		InvalidFileRename:        false,
 		InvalidFileContinue:      true,
+		InvalidFilenameContinue:  true,
 		CompressionType:          "zip",
 		PreserveFoldersInArchive: false,
 		RecurseSourceDirectory:   true,
 		// PreserveFoldersInArchive: true,
 	}
-	process := Archive{Options: opts}
-	err := process.Folder()
-	if err != nil {
-		t.Error(err)
+	tests := []struct {
+		name string
+		ArchiveOptions
+		wantErr bool
+	}{
+		{"no halt on file/filename error", opts, false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			process := Archive{Options: tt.ArchiveOptions}
+			err := process.Folder()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("(p *Archive) Folder() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+		})
 	}
 }
 
 func Test_ProcessFolderComplexDupes(t *testing.T) {
 	defer testerConfig.RecoverPanic(t)
-	testerConfig.InitTest(t)
-
 	subDir := "rundowns_complex_dupes"
+	testerConfig.InitTest(t, subDir)
+
 	srcDir := filepath.Join(
 		testerConfig.TempDataSource, subDir)
 	dstDir := filepath.Join(
 		testerConfig.TempDataOutput, subDir)
 
 	opts := ArchiveOptions{
-		SourceDirectory:   srcDir,
-		OutputDirectory:   dstDir,
-		InvalidFileRename: false,
-		// InvalidFileContinue:  false,
+		SourceDirectory:          srcDir,
+		OutputDirectory:          dstDir,
+		InvalidFileRename:        false,
 		InvalidFileContinue:      true,
+		InvalidFilenameContinue:  true,
 		CompressionType:          "zip",
 		PreserveFoldersInArchive: false,
-		// RecurseSourceDirectory:   false,
-		RecurseSourceDirectory: true,
+		RecurseSourceDirectory:   true,
 	}
-	process := Archive{Options: opts}
-	err := process.Folder()
-	if err != nil {
-		t.Error(err)
+	tests := []struct {
+		name string
+		ArchiveOptions
+		wantErr bool
+	}{
+		{"no halt on file/filename error", opts, false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			process := Archive{Options: tt.ArchiveOptions}
+			err := process.Folder()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("(p *Archive) Folder() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+		})
 	}
 }
 
 func Test_ProcessFolderComplexDupesSame(t *testing.T) {
 	defer testerConfig.RecoverPanic(t)
-	testerConfig.InitTest(t)
-
 	subDir := "rundowns_complex_dupes"
+	testerConfig.InitTest(t, subDir)
+
 	srcDir := filepath.Join(
 		testerConfig.TempDataSource, subDir)
 
@@ -213,61 +237,74 @@ func Test_ProcessFolderComplexDupesSame(t *testing.T) {
 		OutputDirectory:          srcDir,
 		InvalidFileRename:        false,
 		InvalidFileContinue:      true,
+		InvalidFilenameContinue:  true,
 		CompressionType:          "zip",
 		PreserveFoldersInArchive: false,
 		RecurseSourceDirectory:   true,
 	}
-	process := Archive{Options: opts}
-	err := process.Folder()
-	fmt.Printf("%+v\n", process.Results)
-	if err != nil {
-		t.Error(err)
+	tests := []struct {
+		name string
+		ArchiveOptions
+		wantErr bool
+	}{
+		{"no halt on file/filename error", opts, false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			process := Archive{Options: tt.ArchiveOptions}
+			err := process.Folder()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("(p *Archive) Folder() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+		})
 	}
 }
 
-func Test_ProcessFolderRundownsAppend(t *testing.T) {
-	defer testerConfig.RecoverPanic(t)
-	testerConfig.InitTest(t)
+// func Test_ProcessFolderRundownsAppend(t *testing.T) {
+// Not working zip files, tar.zip removed on request
+// 	defer testerConfig.RecoverPanic(t)
+// 	testerConfig.InitTest(t)
 
-	subDir := "rundowns_append"
-	srcDir := filepath.Join(
-		testerConfig.TempDataSource, subDir)
-	subDirs := []string{
-		"dir1",
-		// "dir2",
-		// "dir3",
-		// "dir4",
-	}
-	dstDir := filepath.Join(
-		testerConfig.TempDataOutput, subDir)
-	for i := range subDirs {
-		srcSubDir := filepath.Join(srcDir, subDirs[i])
-		fmt.Println("PROCESSING FOLDER", srcSubDir)
-		opts := ArchiveOptions{
-			SourceDirectory:          srcSubDir,
-			OutputDirectory:          dstDir,
-			InvalidFileRename:        false,
-			InvalidFileContinue:      true,
-			CompressionType:          "zip",
-			PreserveFoldersInArchive: false,
-			// PreserveFoldersInArchive: true,
-			ProcessedFileRename:    true,
-			RecurseSourceDirectory: true,
-		}
-		process := Archive{Options: opts}
-		err := process.Folder()
-		fmt.Printf("%+v\n", process.Results)
-		if err != nil {
-			t.Error(err)
-		}
-	}
-}
+// 	subDir := "rundowns_append"
+// 	srcDir := filepath.Join(
+// 		testerConfig.TempDataSource, subDir)
+// 	subDirs := []string{
+// 		"dir1",
+// 		// "dir2",
+// 		// "dir3",
+// 		// "dir4",
+// 	}
+// 	dstDir := filepath.Join(
+// 		testerConfig.TempDataOutput, subDir)
+// 	for i := range subDirs {
+// 		srcSubDir := filepath.Join(srcDir, subDirs[i])
+// 		fmt.Println("PROCESSING FOLDER", srcSubDir)
+// 		opts := ArchiveOptions{
+// 			SourceDirectory:          srcSubDir,
+// 			OutputDirectory:          dstDir,
+// 			InvalidFileRename:        false,
+// 			InvalidFileContinue:      true,
+// 			CompressionType:          "zip",
+// 			PreserveFoldersInArchive: false,
+// 			// PreserveFoldersInArchive: true,
+// 			ProcessedFileRename:    true,
+// 			RecurseSourceDirectory: true,
+// 		}
+// 		process := Archive{Options: opts}
+// 		err := process.Folder()
+// 		fmt.Printf("%+v\n", process.Results)
+// 		if err != nil {
+// 			t.Error(err)
+// 		}
+// 	}
+// }
 
 func Test_ProcessFolderDate(t *testing.T) {
 	defer testerConfig.RecoverPanic(t)
-	testerConfig.InitTest(t)
-
 	subDir := "rundowns_date"
+	testerConfig.InitTest(t, subDir)
 	srcDir := filepath.Join(
 		testerConfig.TempDataSource, subDir)
 	dstDir := filepath.Join(
@@ -278,13 +315,27 @@ func Test_ProcessFolderDate(t *testing.T) {
 		OutputDirectory:          dstDir,
 		InvalidFileRename:        false,
 		InvalidFileContinue:      true,
+		InvalidFilenameContinue:  true,
 		CompressionType:          "zip",
 		PreserveFoldersInArchive: false,
 		RecurseSourceDirectory:   true,
 	}
-	process := Archive{Options: opts}
-	err := process.Folder()
-	if err != nil {
-		t.Error(err)
+	tests := []struct {
+		name string
+		ArchiveOptions
+		wantErr bool
+	}{
+		{"no halt on file/filename error", opts, false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			process := Archive{Options: tt.ArchiveOptions}
+			err := process.Folder()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("(p *Archive) Folder() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+		})
 	}
 }
