@@ -3,10 +3,10 @@ name: main
 on:
   push:
     branches:
-      - triopim.test 
+      - triopium.test 
   pull_request:
     branches:
-      - triopim.test
+      - triopium.test
 
 jobs:
   build:
