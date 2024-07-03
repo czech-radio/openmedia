@@ -596,6 +596,7 @@ func (e *Extractor) ComputeRecordIDs(removeSrcColumns bool) {
 		part[targetFieldID] = field
 		e.TableXML.Rows[i].RowParts[RowPartCode_ComputedRID] = part
 	}
+	e.AddColumn(RowPartCode_ComputedRID, targetFieldID)
 	if removeSrcColumns {
 		e.RowPartColumnOmit(
 			RowPartCode_RadioRec, "RecordID")

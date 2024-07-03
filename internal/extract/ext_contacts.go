@@ -66,7 +66,9 @@ var EXTproductionContacts = OMextractors{
 			[]string{"5001"}, ProductionFieldsAudio, ProductionFieldsContactItems),
 		KeepWhenZeroSubnodes: true,
 	},
-	// visidata: select rows with not null Story-REC_RecordID, select rows with null Story-Cat_ObjectID
+	// visidata: select rows with not null Story-REC_RecordID,
+	// select rows with null Story-Cat_ObjectID
+
 	// Normal record
 	OMextractor{
 		ObjectPath:           "/Contact Item|Contact Bin",

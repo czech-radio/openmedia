@@ -5,6 +5,7 @@ import (
 	ar "github/czech-radio/openmedia/internal/archive"
 	"log/slog"
 	"path/filepath"
+	"strings"
 
 	"github.com/antchfx/xmlquery"
 )
@@ -70,6 +71,16 @@ type Extractor struct {
 
 	// Logging
 	ValidationTableAccount
+}
+
+// AddRecordsColumns adds extractor for OM_RECORD "RecordID" attribute
+func (ome OMextractors) AddRecordsColumns() {
+	for i, o := range ome {
+		if strings.HasSuffix(o.ObjectPath, "<OM_RECORD>") {
+			ome[i].ObjectAttrsNames = append(
+				o.ObjectAttrsNames, "RecordID")
+		}
+	}
 }
 
 func (e *Extractor) Init(

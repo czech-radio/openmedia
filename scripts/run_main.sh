@@ -14,7 +14,6 @@ FILE_VALIDATION="${FILTERS_DIR}/validace_new_ammended.xlsx"
 
 ### filter oposition
 # FILE_OPOSITION="${FILTERS_DIR}/filtr_opozice_2023-10-01_2024-03-31_v1.xlsx"
-# FILE_OPOSITION="${FILTERS_DIR}/filtr_opozice_2023-10-01_2024-03-31_v2.xlsx"
 # FILE_OPOSITION="${FILTERS_DIR}/filtr_opozice_2024-04-01_2024-05-31_v1.xlsx"
 FILE_OPOSITION="${FILTERS_DIR}/filtr_opozice_2024-04-01_2024-05-31_v2.xlsx"
 ### filter eurovolby

@@ -88,10 +88,17 @@ func (e *Extractor) TransformBase() {
 	e.RowPartOmit(RowPartCode_StoryRec)
 	indxs := e.FilterStoryPartRecordsDuds()
 	e.DeleteNonMatchingRows(indxs)
+
 	e.TreatStoryRecordsWithoutOMobject()
 	e.TransformEmptyRowPart()
 	e.TransformSpecialValues()
 	e.ComputeIndex()
+
+	indxs = e.FilterStoryPartsEmptyDupes()
+	e.DeleteNonMatchingRows(indxs)
+	indxs = e.FilterStoryPartsRedundant()
+	e.DeleteNonMatchingRows(indxs)
+
 	e.TransformHeaderExternal(RowPartCode_HourlyHead, "1000", "planovany_zacatek")
 }
 

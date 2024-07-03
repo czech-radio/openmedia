@@ -9,6 +9,9 @@ import (
 func (e *Extractor) OutputBaseDataset(
 	processName string, queryOpts *ArchiveFolderQuery) {
 	e.TransformBase()
+	if queryOpts.AddRecordsNumbers {
+		e.ComputeRecordIDs(true)
+	}
 	if queryOpts.ExtractorsCode == ExtractorsProductionContacts {
 		indxs := e.FilterPeculiarContacts()
 		e.DeleteNonMatchingRows(indxs)

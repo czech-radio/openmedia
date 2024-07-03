@@ -39,6 +39,9 @@ func commandExtractArchiveConfigure() {
 	add("CSVdelim", "csvD", "\t", "string", "",
 		"csv column field delimiter", []string{"\t", ";"}, nil)
 
+	add("AddRecordsNumbers", "arn", "false", "bool", "",
+		"Add record numbers columns and dependent columns", []string{"\t", ";"}, nil)
+
 	// Special filters
 	add("FilterFileName", "frfn", "", "string", "",
 		"Special filters filename. The filter filename specifies how the file is parsed and how it is used", nil, CheckFileExistsIfNotNull)
@@ -73,6 +76,12 @@ func ParseConfigOptions() *extract.ArchiveFolderQuery {
 	if !ok {
 		panic(fmt.Errorf("extractors name not defined: %s", q.ExtractorsName))
 	}
+
+	q.AddRecordsNumbers = true
+	if q.AddRecordsNumbers {
+		extractors.AddRecordsColumns()
+	}
+
 	q.Extractors = extractors
 	q.ExtractorsCode = extCode
 	q.WorkerType = ar.WorkeTypeCodeGet(q.SourceDirectoryType)
@@ -97,7 +106,8 @@ func (gc GlobalConfig) RunCommandExtractArchive() {
 		PackageTypes: []ar.WorkerTypeCode{queryOpts.WorkerType}}
 
 	// EXTRACT
-	if err := arf.FolderMap(queryOpts.SourceDirectory, true, queryOpts); err != nil {
+	if err := arf.FolderMap(
+		queryOpts.SourceDirectory, true, queryOpts); err != nil {
 		helper.Errors.ExitWithCode(err)
 	}
 	extracted := arf.FolderExtract(queryOpts)
@@ -119,7 +129,8 @@ func (gc GlobalConfig) RunCommandExtractArchive() {
 	}
 
 	// D) PREVOD KÓDŮ"
-	// 	// E) EXPORT CSV FILES IN DIR TO XLSX
+
+	// E) EXPORT CSV FILES IN DIR TO XLSX
 	// 	if false {
 	// 		delimRunes := []rune(queryOpts.CSVdelim)
 	// 		if len(delimRunes) != 1 {

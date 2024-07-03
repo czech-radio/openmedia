@@ -58,7 +58,7 @@ var EXTproductionAll = OMextractors{
 		FieldIDs: ProductionFieldsRadioStory,
 	},
 
-	// Unknow Record without OM_OBJECT insie
+	// Unknow Record without OM_OBJECT inside
 	OMextractor{
 		ObjectPath:       "/<OM_RECORD>",
 		ObjectAttrsNames: []string{"RecordID"},
@@ -67,7 +67,8 @@ var EXTproductionAll = OMextractors{
 			[]string{"5001"}, ProductionFieldsAudio, ProductionFieldsContactItems),
 		KeepWhenZeroSubnodes: true,
 	},
-	// visidata: select rows with not null Story-REC_RecordID, select rows with null Story-Cat_ObjectID
+	// visidata: select rows with not null Story-REC_RecordID,
+	// select rows with null Story-Cat_ObjectID
 	// Normal record
 	OMextractor{
 		ObjectPath:           "/Audioclip|Contact Item|Contact Bin",

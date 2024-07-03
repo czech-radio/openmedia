@@ -126,7 +126,8 @@ func (e *Extractor) FilterByPartAndFieldIDregexp(
 func (e *Extractor) FilterMatchPersonNameExact(f *FilterFile) error {
 	newColumnName := "name_match"
 	e.AddColumn(RowPartCode_ContactItemHead, newColumnName)
-	sheetRows, err := files.ReadExcelFileSheetRows(f.FilterFileName, f.FilterSheetName)
+	sheetRows, err := files.ReadExcelFileSheetRows(
+		f.FilterFileName, f.FilterSheetName)
 	if err != nil {
 		return err
 	}
@@ -143,7 +144,8 @@ func (e *Extractor) FilterMatchPersonNameExact(f *FilterFile) error {
 		}
 		_, ok = sheetTableMapped.RowHeaderToColumnMap[field.Value]
 		mark := MarkValue(ok, field.Value, valueNP)
-		e.MarkField(r.RowParts, RowPartCode_ContactItemHead, newColumnName, mark)
+		e.MarkField(r.RowParts, RowPartCode_ContactItemHead,
+			newColumnName, mark)
 	}
 	return nil
 }
@@ -151,7 +153,8 @@ func (e *Extractor) FilterMatchPersonNameExact(f *FilterFile) error {
 func (e *Extractor) FilterMatchPersonName(f *FilterFile) error {
 	newColumnName := "name_match"
 	e.AddColumn(RowPartCode_ContactItemHead, newColumnName)
-	sheetRows, err := files.ReadExcelFileSheetRows(f.FilterFileName, f.FilterSheetName)
+	sheetRows, err := files.ReadExcelFileSheetRows(
+		f.FilterFileName, f.FilterSheetName)
 	if err != nil {
 		return err
 	}
@@ -262,7 +265,8 @@ func (e *Extractor) FilterMatchPersonNameSurnameNormalized(f *FilterFile) error 
 
 	rs := e.TableXML.Rows
 	for _, r := range rs {
-		nameRef, ok := MatchPersonNameSurnameNormalized(sheetTableMapped, r.RowParts)
+		nameRef, ok := MatchPersonNameSurnameNormalized(
+			sheetTableMapped, r.RowParts)
 		var refnameMark string
 		var nameMatchMark string
 		if ok {
@@ -273,9 +277,12 @@ func (e *Extractor) FilterMatchPersonNameSurnameNormalized(f *FilterFile) error 
 			refnameMark = valueNP
 			nameMatchMark = "0"
 		}
-		e.MarkField(r.RowParts, RowPartCode_ContactItemHead, columnNameMatch, nameMatchMark)
 		e.MarkField(
-			r.RowParts, RowPartCode_ContactItemHead, ColumnNameRefered, refnameMark)
+			r.RowParts, RowPartCode_ContactItemHead,
+			columnNameMatch, nameMatchMark)
+		e.MarkField(
+			r.RowParts, RowPartCode_ContactItemHead,
+			ColumnNameRefered, refnameMark)
 	}
 	return nil
 }
@@ -283,11 +290,13 @@ func (e *Extractor) FilterMatchPersonNameSurnameNormalized(f *FilterFile) error 
 func (e *Extractor) FilterMatchPersonAndParty(f *FilterFile) error {
 	newColumnName := "name&party_match"
 	e.AddColumn(RowPartCode_ContactItemHead, newColumnName)
-	rows, err := files.ReadExcelFileSheetRows(f.FilterFileName, f.FilterSheetName)
+	rows, err := files.ReadExcelFileSheetRows(
+		f.FilterFileName, f.FilterSheetName)
 	if err != nil {
 		return err
 	}
-	table := files.CreateTable(rows, f.ColumnHeaderRow, f.RowHeaderColumn)
+	table := files.CreateTable(
+		rows, f.ColumnHeaderRow, f.RowHeaderColumn)
 	rs := e.TableXML.Rows
 	valNP := RowFieldSpecialValueCodeMap[RowFieldValueNotPossible]
 	for _, r := range rs {
@@ -295,13 +304,16 @@ func (e *Extractor) FilterMatchPersonAndParty(f *FilterFile) error {
 		if !ok {
 			panic(fmt.Errorf("row part and fieldname not present in row"))
 		}
-		_, partyField, ok := GetRowPartAndField(r.RowParts, RowPartCode_ContactItemHead, "5015")
+		_, partyField, ok := GetRowPartAndField(
+			r.RowParts, RowPartCode_ContactItemHead, "5015")
 		if !ok {
 			mark := MarkValue(ok, partyField.Value, valNP)
 			e.MarkField(r.RowParts, RowPartCode_ContactItemHead, newColumnName, mark)
 		}
-		ok1 := table.MatchRow(nameField.Value, "navrhující strana", partyField.Value)
-		ok2 := table.MatchRow(nameField.Value, "politická příslušnost", partyField.Value)
+		ok1 := table.MatchRow(
+			nameField.Value, "navrhující strana", partyField.Value)
+		ok2 := table.MatchRow(
+			nameField.Value, "politická příslušnost", partyField.Value)
 		res := ok1 || ok2
 		mark := MarkValue(res, partyField.Value, valNP)
 		e.MarkField(r.RowParts, RowPartCode_ContactItemHead, newColumnName, mark)
@@ -366,8 +378,10 @@ func (e *Extractor) FilterStoryPartRecordsDuds() []int {
 	indxs := make([]int, 0, len(e.Rows))
 	rows := e.TableXML.Rows
 	for i, row := range rows {
-		_, objid, _ := GetRowPartAndField(row.RowParts, RowPartCode_StoryKategory, "ObjectID")
-		_, recid, _ := GetRowPartAndField(row.RowParts, RowPartCode_StoryRec, "RecordID")
+		_, objid, _ := GetRowPartAndField(
+			row.RowParts, RowPartCode_StoryKategory, "ObjectID")
+		_, recid, _ := GetRowPartAndField(
+			row.RowParts, RowPartCode_StoryRec, "RecordID")
 		// _, storytype, _ := GetRowPartAndField(row.RowParts, RowPartCode_StoryRec, "5001")
 		if objid.Value != "" {
 			indxs = append(indxs, i)
@@ -384,9 +398,79 @@ func (e *Extractor) FilterStoryPartRecordsDuds() []int {
 	return indxs
 }
 
+// FilterStoryPartsEmpty filter out dupe stories parts which are empty
+func (e *Extractor) FilterStoryPartsEmptyDupes() []int {
+	indxs := make([]int, 0, len(e.Rows)/100)
+	rows := e.TableXML.Rows
+	var countPartsEmpty int
+	var storyIdCurrent string
+
+	for i, row := range rows {
+		_, storyId, _ := GetRowPartAndField(
+			row.RowParts, RowPartCode_StoryHead, "ObjectID")
+		// _, storyKategoryId, _ := GetRowPartAndField(
+		// row.RowParts, RowPartCode_StoryKategory, "ObjectID")
+		_, storyKategoryId, _ := GetRowPartAndField(
+			row.RowParts, RowPartCode_StoryKategory, "TemplateName")
+
+		if storyIdCurrent != storyId.Value {
+			// countPartsInStory = 1
+			countPartsEmpty = 0
+			storyIdCurrent = storyId.Value
+		}
+
+		if storyKategoryId.Value == "" ||
+			CheckIfFieldValueIsSpecialValue(storyKategoryId.Value) {
+			countPartsEmpty++
+		}
+		if countPartsEmpty > 1 {
+			slog.Warn("filtered out", "position", i)
+			continue
+		}
+		indxs = append(indxs, i)
+	}
+	return indxs
+}
+
+// FilterStoryPartsRedundant filter out story parts which are empty and not alone in story (dupes must be removed before with FilterStoryPartsEmptyDupes
+// NOTE: using map would be better, but cannot use map because there might be duplicate Story ObjectID in non-consequtive order inside rows sequnece
+func (e *Extractor) FilterStoryPartsRedundant() []int {
+	indxs := make([]int, 0, len(e.Rows)/100)
+	rows := e.TableXML.Rows
+	var storyIdCurrent string
+	var countPartsInStory int
+	var emptyPartEncountered bool
+	for i, row := range rows {
+		_, storyId, _ := GetRowPartAndField(
+			row.RowParts, RowPartCode_StoryHead, "ObjectID")
+		_, storyKategoryId, _ := GetRowPartAndField(
+			row.RowParts, RowPartCode_StoryKategory, "TemplateName")
+		if storyIdCurrent != storyId.Value {
+			if countPartsInStory == 1 && emptyPartEncountered {
+				// add previous row because the previous story does not contain any other parts
+				indxs = append(indxs, i-1)
+			}
+			countPartsInStory = 1
+			storyIdCurrent = storyId.Value
+			emptyPartEncountered = false
+		} else {
+			countPartsInStory++
+		}
+
+		if storyKategoryId.Value == "" ||
+			CheckIfFieldValueIsSpecialValue(storyKategoryId.Value) {
+			emptyPartEncountered = true
+			continue
+		}
+		indxs = append(indxs, i)
+	}
+	return indxs
+}
+
 // DeleteNonMatchingRows delete row indexes not specified in rowIndxsFiltered
 func (e *Extractor) DeleteNonMatchingRows(rowIdxsFiltered []int) {
-	slog.Info("rows count before deletion", "parsed", len(e.Rows), "filtered", len(rowIdxsFiltered))
+	slog.Info("rows count before deletion",
+		"parsed", len(e.Rows), "filtered", len(rowIdxsFiltered))
 	out := make([]*RowNode, len(rowIdxsFiltered))
 	rowIdxFilteredCurrent := 0
 	for ri := range e.Rows {
