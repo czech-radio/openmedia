@@ -6,16 +6,13 @@
 
 ## Description
 
-Program operates on XML rundown and contact files and creates ZIP archives. Archives will be named like `2023_W49_ORIGINAL.zip` for original files or `2023_W49_MINIFIED.zip` for minified files, where the part `W49` means the ISO week number. Each archive will contain only files corresponding to the same ISO week number. A date and name of the week day is derived from XML time tag. Rundown files in archives are renamed like `RD_05-09_Dvojka_Wednesday_W10_2020_03_04.xml`.
+- Main features of this program is to archive and extract Openmedia XML rundown files.
 
-The program executes two operations:
+- Weekly production of Openmedia rundowns files tends to be lots of data (5 GB/week) so with this program you can create zip archives from produced files, such that files which has same ISO week date are nested in one zip archive.  Resulting archive named for example `2023_W49_ORIGINAL.zip` stores exact copy of original rundown files has 10:1 size reduction. Resulting archive named for example `2023_W49_MINIFIED.zip` stores minified files and which has removed blocks of XML code which does not store any meaningful value. Rundown files in archives are renamed like `RD_05-09_Dvojka_Wednesday_W10_2020_03_04.xml`. The date and name of the week day in resulting filename is derived from XML time tag.
 
-- Archive original files
-  - Rundown files archives will be created in `OUTPUT_FOLDER/Rundowns` directory and the archive will be named like `2023_W49_ORIGINAL.zip`
-  - Contact files archives will be created in `OUTPUT_FOLDER/Contacts` directory and files will be named also like `2023_W49_ORIGINAL.zip`.
+- The size reduction of minified files is 30:1. Minified archive/files are much faster to process or download.
 
-- Minify original files
-  - original files will be minified, so that empty fields (fields that do not contain any value) will be removed. Original files are put in archive named like `2023_W49_MINIFIED.zip` after minification.
+- Next step is to extract, process and output useful data to csv (xlsx) table. The program contains various options for preprocessing, validation, transformation and filtering of data.
 
 ## Installation
 
@@ -30,19 +27,23 @@ The program executes two operations:
   ```powershell
   .\scripts\build.ps1
   ```
+
 ## Help
+
 [help](./docs/HELP.md)
 
 ## Usage
+
 [usage](./docs/USAGE.md)
 
 ## Presets script
+
 [presets](./scripts/run_main.sh)
-  
+
   ```bash
   ./scripts/run_main.sh ArchiveExtractControl
   ```
-  
+
   ```bash
   ./scripts/run_main.sh ArchiveExtractControlValidation
   ```
@@ -58,16 +59,14 @@ The program executes two operations:
     ```bash
   ./scripts/run_main.sh ArchiveExtractOpozice
   ```
-  
+
   ```bash
   ./scripts/run_main.sh ArchiveExtractEurovolby
   ```
 
 ## Development
 
-- Rundown files structure is describede [here](<https://github.com/czech-radio/openmedia-extract/edit/main/docs/source/notes.md>).
-
-- Additional testing files are located in `R/GŘ/Strategický rozvoj/Analytická sekce/_Archiv/Projekty/OpenMedia/04_03_2020`.
+- Rundown files structure is described [here](<https://github.com/czech-radio/openmedia-extract/edit/main/docs/source/notes.md>).
 
 - For XML rundown validation use program [`xmlint`](https://www.root.cz/man/1/xmllint/)[^1]
 

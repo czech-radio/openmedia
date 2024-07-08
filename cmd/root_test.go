@@ -31,13 +31,14 @@ func PrintOutput(
 		"### %d. %s: %s", nthCommand, commandName, flags[0])
 	fmt.Printf("%s\n", testName)
 	flagsJoined := strings.Join(flags[1:], " ")
-	fmt.Printf("Command input:\n\n")
+	fmt.Printf("Command input\n\n")
 	// fmt.Printf("\tgo run main.go %s\n", flagsJoined)
 	// fmt.Printf("\topenmedia %s\n", flagsJoined)
 
 	configure.PrintCommandExample("main", "openmedia", flagsJoined)
-	fmt.Printf("#### Command output:\n```\n%s```\n",
-		string(resultLog))
+	fmt.Printf("#### Command output\n\n")
+	fmt.Printf("```\n%s```", string(resultLog))
+	fmt.Printf("\n\n")
 	if countCommand == nthCommand {
 		fmt.Printf("### Run summary\n\n")
 	}
