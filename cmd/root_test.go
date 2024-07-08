@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/triopium/go_utils/pkg/configure"
 	"github.com/triopium/go_utils/pkg/helper"
 )
 
@@ -30,13 +31,15 @@ func PrintOutput(
 		"### %d. %s: %s", nthCommand, commandName, flags[0])
 	fmt.Printf("%s\n", testName)
 	flagsJoined := strings.Join(flags[1:], " ")
-	fmt.Printf("Command input:\n")
-	fmt.Printf("\tgo run main.go %s\n", flagsJoined)
-	fmt.Printf("\topenmedia %s\n", flagsJoined)
-	fmt.Printf("#### Command output:\n%s\n",
+	fmt.Printf("Command input:\n\n")
+	// fmt.Printf("\tgo run main.go %s\n", flagsJoined)
+	// fmt.Printf("\topenmedia %s\n", flagsJoined)
+
+	configure.PrintCommandExample("main", "openmedia", flagsJoined)
+	fmt.Printf("#### Command output:\n```\n%s```\n",
 		string(resultLog))
 	if countCommand == nthCommand {
-		fmt.Printf("### Run summary\n")
+		fmt.Printf("### Run summary\n\n")
 	}
 }
 

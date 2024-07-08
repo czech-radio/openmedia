@@ -11,7 +11,9 @@ GenerateUsage(){
     go test -v ./cmd/. -run Command_Archive;
     go test -v ./cmd/. -run Command_ExtractArchive;
   } >> ./docs/USAGE.md
-  sed -i "/^=== RUN.*$/d" USAGE.md
+  # sed -i "/^=== RUN.*$/d" ./docs/USAGE.md
+  # sed -i "/=== RUN.*$/d" ./docs/USAGE.md
+  sed -i "s/\(.*\)=== RUN.*$/\1/g" ./docs/USAGE.md
 }
 
 GenerateAll(){

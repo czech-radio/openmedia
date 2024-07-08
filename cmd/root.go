@@ -27,6 +27,8 @@ var ConfigMain = GlobalConfig{
 	configure.CommanderRoot}
 
 func RunRoot() {
+	ConfigMain.GoName = "main"
+	ConfigMain.BinName = "openmedia"
 	ConfigMain.VersionInfoAdd(VersionInfo)
 	ConfigMain.Init()
 	ConfigMain.AddSub("archive",

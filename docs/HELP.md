@@ -1,6 +1,13 @@
 ## Root command:
-  running source: `go run main.go -h`
-  running compiled: `main -h`
+running from source:
+```
+go run main.go -h
+```
+
+running compiled:
+```
+./openmedia -h
+```
 
 -h, -help
 	display this help and exit
@@ -34,88 +41,86 @@
 
 
 ## Subcommand: archive
-  running source: `go run main.go archive -h`
-  running compiled: `main archive -h`
+running from source:
+```
+go run main.go archive -h
+```
+
+running compiled:
+```
+./openmedia archive -h
+```
 
 -h, -help
 	display this help and exit
 
--sdir, -SourceDirectory=.
-	Source directory of rundown files.
+-U, -Usage=false
+	Print usage manual
 
--odir, -OutputDirectory=.
-	Destination directory for archived rundwon files
+-H, -generalHelp=false
+	Get help on all subcommands
 
--ct, -CompressionType=zip
-	Type of file compression
-	[zip]
+-V, -version=false
+	Print version of program.
 
--ifnc, -InvalidFilenameContinue=true
-	Continue even though unknown filename encountered
+-v, -verbose=0
+	Level of verbosity. Lower the number the more verbose is the output.
+	[6 4 2 0 -2 -4]
 
--ifc, -InvalidFileContinue=true
-	Continue even though unprocessable file encountered
+-logt, -logType=json
+	Type of logs formating.
+	[json plain]
 
--ifr, -InvalidFileRename=false
-	Rename invalid files in source folder.
+-dr, -dryRun=false
+	Dry run, useful for tests. Avoid any pernament changes to filesystem or any expensive tasks
 
--pfr, -ProcessedFileRename=false
-	Rename original rundown files after they are processed/archived: add "proccesed" prefix to source filename
+-dc, -debugConfig=false
+	Debug/print flag values
 
--pfd, -ProcessedFileDelete=false
-	Delete original rundown files after they are processed/archived.
-
--pfia, -PreserveFoldersInArchive=false
-	Preserve source folder structure in archive
-
--R, -RecurseSourceDirectory=false
-	Recurse source directory
+-logts, -logTest=false
+	Print test logs
 
 
 
 ## Subcommand: extractArchive
-  running source: `go run main.go extractArchive -h`
-  running compiled: `main extractArchive -h`
+running from source:
+```
+go run main.go extractArchive -h
+```
+
+running compiled:
+```
+./openmedia extractArchive -h
+```
 
 -h, -help
 	display this help and exit
 
--sdir, -SourceDirectory=/mnt/remote/cro/export-avo/Rundowns
-	Source directory of rundown files.
+-U, -Usage=false
+	Print usage manual
 
--sdirType, -SourceDirectoryType=MINIFIED.zip
-	type of source directory where the rundowns resides
+-H, -generalHelp=false
+	Get help on all subcommands
 
--odir, -OutputDirectory=/tmp/test/
-	Destination directory or file
+-V, -version=false
+	Print version of program.
 
--ofname, -OutputFileName=
-	Output file name.
+-v, -verbose=0
+	Level of verbosity. Lower the number the more verbose is the output.
+	[6 4 2 0 -2 -4]
 
--exsn, -ExtractorsName=production_all
-	Name of extractor which specifies the parts of xml to be extracted
+-logt, -logType=json
+	Type of logs formating.
+	[json plain]
 
--fdf, -FilterDateFrom=
-	Filter rundowns from date. Format of the date is given in form 'YYYY-mm-ddTHH:mm:ss' e.g. 2024, 2024-02-01 or 2024-02-01T10. The precission of date given is arbitrary.
+-dr, -dryRun=false
+	Dry run, useful for tests. Avoid any pernament changes to filesystem or any expensive tasks
 
--fdt, -FilterDateTo=
-	Filter rundowns to date
+-dc, -debugConfig=false
+	Debug/print flag values
 
--frn, -FilterRadioName=
-	Filter radio names
-
--csvD, -CSVdelim=	
-	csv column field delimiter
-	[	 ;]
-
--frfn, -FilterFileName=
-	Special filters filename. The filter filename specifies how the file is parsed and how it is used
-
--frsn, -FilterSheetName=data
-	Special filters sheetname
-
--valfn, -ValidatorFileName=
-	xlsx file containing validation receipe
+-logts, -logTest=false
+	Print test logs
 
 
 
