@@ -94,10 +94,14 @@ func (e *Extractor) TransformBase() {
 	e.TransformSpecialValues()
 	e.ComputeIndex()
 
-	indxs = e.FilterStoryPartsEmptyDupes()
-	e.DeleteNonMatchingRows(indxs)
-	indxs = e.FilterStoryPartsRedundant()
-	e.DeleteNonMatchingRows(indxs)
+	// TODO: add switch
+	if true {
+		// Removes duplicate (NC) story parts
+		indxs = e.FilterStoryPartsEmptyDupes()
+		e.DeleteNonMatchingRows(indxs)
+		indxs = e.FilterStoryPartsRedundant()
+		e.DeleteNonMatchingRows(indxs)
+	}
 
 	e.TransformHeaderExternal(RowPartCode_HourlyHead, "1000", "planovany_zacatek")
 }

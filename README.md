@@ -8,11 +8,15 @@
 
 - Main features of this program is to archive and extract Openmedia XML rundown files.
 
-- Weekly production of Openmedia rundowns files tends to be lots of data (5 GB/week) so with this program you can create zip archives from produced files, such that files which has same ISO week date are nested in one zip archive.  Resulting archive named for example `2023_W49_ORIGINAL.zip` stores exact copy of original rundown files has 10:1 size reduction. Resulting archive named for example `2023_W49_MINIFIED.zip` stores minified files and which has removed blocks of XML code which does not store any meaningful value. Rundown files in archives are renamed like `RD_05-09_Dvojka_Wednesday_W10_2020_03_04.xml`. The date and name of the week day in resulting filename is derived from XML time tag.
+- Weekly production of Openmedia rundowns files tends to be lots of data (5 GB/week) With this program you can create zip archives from rundown files, such that files with same ISO week date are nested in one zip archive. Two types of archives are produced: ORIGINAL and MINIFIED.
 
-- The size reduction of minified files is 30:1. Minified archive/files are much faster to process or download.
+- Rundown files stored in both ORIGINAL and MINIFIED archives are renamed like `RD_05-09_Dvojka_Wednesday_W10_2020_03_04.xml`. The date and name of the week day in resulting filename is derived from XML time tag.
 
-- Next step is to extract, process and output useful data to csv (xlsx) table. The program contains various options for preprocessing, validation, transformation and filtering of data.
+- Original archive named for example `2023_W49_ORIGINAL.zip` stores exact copy of original rundown files and after compression the size is reduced by factor of 10. 2023_W49 stands for year 2023 and ISO week number 49.
+
+- Minified archive named for example `2023_W49_MINIFIED.zip` stores minified files. Minified files have removed blocks of XML data which does not store any meaningful value. The size of minified files is reduced after minification and compression by factor of ~30. Minified archive/files are much faster to process or download. 
+
+- The xml rundown files are dificult to process and analyze the data they contain. So Next step is to extract, process and output useful data to csv (xlsx) table. The program contains various options for preprocessing, validation, transformation and filtering of data.
 
 ## Installation
 

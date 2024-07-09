@@ -72,6 +72,15 @@ ArchiveExtractConntrolProductionHour(){
   ArchiveExtractCommand
 }
 
+
+ArchiveExtractConntrolProductionWeek14(){
+  local EXTRACTOR="production_all"
+  local FROM="2024-04-01"
+  local TO="2024-04-07"
+  local OUTPUT_FILENAME="kontrolni_tyden_W14"
+  ArchiveExtractCommand
+}
+
 ArchiveExtractConntrolProductionWeek(){
   local EXTRACTOR="production_all"
   local FROM="2024-03-25"
