@@ -15,7 +15,7 @@ import (
 // ArchiveFolder
 type ArchiveFolder struct {
 	PackageTypes       []ar.WorkerTypeCode
-	XMLencoding        helper.FileEncodingCode
+	XMLencoding        helper.CharEncoding
 	PackagesNamesOrder []PackageName
 	Packages           map[PackageName]*ArchivePackage
 	Files              []string
@@ -44,11 +44,14 @@ type ArchiveFolderQuery struct {
 	PrintHeader       bool
 	CSVdelim          string
 
-	SourceDirectory     string
+	SourceDirectory    string
+	SourceCharEncoding string
+
 	SourceDirectoryType string
 	WorkerType          ar.WorkerTypeCode
 	OutputDirectory     string
 	OutputFileName      string
+	OutputCharEncoding  string
 
 	ExtractorsName    string
 	ExtractorsCode    ExtractorsPresetCode
@@ -79,26 +82,26 @@ func (af *ArchiveFolder) FolderListing(
 		if file.IsDir() {
 			return nil
 		}
-		for _, wtc := range af.PackageTypes {
-			switch wtc {
-			case ar.WorkerTypeZIPminified, ar.WorkerTypeZIPoriginal:
-				enc := ar.InferEncoding(wtc)
-				af.XMLencoding = enc
-				ok, _ := ArchivePackageMatch(filePath, wtc, filterRange)
-				if !ok {
-					slog.Debug(
-						"package omitted", "package", filePath)
-					return nil
-				}
-				if ok {
-					slog.Debug(
-						"package matched", "package", filePath)
-					packageName := PackageName(filePath)
-					af.PackagesNamesOrder = append(
-						af.PackagesNamesOrder, packageName)
-				}
-			}
-		}
+		// for _, wtc := range af.PackageTypes {
+		// 	switch wtc {
+		// 	case ar.WorkerTypeZIPminified, ar.WorkerTypeZIPoriginal:
+		// 		enc := ar.InferEncoding(wtc)
+		// 		af.XMLencoding = enc
+		// 		ok, _ := ArchivePackageMatch(filePath, wtc, filterRange)
+		// 		if !ok {
+		// 			slog.Debug(
+		// 				"package omitted", "package", filePath)
+		// 			return nil
+		// 		}
+		// 		if ok {
+		// 			slog.Debug(
+		// 				"package matched", "package", filePath)
+		// 			packageName := PackageName(filePath)
+		// 			af.PackagesNamesOrder = append(
+		// 				af.PackagesNamesOrder, packageName)
+		// 		}
+		// 	}
+		// }
 		return nil
 	}
 	return filepath.WalkDir(rootDir, dirWalker)

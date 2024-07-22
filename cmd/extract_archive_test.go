@@ -46,11 +46,13 @@ func TestRunCommand_ExtractArchive(t *testing.T) {
 	testSubdir := filepath.Join("cmd", commandName)
 	defer testerConfig.RecoverPanic(t)
 	testerConfig.InitTest(t, testSubdir)
-	for i, flags := range CommandExtractArchivePresets {
+	testNumber := 0
+	for _, flags := range CommandExtractArchivePresets {
+		testNumber++
 		srcDir := filepath.Join(
 			testerConfig.TempDataSource, testSubdir)
 		dstDir := filepath.Join(
-			testerConfig.TempDataOutput, testSubdir, strconv.Itoa(i+1))
+			testerConfig.TempDataOutput, testSubdir, strconv.Itoa(testNumber+1))
 		err := os.Mkdir(dstDir, 0700)
 		if err != nil {
 			panic(err)
@@ -58,8 +60,8 @@ func TestRunCommand_ExtractArchive(t *testing.T) {
 		flagss := append(flags, "-sdir="+srcDir)
 		flagss = append(flagss, "-odir="+dstDir)
 		fn := ReturnTestFunc(
-			len(CommandExtractArchivePresets), i+1, commandName,
+			len(CommandExtractArchivePresets), testNumber, commandName,
 			testSubdir, flagss)
-		t.Run(strconv.Itoa(i+1), fn)
+		t.Run(strconv.Itoa(testNumber), fn)
 	}
 }

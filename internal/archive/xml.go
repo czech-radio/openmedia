@@ -347,6 +347,23 @@ func XMLqueryFields(fieldsPath string, IDs []string) string {
 }
 
 func HandleXMLfileHeader(
+	enc helper.CharEncoding, data []byte) (*bytes.Reader, error) {
+	var err error
+	breader := bytes.NewReader(data)
+	switch enc {
+	case helper.CharEncodingUTF8:
+	case helper.CharEncodingUTF16le:
+		breader, err = XmlAmendUTF16header(breader)
+		if err != nil {
+			return nil, err
+		}
+	default:
+		err = fmt.Errorf("unknown encoding")
+	}
+	return breader, err
+}
+
+func HandleXMLfileHeaderB(
 	enc helper.FileEncodingCode, data []byte) (*bytes.Reader, error) {
 	var err error
 	breader := bytes.NewReader(data)
@@ -364,17 +381,18 @@ func HandleXMLfileHeader(
 }
 
 func ZipFileExtractData(
-	zf *zip.File, enc helper.FileEncodingCode) ([]byte, error) {
+	zf *zip.File, enc helper.CharEncoding) ([]byte, error) {
 	fileHandle, err := zf.Open()
 	if err != nil {
 		return nil, err
 	}
 	defer fileHandle.Close()
-	return helper.HandleFileEncoding(enc, fileHandle)
+	return helper.HandleFileEncoding(
+		enc, fileHandle)
 }
 
 func ZipXmlFileDecodeData(
-	zf *zip.File, enc helper.FileEncodingCode) (*bytes.Reader, error) {
+	zf *zip.File, enc helper.CharEncoding) (*bytes.Reader, error) {
 	data, err := ZipFileExtractData(zf, enc)
 	if err != nil {
 		return nil, err

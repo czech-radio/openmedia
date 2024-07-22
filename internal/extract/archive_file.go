@@ -7,9 +7,6 @@ import (
 	"fmt"
 	ar "github/czech-radio/openmedia/internal/archive"
 
-	"os"
-	"strings"
-
 	"github.com/triopium/go_utils/pkg/helper"
 
 	"github.com/antchfx/xmlquery"
@@ -17,46 +14,74 @@ import (
 
 // ArchiveFile
 type ArchiveFile struct {
-	Reader      *bytes.Reader
-	Tables      map[ar.WorkerTypeCode]TableXML
-	Encoding    string
-	RundownType string
-	FilePath    string
-	BaseNode    *xmlquery.Node
+	SourceFilePath     string
+	SourceFileEncoding string
+	RundownType        string
+	Reader             *bytes.Reader
+
+	Tables   map[ar.WorkerTypeCode]TableXML
+	BaseNode *xmlquery.Node
 	Extractor
 }
 
 // Init
-func (af *ArchiveFile) Init(wt ar.WorkerTypeCode, filePath string) error {
-	wr := ar.WorkerTypeMap[wt]
-	instructions := strings.Split(wr, "_")
-	af.RundownType = instructions[0]
-	af.Encoding = instructions[2]
-	af.FilePath = filePath
-	fileHandle, err := os.Open(af.FilePath)
-	if err != nil {
-		return err
-	}
+func (af *ArchiveFile) Init() error {
+	// fileHandle, err := os.Open(af.SourceFilePath)
+	// if err != nil {
+	// 	return err
+	// }
 
 	// switch file encoding type
-	enc := ar.InferEncoding(wt)
-	data, err := helper.HandleFileEncoding(enc, fileHandle)
-	if err != nil {
-		return err
-	}
-	breader, err := ar.HandleXMLfileHeader(enc, data)
-	if err != nil {
-		return err
-	}
-	af.Reader = breader
+	// enc := ar.InferEncoding(wt)
+	// data, err := helper.HandleFileEncoding(enc, fileHandle)
+	// if err != nil {
+	// 	return err
+	// }
+	// breader, err := ar.HandleXMLfileHeader(enc, data)
+	// if err != nil {
+	// 	return err
+	// }
+	// af.Reader = breader
 
-	baseNode, err := XMLgetOpenmediaBaseNode(af.Reader)
-	if err != nil {
-		return err
-	}
-	af.BaseNode = baseNode
+	// baseNode, err := XMLgetOpenmediaBaseNode(af.Reader)
+	// if err != nil {
+	// 	return err
+	// }
+	// af.BaseNode = baseNode
 	return nil
 }
+
+// InitOld
+// func (af *ArchiveFile) InitOld(wt ar.WorkerTypeCode, filePath string) error {
+// 	wr := ar.WorkerTypeMap[wt]
+// 	instructions := strings.Split(wr, "_")
+// 	af.RundownType = instructions[0]
+// 	af.SourceFileEncoding = instructions[2]
+// 	af.SourceFilePath = filePath
+// 	fileHandle, err := os.Open(af.SourceFilePath)
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	// switch file encoding type
+// 	enc := ar.InferEncoding(wt)
+// 	data, err := helper.HandleFileEncoding(enc, fileHandle)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	breader, err := ar.HandleXMLfileHeader(enc, data)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	af.Reader = breader
+
+// 	baseNode, err := XMLgetOpenmediaBaseNode(af.Reader)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	af.BaseNode = baseNode
+// 	return nil
+// }
 
 // ArchivePackageFile
 type ArchivePackageFile struct {
@@ -69,7 +94,7 @@ func (af *ArchiveFile) ExtractByXMLquery(extrs OMextractors) error {
 	// Extract specfied object fields
 	var extractor Extractor
 	extractor.Init(af.BaseNode, extrs, CSVdelim)
-	err := extractor.ExtractTable(af.FilePath)
+	err := extractor.ExtractTable(af.SourceFilePath)
 	if err != nil {
 		return err
 	}
@@ -79,7 +104,7 @@ func (af *ArchiveFile) ExtractByXMLquery(extrs OMextractors) error {
 
 // ExtractByXMLquery
 func (apf *ArchivePackageFile) ExtractByXMLquery(
-	enc helper.FileEncodingCode, q *ArchiveFolderQuery) (*Extractor, error) {
+	enc helper.CharEncoding, q *ArchiveFolderQuery) (*Extractor, error) {
 	var err error
 	// Extract file from zip
 	dataReader, err := ar.ZipXmlFileDecodeData(apf.Reader, enc)
@@ -101,15 +126,12 @@ func (apf *ArchivePackageFile) ExtractByXMLquery(
 	if q.ComputeUniqueRows {
 		extractor.UniqueRows()
 	}
-	// extractor.TransformEmptyRowPart()
-	// extractor.Transform(q.Transformer)
-	// extractor.FiltersRun(q.FilterColumns)
 	return &extractor, nil
 }
 
 // ExtractByParser
 func (apf *ArchivePackageFile) ExtractByParser(
-	enc helper.FileEncodingCode, q *ArchiveFolderQuery) error {
+	enc helper.CharEncoding, q *ArchiveFolderQuery) error {
 	dr, err := ar.ZipXmlFileDecodeData(apf.Reader, enc)
 	if err != nil {
 		return err

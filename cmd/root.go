@@ -3,6 +3,7 @@ package cmd
 //0254db3
 import (
 	"github.com/triopium/go_utils/pkg/configure"
+	c "github.com/triopium/go_utils/pkg/configure"
 )
 
 // Build tags set with -ldflags. Cannot set struct fields directly.
@@ -26,6 +27,8 @@ type GlobalConfig struct {
 var ConfigMain = GlobalConfig{
 	configure.CommanderRoot}
 
+var SubcommandConfig = c.CommanderConfig{}
+
 func RunRoot() {
 	ConfigMain.GoName = "main"
 	ConfigMain.BinName = "openmedia"
@@ -35,5 +38,7 @@ func RunRoot() {
 		ConfigMain.RunCommandArchive)
 	ConfigMain.AddSub("extractArchive",
 		ConfigMain.RunCommandExtractArchive)
+	ConfigMain.AddSub("extractFile",
+		ConfigMain.RunCommandExtractFile)
 	ConfigMain.RunRoot()
 }

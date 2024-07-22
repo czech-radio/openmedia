@@ -83,10 +83,12 @@ func TestRunCommand_Root(t *testing.T) {
 	testSubdir := filepath.Join("cmd")
 	defer testerConfig.RecoverPanic(t)
 	testerConfig.InitTest(t, testSubdir)
-	for i, flags := range CommandRootPresets {
+	testNumber := 0
+	for _, flags := range CommandRootPresets {
+		testNumber++
 		fn := ReturnTestFunc(
-			len(CommandRootPresets), i+1,
+			len(CommandRootPresets), testNumber,
 			commandName, testSubdir, flags)
-		t.Run(strconv.Itoa(i+1), fn)
+		t.Run(strconv.Itoa(testNumber), fn)
 	}
 }
