@@ -55,7 +55,7 @@ func commandArchiveConfigure() {
 func (gc GlobalConfig) RunCommandArchive() {
 	commandArchiveConfigure()
 	options := ar.ArchiveOptions{}
-	commandArchiveConfig.RunSub(&options)
+	commandArchiveConfig.SubcommandOptionsParse(&options)
 	if gc.DebugConfig {
 		fmt.Printf("Archive config: %+v\n", options)
 		os.Exit(0)

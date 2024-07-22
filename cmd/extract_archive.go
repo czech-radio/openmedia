@@ -12,33 +12,25 @@ import (
 	"github.com/triopium/go_utils/pkg/helper"
 )
 
-var commandExtractArchiveConfig = c.CommanderConfig{}
-
-func commandExtractArchiveConfigure() {
-	add := commandExtractArchiveConfig.AddOption
-	// Archive query
-	add("SourceDirectory", "sdir",
-		"/mnt/remote/cro/export-avo/Rundowns", "string", c.NotNil,
-		"Source directory of rundown files.", nil, helper.DirectoryExists)
-	add("SourceDirectoryType", "sdirType", "MINIFIED.zip", "string", "",
-		"type of source directory where the rundowns resides", nil, nil)
-	add("OutputDirectory", "odir", "/tmp/test/", "string", c.NotNil,
-		"Destination directory or file", nil, helper.DirectoryExists)
-	add("OutputFileName", "ofname", "", "string", c.NotNil,
-		"Output file name.", nil, nil)
+func CommonExtractOptions() {
+	add := SubcommandConfig.AddOption
+	// Output spcification
+	add("CSVdelim", "csvD", "\t", "string", "",
+		"csv column field delimiter", []string{"\t", ";"}, nil)
 
 	// Filter query
 	add("ExtractorsName", "exsn", "production_all", "string", c.NotNil,
 		"Name of extractor which specifies the parts of xml to be extracted", nil, nil)
-	add("FilterDateFrom", "fdf", "", "date", c.NotNil,
+	add("FilterDateFrom", "fdf",
+		helper.ISOweekStartLocal(-1).String(), "date", c.NotNil,
 		"Filter rundowns from date. Format of the date is given in form 'YYYY-mm-ddTHH:mm:ss' e.g. 2024, 2024-02-01 or 2024-02-01T10. The precission of date given is arbitrary.", nil, nil)
-	add("FilterDateTo", "fdt", "", "date", c.NotNil,
+	add("FilterDateTo", "fdt",
+		helper.ISOweekStartLocal(0).String(), "date", c.NotNil,
 		"Filter rundowns to date", nil, nil)
 	add("FilterRadioName", "frn", "", "string", "",
 		"Filter radio names", nil, nil)
-	add("CSVdelim", "csvD", "\t", "string", "",
-		"csv column field delimiter", []string{"\t", ";"}, nil)
 
+	// Special columns
 	add("AddRecordsNumbers", "arn", "false", "bool", "",
 		"Add record numbers columns and dependent columns", []string{"\t", ";"}, nil)
 
@@ -51,6 +43,22 @@ func commandExtractArchiveConfigure() {
 		"xlsx file containing validation receipe", nil, CheckFileExistsIfNotNull)
 }
 
+func commandExtractArchiveConfigure() {
+	add := SubcommandConfig.AddOption
+	// Archive query
+	add("SourceDirectory", "sdir",
+		// "/mnt/remote/cro/export-avo/Rundowns", "string", c.NotNil,
+		"/tmp/test2", "string", c.NotNil,
+		"Source directory of rundown files.", nil, helper.DirectoryExists)
+	add("SourceDirectoryType", "sdirType", "MINIFIED.zip", "string", "",
+		"type of source directory where the rundowns resides", nil, nil)
+	add("OutputDirectory", "odir", "/tmp/test/", "string", c.NotNil,
+		"Destination directory or file", nil, helper.DirectoryExists)
+	add("OutputFileName", "ofname", "", "string", c.NotNil,
+		"Output file name.", nil, nil)
+	CommonExtractOptions()
+}
+
 func CheckFileExistsIfNotNull(fileName string) (bool, error) {
 	if fileName != "" {
 		return helper.FileExists(fileName)
@@ -61,7 +69,7 @@ func CheckFileExistsIfNotNull(fileName string) (bool, error) {
 func ParseConfigOptions() *extract.ArchiveFolderQuery {
 	q := extract.ArchiveFolderQuery{}
 	commandExtractArchiveConfigure()
-	commandExtractArchiveConfig.RunSub(&q)
+	SubcommandConfig.SubcommandOptionsParse(&q)
 	_, offset := q.FilterDateFrom.Zone()
 	offsetDuration := time.Duration(offset) * time.Second
 	q.DateRange = [2]time.Time{
@@ -91,17 +99,20 @@ func ParseConfigOptions() *extract.ArchiveFolderQuery {
 
 func ParseFilterOptions() *extract.FilterFile {
 	filter := &extract.FilterFile{}
-	err := commandExtractArchiveConfig.ParseFlags(filter)
+	err := SubcommandConfig.ParseFlags(filter)
 	if err != nil {
 		panic(err)
 	}
 	return filter
 }
 
-// func RunCommandExtractArchive(rcfg *c.RootConfig) {
 func (gc GlobalConfig) RunCommandExtractArchive() {
 	queryOpts := ParseConfigOptions()
 	filterOpts := ParseFilterOptions()
+	fmt.Printf("%+v\n", queryOpts)
+	if true {
+		return
+	}
 	arf := extract.ArchiveFolder{
 		PackageTypes: []ar.WorkerTypeCode{queryOpts.WorkerType}}
 
