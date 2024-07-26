@@ -6,17 +6,17 @@
 
 ## Description
 
-- Main features of this program is to archive and extract Openmedia XML rundown files.
+- The main features of this program are to archive and extract Openmedia XML rundown files.
 
-- Weekly production of Openmedia rundowns files tends to be lots of data (5 GB/week) With this program you can create zip archives from rundown files, such that files with same ISO week date are nested in one zip archive. Two types of archives are produced: ORIGINAL and MINIFIED.
+- Weekly production of Openmedia rundown files tends to be lots of data (5 GB/week). With this program, you can create zip archives from rundown files, such that files with the same ISO week date are nested in one ZIP archive. Two types of archives are produced: original and minimal.
 
-- Rundown files stored in both ORIGINAL and MINIFIED archives are renamed like `RD_05-09_Dvojka_Wednesday_W10_2020_03_04.xml`. The date and name of the week day in resulting filename is derived from XML time tag.
+- Rundown files stored in both original and modified archives are renamed, like `RD_05-09_Dvojka_Wednesday_W10_2020_03_04.xml`. The date and name of the weekday in the resulting filename are derived from the XML time tag.
 
-- Original archive named for example `2023_W49_ORIGINAL.zip` stores exact copy of original rundown files and after compression the size is reduced by factor of 10. 2023_W49 stands for year 2023 and ISO week number 49.
+- The original archive, e.g., '2023_W49_ORIGINAL.zip', stores an exact copy of the original rundown files, and after compression, the size is reduced by a factor of 10. 2023_W49 stands for the year 2023 and ISO week number 49. 
 
-- Minified archive named for example `2023_W49_MINIFIED.zip` stores minified files. Minified files have removed blocks of XML data which does not store any meaningful value. The size of minified files is reduced after minification and compression by factor of ~30. Minified archive/files are much faster to process or download. 
+- A minified archive named, for example, `2023_W49_MINIFIED.zip` stores minified files. Minified files have removed blocks of XML data that do not store any meaningful value. The size of minified files is reduced after minification and compression by a factor of ~30. Minified archives and files are much faster to process or download. 
 
-- The xml rundown files are dificult to process and analyze the data they contain. So Next step is to extract, process and output useful data to csv (xlsx) table. The program contains various options for preprocessing, validation, transformation and filtering of data.
+- The XML rundown files make it difficult to process and analyze the data they contain. So the next step is to extract, process, and output useful data to a CSV (XLSX) table. The program contains various options for preprocessing, validation, transformation, and filtering of data.
 
 ## Installation
 
@@ -52,11 +52,11 @@
   ./scripts/run_main.sh ArchiveExtractControlValidation
   ```
 
-- make copy of the script, change main variables inside preset function form example: FROM, TO and FILTER_FILE.
+- Make a copy of the script and change the main variables inside the preset function, for example, FROM, TO, and FILTER_FILE.
 
-- Make sure the output directory exists or change it in script inside function ArchiveExtractCommand OUTPUT_DIR.
+- Make sure the output directory exists, or change it in the script inside the function ArchiveExtractCommand OUTPUT_DIR.
 
-- Mount rundowns folder R/.../cro/export-avo/Rundowns. Change variable SOURCE_DIR on line 3 to folder where the rundowns resides.
+- Mount the rundowns folder in `R/.../cro/export-avo/Rundowns`. Change the variable SOURCE_DIR on line 3 to the folder where the rundowns reside.
 
 - Run the script.
 
@@ -70,7 +70,7 @@
 
 ## Development
 
-- Rundown files structure is described [here](<https://github.com/czech-radio/openmedia-extract/edit/main/docs/source/notes.md>).
+- Rundown files structure is described [here](<https://github.com/czech-radio/extractor/blob/main/docs/source/notes.md>).
 
 - For XML rundown validation use program [`xmlint`](https://www.root.cz/man/1/xmllint/)[^1]
 
