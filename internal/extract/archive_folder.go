@@ -14,7 +14,7 @@ import (
 
 // ArchiveFolder
 type ArchiveFolder struct {
-	PackageTypes       []ar.WorkerTypeCode
+	PackageTypes       []ar.WorkerType
 	XMLencoding        helper.CharEncoding
 	PackagesNamesOrder []PackageName
 	Packages           map[PackageName]*ArchivePackage
@@ -32,14 +32,25 @@ type ArchivePackage struct {
 	PacakgeFilesOrder []string
 }
 
+// type ArchiveQueryCommon struct {
+// 	RadioNames     map[string]bool
+// 	IsoWeeks       map[int]bool
+// 	Months         map[int]bool
+// 	WeekDays       map[time.Weekday]bool
+// 	ExtractorsName string
+// 	FilterDateFrom time.Time
+// 	FilterDateTo   time.Time
+// }
+
 // ArchiveFolderQuery
 type ArchiveFolderQuery struct {
-	RadioNames        map[string]bool
-	DateRange         [2]time.Time
-	IsoWeeks          map[int]bool
-	Months            map[int]bool
-	WeekDays          map[time.Weekday]bool
-	Extractors        OMextractors
+	FilterRadioNames []string
+	RadioNamesMap    map[string]bool
+	DateRange        [2]time.Time
+	IsoWeeks         map[int]bool
+	Months           map[int]bool
+	WeekDays         map[time.Weekday]bool
+
 	ComputeUniqueRows bool
 	PrintHeader       bool
 	CSVdelim          string
@@ -48,18 +59,19 @@ type ArchiveFolderQuery struct {
 	SourceCharEncoding string
 
 	SourceDirectoryType string
-	WorkerType          ar.WorkerTypeCode
+	WorkerType          ar.WorkerType
 	OutputDirectory     string
 	OutputFileName      string
 	OutputCharEncoding  string
 
 	ExtractorsName    string
 	ExtractorsCode    ExtractorsPresetCode
+	Extractors        OMextractors
 	AddRecordsNumbers bool
 
-	FilterDateFrom    time.Time
-	FilterDateTo      time.Time
-	FilterRadioName   string
+	FilterDateFrom time.Time
+	FilterDateTo   time.Time
+	// FilterRadioName   string
 	FilterRecords     bool
 	ValidatorFileName string
 }

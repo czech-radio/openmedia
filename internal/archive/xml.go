@@ -363,22 +363,22 @@ func HandleXMLfileHeader(
 	return breader, err
 }
 
-func HandleXMLfileHeaderB(
-	enc helper.FileEncodingCode, data []byte) (*bytes.Reader, error) {
-	var err error
-	breader := bytes.NewReader(data)
-	switch enc {
-	case helper.UTF8:
-	case helper.UTF16le:
-		breader, err = XmlAmendUTF16header(breader)
-		if err != nil {
-			return nil, err
-		}
-	default:
-		err = fmt.Errorf("unknown encoding")
-	}
-	return breader, err
-}
+// func HandleXMLfileHeaderB(
+// 	enc helper.FileEncodingCode, data []byte) (*bytes.Reader, error) {
+// 	var err error
+// 	breader := bytes.NewReader(data)
+// 	switch enc {
+// 	case helper.UTF8:
+// 	case helper.UTF16le:
+// 		breader, err = XmlAmendUTF16header(breader)
+// 		if err != nil {
+// 			return nil, err
+// 		}
+// 	default:
+// 		err = fmt.Errorf("unknown encoding")
+// 	}
+// 	return breader, err
+// }
 
 func ZipFileExtractData(
 	zf *zip.File, enc helper.CharEncoding) ([]byte, error) {

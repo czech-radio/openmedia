@@ -18,47 +18,25 @@ import (
 
 var ArchiveTimeZone, _ = time.LoadLocation("")
 
-// WorkerTypeCode represents the selected line of processing.
-type WorkerTypeCode int
+// WorkerType represents the selected line of processing.
+type WorkerType string
+
+// type WorkerType
 
 const (
-	WorkerTypeZIPoriginal WorkerTypeCode = iota
-	WorkerTypeZIPminified
-	WorkerTypeRundownXMLutf8
-	WorkerTypeRundownXMLutf16le
-	WorkerTypeCSVcontactsFields
-	WorkerTypeCSVcontactsUniqueFields
-	WorkerTypeCSVprodukce
+	WorkerTypeZIPoriginal WorkerType = "ORIGINAL.zip"
+	WorkerTypeZIPminified WorkerType = "MINIFIED.zip"
 )
 
-var WorkerTypeMap = map[WorkerTypeCode]string{
-	WorkerTypeZIPoriginal:             "ORIGINAL.zip",
-	WorkerTypeZIPminified:             "MINIFIED.zip",
-	WorkerTypeRundownXMLutf8:          "RD_utf8_xml",
-	WorkerTypeRundownXMLutf16le:       "RD_utf16le_xml",
-	WorkerTypeCSVcontactsFields:       "CONTACT_FIELDS.csv",
-	WorkerTypeCSVcontactsUniqueFields: "CONTACT_FIELDS_UNIQUE.csv",
-	WorkerTypeCSVprodukce:             "PRODUKCE.csv",
+var WorkerTypeMap = map[WorkerType]bool{
+	WorkerTypeZIPoriginal: true,
+	WorkerTypeZIPminified: true,
 }
 
-func WorkeTypeCodeGet(codeName string) WorkerTypeCode {
-	for code, name := range WorkerTypeMap {
-		if codeName == name {
-			return code
-		}
-	}
-	panic(fmt.Errorf("no worker code found for given name: %s", codeName))
-}
-
-func InferEncoding(wtc WorkerTypeCode) helper.FileEncodingCode {
-	var enc helper.FileEncodingCode
-	switch wtc {
-	case WorkerTypeZIPminified, WorkerTypeRundownXMLutf8:
-		enc = helper.UTF8
-	case WorkerTypeZIPoriginal, WorkerTypeRundownXMLutf16le:
-		enc = helper.UTF16le
-	}
-	return enc
+func WorkerTypeGetCode(workerTypeName string) (WorkerType, bool) {
+	wtc := WorkerType(workerTypeName)
+	_, ok := WorkerTypeMap[wtc]
+	return wtc, ok
 }
 
 type Archive struct {
@@ -126,7 +104,7 @@ type ArchivePackageWorker struct {
 	Call           chan *ArchiveItemFileMeta
 	WorkerName     string
 	WorkerTypeName string
-	WorkerTypeCode WorkerTypeCode
+	WorkerTypeCode WorkerType
 	ArchivePath    string
 	ArchiveFile    *os.File
 	ArchiveWriter  *zip.Writer
@@ -252,12 +230,13 @@ func (f *ArchiveItemFileMeta) Parse(
 }
 
 func (f *ArchiveItemFileMeta) SetWeekWorkerName(
-	wtc WorkerTypeCode) string {
-	workerTypeString := WorkerTypeMap[wtc]
+	wtc WorkerType) string {
+	// workerTypeString := WorkerTypeMap[wtc]
 	// f.WorkerName = fmt.Sprintf("%s/%d_W%02d_%s.%s", f.OpenMediaFileType.OutputDir, f.Year, f.Week, workerTypeString, f.CompressionType)
 	f.WorkerName = fmt.Sprintf(
 		"%s/%d_W%02d_%s", f.OpenMediaFileType.OutputDir,
-		f.Year, f.Week, workerTypeString)
+		// f.Year, f.Week, workerTypeString)
+		f.Year, f.Week, wtc)
 	return f.WorkerName
 }
 
@@ -405,6 +384,7 @@ func (p *Archive) File(sourceFilePath string) error {
 
 	// Transform input data
 	dataReader := bytes.NewReader(data)
+	// TODO: replace with new handler HanleFileEncoding,FileReadHandleEncoding iportance low
 	pr := PipeUTF16leToUTF8(dataReader)
 	pr = PipeRundownHeaderAmmend(pr)
 
@@ -499,7 +479,7 @@ func (p *Archive) CheckArchiveWorkerDupes(
 }
 
 func (p *Archive) CallArchiveWorker(
-	fm *ArchiveItemFileMeta, workerTypeCode WorkerTypeCode) error {
+	fm *ArchiveItemFileMeta, workerTypeCode WorkerType) error {
 	worker, ok := p.ArchiveWorkers[fm.WorkerName]
 	if !ok {
 		worker = new(ArchivePackageWorker)
@@ -510,7 +490,7 @@ func (p *Archive) CallArchiveWorker(
 				fm.FilePathSource, err)
 		}
 		p.ArchiveWorkers[fm.WorkerName] = worker
-		go func(w *ArchivePackageWorker, workerTypeCode WorkerTypeCode) {
+		go func(w *ArchivePackageWorker, workerTypeCode WorkerType) {
 			for {
 				workerParams := <-w.Call
 				origSize, compressedSize, bytesWritten, err := p.AddFileToArchive(

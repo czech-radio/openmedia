@@ -52,10 +52,10 @@ func TestArchivePackageFileMatch(t *testing.T) {
 			dateFrom,
 			dateTo,
 		},
-		Months:     map[int]bool{},
-		WeekDays:   map[time.Weekday]bool{},
-		IsoWeeks:   map[int]bool{},
-		RadioNames: map[string]bool{},
+		Months:        map[int]bool{},
+		WeekDays:      map[time.Weekday]bool{},
+		IsoWeeks:      map[int]bool{},
+		RadioNamesMap: map[string]bool{},
 	}
 	for i := range files {
 		ok, err := ArchivePackageFileMatch(files[i], query)
@@ -71,7 +71,7 @@ func TestArchivePackageFileMatch(t *testing.T) {
 
 func TestArchivePackageFileMatchER(t *testing.T) {
 	af := ArchiveFolderQuery{
-		RadioNames: map[string]bool{
+		RadioNamesMap: map[string]bool{
 			"zurnal": false,
 		},
 	}

@@ -27,12 +27,15 @@ func CommonExtractOptions() {
 	add("FilterDateTo", "fdt",
 		helper.ISOweekStartLocal(0).String(), "date", c.NotNil,
 		"Filter rundowns to date", nil, nil)
-	add("FilterRadioName", "frn", "", "string", "",
+
+	add("FilterRadioNames", "frns", "", "[]string", "",
 		"Filter radio names", nil, nil)
+	// add("FilterRadioName", "frn", "", "string", "",
+	// "Filter radio name", nil, nil)
 
 	// Special columns
 	add("AddRecordsNumbers", "arn", "false", "bool", "",
-		"Add record numbers columns and dependent columns", []string{"\t", ";"}, nil)
+		"Add record numbers columns and dependent columns", "", nil)
 
 	// Special filters
 	add("FilterFileName", "frfn", "", "string", "",
@@ -50,11 +53,14 @@ func commandExtractArchiveConfigure() {
 		// "/mnt/remote/cro/export-avo/Rundowns", "string", c.NotNil,
 		"/tmp/test2", "string", c.NotNil,
 		"Source directory of rundown files.", nil, helper.DirectoryExists)
-	add("SourceDirectoryType", "sdirType", "MINIFIED.zip", "string", "",
+	add("SourceDirectoryType", "sdirType",
+		"MINIFIED.zip", "string", "",
 		"type of source directory where the rundowns resides", nil, nil)
-	add("OutputDirectory", "odir", "/tmp/test/", "string", c.NotNil,
+	add("OutputDirectory", "odir",
+		"/tmp/test/", "string", c.NotNil,
 		"Destination directory or file", nil, helper.DirectoryExists)
-	add("OutputFileName", "ofname", "", "string", c.NotNil,
+	add("OutputFileName", "ofname",
+		"default", "string", c.NotNil,
 		"Output file name.", nil, nil)
 	CommonExtractOptions()
 }
@@ -75,10 +81,10 @@ func ParseConfigOptions() *extract.ArchiveFolderQuery {
 	q.DateRange = [2]time.Time{
 		q.FilterDateFrom.UTC().Add(offsetDuration + 1),
 		q.FilterDateTo.UTC().Add(offsetDuration)}
-	if q.FilterRadioName != "" {
-		q.RadioNames = make(map[string]bool)
-		q.RadioNames[q.FilterRadioName] = true
-	}
+	// if q.FilterRadioName != "" {
+	// q.RadioNames = make(map[string]bool)
+	// q.RadioNames[q.FilterRadioName] = true
+	// }
 	extCode := extract.ExtractorsPresetCode(q.ExtractorsName)
 	extractors, ok := extract.ExtractorsCodeMap[extCode]
 	if !ok {
@@ -92,7 +98,12 @@ func ParseConfigOptions() *extract.ArchiveFolderQuery {
 
 	q.Extractors = extractors
 	q.ExtractorsCode = extCode
-	q.WorkerType = ar.WorkeTypeCodeGet(q.SourceDirectoryType)
+	wtc, ok := ar.WorkerTypeGetCode(q.SourceDirectoryType)
+	if !ok {
+		panic(fmt.Errorf("unknown directoy type: %s", q.SourceDirectoryType))
+	}
+	q.WorkerType = wtc
+
 	slog.Info("effective subcommand config", "config", q)
 	return &q
 }
@@ -108,13 +119,16 @@ func ParseFilterOptions() *extract.FilterFile {
 
 func (gc GlobalConfig) RunCommandExtractArchive() {
 	queryOpts := ParseConfigOptions()
-	filterOpts := ParseFilterOptions()
 	fmt.Printf("%+v\n", queryOpts)
+	filterOpts := ParseFilterOptions()
+	fmt.Printf("%+v\n", filterOpts)
 	if true {
+		fmt.Println("hello")
 		return
 	}
+	// queryOpts := ParseConfigOptions()
 	arf := extract.ArchiveFolder{
-		PackageTypes: []ar.WorkerTypeCode{queryOpts.WorkerType}}
+		PackageTypes: []ar.WorkerType{queryOpts.WorkerType}}
 
 	// EXTRACT
 	if err := arf.FolderMap(

@@ -12,10 +12,9 @@ import (
 	ar "github/czech-radio/openmedia/internal/archive"
 )
 
-var commandArchiveConfig = c.CommanderConfig{}
-
 func commandArchiveConfigure() {
-	add := commandArchiveConfig.AddOption
+	// add := commandArchiveConfig.AddOption
+	add := SubcommandConfig.AddOption
 	add("SourceDirectory", "sdir",
 		".", "string", c.NotNil,
 		"Source directory of rundown files.",
@@ -55,7 +54,7 @@ func commandArchiveConfigure() {
 func (gc GlobalConfig) RunCommandArchive() {
 	commandArchiveConfigure()
 	options := ar.ArchiveOptions{}
-	commandArchiveConfig.SubcommandOptionsParse(&options)
+	SubcommandConfig.SubcommandOptionsParse(&options)
 	if gc.DebugConfig {
 		fmt.Printf("Archive config: %+v\n", options)
 		os.Exit(0)
