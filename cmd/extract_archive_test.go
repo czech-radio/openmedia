@@ -19,7 +19,7 @@ var CommandExtractArchivePresets = [][]string{
 		"-fdf=2020-03-04", "-fdt=2020-03-05",
 	},
 	{"extract all story parts from minified rundowns, extract only specified radios",
-		"extractArchive", "-ofname=production", "-exsn=production_all", "-frn=Olomouc",
+		"extractArchive", "-ofname=production", "-exsn=production_all", "-frns=Olomouc,Plus",
 		"-fdf=2020-03-04", "-fdt=2020-03-05",
 	},
 	{"extract all story parts from minified rundowns and validate",

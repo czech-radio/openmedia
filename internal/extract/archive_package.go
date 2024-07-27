@@ -40,8 +40,8 @@ func ArchivePackageNameParse(packageName string) (time.Time, time.Time, string, 
 
 // ArchivePackageMatch
 func ArchivePackageMatch(
-	packageName string, wtc ar.WorkerTypeCode, filterRange [2]time.Time) (bool, error) {
-	wtcTypeName, ok := ar.WorkerTypeMap[wtc]
+	packageName string, wtc ar.WorkerType, filterRange [2]time.Time) (bool, error) {
+	_, ok := ar.WorkerTypeMap[wtc]
 	if !ok {
 		panic("unknown workertype code")
 	}
@@ -50,7 +50,7 @@ func ArchivePackageMatch(
 	if err != nil {
 		return false, err
 	}
-	if wtcTypeName != ptype {
+	if string(wtc) != ptype {
 		return false, nil
 	}
 	packageRange := [2]time.Time{packageStart, packageEnd}
@@ -153,7 +153,7 @@ func ArchivePackageFileMatch(
 			"matched", false)
 		return false, err
 	}
-	if len(q.RadioNames) > 0 && !q.RadioNames[meta.RadioName] {
+	if len(q.RadioNamesMap) > 0 && !q.RadioNamesMap[meta.RadioName] {
 		slog.Debug(
 			"filename match radioname", "filename", nestedFileName,
 			"matched", false)
