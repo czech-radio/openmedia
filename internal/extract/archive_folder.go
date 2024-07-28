@@ -32,44 +32,18 @@ type ArchivePackage struct {
 	PacakgeFilesOrder []string
 }
 
-// ArchiveFolderQueryOrig
 type ArchiveFolderQuery struct {
-	FilterRadioNames []string
-	RadioNamesMap    map[string]bool
-	DateRange        [2]time.Time
-	IsoWeeks         map[int]bool
-	Months           map[int]bool
-	WeekDays         map[time.Weekday]bool
-
-	ComputeUniqueRows bool
-	PrintHeader       bool
-	CSVdelim          string
-
-	SourceDirectory    string
-	SourceCharEncoding string
-
-	SourceDirectoryType string
-	WorkerType          ar.WorkerType
-	OutputDirectory     string
-	OutputFileName      string
-	OutputCharEncoding  string
-
-	ExtractorsName    string
-	ExtractorsCode    ExtractorsPresetCode
-	Extractors        OMextractors
-	AddRecordsNumbers bool
-
-	FilterDateFrom time.Time
-	FilterDateTo   time.Time
-	// FilterRadioName   string
-	FilterRecords     bool
-	ValidatorFileName string
+	ArchiveQueryCommon
+	ArchiveIO
+	FilterFile
+	Extractors OMextractors
 }
 
 // FolderListing
 func (af *ArchiveFolder) FolderListing(
 	rootDir string, recursive bool,
 	filterRange [2]time.Time) error {
+
 	dirWalker := func(filePath string, file fs.DirEntry, err error) error {
 		slog.Debug(filePath)
 		if err != nil {
@@ -84,26 +58,25 @@ func (af *ArchiveFolder) FolderListing(
 		if file.IsDir() {
 			return nil
 		}
-		// for _, wtc := range af.PackageTypes {
-		// 	switch wtc {
-		// 	case ar.WorkerTypeZIPminified, ar.WorkerTypeZIPoriginal:
-		// 		enc := ar.InferEncoding(wtc)
-		// 		af.XMLencoding = enc
-		// 		ok, _ := ArchivePackageMatch(filePath, wtc, filterRange)
-		// 		if !ok {
-		// 			slog.Debug(
-		// 				"package omitted", "package", filePath)
-		// 			return nil
-		// 		}
-		// 		if ok {
-		// 			slog.Debug(
-		// 				"package matched", "package", filePath)
-		// 			packageName := PackageName(filePath)
-		// 			af.PackagesNamesOrder = append(
-		// 				af.PackagesNamesOrder, packageName)
-		// 		}
-		// 	}
-		// }
+		for _, wtc := range af.PackageTypes {
+			switch wtc {
+			case ar.WorkerTypeZIPminified, ar.WorkerTypeZIPoriginal:
+				af.XMLencoding = ar.WorkerTypeMap[wtc]
+				ok, _ := ArchivePackageMatch(filePath, wtc, filterRange)
+				if !ok {
+					slog.Debug(
+						"package omitted", "package", filePath)
+					return nil
+				}
+				if ok {
+					slog.Debug(
+						"package matched", "package", filePath)
+					packageName := PackageName(filePath)
+					af.PackagesNamesOrder = append(
+						af.PackagesNamesOrder, packageName)
+				}
+			}
+		}
 		return nil
 	}
 	return filepath.WalkDir(rootDir, dirWalker)
@@ -116,10 +89,12 @@ func (af *ArchiveFolder) FolderMap(
 	if err != nil {
 		return err
 	}
+
 	if af.Packages == nil {
 		af.Packages = make(map[PackageName]*ArchivePackage)
 	}
 	filesCount := 0
+	slog.Info("packages matched", "count", len(af.PackagesNamesOrder))
 	for _, packageName := range af.PackagesNamesOrder {
 		archivePackage, count, err := PackageMap(packageName, q)
 		if err != nil {

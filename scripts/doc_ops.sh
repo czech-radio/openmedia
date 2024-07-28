@@ -17,7 +17,7 @@ GenerateUsage(){
 }
 
 GenerateAll(){
-  # GenerateHelp
+  GenerateHelp
   GenerateUsage
 }
 

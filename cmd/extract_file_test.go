@@ -20,10 +20,10 @@ func PrependTempPath(flags []string, flagName string, path string) {
 }
 
 var CommandExtractFilePresets = [][]string{
-	// {"help",
-	// "extractFile", "-h"},
-	// {"print config",
-	// "extractFile", "-dc"},
+	{"help",
+		"extractFile", "-h"},
+	{"print config",
+		"extractFile", "-dc"},
 	{"extract original UTF16 file",
 		"extractFile",
 		"-sfp=RD_12-19_ČRo_Olomouc_-_Wed__04_03_2020_2_1608925_20200304234622_UTF16.xml",
@@ -37,6 +37,7 @@ var CommandExtractFilePresets = [][]string{
 		"-odir=", "-ofn=orig", "-frns=Plus,Sek", "-fisow=1,2,3", "-fwdays=1,2,3",
 		"-valfn=../test/testdata/cmd/extractArchive/filters/validace_new_ammended.xlsx",
 		"-frfn=../test/testdata/cmd/extractArchive/filters/filtr_eurovolby_v1.xlsx",
+		"-arn",
 	},
 }
 

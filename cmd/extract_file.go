@@ -3,11 +3,21 @@ package cmd
 import (
 	"fmt"
 	"github/czech-radio/openmedia/internal/extract"
+
+	"github.com/triopium/go_utils/pkg/helper"
 )
 
 func commandExtractFileConfigure() {
-	OptionsCommonExtractPath()
+	add := SubcommandConfig.AddOption
+	OptionsCommonOutput()
 	OptionsCommonExtractFilter()
+	add("SourceFilePath", "sfp",
+		"", "string", "",
+		"Source rundown file name.", nil, helper.FileExists)
+	//NOTE: char encoding is infered by reading first two bytes. Some files may violate the convention. Alternatively option for hard specifing charencoding can be added.
+	// add("SourceFileEncoding", "sfe", "UTF8", "string", "",
+	//	"Source file encoding. Original files has UTF16le encoding. Minified files has UTF8 encoding.",
+	//	[]string{"UTF8", "UTF16le"}, nil)
 }
 
 func (gc GlobalConfig) RunCommandExtractFile() {
@@ -35,15 +45,3 @@ func (gc GlobalConfig) RunCommandExtractFile() {
 	af.OutputAll(
 		&af.ArchiveQueryCommon, &af.ArchiveIO, &af.FilterFile)
 }
-
-// add("SourceFileEncoding", "sfe", "UTF8", "string", "",
-// 	"Source file encoding. Original files has UTF16le encoding. Minified files has UTF8 encoding.",
-// 	[]string{"UTF8", "UTF16le"}, nil)
-// CommonExtractOptions()
-
-// afq := extract.ArchiveQueryCommon{}
-// afio := extract.ArchiveIO{}
-// SubcommandConfig.SubcommandOptionsParse(&afq)
-// SubcommandConfig.SubcommandOptionsParse(&afio)
-// fmt.Printf("%+v\n", afq)
-// fmt.Printf("%+v\n", afio)

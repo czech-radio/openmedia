@@ -16,21 +16,23 @@ import (
 	"time"
 )
 
+//NOTE: Golang zip package does not allow adding files to old archive. Alternative using tar.gz or tar.zip was previously used which alloved this. Option using tar was removed upon request (D. Landa). Some problems cannot be avoided with using zip only (like potenial duplicate file errors inside package, packaging and extracting has to be run with one week delay...) Maybe try to add this option again from old version.
+
 var ArchiveTimeZone, _ = time.LoadLocation("")
 
 // WorkerType represents the selected line of processing.
 type WorkerType string
-
-// type WorkerType
 
 const (
 	WorkerTypeZIPoriginal WorkerType = "ORIGINAL.zip"
 	WorkerTypeZIPminified WorkerType = "MINIFIED.zip"
 )
 
-var WorkerTypeMap = map[WorkerType]bool{
-	WorkerTypeZIPoriginal: true,
-	WorkerTypeZIPminified: true,
+// var WorkerTypeMap = map[WorkerType]bool{
+// NOTE: maybe also infer encoding from unpacked file
+var WorkerTypeMap = map[WorkerType]helper.CharEncoding{
+	WorkerTypeZIPoriginal: helper.CharEncodingUTF16le,
+	WorkerTypeZIPminified: helper.CharEncodingUTF8,
 }
 
 func WorkerTypeGetCode(workerTypeName string) (WorkerType, bool) {

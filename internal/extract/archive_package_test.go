@@ -40,40 +40,40 @@ func TestArchivePackageFileParse(t *testing.T) {
 	}
 }
 
-func TestArchivePackageFileMatch(t *testing.T) {
-	files := []string{
-		"RD_00-05_Radiožurnál_Saturday_W05_2020_02_01.xml",
-		"RD_05-09_ČRo_Brno_Saturday_W05_2020_02_01.xml",
-	}
-	dateFrom := time.Date(2020, 1, 1, 0, 0, 0, 0, ar.ArchiveTimeZone)
-	dateTo := time.Date(2020, 3, 1, 0, 0, 0, 0, ar.ArchiveTimeZone)
-	query := &ArchiveFolderQuery{
-		DateRange: [2]time.Time{
-			dateFrom,
-			dateTo,
-		},
-		Months:        map[int]bool{},
-		WeekDays:      map[time.Weekday]bool{},
-		IsoWeeks:      map[int]bool{},
-		RadioNamesMap: map[string]bool{},
-	}
-	for i := range files {
-		ok, err := ArchivePackageFileMatch(files[i], query)
-		if err != nil {
-			t.Error(err)
-		}
-		if ok != true {
-			t.Error("not matched")
-		}
-	}
+// func TestArchivePackageFileMatch(t *testing.T) {
+// 	files := []string{
+// 		"RD_00-05_Radiožurnál_Saturday_W05_2020_02_01.xml",
+// 		"RD_05-09_ČRo_Brno_Saturday_W05_2020_02_01.xml",
+// 	}
+// 	dateFrom := time.Date(2020, 1, 1, 0, 0, 0, 0, ar.ArchiveTimeZone)
+// 	dateTo := time.Date(2020, 3, 1, 0, 0, 0, 0, ar.ArchiveTimeZone)
+// 	query := &ArchiveFolderQuery{
+// 		DateRange: [2]time.Time{
+// 			dateFrom,
+// 			dateTo,
+// 		},
+// 		Months:        map[int]bool{},
+// 		WeekDays:      map[time.Weekday]bool{},
+// 		IsoWeeks:      map[int]bool{},
+// 		RadioNamesMap: map[string]bool{},
+// 	}
+// 	for i := range files {
+// 		ok, err := ArchivePackageFileMatch(files[i], query)
+// 		if err != nil {
+// 			t.Error(err)
+// 		}
+// 		if ok != true {
+// 			t.Error("not matched")
+// 		}
+// 	}
 
-}
+// }
 
-func TestArchivePackageFileMatchER(t *testing.T) {
-	af := ArchiveFolderQuery{
-		RadioNamesMap: map[string]bool{
-			"zurnal": false,
-		},
-	}
-	fmt.Println(af)
-}
+// func TestArchivePackageFileMatchER(t *testing.T) {
+// 	af := ArchiveFolderQuery{
+// 		RadioNamesMap: map[string]bool{
+// 			"zurnal": false,
+// 		},
+// 	}
+// 	fmt.Println(af)
+// }

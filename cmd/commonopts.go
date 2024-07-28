@@ -27,7 +27,7 @@ func OptionsCommonExtractFilter() {
 		"Filter data corresponding to specified weekdays", nil, nil)
 
 	// Special columns
-	add("AddRecordsNumbers", "arn", "false", "bool", "",
+	add("AddRecordNumbers", "arn", "false", "bool", "",
 		"Add record numbers columns and dependent columns", "", nil)
 
 	// Validation
@@ -41,11 +41,15 @@ func OptionsCommonExtractFilter() {
 		"Special filters sheetname", nil, nil)
 }
 
-func OptionsCommonExtractPath() {
+func FileExistsIfNotNull(filePath string) (bool, error) {
+	if filePath != "" {
+		return helper.FileExists(filePath)
+	}
+	return true, nil
+}
+
+func OptionsCommonOutput() {
 	add := SubcommandConfig.AddOption
-	add("SourceFilePath", "sfp",
-		"", "string", c.NotNil,
-		"Source rundown file.", nil, helper.FileExists)
 	add("OutputDirectory", "odir",
 		"", "string", c.NotNil,
 		"Output file path for extracted data.", nil,
@@ -56,4 +60,11 @@ func OptionsCommonExtractPath() {
 		nil)
 	add("CSVdelim", "csvD", "\t", "string", "",
 		"csv column field delimiter", []string{"\t", ";"}, nil)
+}
+
+func CheckFileExistsIfNotNull(fileName string) (bool, error) {
+	if fileName != "" {
+		return helper.FileExists(fileName)
+	}
+	return true, nil
 }

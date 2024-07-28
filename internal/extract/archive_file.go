@@ -18,18 +18,24 @@ type ArchiveQueryCommon struct {
 	FilterRadioNames  map[string]bool
 	FilterDateFrom    time.Time
 	FilterDateTo      time.Time
+	DateRange         [2]time.Time
 	FilterIsoWeeks    map[int]bool
 	FilterMonths      map[int]bool
 	FilterWeekDays    map[int]bool
 	ValidatorFileName string
+
+	AddRecordNumbers  bool
+	ComputeUniqueRows bool
 }
 
 type ArchiveIO struct {
-	SourceFilePath     string
-	SourceFileEncoding string
-	OutputDirectory    string
-	OutputFileName     string
-	CSVdelim           string
+	SourceDirectory     string
+	SourceDirectoryType ar.WorkerType
+	SourceFilePath      string
+	SourceCharEncoding  helper.CharEncoding
+	OutputDirectory     string
+	OutputFileName      string
+	CSVdelim            string
 }
 
 type ArchiveFile struct {
@@ -42,24 +48,6 @@ type ArchiveFile struct {
 	BaseNode *xmlquery.Node
 	Extractor
 }
-
-// ArchiveFile
-// type ArchiveFile struct {
-// 	SourceFilePath     string
-// 	SourceFileEncoding string
-// 	RundownType        string
-// 	Reader             *bytes.Reader
-// 	OutputDirectory    string
-// 	OutputFileName     string
-
-// 	ExtractorsName string
-// 	ExtractorsCode ExtractorsPresetCode
-// 	Extractors     OMextractors
-
-// 	Tables   map[ar.WorkerType]TableXML
-// 	BaseNode *xmlquery.Node
-// 	Extractor
-// }
 
 // Init
 func (af *ArchiveFile) Init() error {
@@ -81,38 +69,6 @@ func (af *ArchiveFile) Init() error {
 	return nil
 }
 
-// InitOld
-// func (af *ArchiveFile) InitOld(wt ar.WorkerTypeCode, filePath string) error {
-// 	wr := ar.WorkerTypeMap[wt]
-// 	instructions := strings.Split(wr, "_")
-// 	af.RundownType = instructions[0]
-// 	af.SourceFileEncoding = instructions[2]
-// 	af.SourceFilePath = filePath
-// 	fileHandle, err := os.Open(af.SourceFilePath)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	// switch file encoding type
-// 	enc := ar.InferEncoding(wt)
-// data, err := helper.HandleFileEncoding(enc, fileHandle)
-// if err != nil {
-// return err
-// }
-// 	breader, err := ar.HandleXMLfileHeader(enc, data)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	af.Reader = breader
-
-// 	baseNode, err := XMLgetOpenmediaBaseNode(af.Reader)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	af.BaseNode = baseNode
-// 	return nil
-// }
-
 // ArchivePackageFile
 type ArchivePackageFile struct {
 	Reader *zip.File
@@ -123,7 +79,11 @@ func (af *ArchiveFile) ExtractByXMLquery(extrs OMextractors) error {
 	// Extract specfied object fields
 	var extractor Extractor
 	extractor.Init(af.BaseNode, extrs, CSVdelim)
-	err := extractor.ExtractTable(af.SourceFilePath)
+	if af.AddRecordNumbers {
+		fmt.Println("FIX")
+		extractor.AddRecordsColumns()
+	}
+	err := extractor.ExtractTable(af.SourceDirectory)
 	if err != nil {
 		return err
 	}
@@ -136,7 +96,7 @@ func (af *ArchiveFile) ExtractByXMLqueryB(extrs OMextractors) error {
 	// Extract specfied object fields
 	var extractor Extractor
 	extractor.Init(af.BaseNode, extrs, CSVdelim)
-	err := extractor.ExtractTable(af.SourceFilePath)
+	err := extractor.ExtractTable(af.SourceDirectory)
 	if err != nil {
 		return err
 	}
@@ -157,9 +117,10 @@ func (apf *ArchivePackageFile) ExtractByXMLquery(
 	if err != nil {
 		return nil, err
 	}
+
 	// Extract specfied object fields
 	var extractor Extractor
-	extractor.Init(baseNode, q.Extractors, CSVdelim)
+	extractor.Init(baseNode, q.Extractors, q.CSVdelim)
 
 	err = extractor.ExtractTable(apf.Reader.Name)
 	if err != nil {

@@ -153,13 +153,14 @@ func ArchivePackageFileMatch(
 			"matched", false)
 		return false, err
 	}
-	if len(q.RadioNamesMap) > 0 && !q.RadioNamesMap[meta.RadioName] {
+	if len(q.FilterRadioNames) > 0 && !q.FilterRadioNames[meta.RadioName] {
+		fmt.Println("FUCE", meta.RadioName, len(q.FilterRadioNames))
 		slog.Debug(
 			"filename match radioname", "filename", nestedFileName,
 			"matched", false)
 		return false, nil
 	}
-	if len(q.WeekDays) > 0 && !q.WeekDays[meta.WeekDay] {
+	if len(q.FilterWeekDays) > 0 && !q.FilterWeekDays[int(meta.WeekDay)] {
 		slog.Debug(
 			"filename match weekdays", "filename", nestedFileName,
 			"matched", false)
