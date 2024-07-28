@@ -6,35 +6,66 @@ import (
 	"encoding/xml"
 	"fmt"
 	ar "github/czech-radio/openmedia/internal/archive"
+	"time"
 
 	"github.com/triopium/go_utils/pkg/helper"
 
 	"github.com/antchfx/xmlquery"
 )
 
-// ArchiveFile
-type ArchiveFile struct {
+type ArchiveQueryCommon struct {
+	ExtractorsCode    ExtractorsPresetCode
+	FilterRadioNames  map[string]bool
+	FilterDateFrom    time.Time
+	FilterDateTo      time.Time
+	FilterIsoWeeks    map[int]bool
+	FilterMonths      map[int]bool
+	FilterWeekDays    map[int]bool
+	ValidatorFileName string
+}
+
+type ArchiveIO struct {
 	SourceFilePath     string
 	SourceFileEncoding string
-	RundownType        string
-	Reader             *bytes.Reader
 	OutputDirectory    string
 	OutputFileName     string
+	CSVdelim           string
+}
 
-	ExtractorsName string
-	ExtractorsCode ExtractorsPresetCode
-	Extractors     OMextractors
+type ArchiveFile struct {
+	ArchiveQueryCommon
+	ArchiveIO
+	FilterFile
 
 	Tables   map[ar.WorkerType]TableXML
+	Reader   *bytes.Reader
 	BaseNode *xmlquery.Node
 	Extractor
 }
+
+// ArchiveFile
+// type ArchiveFile struct {
+// 	SourceFilePath     string
+// 	SourceFileEncoding string
+// 	RundownType        string
+// 	Reader             *bytes.Reader
+// 	OutputDirectory    string
+// 	OutputFileName     string
+
+// 	ExtractorsName string
+// 	ExtractorsCode ExtractorsPresetCode
+// 	Extractors     OMextractors
+
+// 	Tables   map[ar.WorkerType]TableXML
+// 	BaseNode *xmlquery.Node
+// 	Extractor
+// }
 
 // Init
 func (af *ArchiveFile) Init() error {
 	data, enc, err := helper.FileReadAllHandleEncoding(af.SourceFilePath)
 	if err != nil {
-		return err
+		return fmt.Errorf("%w %q: ", err, af.SourceFilePath)
 	}
 	breader, err := ar.HandleXMLfileHeader(enc, data)
 	if err != nil {

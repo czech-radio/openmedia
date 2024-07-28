@@ -32,17 +32,7 @@ type ArchivePackage struct {
 	PacakgeFilesOrder []string
 }
 
-// type ArchiveQueryCommon struct {
-// 	RadioNames     map[string]bool
-// 	IsoWeeks       map[int]bool
-// 	Months         map[int]bool
-// 	WeekDays       map[time.Weekday]bool
-// 	ExtractorsName string
-// 	FilterDateFrom time.Time
-// 	FilterDateTo   time.Time
-// }
-
-// ArchiveFolderQuery
+// ArchiveFolderQueryOrig
 type ArchiveFolderQuery struct {
 	FilterRadioNames []string
 	RadioNamesMap    map[string]bool

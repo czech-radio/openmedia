@@ -30,8 +30,6 @@ func CommonExtractOptions() {
 
 	add("FilterRadioNames", "frns", "", "[]string", "",
 		"Filter radio names", nil, nil)
-	// add("FilterRadioName", "frn", "", "string", "",
-	// "Filter radio name", nil, nil)
 
 	// Special columns
 	add("AddRecordsNumbers", "arn", "false", "bool", "",
