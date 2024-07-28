@@ -6,8 +6,8 @@ require (
 	github.com/antchfx/xmlquery v1.4.0
 	github.com/ncruces/go-strftime v0.1.9
 	github.com/snabb/isoweek v1.0.3
-	// github.com/triopium/go_utils v0.0.6
-	github.com/triopium/go_utils v0.1.5
+	// github.com/triopium/go_utils v0.1.5
+	github.com/triopium/go_utils v0.2.0
 	github.com/xuri/excelize/v2 v2.8.1
 	golang.org/x/text v0.14.0
 )
