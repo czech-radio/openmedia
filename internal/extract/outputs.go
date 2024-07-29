@@ -51,6 +51,7 @@ func (e *Extractor) OutputValidatedDataset(
 		slog.Info("validation_warning", "msg", "validation receipe file not specified")
 		return nil
 	}
+	e.AmmendInfoColumn()
 	e.TransformBeforeValidation()
 	e.ValidateAllColumns(qc.ValidatorFileName)
 	e.CSVtableBuild(false, false, qio.CSVdelim, true)
