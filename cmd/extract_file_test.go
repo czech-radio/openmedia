@@ -41,7 +41,7 @@ var CommandExtractFilePresets = [][]string{
 	},
 }
 
-func TestRunCommandExtractFile(t *testing.T) {
+func TestRunCommand_ExtractFile(t *testing.T) {
 	commandName := "extractFile"
 	testSubdir := filepath.Join("cmd", commandName)
 	defer testerConfig.RecoverPanic(t)
