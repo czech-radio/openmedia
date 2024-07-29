@@ -154,7 +154,6 @@ func ArchivePackageFileMatch(
 		return false, err
 	}
 	if len(q.FilterRadioNames) > 0 && !q.FilterRadioNames[meta.RadioName] {
-		fmt.Println("FUCE", meta.RadioName, len(q.FilterRadioNames))
 		slog.Debug(
 			"filename match radioname", "filename", nestedFileName,
 			"matched", false)
@@ -167,7 +166,7 @@ func ArchivePackageFileMatch(
 		return false, nil
 	}
 	_, ok := helper.DateRangesIntersection(q.DateRange, meta.DateRange)
-	// fmt.Printf("FUCK matched %t,%s\n", ok, nestedFileName)
+	// fmt.Printf("FUC matched %t,%s\n", ok, nestedFileName)
 	// fmt.Printf("%t, filter %v\n", ok, q.DateRange)
 	// fmt.Printf("%t, range %v %s\n", ok, meta.DateRange, nestedFileName)
 	if !ok {

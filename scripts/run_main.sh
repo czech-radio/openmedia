@@ -42,8 +42,8 @@ ArchiveExtractCommand(){
     "-ofname=${OUTPUT_FILENAME}"
     # TODO: maybe add date range to filename
     # filter specs  
-    "-frn=${RADIOS:-}"
-    "-exsn=${EXTRACTOR:-production_all}"
+    "-frns=${RADIOS:-}"
+    "-excode=${EXTRACTOR:-production_all}"
     "-fdf=${FROM:-2024-01-01}"
     "-fdt=${TO:-2024-01-02}"
     "-valfn=${FILE_VALIDATION}"
