@@ -212,7 +212,6 @@ func (e *Extractor) ValidateColumnValues(
 	sheetRows, err := files.ReadExcelFileSheetRows(
 		xlsxValidationReceipeFile, vp.SheetName)
 	if err != nil {
-		fmt.Println("FUCK2")
 		return err
 	}
 

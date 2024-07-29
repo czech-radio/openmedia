@@ -449,7 +449,6 @@ func CSVtoXLSX(csvFile string, csvDelim rune) error {
 	name := helper.FilenameWithoutExtension(csvFile)
 	dir := filepath.Dir(csvFile)
 	xlsxFilePath := filepath.Join(dir, name+".xlsx")
-	// fmt.Println("FUCIT")
 	return xlsxFile.SaveAs(xlsxFilePath)
 }
 

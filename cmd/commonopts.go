@@ -54,7 +54,7 @@ func OptionsCommonOutput() {
 		"", "string", c.NotNil,
 		"Output file path for extracted data.", nil,
 		helper.DirectoryExists)
-	add("OutputFileName", "ofn",
+	add("OutputFileName", "ofname",
 		"", "string", c.NotNil,
 		"Output file path for extracted data.", nil,
 		nil)

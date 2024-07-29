@@ -12,25 +12,25 @@ func (e *Extractor) OutputAll(
 	qc *ArchiveQueryCommon, qio *ArchiveIO, qf *FilterFile,
 ) {
 	processName := "base"
-	e.OutputBaseDatasetNew(
+	e.OutputBaseDataset(
 		processName, qc, qio)
 
 	processName += "_validated"
-	err := e.OutputValidatedDatasetNew(
+	err := e.OutputValidatedDataset(
 		processName, qc, qio)
 	if err != nil {
 		helper.Errors.ExitWithCode(err)
 	}
 
 	processName += "_filtered"
-	err = e.OutputFilteredDatasetNew(
+	err = e.OutputFilteredDataset(
 		processName, qc, qio, qf)
 	if err != nil {
 		helper.Errors.ExitWithCode(err)
 	}
 }
 
-func (e *Extractor) OutputBaseDatasetNew(
+func (e *Extractor) OutputBaseDataset(
 	processName string, qc *ArchiveQueryCommon, qio *ArchiveIO) {
 	e.TransformBase()
 	if qc.AddRecordNumbers {
@@ -45,7 +45,7 @@ func (e *Extractor) OutputBaseDatasetNew(
 		string(qc.ExtractorsCode), processName, true)
 }
 
-func (e *Extractor) OutputValidatedDatasetNew(
+func (e *Extractor) OutputValidatedDataset(
 	processName string, qc *ArchiveQueryCommon, qio *ArchiveIO) error {
 	if qc.ValidatorFileName == "" {
 		slog.Info("validation_warning", "msg", "validation receipe file not specified")
@@ -66,7 +66,7 @@ func (e *Extractor) OutputValidatedDatasetNew(
 	return e.ValidationLogWrite(logFilePath, qio.CSVdelim, true)
 }
 
-func (e *Extractor) OutputFilteredDatasetNew(
+func (e *Extractor) OutputFilteredDataset(
 	processName string, qc *ArchiveQueryCommon, qio *ArchiveIO,
 	filterOpts *FilterFile,
 ) error {
