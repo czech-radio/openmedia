@@ -673,42 +673,13 @@ func (row RowParts) ConstructID() string {
 	return out
 }
 
-func (e *Extractor) TreatStoryRecordsWithoutOMobject() {
-	// for i, row := range e.TableXML.Rows {
+func (e *Extractor) TransformRows(fn func(RowParts)) {
 	for _, row := range e.TableXML.Rows {
-		// Check if applicable
-		storyRecordPart, ok := row.RowParts[RowPartCode_StoryRec]
-		if !ok {
-			continue
-		}
-		storyCatPart := row.RowParts[RowPartCode_StoryKategory]
-		if storyCatPart != nil {
-			// NOTE: Do not forget treat when not nill. Currently the part is not created when the OM_OBJECT is not found. Must be run before TransformEmptyRowPart
-			continue
-		}
-
-		recordType := storyRecordPart["5001"].Value
-		newRowPart := make(RowPart)
-		// Treat records
-		switch recordType {
-		case "Audio":
-			RowPartOverwriteFields(
-				storyRecordPart, newRowPart, ProductionFieldsAudio)
-			row.RowParts[RowPartCode_AudioClipHead] = newRowPart
-		case "Contact Item", "Contact Bin":
-			RowPartOverwriteFields(
-				storyRecordPart, newRowPart, ProductionFieldsContactItems)
-			row.RowParts[RowPartCode_ContactItemHead] = newRowPart
-		default:
-			continue
-		}
-		value := "UNKNOWN-" + recordType
-		EmptyRowPartInsertValue(row.RowParts, RowPartCode_StoryKategory, "TemplateName", value)
+		fn(row.RowParts)
 	}
 }
 
-func (e *Extractor) TreatStoryRecordsWithoutOMobjectB(recordTypes map[string]bool) {
-	// for i, row := range e.TableXML.Rows {
+func (e *Extractor) TreatStoryRecordsWithoutOMobject() {
 	for _, row := range e.TableXML.Rows {
 		// Check if applicable
 		storyRecordPart, ok := row.RowParts[RowPartCode_StoryRec]
@@ -723,10 +694,8 @@ func (e *Extractor) TreatStoryRecordsWithoutOMobjectB(recordTypes map[string]boo
 
 		recordType := storyRecordPart["5001"].Value
 		newRowPart := make(RowPart)
-		if !recordTypes[recordType] {
-			continue
-		}
-		// Treat records
+
+		npValue := RowFieldSpecialValueCodeMap[RowFieldValueNotPossible]
 		switch recordType {
 		case "Audio":
 			RowPartOverwriteFields(
@@ -736,11 +705,17 @@ func (e *Extractor) TreatStoryRecordsWithoutOMobjectB(recordTypes map[string]boo
 			RowPartOverwriteFields(
 				storyRecordPart, newRowPart, ProductionFieldsContactItems)
 			row.RowParts[RowPartCode_ContactItemHead] = newRowPart
+			RowPartInsertOrChangeValues(
+				row.RowParts, RowPartCode_ContactItemHead,
+				npValue, []string{"5087", "5088", "423"})
 		default:
 			continue
 		}
 		value := "UNKNOWN-" + recordType
-		EmptyRowPartInsertValue(row.RowParts, RowPartCode_StoryKategory, "TemplateName", value)
+		RowsPartInsertOrChangeValue(
+			row.RowParts, RowPartCode_StoryKategory, "TemplateName", value)
+		RowsPartInsertOrChangeValue(
+			row.RowParts, RowPartCode_StoryKategory, "ObjectID", npValue)
 	}
 }
 
@@ -751,16 +726,42 @@ func RowPartOverwriteFields(
 	}
 }
 
-// EmptyRowPartInsertValue
-func EmptyRowPartInsertValue(
+// RowsPartInsertOrChangeValue
+func RowsPartInsertOrChangeValue(
 	rowParts RowParts, rowPartCode RowPartCode, fieldID, fieldValue string) {
 	field := RowField{
 		FieldID:   fieldID,
 		FieldName: "",
 		Value:     fieldValue,
 	}
-	rowPart := make(RowPart)
+	rowPart, ok := rowParts[rowPartCode]
+	if !ok {
+		rowPart = make(RowPart)
+	}
 	rowPart[fieldID] = field
+	rowParts[rowPartCode] = rowPart
+}
+
+func RowPartInsertOrChangeValue(
+	rowPart RowPart, fieldID, fieldValue string) {
+	field := RowField{
+		FieldID:   fieldID,
+		FieldName: "",
+		Value:     fieldValue,
+	}
+	rowPart[fieldID] = field
+}
+
+func RowPartInsertOrChangeValues(
+	rowParts RowParts, rowPartCode RowPartCode,
+	newFieldValue string, fieldIDs []string) {
+	rowPart, ok := rowParts[rowPartCode]
+	if !ok {
+		rowPart = make(RowPart)
+	}
+	for _, id := range fieldIDs {
+		RowPartInsertOrChangeValue(rowPart, id, newFieldValue)
+	}
 	rowParts[rowPartCode] = rowPart
 }
 
@@ -800,4 +801,41 @@ func TrimAllWhiteSpace(input string) string {
 	out := strings.TrimSpace(input)
 	out = regxpSpace.ReplaceAllString(out, "")
 	return out
+}
+
+func RowPartChangeFields(rowPart RowPart, fieldIDs []string, newValue string) {
+	for _, i := range fieldIDs {
+		RowPartChangeFieldToNewValue(rowPart, i, newValue)
+	}
+}
+
+func RowPartChangeFieldToNewValue(rowPart RowPart, fieldID string, newValue string) {
+	field := RowField{
+		FieldID:   fieldID,
+		FieldName: "",
+		Value:     newValue,
+	}
+	rowPart[fieldID] = field
+}
+
+// AmmendInfoColumn change fields to (NP) if fieldID=="5079" value=="info"
+func (e *Extractor) AmmendInfoColumn() {
+	rowPart := RowPartCode_StoryHead
+	IDtoCheck := "5079"
+	for _, row := range e.TableXML.Rows {
+		part, ok := row.RowParts[rowPart]
+		if !ok {
+			continue
+		}
+		field, ok := part[IDtoCheck]
+		if !ok {
+			continue
+		}
+		value := strings.ToLower(field.Value)
+		if value == "info" {
+			fields := []string{"321", "16", "5016", "6", "5070", "5071", "5072"}
+			newValue := RowFieldSpecialValueCodeMap[RowFieldValueNotPossible]
+			RowPartChangeFields(part, fields, newValue)
+		}
+	}
 }

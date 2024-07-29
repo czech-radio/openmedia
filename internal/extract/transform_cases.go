@@ -1,29 +1,5 @@
 package extract
 
-import "strings"
-
-// TransformBase
-func (e *Extractor) TransformBaseB() {
-	e.TransformColumnFields(RowPartCode_StoryHead,
-		"5016", TransformTema, false)
-	e.TransformColumnFields(RowPartCode_ContactItemHead,
-		"5016", TransformTema, false)
-	e.TransformColumnFields(RowPartCode_SubHead,
-		"ObjectID", TransformEmptyToNoContain, true)
-	e.TransformColumnFields(RowPartCode_StoryKategory,
-		"TemplateName", TransformEmptyToNoContain, true)
-	e.TransformColumnFields(RowPartCode_StoryKategory,
-		"TemplateName", TransformEmptyToNoContain, true)
-
-	// Stopaz
-	stopazFields := []string{"38", "1002", "1005", "1010", "1036"}
-	e.TransformColumnsFields(ValidateStopaz, false, stopazFields...)
-
-	e.ComputeIndex()
-	e.TransformHeaderExternal(RowPartCode_HourlyHead, "1000", "planovany_zacatek")
-
-}
-
 // NOTE: docasne nepouzite bude dospecifikovano
 func (e *Extractor) TransformCodedFields() {
 	e.TransformColumnFields(
@@ -110,44 +86,6 @@ func (e *Extractor) TransformBase() {
 
 func (e *Extractor) TransformBeforeValidation() {
 	e.TransformColumnsFields(TransformTema, false, "5016")
-	e.AmmendInfoColumn()
-}
-
-// AmmendInfoColumn change fields to (NP) if fieldID=="5079" value=="info"
-func (e *Extractor) AmmendInfoColumn() {
-	rowPart := RowPartCode_StoryHead
-	fieldID := "5079"
-	for _, row := range e.TableXML.Rows {
-		part, ok := row.RowParts[rowPart]
-		if !ok {
-			continue
-		}
-		field, ok := part[fieldID]
-		if !ok {
-			continue
-		}
-		value := strings.ToLower(field.Value)
-		if value == "info" {
-			fields := []string{"321", "5016", "6", "5070", "5071", "5072"}
-			newValue := RowFieldSpecialValueCodeMap[RowFieldValueNotPossible]
-			RowPartChangeFields(part, fields, newValue)
-		}
-	}
-}
-
-func RowPartChangeField(rowPart RowPart, fieldID string, newValue string) {
-	field := RowField{
-		FieldID:   fieldID,
-		FieldName: "",
-		Value:     newValue,
-	}
-	rowPart[fieldID] = field
-}
-
-func RowPartChangeFields(rowPart RowPart, fieldIDs []string, newValue string) {
-	for _, i := range fieldIDs {
-		RowPartChangeField(rowPart, i, newValue)
-	}
 }
 
 // TransformProduction
@@ -167,4 +105,25 @@ func (e *Extractor) TransformProduction() {
 	// e.SetFileNameColumn()
 	e.TransformColumnsFields(TransformObjectID, false, "ObjectID")
 	e.ComputeJoinNameAndSurname(RowPartCode_ComputedKON, "jmeno_spojene")
+}
+
+// TransformBase
+func (e *Extractor) TransformBaseB() {
+	e.TransformColumnFields(RowPartCode_StoryHead,
+		"5016", TransformTema, false)
+	e.TransformColumnFields(RowPartCode_ContactItemHead,
+		"5016", TransformTema, false)
+	e.TransformColumnFields(RowPartCode_SubHead,
+		"ObjectID", TransformEmptyToNoContain, true)
+	e.TransformColumnFields(RowPartCode_StoryKategory,
+		"TemplateName", TransformEmptyToNoContain, true)
+	e.TransformColumnFields(RowPartCode_StoryKategory,
+		"TemplateName", TransformEmptyToNoContain, true)
+
+	// Stopaz
+	stopazFields := []string{"38", "1002", "1005", "1010", "1036"}
+	e.TransformColumnsFields(ValidateStopaz, false, stopazFields...)
+
+	e.ComputeIndex()
+	e.TransformHeaderExternal(RowPartCode_HourlyHead, "1000", "planovany_zacatek")
 }
