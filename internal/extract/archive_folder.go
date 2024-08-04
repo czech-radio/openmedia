@@ -114,6 +114,10 @@ func (af *ArchiveFolder) FolderMap(
 func (af *ArchiveFolder) FolderExtract(
 	query *ArchiveFolderQuery) *Extractor {
 	var extMain Extractor
+
+	if query.AddRecordNumbers {
+		query.Extractors.AddRecordsColumns()
+	}
 	extMain.Init(nil, query.Extractors, query.CSVdelim)
 	for _, packageName := range af.PackagesNamesOrder {
 		slog.Info("proccessing package", "package", packageName)

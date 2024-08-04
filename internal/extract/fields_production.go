@@ -4,8 +4,8 @@ var ProductionSimpleTest = []string{"8"}
 
 var ProductionFieldsComputedRID = []string{
 	// "FileName",
-	// "C-RID",
-	"C-index",
+	// "CRID",
+	"Cindex",
 }
 var ProductionFieldsRadioRundown = []string{
 	"5081",

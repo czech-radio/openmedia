@@ -80,22 +80,8 @@ func (af *ArchiveFile) ExtractByXMLquery(extrs OMextractors) error {
 	var extractor Extractor
 	extractor.Init(af.BaseNode, extrs, CSVdelim)
 	if af.AddRecordNumbers {
-		fmt.Println("FIX")
 		extractor.AddRecordsColumns()
 	}
-	err := extractor.ExtractTable(af.SourceDirectory)
-	if err != nil {
-		return err
-	}
-	af.Extractor = extractor
-	return nil
-}
-
-// ExtractByXMLquery
-func (af *ArchiveFile) ExtractByXMLqueryB(extrs OMextractors) error {
-	// Extract specfied object fields
-	var extractor Extractor
-	extractor.Init(af.BaseNode, extrs, CSVdelim)
 	err := extractor.ExtractTable(af.SourceDirectory)
 	if err != nil {
 		return err

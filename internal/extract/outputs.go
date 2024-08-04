@@ -11,7 +11,17 @@ import (
 func (e *Extractor) OutputAll(
 	qc *ArchiveQueryCommon, qio *ArchiveIO, qf *FilterFile,
 ) {
-	processName := "base"
+	processName := "base_wNCpars"
+	e.OutputBaseDataset(
+		processName, qc, qio)
+
+	// Removes duplicate (NC) story parts
+	indxs := e.FilterStoryPartsEmptyDupes()
+	e.DeleteNonMatchingRows(indxs)
+	indxs = e.FilterStoryPartsRedundant()
+	e.DeleteNonMatchingRows(indxs)
+
+	processName = "base"
 	e.OutputBaseDataset(
 		processName, qc, qio)
 

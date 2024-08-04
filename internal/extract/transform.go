@@ -400,7 +400,7 @@ func (e *Extractor) ComputeJoinNameAndSurname(
 
 // ComputeIndex
 func (e *Extractor) ComputeIndex() {
-	targetFieldID := "C-index"
+	targetFieldID := "Cindex"
 	var value string
 	indexComponents := IndexComponents{}
 	for i, row := range e.TableXML.Rows {
@@ -476,7 +476,7 @@ func ComputeIndexCreate(
 
 // ComputeIndexOld
 func (e *Extractor) ComputeIndexOld() {
-	targetFieldID := "C-index"
+	targetFieldID := "Cindex"
 	prevIDs := []string{"", "", "", ""}
 	prevPos := []int{0, 0, 0}
 	var index string
@@ -581,7 +581,7 @@ func ComputeIndexCast(blok string, pos []int) string {
 
 // ComputeRecordIDs
 func (e *Extractor) ComputeRecordIDs(removeSrcColumns bool) {
-	targetFieldID := "C-RID"
+	targetFieldID := "CRID"
 	for i, row := range e.TableXML.Rows {
 		id := row.ConsructRecordIDs()
 		field := RowField{
@@ -705,9 +705,9 @@ func (e *Extractor) TreatStoryRecordsWithoutOMobject() {
 			RowPartOverwriteFields(
 				storyRecordPart, newRowPart, ProductionFieldsContactItems)
 			row.RowParts[RowPartCode_ContactItemHead] = newRowPart
-			RowPartInsertOrChangeValues(
-				row.RowParts, RowPartCode_ContactItemHead,
-				npValue, []string{"5087", "5088", "423"})
+			// RowPartInsertOrChangeValues(
+			// row.RowParts, RowPartCode_ContactItemHead,
+			// npValue, []string{"5087", "5088", "423"})
 		default:
 			continue
 		}
@@ -716,6 +716,27 @@ func (e *Extractor) TreatStoryRecordsWithoutOMobject() {
 			row.RowParts, RowPartCode_StoryKategory, "TemplateName", value)
 		RowsPartInsertOrChangeValue(
 			row.RowParts, RowPartCode_StoryKategory, "ObjectID", npValue)
+	}
+}
+
+func (e *Extractor) TreatStoryRecordsUnknown() {
+	npValue := RowFieldSpecialValueCodeMap[RowFieldValueNotPossible]
+	for _, row := range e.TableXML.Rows {
+		storyRecordPart, ok := row.RowParts[RowPartCode_StoryRec]
+		if !ok {
+			continue
+		}
+		recordType := storyRecordPart["5001"].Value
+		switch recordType {
+		case "Audio":
+			continue
+		case "Contact Item", "Contact Bin":
+			RowPartInsertOrChangeValues(
+				row.RowParts, RowPartCode_ContactItemHead,
+				npValue, []string{"5087", "5088", "423"})
+		default:
+			continue
+		}
 	}
 }
 
