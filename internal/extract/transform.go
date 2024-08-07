@@ -579,8 +579,38 @@ func ComputeIndexCast(blok string, pos []int) string {
 	return index.String()
 }
 
-// ComputeRecordIDs
-func (e *Extractor) ComputeRecordIDs(removeSrcColumns bool) {
+func (e *Extractor) ColumnCompute_FilenameWithRecordIDs(
+	removeSrcColumns bool) {
+	targetFieldID := "Filename_CRID"
+	for i := range e.TableXML.Rows {
+		part, ok := e.TableXML.Rows[i].RowParts[RowPartCode_ComputedRID]
+		if !ok {
+			slog.Warn("row part not present", "rowpart", RowPartCode_ComputedRID,
+				"msg", "cannot compute "+targetFieldID)
+			return
+		}
+		rids := part["CRID"]
+		fname := part["FileName"]
+		value := fmt.Sprintf("%s_%s", fname.Value, rids.Value)
+		field := RowField{
+			FieldID:   targetFieldID,
+			FieldName: "",
+			Value:     value,
+		}
+		part[targetFieldID] = field
+		e.TableXML.Rows[i].RowParts[RowPartCode_ComputedRID] = part
+	}
+	e.AddColumn(RowPartCode_ComputedRID, targetFieldID)
+	if removeSrcColumns {
+		e.RowPartColumnOmit(
+			RowPartCode_ComputedRID, "CRID")
+		e.RowPartColumnOmit(
+			RowPartCode_ComputedRID, "FileName")
+	}
+}
+
+// ColumnCompute_RecordIDs
+func (e *Extractor) ColumnCompute_RecordIDs(removeSrcColumns bool) {
 	targetFieldID := "CRID"
 	for i, row := range e.TableXML.Rows {
 		id := row.ConsructRecordIDs()
@@ -598,15 +628,19 @@ func (e *Extractor) ComputeRecordIDs(removeSrcColumns bool) {
 	}
 	e.AddColumn(RowPartCode_ComputedRID, targetFieldID)
 	if removeSrcColumns {
-		e.RowPartColumnOmit(
-			RowPartCode_RadioRec, "RecordID")
-		e.RowPartColumnOmit(
-			RowPartCode_HourlyRec, "RecordID")
-		e.RowPartColumnOmit(
-			RowPartCode_SubRec, "RecordID")
-		e.RowPartColumnOmit(
-			RowPartCode_StoryRec, "RecordID")
+		e.OmitRecordIDsColumn()
 	}
+}
+
+func (e *Extractor) OmitRecordIDsColumn() {
+	e.RowPartColumnOmit(
+		RowPartCode_RadioRec, "RecordID")
+	e.RowPartColumnOmit(
+		RowPartCode_HourlyRec, "RecordID")
+	e.RowPartColumnOmit(
+		RowPartCode_SubRec, "RecordID")
+	e.RowPartColumnOmit(
+		RowPartCode_StoryRec, "RecordID")
 }
 
 // SetFileNameColumn

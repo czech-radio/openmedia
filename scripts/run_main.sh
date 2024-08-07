@@ -58,6 +58,7 @@ ArchiveExtractCommand(){
     "-frfn=${FILE_FILTER:-${FILE_OPOSITION}}"
   )
   AddBoolFlag "-arn"
+  AddFlag -ofname "${OUTPUT_FILENAME:-}"
   AddFlag -fdf "${FROM:-}"
   AddFlag -fdt "${TO:-}"
 
@@ -75,7 +76,7 @@ ArchiveExtractTestTest(){
   ArchiveExtractCommand
 }
 
-ArchiveExtractConntrolProductionHour(){
+ArchiveExtractControlProductionHour(){
   local EXTRACTOR="production_all"
   local FROM="2024-05-02T13"
   local TO="2024-05-02T14"
@@ -85,7 +86,7 @@ ArchiveExtractConntrolProductionHour(){
 }
 
 
-ArchiveExtractConntrolProductionWeek14(){
+ArchiveExtractControlProductionWeek14(){
   local EXTRACTOR="production_all"
   local FROM="2024-04-01"
   local TO="2024-04-07"
@@ -93,7 +94,7 @@ ArchiveExtractConntrolProductionWeek14(){
   ArchiveExtractCommand
 }
 
-ArchiveExtractConntrolProductionWeek(){
+ArchiveExtractControlProductionWeek(){
   local EXTRACTOR="production_all"
   local FROM="2024-03-25"
   local TO="2024-04-01"
@@ -102,11 +103,11 @@ ArchiveExtractConntrolProductionWeek(){
 }
 
 ArchiveExtractControl(){
-  ArchiveExtractConntrolProductionHour
-  ArchiveExtractConntrolProductionWeek
+  ArchiveExtractControlProductionHour
+  ArchiveExtractControlProductionWeek
 }
 
-ArchiveExtractConntrolProductionDecember(){
+ArchiveExtractControlProductionDecember(){
   local EXTRACTOR="production_all"
   local FROM="2023-12-01"
   local TO="2024-01-01"
@@ -115,9 +116,9 @@ ArchiveExtractConntrolProductionDecember(){
 }
 
 ArchiveExtractControlValidation(){
-  ArchiveExtractConntrolProductionHour
-  ArchiveExtractConntrolProductionWeek
-  ArchiveExtractConntrolProductionDecember
+  ArchiveExtractControlProductionHour
+  ArchiveExtractControlProductionWeek
+  ArchiveExtractControlProductionDecember
 }
 
 ArchiveExtractControlAddHocErr(){
@@ -157,7 +158,6 @@ ArchiveExtractOpozice(){
 
 ArchiveExtractLastWeek(){
   local EXTRACTOR="production_all"
-  local OUTPUT_FILENAME="oneweek"
   ArchiveExtractCommand
 }
 

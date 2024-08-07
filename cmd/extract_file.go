@@ -42,6 +42,6 @@ func (gc GlobalConfig) RunCommandExtractFile() {
 	if err != nil {
 		panic(err)
 	}
-	af.OutputAll(
+	af.ExportAll(
 		&af.ArchiveQueryCommon, &af.ArchiveIO, &af.FilterFile)
 }

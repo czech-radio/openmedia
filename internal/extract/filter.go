@@ -398,71 +398,45 @@ func (e *Extractor) FilterStoryPartRecordsDuds() []int {
 	return indxs
 }
 
-// FilterStoryPartsEmpty filter out dupe stories parts which are empty
+func FieldValueIsEmpty(value string) bool {
+	if value == "" {
+		return true
+	}
+	return CheckIfFieldValueIsSpecialValue(value)
+}
+
 func (e *Extractor) FilterStoryPartsEmptyDupes() []int {
 	indxs := make([]int, 0, len(e.Rows)/100)
 	rows := e.TableXML.Rows
-	var countPartsEmpty int
-	var storyIdCurrent string
+	var storyIDprevious string
+	var addEmptyRow int = -1
 
 	for i, row := range rows {
-		_, storyId, _ := GetRowPartAndField(
+		_, storyID, _ := GetRowPartAndField(
 			row.RowParts, RowPartCode_StoryHead, "ObjectID")
-		// _, storyKategoryId, _ := GetRowPartAndField(
-		// row.RowParts, RowPartCode_StoryKategory, "ObjectID")
-		_, storyKategoryId, _ := GetRowPartAndField(
+		_, storyPartTemplate, _ := GetRowPartAndField(
 			row.RowParts, RowPartCode_StoryKategory, "TemplateName")
 
-		if storyIdCurrent != storyId.Value {
-			// countPartsInStory = 1
-			countPartsEmpty = 0
-			storyIdCurrent = storyId.Value
-		}
-
-		if storyKategoryId.Value == "" ||
-			CheckIfFieldValueIsSpecialValue(storyKategoryId.Value) {
-			countPartsEmpty++
-		}
-		if countPartsEmpty > 1 {
-			slog.Warn("filtered out", "position", i)
-			continue
-		}
-		indxs = append(indxs, i)
-	}
-	return indxs
-}
-
-// FilterStoryPartsRedundant filter out story parts which are empty and not alone in story (dupes must be removed before with FilterStoryPartsEmptyDupes
-// NOTE: using map would be better, but cannot use map because there might be duplicate Story ObjectID in non-consequtive order inside rows sequnece
-func (e *Extractor) FilterStoryPartsRedundant() []int {
-	indxs := make([]int, 0, len(e.Rows)/100)
-	rows := e.TableXML.Rows
-	var storyIdCurrent string
-	var countPartsInStory int
-	var emptyPartEncountered bool
-	for i, row := range rows {
-		_, storyId, _ := GetRowPartAndField(
-			row.RowParts, RowPartCode_StoryHead, "ObjectID")
-		_, storyKategoryId, _ := GetRowPartAndField(
-			row.RowParts, RowPartCode_StoryKategory, "TemplateName")
-		if storyIdCurrent != storyId.Value {
-			if countPartsInStory == 1 && emptyPartEncountered {
-				// add previous row because the previous story does not contain any other parts
-				indxs = append(indxs, i-1)
+		if storyID.Value != storyIDprevious {
+			storyIDprevious = storyID.Value
+			if addEmptyRow > -1 {
+				indxs = append(indxs, addEmptyRow)
+				addEmptyRow = -1
 			}
-			countPartsInStory = 1
-			storyIdCurrent = storyId.Value
-			emptyPartEncountered = false
-		} else {
-			countPartsInStory++
-		}
-
-		if storyKategoryId.Value == "" ||
-			CheckIfFieldValueIsSpecialValue(storyKategoryId.Value) {
-			emptyPartEncountered = true
+			if FieldValueIsEmpty(storyPartTemplate.Value) {
+				addEmptyRow = i
+				continue
+			}
+			indxs = append(indxs, i)
 			continue
 		}
-		indxs = append(indxs, i)
+
+		if !FieldValueIsEmpty(storyPartTemplate.Value) {
+			indxs = append(indxs, i)
+		}
+	}
+	if addEmptyRow > -1 {
+		indxs = append(indxs, addEmptyRow)
 	}
 	return indxs
 }
@@ -484,4 +458,16 @@ func (e *Extractor) DeleteNonMatchingRows(rowIdxsFiltered []int) {
 	}
 	e.Rows = out
 	slog.Info("rows count after deletion", "count_after", len(out))
+}
+
+func ReverseIndexes(rowsIndxs []int) []int {
+	nonMatching := make([]int, 0)
+	curIndex := 0
+	for i := range rowsIndxs {
+		for j := curIndex; j < rowsIndxs[i]; j++ {
+			nonMatching = append(nonMatching, j)
+		}
+		curIndex = rowsIndxs[i] + 1
+	}
+	return nonMatching
 }

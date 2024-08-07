@@ -1,0 +1,31 @@
+[Unit]
+Description="Extract previous week"
+
+[Service]
+Type=simple
+
+### ENV
+Environment=MAIN_COMMAND='./openmedia extractArchive -sdir=/mnt/cro.cz/openmeida/Rundowns -odir=/mnt/exports_to_R/test/" 
+
+### Loging
+SyslogIdentifier=openmedia_extractArchive_weekly
+#StandardInput=null
+StandardOutput=journal
+StandardError=journal
+
+### Exec
+WorkingDirectory=%h/services/openmedia_extractArchive_weekly/
+# %h - user home directory
+ExecStart=%h/services/openmedia_archive/run.sh ServiceServe
+# ExecStart must be fullpath (a bit annoying, but secure). Maybe add run script to PATH.
+
+#LogNamespace (not on debian 10)
+#SplitMode (not on debian 10)
+#PrivateUsers 
+
+# maybe split update service to use ExecStartPre
+#ExecStartPre
+#ExecStartPost
+
+[Install]
+WantedBy=default.target

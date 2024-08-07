@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"fmt"
+
 	c "github.com/triopium/go_utils/pkg/configure"
 	"github.com/triopium/go_utils/pkg/helper"
 )
@@ -55,11 +57,19 @@ func OptionsCommonOutput() {
 		"Output file path for extracted data.", nil,
 		helper.DirectoryExists)
 	add("OutputFileName", "ofname",
-		"", "string", c.NotNil,
+		FileNameDefault(), "string", c.NotNil,
 		"Output file path for extracted data.", nil,
 		nil)
 	add("CSVdelim", "csvD", "\t", "string", "",
 		"csv column field delimiter", []string{"\t", ";"}, nil)
+}
+
+func FileNameDefault() string {
+	ptime := helper.ISOweekStartLocal(-1)
+	year, week := ptime.ISOWeek()
+	return fmt.Sprintf(
+		"%04d_W%02d_%02d_%02d",
+		year, week, ptime.Month(), ptime.Day())
 }
 
 func CheckFileExistsIfNotNull(fileName string) (bool, error) {

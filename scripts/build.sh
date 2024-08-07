@@ -5,7 +5,8 @@ BUILD_TIME="$(date +%FT%T%z)"
 GIT_COMMIT="$(git rev-parse HEAD)"
 GIT_TAG="$(git describe --tags --abbrev=0)"
 GOSRC_PATH="github/czech-radio/openmedia/cmd"
-BINARY_NAME=openmedia
+CGO_ENABLED='0'
+export BINARY_NAME=openmedia
 
 declare -a GOSRC_VAR=(
 "-X $GOSRC_PATH.BuildGitTag=$GIT_TAG"

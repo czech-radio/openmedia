@@ -62,19 +62,12 @@ func (e *Extractor) TransformSpecialValues() {
 }
 
 func (e *Extractor) TransformBase() {
-	e.AddColumn(RowPartCode_ComputedRID, "FileName")
-
-	// Remove row part
-	e.RowPartOmit(RowPartCode_StoryRec)
-	indxs := e.FilterStoryPartRecordsDuds()
-	e.DeleteNonMatchingRows(indxs)
-
 	e.TreatStoryRecordsWithoutOMobject()
 	e.TransformEmptyRowPart()
 	e.TransformSpecialValues()
 	e.ComputeIndex()
-
 	e.TransformHeaderExternal(RowPartCode_HourlyHead, "1000", "planovany_zacatek")
+
 }
 
 func (e *Extractor) TransformBeforeValidation() {

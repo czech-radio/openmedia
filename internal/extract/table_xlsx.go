@@ -452,6 +452,31 @@ func CSVtoXLSX(csvFile string, csvDelim rune) error {
 	return xlsxFile.SaveAs(xlsxFilePath)
 }
 
+func XLSXsetCellValue(
+	file *excelize.File, sheetName string,
+	fd FieldID, cellRef, cell string) error {
+	switch fd.XLSXcolumnFormat {
+	case 14:
+		date, err := ParseXMLdate(cell)
+		if err == nil {
+			return file.SetCellValue(sheetName, cellRef, date)
+		}
+		date, err = time.Parse("2006-01-02 15:04:05", cell)
+		if err != nil {
+			goto text
+		}
+		return file.SetCellValue(sheetName, cellRef, date)
+	case 1:
+		res, err := strconv.Atoi(cell)
+		if err != nil {
+			goto text
+		}
+		return file.SetCellValue(sheetName, cellRef, res)
+	}
+text:
+	return file.SetCellValue(sheetName, cellRef, cell)
+}
+
 func XLSXsetCellValueTry(
 	file *excelize.File, sheetName string, cellRef, cell string,
 ) error {

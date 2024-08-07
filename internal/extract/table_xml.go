@@ -51,8 +51,8 @@ type UniqueRow struct {
 
 // TableXML
 type TableXML struct {
-	Rows         []*RowNode
-	RowsFiltered []int
+	Rows []*RowNode
+	// RowsFiltered []int
 
 	UniqueRowsOrder []int
 	UniqueRows      map[string]int
