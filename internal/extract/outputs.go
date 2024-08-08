@@ -22,6 +22,19 @@ func (e *Extractor) OutputRowsAll(
 		string(qc.ExtractorsCode), processName, true)
 }
 
+func (e *Extractor) ExportToDB(qc *ArchiveQueryCommon, qio *ArchiveIO, qf *FilterFile) {
+	e.AddColumn(RowPartCode_ComputedRID, "FileName")
+	if qc.AddRecordNumbers {
+		e.ColumnCompute_RecordIDs(true)
+		e.ColumnCompute_FilenameWithRecordIDs(true)
+	}
+	indxs := e.FilterStoryPartRecordsDuds()
+	e.DeleteNonMatchingRows(indxs)
+	e.RowPartOmit(RowPartCode_StoryRec)
+	processName := "db_export"
+	e.ExportBase(processName, qc, qio)
+}
+
 func (e *Extractor) ExportAll(
 	qc *ArchiveQueryCommon, qio *ArchiveIO, qf *FilterFile,
 ) {
@@ -29,8 +42,6 @@ func (e *Extractor) ExportAll(
 	e.AddColumn(RowPartCode_ComputedRID, "FileName")
 	if qc.AddRecordNumbers {
 		e.ColumnCompute_RecordIDs(false)
-	}
-	if true {
 		e.ColumnCompute_FilenameWithRecordIDs(false)
 	}
 
@@ -41,6 +52,7 @@ func (e *Extractor) ExportAll(
 	e.DeleteNonMatchingRows(indxs)
 
 	e.TransformBase()
+	// e.RowPartOmit(RowPartCode_StoryRec)
 	processName = "base_NCparts"
 	e.OutputRowsAll(processName, qc, qio)
 
@@ -51,8 +63,8 @@ func (e *Extractor) ExportAll(
 	e.DeleteNonMatchingRows(indxs)
 
 	processName = "base"
-	e.ExportBase(
-		processName, qc, qio)
+	e.OutputRowsAll(processName, qc, qio)
+	// e.ExportBase(processName, qc, qio)
 
 	processName += "_validated"
 	err := e.ExportValidated(
@@ -70,6 +82,7 @@ func (e *Extractor) ExportAll(
 }
 
 func (e *Extractor) ExportBase(
+
 	processName string, qc *ArchiveQueryCommon, qio *ArchiveIO) {
 	e.TransformBase()
 	if qc.ExtractorsCode == ExtractorsProductionContacts {
@@ -89,7 +102,7 @@ func (e *Extractor) ExportValidated(
 	}
 	e.AmmendInfoColumn()
 	e.TransformBeforeValidation()
-	e.ValidateAllColumns(qc.ValidatorFileName)
+	// e.ValidateAllColumns(qc.ValidatorFileName)
 	e.CSVtableBuild(false, false, qio.CSVdelim, true)
 	e.TableOutputs(
 		qio.OutputDirectory, qio.OutputFileName,

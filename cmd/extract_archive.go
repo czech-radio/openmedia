@@ -55,6 +55,7 @@ func (gc GlobalConfig) RunCommandExtractArchive() {
 	}
 	extracted := arf.FolderExtract(&af)
 	extracted.ExportAll(&af.ArchiveQueryCommon, &af.ArchiveIO, &af.FilterFile)
+	// extracted.ExportToDB(&af.ArchiveQueryCommon, &af.ArchiveIO, &af.FilterFile)
 }
 
 // D) PREVOD KÓDŮ"

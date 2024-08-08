@@ -72,7 +72,7 @@ func (e *Extractor) TransformBase() {
 
 func (e *Extractor) TransformBeforeValidation() {
 	e.TreatStoryRecordsUnknown()
-	e.TransformColumnsFields(TransformTema, false, "5016")
+	// e.TransformColumnsFields(TransformTema, false, "5016")
 }
 
 // TransformProduction
@@ -87,9 +87,6 @@ func (e *Extractor) TransformProduction() {
 	e.TransformColumnFields(RowPartCode_AudioClipHead,
 		"1005", TransformStopaz, false)
 
-	// Compute
-	// e.ComputeRecordIDs(true)
-	// e.SetFileNameColumn()
 	e.TransformColumnsFields(TransformObjectID, false, "ObjectID")
 	e.ComputeJoinNameAndSurname(RowPartCode_ComputedKON, "jmeno_spojene")
 }

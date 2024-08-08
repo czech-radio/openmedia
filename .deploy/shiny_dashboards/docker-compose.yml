@@ -1,0 +1,22 @@
+version: '3.9'
+services:
+  db_rundowns:
+    image: postgres:16.3
+    restart: always
+    shm_size: 128mb
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: rundowns   # [value of POSGRES_USER]
+      POSTGRES_USER: admin    # [postgres] superuser power, related to /etc/passwd in the image that the postgres deamon runs as
+      POSTGRES_PASSWORD: 123            # required
+      # POSTGRES_HOST_AUTH_METHOD: trust  # [scram-sha-256], trust - no password required (for devel)
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+    links:
+      - db_rundowns 
+
