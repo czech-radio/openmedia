@@ -39,6 +39,7 @@ func (e *Extractor) ExportAll(
 	e.OmitRecordIDsColumn()
 	e.OutputRowsSpecific(processName, qc, qio, ReverseIndexes(indxs))
 	e.DeleteNonMatchingRows(indxs)
+	e.RowPartOmit(RowPartCode_StoryRec)
 
 	e.TransformBase()
 	processName = "base_NCparts"
@@ -87,7 +88,6 @@ func (e *Extractor) ExportValidated(
 		slog.Info("validation_warning", "msg", "validation receipe file not specified")
 		return nil
 	}
-	e.AmmendInfoColumn()
 	e.TransformBeforeValidation()
 	e.ValidateAllColumns(qc.ValidatorFileName)
 	e.CSVtableBuild(false, false, qio.CSVdelim, true)

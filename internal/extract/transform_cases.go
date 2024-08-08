@@ -73,6 +73,7 @@ func (e *Extractor) TransformBase() {
 func (e *Extractor) TransformBeforeValidation() {
 	e.TreatStoryRecordsUnknown()
 	e.TransformColumnsFields(TransformTema, false, "5016")
+	e.AmmendInfoColumn()
 }
 
 // TransformProduction

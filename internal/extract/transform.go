@@ -760,6 +760,16 @@ func (e *Extractor) TreatStoryRecordsUnknown() {
 		if !ok {
 			continue
 		}
+
+		storyCatPart, ok := row.RowParts[RowPartCode_StoryKategory]
+		if ok {
+			tname := storyCatPart["TemplateName"]
+			switch StoryPartCode(tname.Value) {
+			case StoryPartAudio, StoryPartContactBin, StoryPartContactItem:
+				continue
+			}
+		}
+
 		recordType := storyRecordPart["5001"].Value
 		switch recordType {
 		case "Audio":

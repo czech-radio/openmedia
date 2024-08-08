@@ -7,6 +7,7 @@ type RowPartCode int
 
 var CSVdelim = "\t"
 
+// RowPartCodes
 const (
 	RowPartCode_RadioRec RowPartCode = iota
 	RowPartCode_RadioHead
@@ -59,6 +60,15 @@ var RowPartsCodeMapProduction = PartsPrefixMap{
 	RowPartCode_ComputedKategory: {"Comp-Cat", "kategory"},
 	RowPartCode_ComputedRID:      {"Comp-RID", "HLP"},
 }
+
+type StoryPartCode string
+
+const (
+	StoryPartAudio       StoryPartCode = "Audio"
+	StoryPartContactItem StoryPartCode = "Contact Item"
+	StoryPartContactBin  StoryPartCode = "Contact Bin"
+	StoryPartUnknown     StoryPartCode = "UNKNOWN"
+)
 
 type FieldID struct {
 	NameShort        string
@@ -137,6 +147,7 @@ var FieldsIDsNames = FieldsIDsNamesMap{
 	"kategory":         {"kategory", "Kategory", 0, "@", FieldWidthDefault},
 	"name&party_match": {"kontrola_strany", "Kontrola strany", 0, "@", FieldWidthShort},
 	"name_match":       {"name_match", "Name match", 0, "@", FieldWidthShort},
+	"referencni_jmeno": {"referencni_jmeno", "Referencni jmeno", 0, "@", FieldWidthShort},
 	"vysoka_politika":  {"vysoka_politika", "Vysoká politika", 0, "@", FieldWidthShort},
 }
 
